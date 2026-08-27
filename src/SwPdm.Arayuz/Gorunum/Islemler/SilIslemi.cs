@@ -31,7 +31,7 @@ internal sealed class SilIslemi : IAgacIslemi
             return false;
         }
 
-        if (secim.Kok is null)
+        if (secim.CopKlasoru is null)
         {
             nedenOlmaz = "Önce bir klasör açın.";
             return false;
@@ -45,7 +45,7 @@ internal sealed class SilIslemi : IAgacIslemi
     public void Uygula(IslemBaglami baglam)
     {
         IReadOnlyList<object> ogeler = baglam.Secim.Ogeler;
-        if (ogeler.Count == 0 || baglam.Secim.Kok is not string kok)
+        if (ogeler.Count == 0 || baglam.Secim.CopKlasoru is not string cop)
         {
             return;
         }
@@ -68,7 +68,7 @@ internal sealed class SilIslemi : IAgacIslemi
                 continue;
             }
 
-            IslemRaporu rapor = Cop.Sil(kok, yol);
+            IslemRaporu rapor = Cop.Sil(cop, yol);
             if (rapor.Oldu)
             {
                 silinen.Add(SecimBaglami.Adi(oge));
@@ -82,7 +82,7 @@ internal sealed class SilIslemi : IAgacIslemi
 
         if (silinenYollar.Count > 0)
         {
-            GeriAlDefteri.Kaydet(GeriAlmasi(kok, silinenYollar));
+            GeriAlDefteri.Kaydet(GeriAlmasi(cop, silinenYollar));
         }
 
         baglam.Tazele(null);
@@ -115,7 +115,7 @@ internal sealed class SilIslemi : IAgacIslemi
     /// bulunuyor; ayni yoldan birden fazla varsa en YENI silinen aliniyor
     /// (Cop.Listele en yeniyi basta veriyor).
     /// </summary>
-    private static GeriAlinabilir GeriAlmasi(string kok, IReadOnlyList<string> yollar)
+    private static GeriAlinabilir GeriAlmasi(string cop, IReadOnlyList<string> yollar)
         => new(
             $"{yollar.Count} öğenin silinmesi",
             baglam =>
@@ -125,7 +125,7 @@ internal sealed class SilIslemi : IAgacIslemi
                 foreach (string yol in yollar)
                 {
                     CopOgesi? oge = null;
-                    foreach (CopOgesi aday in Cop.Listele(kok))
+                    foreach (CopOgesi aday in Cop.Listele(cop))
                     {
                         if (string.Equals(aday.EskiYol, yol, StringComparison.OrdinalIgnoreCase))
                         {
@@ -140,7 +140,7 @@ internal sealed class SilIslemi : IAgacIslemi
                         continue;
                     }
 
-                    IslemRaporu rapor = Cop.GeriYukle(kok, oge);
+                    IslemRaporu rapor = Cop.GeriYukle(cop, oge);
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));

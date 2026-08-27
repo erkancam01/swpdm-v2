@@ -204,7 +204,7 @@ internal static class Aktar
             baglam =>
             {
                 var olmayan = new List<string>();
-                if (baglam.Secim.Kok is not string kok)
+                if (baglam.Secim.CopKlasoru is not string cop)
                 {
                     olmayan.Add("Kök klasör kapalı; kopyalar kaldırılamadı.");
                     return olmayan;
@@ -214,7 +214,7 @@ internal static class Aktar
                 {
                     // KALICI SILME YOK: kopyalar da cope gider, oradan geri
                     // alinabilir (CLAUDE.md 1a).
-                    IslemRaporu rapor = Cop.Sil(kok, yol);
+                    IslemRaporu rapor = Cop.Sil(cop, yol);
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(WindowsYolu.DosyaAdi(yol)

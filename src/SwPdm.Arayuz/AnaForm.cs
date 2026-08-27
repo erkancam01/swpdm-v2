@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using SwPdm.Arayuz.Gorunum;
 using SwPdm.Cekirdek;
@@ -30,6 +31,8 @@ internal sealed partial class AnaForm : Form
     private readonly AgacMenusu _menu;
     private readonly SurukleBirak _surukleBirak;
     private readonly IlerlemeYuzeyi _ilerleme;
+    private readonly Ayarlar _ayarlar = Ayarlar.Oku();
+    private AyarlarSayfasi? _ayarlarSayfasi;
     private readonly Gorunum.Onizleme _onizleme;
     private readonly string? _acilistaAcilacakKok;
 
@@ -75,11 +78,14 @@ internal sealed partial class AnaForm : Form
         _menu = new AgacMenusu(_agac);
         _menu.SecimKaynagi(SecimBaglamiKur);
         _menu.IlerlemeYuzeyi(_ilerleme);
+        _menu.AgaciKapatan(_doldurucu.HepsiniKapat);
         _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _menu.Tazele += (_, yol) => AgaciTazele(yol);
         _surukleBirak = new SurukleBirak(_agac);
         _surukleBirak.Tasindi += (_, e) => Aktar.Yurut(
-            new IslemBaglami(this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme),
+            new IslemBaglami(
+                this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme,
+                _doldurucu.HepsiniKapat),
             e.Yollar,
             e.HedefKlasor,
             AktarmaKipi.Tasi);
@@ -87,6 +93,9 @@ internal sealed partial class AnaForm : Form
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
         _kokSecici.Secildi += (_, yol) => KokuAc(yol);
+
+        // --- yol cubugu: agacin ustunde, tiklanabilir
+        _yol.Secildi += (_, klasor) => _doldurucu.YoluSec(klasor);
 
         // --- onizleme
         _onizleme = new Gorunum.Onizleme(_onizlemePaneli, this);
@@ -150,7 +159,17 @@ internal sealed partial class AnaForm : Form
         if (!string.IsNullOrWhiteSpace(_acilistaAcilacakKok))
         {
             KokuAc(_acilistaAcilacakKok);
+            return;
         }
+
+        // Gecmisi ac dugmesinin listesine koy - once, ki kok acilamasa bile
+        // kullanici listeden secebilsin.
+        foreach (string eski in _ayarlar.SonKokler)
+        {
+            _kokSecici.GecmiseEkle(eski);
+        }
+
+        SonKokuAc();
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
@@ -165,19 +184,26 @@ internal sealed partial class AnaForm : Form
         _arama.MetniTemizle();
 
         _doldurucu.KokuAc(yol);
+        _yol.KokuKur(_doldurucu.Kok);
 
         // Kokun tek sahibi AgacDoldurucu; arama onun bildigi kokte arar.
         _arama.Kok = _doldurucu.Kok;
 
         _onizleme.Temizle();
-        _durum.Kok(yol);
+        _durum.KokAcildi();
         _kokSecici.GecmiseEkle(yol);
+
+        // Kok HATIRLANIR: bir dahaki acilista dosya yolunu yeniden gostermeye
+        // gerek kalmasin (Erkan'in istegi).
+        _ayarlar.KokEkle(yol);
+        _ayarlar.Yaz();
 
         // Kok degisti: eski yollara bakan geri alma adimlari artik BASKA bir
         // agacin yollari olur ve yanlis yere dokunurdu (CLAUDE.md 1a).
         GeriAlDefteri.Temizle();
         CopDugmesiniTazele();
         GeriAlDugmesiniTazele();
+        _ayarlarSayfasi?.Tazele();
     }
 
     /// <summary>
@@ -211,7 +237,9 @@ internal sealed partial class AnaForm : Form
             }
         }
 
-        return new SecimBaglami(ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde, _doldurucu.Kok);
+        return new SecimBaglami(
+            ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde,
+            _doldurucu.Kok, CopKlasoru());
     }
 
     /// <summary>
@@ -241,7 +269,8 @@ internal sealed partial class AnaForm : Form
             return;
         }
 
-        CopKutusuPenceresi.Goster(this, kok, cumle => _durum.Bilgi(cumle));
+        CopKutusuPenceresi.Goster(
+            this, Cop.Yolu(kok, _ayarlar.CopUstKlasoru), cumle => _durum.Bilgi(cumle));
         AgaciTazele(null);
     }
 
@@ -256,7 +285,7 @@ internal sealed partial class AnaForm : Form
             return;
         }
 
-        int adet = Cop.Listele(kok).Count;
+        int adet = Cop.Listele(Cop.Yolu(kok, _ayarlar.CopUstKlasoru)).Count;
         _copDugmesi.Enabled = true;
         _copDugmesi.Text = adet == 0 ? "Çöp kutusu" : $"Çöp kutusu ({adet})";
         _copDugmesi.ToolTipText = "Silinenleri gör ve geri yükle";
@@ -273,6 +302,47 @@ internal sealed partial class AnaForm : Form
             ? $"Geri al: {ad}  (Ctrl+Z)"
             : "Geri al — geri alınacak bir işlem yok";
     }
+
+    /// <summary>
+    /// En son acilan koku kendiliginden acar.
+    ///
+    /// Klasor artik yoksa (ag surucusu kapali, disk cikarilmis) SESSIZCE
+    /// gecilmez: sebep yazilir ve o kok gecmisten dusurulur, yoksa her
+    /// aciliste ayni hatayi verirdi (CLAUDE.md 3).
+    /// </summary>
+    private void SonKokuAc()
+    {
+        if (_ayarlar.SonKok is not string kok)
+        {
+            return;
+        }
+
+        if (!Directory.Exists(kok))
+        {
+            _ayarlar.KokCikar(kok);
+            _ayarlar.Yaz();
+            _durum.Bilgi("Son açılan klasör bulunamadı: " + kok);
+            return;
+        }
+
+        KokuAc(kok);
+    }
+
+    /// <summary>
+    /// Silinenlerin gidecegi klasor. Kullanici ayarlardan degistirmediyse
+    /// kokun kendi ici - ayni diskte oldugu icin silme ANLIK.
+    /// </summary>
+    /// <summary>Ayarlar sekmesinin icerigi. Tasarim tarafindan cagriliyor.</summary>
+    private Control AyarlarSayfasiKur()
+    {
+        var sayfa = new AyarlarSayfasi(_ayarlar, () => _doldurucu?.Kok);
+        sayfa.Degisti += (_, _) => CopDugmesiniTazele();
+        _ayarlarSayfasi = sayfa;
+        return sayfa;
+    }
+
+    private string? CopKlasoru()
+        => _doldurucu.Kok is string kok ? Cop.Yolu(kok, _ayarlar.CopUstKlasoru) : null;
 
     private void SecimiGoster()
     {
@@ -299,11 +369,13 @@ internal sealed partial class AnaForm : Form
             case DosyaOgesi dosya:
                 _onizleme.Goster(dosya);
                 _durum.Secildi(dosya);
+                _yol.Goster(WindowsYolu.Klasor(dosya.Yol));
                 break;
 
             case KlasorOgesi klasor:
                 _onizleme.Goster(klasor);
                 _durum.Secildi(klasor);
+                _yol.Goster(klasor.Yol);
                 break;
 
             default:

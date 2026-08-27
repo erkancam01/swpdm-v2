@@ -21,6 +21,7 @@ internal sealed class AgacMenusu
 
     private Func<SecimBaglami>? _secimKaynagi;
     private IIlerlemeYuzeyi? _ilerleme;
+    private Action? _agaciKapat;
 
     internal AgacMenusu(SecimliAgac agac)
     {
@@ -59,6 +60,9 @@ internal sealed class AgacMenusu
 
     /// <summary>Uzun islerin ilerlemeyi bildirecegi yuzey.</summary>
     internal void IlerlemeYuzeyi(IIlerlemeYuzeyi yuzey) => _ilerleme = yuzey;
+
+    /// <summary>Butun dallari kapatan isi.</summary>
+    internal void AgaciKapatan(Action is_) => _agaciKapat = is_;
 
     /// <summary>Menu ogelerinin yazilarini ve durumlarini tazeler.</summary>
     internal void YazilariTazele() => YazilariKur(Secim());
@@ -102,7 +106,7 @@ internal sealed class AgacMenusu
     }
 
     private SecimBaglami Secim()
-        => _secimKaynagi?.Invoke() ?? new SecimBaglami([], null, AramaKipinde: false, Kok: null);
+        => _secimKaynagi?.Invoke() ?? new SecimBaglami([], null, AramaKipinde: false, Kok: null, CopKlasoru: null);
 
     private void Calistir(IAgacIslemi islem)
     {
@@ -125,6 +129,7 @@ internal sealed class AgacMenusu
             Secim: secim,
             Tazele: yol => Tazele?.Invoke(this, yol),
             Bildir: cumle => Durum?.Invoke(this, cumle),
-            Ilerleme: _ilerleme));
+            Ilerleme: _ilerleme,
+            AgaciKapat: _agaciKapat ?? (() => { })));
     }
 }

@@ -235,6 +235,29 @@ internal sealed class AgacDoldurucu
         dugum.EnsureVisible();
     }
 
+    /// <summary>
+    /// Butun dallari kapatir ve koke doner. KOK ACIK KALIR - her seyi
+    /// kapatmak "klasor bosaldi" hissi verirdi.
+    /// </summary>
+    internal void HepsiniKapat()
+    {
+        if (_agac.Nodes.Count == 0)
+        {
+            return;
+        }
+
+        _agac.BeginUpdate();
+        _agac.CollapseAll();
+        TreeNode kok = _agac.Nodes[0];
+        kok.Expand();
+        _agac.EndUpdate();
+
+        // Secim koke iner: kullanici basa dondu, secili oge derinlerde
+        // kalirsa sonraki islem gormedigi bir yere gider (CLAUDE.md 1a).
+        _agac.YalnizSec(kok);
+        kok.EnsureVisible();
+    }
+
     /// <summary>Dugume bagli cekirdek nesnesi; yoksa null.</summary>
     internal static object? Etiket(TreeNode? dugum)
         => ReferenceEquals(dugum?.Tag, HenuzTaranmadi) ? null : dugum?.Tag;

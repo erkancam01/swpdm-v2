@@ -42,6 +42,20 @@ BEKLE="${KAPI_BEKLE:-25}"
 KUR=0
 [ "${1:-}" = "--kur" ] && KUR=1
 
+# ============================ YERLESIM OLCULERI ============================
+# Pencere ICI koordinatlar. Arayuzun yerlesimi degisirse YALNIZCA burasi
+# degisir - asagida hicbir yerde ciplak sayi yok.
+#
+# Bunlar OLCULDU (xwininfo + ekran goruntusu), tahmin degil:
+#   baslik seridi 32 · sekme baslıklari ~22 · arac cubugu ~25 ·
+#   suzgec seridi 28 · YOL CUBUGU 26  -> agacin ilk satiri
+AGAC_ILK_SATIR="${KAPI_AGAC_ILK_SATIR:-142}"   # ilk agac satirinin y'si
+AGAC_SATIR_YUKSEKLIGI=18
+AGAC_TIK_X=105                                  # dugum metnine denk gelen x
+SUZGEC_Y=95                                     # suzgec seridinin y'si
+SUZGEC_PARCA_X=171                              # "Parca" dugmesinin x'i
+# ==========================================================================
+
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
 
@@ -228,7 +242,7 @@ sleep "$BEKLE"
 # piksellerin y degerleri kac ayri BANT olusturuyor. Piksel SAYISI ise
 # yaramaz - satir genisligi dosya adinin uzunluguna gore degisiyor.
 secili_satir_say() {
-  convert "$1" -crop "560x320+$(( $2 + 5 ))+$(( $3 + 109 ))" +repage txt:- 2>/dev/null \
+  convert "$1" -crop "560x320+$(( $2 + 5 ))+$(( $3 + AGAC_ILK_SATIR - 7 ))" +repage txt:- 2>/dev/null \
     | grep -o '^[0-9]*,[0-9]*:.*#3399FF' \
     | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
     | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
@@ -236,8 +250,12 @@ secili_satir_say() {
 
 # Agactaki GORUNUR satir sayisi: beyaz olmayan piksel iceren yatay bantlar.
 # Suzgec uygulaninca satir sayisi AZALMALI.
+#
+# Kirpma AGACIN ICINDE kalmali: altta bolen cizgisi ve "Onizleme ve
+# Referanslar" basligi var, onlar da bant sayilir ve sayiyi sisirir.
+# (Olculdu: 250 px yukseklik agac alaninin icinde kaliyor.)
 agac_satir_say() {
-  convert "$1" -crop "560x300+$(( $2 + 5 ))+$(( $3 + 112 ))" +repage txt:- 2>/dev/null \
+  convert "$1" -crop "560x250+$(( $2 + 5 ))+$(( $3 + AGAC_ILK_SATIR - 7 ))" +repage txt:- 2>/dev/null \
     | grep -v '#FFFFFF' | grep -o '^[0-9]*,[0-9]*:' \
     | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
     | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
@@ -303,9 +321,9 @@ fi
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # Pencere ici koordinatlar: agac ilk satiri y=116, satir yuksekligi 18.
   # Kok seviyesindeki ilk iki dosya 6. ve 7. satirlarda (5 alt klasor var).
-  TIK_X=$(( PENCERE_X + 105 ))
-  SATIR1=$(( PENCERE_Y + 116 + 18 * 6 ))
-  SATIR2=$(( PENCERE_Y + 116 + 18 * 9 ))
+  TIK_X=$(( PENCERE_X + AGAC_TIK_X ))
+  SATIR1=$(( PENCERE_Y + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * 6 ))
+  SATIR2=$(( PENCERE_Y + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * 9 ))
 
   xdotool mousemove "$TIK_X" "$SATIR1" click 1 > /dev/null 2>&1
   sleep 2
@@ -337,8 +355,8 @@ fi
 # yani secili satir = gorunen satir - 1. Eski davranis gorunen sayinin
 # KENDISINI verirdi.
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  # Kok dugum: agacin ilk satiri (pencere ici y=116).
-  xdotool mousemove "$(( PENCERE_X + 105 ))" "$(( PENCERE_Y + 116 ))" click 1 > /dev/null 2>&1
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" \
+                    "$(( PENCERE_Y + AGAC_ILK_SATIR ))" click 1 > /dev/null 2>&1
   sleep 1
   xdotool key --clearmodifiers ctrl+a > /dev/null 2>&1
   sleep 2
@@ -368,8 +386,8 @@ fi
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   ONCE="$(agac_satir_say "$CALISMA/ctrla.png" "$PENCERE_X" "$PENCERE_Y")"
 
-  # Suzgec seridi: pencere ici y=95. "Parca" ucuncu dugme, x=171.
-  xdotool mousemove "$(( PENCERE_X + 171 ))" "$(( PENCERE_Y + 95 ))" > /dev/null 2>&1
+  xdotool mousemove "$(( PENCERE_X + SUZGEC_PARCA_X ))" \
+                    "$(( PENCERE_Y + SUZGEC_Y ))" > /dev/null 2>&1
   sleep 1
   xdotool click 1 > /dev/null 2>&1
   sleep 2
@@ -394,7 +412,8 @@ fi
 # aldim" sanip devam eder. Olcum: Ctrl+Shift+N agaca bir satir EKLER,
 # Ctrl+Z o satiri GERI ALIR. Ikisi de sayilarak dogrulanir.
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  xdotool mousemove "$(( PENCERE_X + 105 ))" "$(( PENCERE_Y + 116 ))" click 1 > /dev/null 2>&1
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" \
+                    "$(( PENCERE_Y + AGAC_ILK_SATIR ))" click 1 > /dev/null 2>&1
   sleep 1
   ONCEKI="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 

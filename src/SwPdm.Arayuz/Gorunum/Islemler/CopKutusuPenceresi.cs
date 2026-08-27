@@ -19,7 +19,7 @@ namespace SwPdm.Arayuz.Gorunum;
 /// </summary>
 internal sealed class CopKutusuPenceresi : Form
 {
-    private readonly string _kok;
+    private readonly string _cop;
     private readonly Action<string> _bildir;
     private readonly ListView _liste = new();
     private readonly Label _yer = new();
@@ -28,11 +28,11 @@ internal sealed class CopKutusuPenceresi : Form
     private readonly Button _bosalt = new();
     private readonly Button _kapat = new();
 
-    private CopKutusuPenceresi(string kok, Action<string> bildir)
+    private CopKutusuPenceresi(string cop, Action<string> bildir)
     {
         // CLAUDE.md 6: alanlar boyut degistiren her seyden ONCE atanmis olmali.
         // Hepsi alan baslaticilariyla atandi; asagisi guvenli.
-        _kok = kok;
+        _cop = cop;
         _bildir = bildir;
 
         Text = "Çöp kutusu";
@@ -87,9 +87,9 @@ internal sealed class CopKutusuPenceresi : Form
     }
 
     /// <summary>Pencereyi acar.</summary>
-    internal static void Goster(IWin32Window sahip, string kok, Action<string> bildir)
+    internal static void Goster(IWin32Window sahip, string cop, Action<string> bildir)
     {
-        using var pencere = new CopKutusuPenceresi(kok, bildir);
+        using var pencere = new CopKutusuPenceresi(cop, bildir);
         pencere.ShowDialog(sahip);
     }
 
@@ -107,7 +107,7 @@ internal sealed class CopKutusuPenceresi : Form
         _liste.BeginUpdate();
         _liste.Items.Clear();
 
-        IReadOnlyList<CopOgesi> ogeler = Cop.Listele(_kok);
+        IReadOnlyList<CopOgesi> ogeler = Cop.Listele(_cop);
         foreach (CopOgesi oge in ogeler)
         {
             var satir = new ListViewItem(oge.Ad) { Tag = oge };
@@ -122,8 +122,8 @@ internal sealed class CopKutusuPenceresi : Form
         _liste.EndUpdate();
 
         _yer.Text = ogeler.Count == 0
-            ? "Çöp kutusu boş.   Yeri: " + Cop.Yolu(_kok)
-            : $"{ogeler.Count} öğe.   Yeri: {Cop.Yolu(_kok)}";
+            ? "Çöp kutusu boş.   Yeri: " + _cop
+            : $"{ogeler.Count} öğe.   Yeri: {_cop}";
 
         DugmeleriTazele();
     }
@@ -158,7 +158,7 @@ internal sealed class CopKutusuPenceresi : Form
 
         foreach (CopOgesi oge in Secililer())
         {
-            IslemRaporu rapor = Cop.GeriYukle(_kok, oge);
+            IslemRaporu rapor = Cop.GeriYukle(_cop, oge);
             if (!rapor.Oldu)
             {
                 olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
@@ -199,7 +199,7 @@ internal sealed class CopKutusuPenceresi : Form
         var olmayan = new List<string>();
         foreach (CopOgesi oge in secililer)
         {
-            IslemRaporu rapor = Cop.KaliciSil(_kok, oge);
+            IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
                 rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
         }
@@ -210,7 +210,7 @@ internal sealed class CopKutusuPenceresi : Form
 
     private void Bosalt()
     {
-        IReadOnlyList<CopOgesi> hepsi = Cop.Listele(_kok);
+        IReadOnlyList<CopOgesi> hepsi = Cop.Listele(_cop);
         if (hepsi.Count == 0)
         {
             return;
@@ -226,7 +226,7 @@ internal sealed class CopKutusuPenceresi : Form
         var olmayan = new List<string>();
         foreach (CopOgesi oge in hepsi)
         {
-            IslemRaporu rapor = Cop.KaliciSil(_kok, oge);
+            IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
                 rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
         }

@@ -1,6 +1,44 @@
 BU SURUMDE YENI - ISTEDIGIN DORT SEY
 
-  1. GERI AL - cop kutusunun YANINDA, yazisiyla birlikte bir dugme.
+  1. KLASOR YOLU ARTIK HATIRLANIYOR
+     Uygulama actiginizda EN SON calistiginiz klasoru kendiliginden aciyor.
+     Klasor dugmesinin yanindaki ok, son 10 klasoru listeliyor - bunlar da
+     kalici.
+     O klasor artik yoksa (ag surucusu kapali, disk cikarilmis) uygulama
+     sessizce bos acilmiyor: SEBEBI yaziyor ve o klasoru listeden dusuruyor,
+     yoksa her aciliste ayni hatayi verirdi.
+     Ayarlar dosyasi: %APPDATA%\SwPdm\ayarlar.txt - duz metin, bozulursa
+     elle onarilabilir; bozuk bir satir uygulamayi dusurmez, atlanir.
+
+  2. COP KUTUSUNUN YERINI ARTIK SIZ SECIYORSUNUZ
+     Ayarlar sekmesinden. Secim kalici.
+     Varsayilan yine kokun ici - ayni diskte oldugu icin silme ANLIK.
+     Baska bir DISK secerseniz uyari cikar: ayni diskte silme bir tasimadir,
+     baska diskte KOPYALAMAYA doner ve 1 GB'lik montaj icin dakikalar surer,
+     ag surucusunde daha da uzun. Uyariyi gorup yine de secebilirsiniz.
+
+  3. AGACI KAPAT
+     Sag tik menusunde ve Ctrl+Shift+K. Butun dallari kapatir, koke doner.
+     Derin bir dalda kaybolunca tek tek kapatmak yerine tek hamlede basa
+     donmek icin ("geri gelmek zulum olabiliyor" demistiniz).
+     Kok ACIK kalir - her seyi kapatmak "klasor bosaldi" hissi verirdi.
+
+  4. YOL CUBUGU - AGACIN HEMEN USTUNDE, TIKLANABILIR
+     Ekran goruntusunde kirmiziyla isaretledigin yol artik en altta degil,
+     agacin ustunde. Her klasor parcasi bir dugme gibi: tikladiginizda agac
+     oraya gider.
+     Kokun USTUNDEKI parcalar (surucu, ust klasorler) SOLUK ve tiklanamaz -
+     onlar agacin disinda. Tiklanabilir gostermek, tiklayinca hicbir sey
+     olmamasi demek olurdu; ipucunda sebebi yaziyor.
+     Yol pencereye sigmazsa SOLDAN kirpilir ve "..." konur: en cok ilgilendiginiz
+     yer yolun SONU.
+     Alt taraftaki durum cubugu artik yolu tekrar etmiyor; orada secili
+     dosyanin bilgisi ve islem sonuclari var.
+
+
+ONCEKI SURUMDEN
+
+  A. GERI AL - cop kutusunun YANINDA, yazisiyla birlikte bir dugme.
      Sag tik menusunde ve Ctrl+Z ile de var. Ipucu NEYIN geri alinacagini
      yazar: "Geri al: 3 ogenin tasinmasi".
      Geri alinabilenler: yeni klasor · yeniden adlandirma · tasima ·
@@ -10,18 +48,18 @@ BU SURUMDE YENI - ISTEDIGIN DORT SEY
      Yeni klasorun geri alinmasi, klasor HALA BOSSA siler; icine bir sey
      konduysa silmez ve bunu soyler.
 
-  2. ILERLEME CUBUGU - en altta, durum cubugunun icinde.
+  B. ILERLEME CUBUGU - en altta, durum cubugunun icinde.
      Tasima ve kopyalamada: "15 / 30", dolan cubuk, o an islenen dosyanin
      adi ve bir IPTAL dugmesi.
      Is ARKA PLANDA kosuyor - uygulama artik buyuk aktarmada donmuyor.
      Iptal yalnizca dosyalar ARASINDA olur; yarim kalmis dosya birakilmaz.
      Sayilar uydurma degil: kac ogeden kacinin bittigi sayiliyor.
 
-  3. YENILE - sag tik menusunde ve F5.
+  C. YENILE - sag tik menusunde ve F5.
      Agaci diskten bastan okur; acik dallar ve secim KORUNUR. Ortak
      surucude baskasi bir sey degistirdiginde isinize yarar.
 
-  4. KOPYALA (Ctrl+C) - artik sadece Kes yok.
+  D. KOPYALA (Ctrl+C) - artik sadece Kes yok.
      Menude: Kes · Kopyala · Yapistir. Yapistir ne yapacagini adinda yazar:
      "Yapistir (3 oge kopyalanacak)".
      AYNI klasore yapistirmak COGALTMADIR: "Parca (2).SLDPRT" olur, uzanti
@@ -114,6 +152,7 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
     - Kes / Kopyala / Yapistir  Ctrl+X / Ctrl+C / Ctrl+V
     - Geri al .............. Ctrl+Z
     - Yenile ............... F5
+    - Agaci kapat .......... Ctrl+Shift+K
     - Surukle-birak ........ secimi bir klasorun uzerine birak
 
   SILME KALICI DEGIL: kokun icindeki ".SwPdmCop" klasorune tasinir ve

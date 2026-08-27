@@ -643,6 +643,9 @@ dosyasında** duruyor:
 | alttaki ilerleme çubuğu | `Arayuz/Gorunum/IlerlemeYuzeyi.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
+| yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/YolCubugu.cs` |
+| kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ayarlar.cs` |
+| Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
@@ -679,6 +682,14 @@ araclar/kapilar.sh [--kur]     # dördünü sırayla koşar
 Kapsam **adlara değil ağaca** bağlı (§9): proje `find` ile, WinExe içerikten
 (`OutputType`), test projesi içerikten (`Microsoft.NET.Test.Sdk`), uygulama adı
 `runtimeconfig`'ten bulunur. Hiçbirine dosya/proje adı **yazılmamıştır**.
+
+> **Kapı ekran koordinatı kullanıyor — yerleşim değişince kırılır.** Yol
+> çubuğu ağacın üstüne eklenince ağaç 26 piksel aşağı kaydı ve dört ölçümden
+> üçü birden kırıldı. Bu, kapının **doğru** davranışıdır (ekranı ölçüyor), ama
+> onarımı kolay olmalı: bütün koordinatlar artık betiğin başında tek bir
+> blokta (`AGAC_ILK_SATIR`, `SUZGEC_Y`…), gövdede çıplak sayı yok.
+> Ayrıca kırpma alanı **ağacın içinde** kalmalı: altındaki bölen çizgisi ve
+> "Önizleme ve Referanslar" başlığı da bant sayılıp satır sayısını şişiriyor.
 
 **Boyut kapısı §7'nin sayısı için var.** v1'de tek bir arayüz sınıfı 9.918
 satıra çıktı, ürün kodunun %38'i oldu ve **bölünemedi**; kimse zamanında

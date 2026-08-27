@@ -48,11 +48,61 @@ public static class Cop
 
     private const string KayitAdi = "kayit.txt";
 
-    /// <summary>Bir kokun cop klasorunun yolu.</summary>
-    public static string Yolu(string kok) => WindowsYolu.Birlestir(kok, KlasorAdi);
+    /// <summary>
+    /// Cop klasorunun yolu.
+    ///
+    /// <paramref name="ustKlasor"/> verilmezse kokun KENDI ICI kullanilir -
+    /// varsayilan budur ve en hizlisidir: ayni diskte oldugu icin silme bir
+    /// TASIMA'dir, 1 GB'lik montaj kopyalanmaz.
+    ///
+    /// Kullanici baska bir ust klasor secebilir. O klasor BASKA BIR DISKTE
+    /// ise silme kopyalamaya doner ve yavaslar; bunu secim aninda SOYLEMEK
+    /// cagiranin isi (CLAUDE.md 3).
+    /// </summary>
+    public static string Yolu(string kok, string? ustKlasor = null)
+        => WindowsYolu.Birlestir(
+            string.IsNullOrWhiteSpace(ustKlasor) ? kok : ustKlasor, KlasorAdi);
+
+    /// <summary>
+    /// Iki yol ayni surucude mi. Degilse silme ANLIK olmaz, kopyalamaya doner.
+    /// Bilinemiyorsa true doner - "yavas olacak" diye YANLIS uyarmak,
+    /// uyarmamaktan kotudur.
+    /// </summary>
+    public static bool AyniSurucudeMi(string a, string b)
+    {
+        string kokA = SurucuKoku(a);
+        string kokB = SurucuKoku(b);
+
+        return kokA.Length == 0 || kokB.Length == 0
+            || string.Equals(kokA, kokB, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string SurucuKoku(string yol)
+    {
+        // "C:\..." -> "C:"   ·   "\\sunucu\ortak\..." -> "\\sunucu\ortak"
+        if (yol.Length >= 2 && yol[1] == ':')
+        {
+            return yol[..2];
+        }
+
+        if (yol.Length > 2 && WindowsYolu.AyiriciMi(yol[0]) && WindowsYolu.AyiriciMi(yol[1]))
+        {
+            int birinci = yol.IndexOfAny([WindowsYolu.Ayirici, WindowsYolu.EgikAyirici], 2);
+            if (birinci < 0)
+            {
+                return yol;
+            }
+
+            int ikinci = yol.IndexOfAny(
+                [WindowsYolu.Ayirici, WindowsYolu.EgikAyirici], birinci + 1);
+            return ikinci < 0 ? yol : yol[..ikinci];
+        }
+
+        return string.Empty;
+    }
 
     /// <summary>Bir ogeyi cope tasir.</summary>
-    public static IslemRaporu Sil(string kok, string yol)
+    public static IslemRaporu Sil(string cop, string yol)
     {
         bool klasorMu = Directory.Exists(yol);
         if (!klasorMu && !File.Exists(yol))
@@ -61,13 +111,12 @@ public static class Cop
         }
 
         // Cop klasorunun kendisi cope atilamaz.
-        if (klasorMu && DosyaIslemleri.KendiAltindaMi(yol, Yolu(kok)))
+        if (klasorMu && DosyaIslemleri.KendiAltindaMi(yol, cop))
         {
             return new IslemRaporu(
                 IslemSonucu.KendiAltina, null, "Çöp klasörü çöpe atılamaz.");
         }
 
-        string cop = Yolu(kok);
         string no = YeniNo(cop);
         string kutu = WindowsYolu.Birlestir(cop, no);
         string ad = WindowsYolu.DosyaAdi(yol);
@@ -105,9 +154,8 @@ public static class Cop
     /// Diskte KARSILIGI OLMAYAN kayitlar atlanir - kullaniciya var olmayan bir
     /// dosyayi "geri yukleyebilirsin" diye gostermek yalan olur.
     /// </summary>
-    public static IReadOnlyList<CopOgesi> Listele(string kok)
+    public static IReadOnlyList<CopOgesi> Listele(string cop)
     {
-        string cop = Yolu(kok);
         string kayit = WindowsYolu.Birlestir(cop, KayitAdi);
 
         if (!File.Exists(kayit))
@@ -145,9 +193,8 @@ public static class Cop
     }
 
     /// <summary>Bir ogeyi eski yerine geri koyar.</summary>
-    public static IslemRaporu GeriYukle(string kok, CopOgesi oge)
+    public static IslemRaporu GeriYukle(string cop, CopOgesi oge)
     {
-        string cop = Yolu(kok);
         string kaynak = IcerdekiYol(cop, oge);
 
         if (!Var(kaynak))
@@ -188,10 +235,8 @@ public static class Cop
     }
 
     /// <summary>Bir ogeyi KALICI siler. Geri donusu yoktur.</summary>
-    public static IslemRaporu KaliciSil(string kok, CopOgesi oge)
+    public static IslemRaporu KaliciSil(string cop, CopOgesi oge)
     {
-        string cop = Yolu(kok);
-
         try
         {
             string kutu = WindowsYolu.Birlestir(cop, oge.No);

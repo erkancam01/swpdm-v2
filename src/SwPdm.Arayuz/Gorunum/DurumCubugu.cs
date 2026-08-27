@@ -83,8 +83,12 @@ internal sealed class DurumCubugu : StatusStrip
         _sag.Text = string.Empty;
     }
 
-    /// <summary>Kok klasor acildi.</summary>
-    internal void Kok(string yol) => _sol.Text = yol;
+    /// <summary>
+    /// Kok klasor acildi. Sol tarafi BOSALTIR: yol artik agacin ustundeki
+    /// yol cubugunda duruyor ve orada TIKLANABILIR. Ayni bilgiyi iki yerde
+    /// gostermek ikinci kopyadir (CLAUDE.md 8) ve gozu boler.
+    /// </summary>
+    internal void KokAcildi() => _sol.Text = string.Empty;
 
     /// <summary>Agacta bir dosya secildi.</summary>
     internal void Secildi(DosyaOgesi dosya)

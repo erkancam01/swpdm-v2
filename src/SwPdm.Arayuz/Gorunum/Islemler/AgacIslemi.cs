@@ -16,12 +16,18 @@ namespace SwPdm.Arayuz.Gorunum;
 /// klasoru, o da yoksa kok. Yeni klasor buraya acilir.
 /// </param>
 /// <param name="AramaKipinde">Agac su an arama sonucu mu gosteriyor.</param>
-/// <param name="Kok">Acik olan kok klasor. Cop kutusu bunun icinde yasiyor.</param>
+/// <param name="Kok">Acik olan kok klasor.</param>
+/// <param name="CopKlasoru">
+/// Silinenlerin gidecegi klasor. Kullanici ayarlardan degistirebiliyor;
+/// nerede oldugu TEK yerde cozuluyor ki islemler ayari okumak zorunda
+/// kalmasin (CLAUDE.md 8).
+/// </param>
 internal sealed record SecimBaglami(
     IReadOnlyList<object> Ogeler,
     string? EtkinKlasor,
     bool AramaKipinde,
-    string? Kok)
+    string? Kok,
+    string? CopKlasoru)
 {
     /// <summary>Secili tek oge; birden fazlaysa null.</summary>
     internal object? TekOge => Ogeler.Count == 1 ? Ogeler[0] : null;
@@ -52,12 +58,14 @@ internal sealed record SecimBaglami(
 /// <param name="Tazele">Islem bittiginde cagrilir; yol verilirse orasi secilir.</param>
 /// <param name="Bildir">Durum cubuguna yazilacak cumle.</param>
 /// <param name="Ilerleme">Uzun suren isin ilerlemeyi bildirdigi yuzey.</param>
+/// <param name="AgaciKapat">Butun dallari kapatip koke doner.</param>
 internal sealed record IslemBaglami(
     IWin32Window Sahip,
     SecimBaglami Secim,
     Action<string?> Tazele,
     Action<string> Bildir,
-    IIlerlemeYuzeyi Ilerleme);
+    IIlerlemeYuzeyi Ilerleme,
+    Action AgaciKapat);
 
 /// <summary>
 /// Uzun suren islerin ilerlemeyi bildirdigi yuzey.

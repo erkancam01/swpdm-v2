@@ -26,5 +26,6 @@ internal static class AgacIslemleri
         null,
         new GeriAlIslemi(),
         new YenileIslemi(),
+        new AgaciKapatIslemi(),
     ];
 }

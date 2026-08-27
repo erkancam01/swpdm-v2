@@ -21,6 +21,7 @@ internal sealed partial class AnaForm
     private SuzgecSeridi _suzgecler = null!;
     private SplitContainer _dikeyBolen = null!;
     private SecimliAgac _agac = null!;
+    private YolCubugu _yol = null!;
     private Label _altBolumBasligi = null!;
     private SplitContainer _altBolen = null!;
     private OnizlemePaneli _onizlemePaneli = null!;
@@ -78,6 +79,7 @@ internal sealed partial class AnaForm
         _dosyalarSekmesi.Controls.Add(_araclar);
 
         sekmeler.TabPages.Add(_dosyalarSekmesi);
+        _ayarlarSekmesi.Controls.Add(AyarlarSayfasiKur());
         sekmeler.TabPages.Add(_ayarlarSekmesi);
         return sekmeler;
     }
@@ -160,7 +162,11 @@ internal sealed partial class AnaForm
             HideSelection = false,
             ItemHeight = 18,
         };
+        // Yol cubugu agacin HEMEN USTUNDE. WinForms yerlestirme sirasi:
+        // once Fill olan, sonra kenara yapisan eklenir.
+        _yol = new YolCubugu { Dock = DockStyle.Top };
         bolen.Panel1.Controls.Add(_agac);
+        bolen.Panel1.Controls.Add(_yol);
 
         _altBolumBasligi = new Label
         {
