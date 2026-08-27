@@ -396,6 +396,20 @@ açıkken **0 uyarı** — CA1416 çıkmadı, `TargetPlatformMinVersion` doğru 
 → Windows'un içindeki motorlara (PDF, medya, OCR) **yerli bir kütüphane
 eklemeden** ulaşılabiliyor.
 
+> **DENENDİ, ÇALIŞTI, YİNE DE KULLANILMADI — karar 27.08.2026.**
+> PDF önizlemesi `Windows.Data.Pdf` ile yazıldı ve çalıştı; sonra **geri alındı.**
+> İki sebep, birincisi daha önemli:
+>
+> 1. **İlke:** bu uygulamanın önizleme sözü *"Windows ne gösteriyorsa onu
+>    göster"*. Kendi PDF motorumuzu gömünce Gezgin'in **göstermediği** bir
+>    önizlemeyi gösterir olduk — sözü kendimiz bozduk.
+> 2. **Bedel:** aşağıdaki ölçüm; paket 120 KB → 6,5 MB.
+>
+> Yerine kullanıcıya **ne yapacağı** söyleniyor (bir PDF okuyucu kurup Gezgin
+> küçük resimlerini açması). Bir kez kurar, hem burada hem Gezgin'de görür.
+> Yani bu bölüm *"WinRT kullanılabilir"* diye duruyor — **kullanılıyor diye
+> değil.**
+
 > **BEDELİ ÖNCE YANLIŞ YAZDIM** — §2'nin ihlali. *"Pakete tek bayt eklemez"*
 > dedim; sonra ölçtüm:
 >

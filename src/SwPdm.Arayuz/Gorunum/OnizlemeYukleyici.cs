@@ -25,6 +25,28 @@ internal sealed record OnizlemeSonucu(string Yol, Image? Resim, string? Sebep);
 /// </summary>
 internal sealed class OnizlemeYukleyici : IDisposable
 {
+    /// <summary>
+    /// PDF onizlemesi cikmadiginda gosterilecek yol gosterici metin.
+    ///
+    /// KARAR (Erkan, 27.08.2026): PDF motorunu uygulamaya GOMMUYORUZ.
+    /// Denendi ve calisti, ama iki sebeple geri alindi:
+    ///   1. Bu uygulamanin onizleme ilkesi "Windows ne gosteriyorsa onu goster".
+    ///      Kendi motorumuzu gomunce Gezgin'in gostermedigi bir onizlemeyi biz
+    ///      gosterir olduk - ilkeyi kendimiz kirdik.
+    ///   2. Olculdu: WinRT koprusu paketi 120 KB'den 6,5 MB'a cikariyordu
+    ///      (Microsoft.Windows.SDK.NET.dll, 24,9 MB).
+    /// Yerine kullaniciya NE YAPACAGI soyleniyor; bir kez kurar, hem burada
+    /// hem Gezgin'de onizleme gorur.
+    /// </summary>
+    private const string PdfOnizlemesiIcinYapilacaklar =
+        "PDF önizlemesi yok.\n\n"
+        + "Windows bu bilgisayarda PDF için önizleme üretmiyor "
+        + "(Gezgin'de de görünmüyordur).\n\n"
+        + "Ücretsiz Adobe Acrobat Reader kurup Tercihler → Genel →\n"
+        + "\"Windows Gezgini'nde PDF küçük resimlerini etkinleştir\"\n"
+        + "seçeneğini açarsanız önizleme burada da görünür.\n\n"
+        + "get.adobe.com/tr/reader";
+
     private readonly Thread _isParcacigi;
     private readonly SemaphoreSlim _uyandir = new(0);
     private readonly object _kilit = new();
@@ -102,25 +124,7 @@ internal sealed class OnizlemeYukleyici : IDisposable
             return new OnizlemeSonucu(yol, kabuktan, null);
         }
 
-        // 2) PDF ise Windows'un KENDI PDF motoru. Kabuk PDF icin onizleme
-        //    uretmiyor (olculdu: Gezgin de gostermiyor), o yuzden ilk sayfayi
-        //    kendimiz ciziyoruz. Tur bilgisi cekirdekten geliyor; uzanti
-        //    eslemesinin ikinci kopyasi yazilmiyor (CLAUDE.md 8).
-        if (DosyaTurleri.Tani(yol) == DosyaTuru.Pdf)
-        {
-            Bitmap? pdften = PdfOnizleme.Al(yol, boyut, out string? pdfSebebi);
-            if (pdften is not null)
-            {
-                return new OnizlemeSonucu(yol, pdften, null);
-            }
-
-            if (pdfSebebi is not null)
-            {
-                sebep = pdfSebebi;
-            }
-        }
-
-        // 3) YEDEK: dosyanin ICINDEKI gomulu onizleme. SOLIDWORKS kurulu
+        // 2) YEDEK: dosyanin ICINDEKI gomulu onizleme. SOLIDWORKS kurulu
         //    OLMAYAN bir makinede tek sansimiz bu.
         try
         {
@@ -143,6 +147,15 @@ internal sealed class OnizlemeYukleyici : IDisposable
                                          or IOException or NotSupportedException)
         {
             return new OnizlemeSonucu(yol, null, "Gömülü önizleme okunamadı: " + hata.Message);
+        }
+
+        // Onizleme yoksa KOSE YAZIP birakmiyoruz: PDF'te sebep genelde
+        // duzeltilebilir bir sey ve kullanici ne yapacagini bilmeli.
+        // CLAUDE.md 3: her istek bir yanit alir; "yok" demek yetmez, NEDEN
+        // yok ve ne yapilabilir de soylenir.
+        if (sebep is null && DosyaTurleri.Tani(yol) == DosyaTuru.Pdf)
+        {
+            sebep = PdfOnizlemesiIcinYapilacaklar;
         }
 
         return new OnizlemeSonucu(yol, null, sebep);
