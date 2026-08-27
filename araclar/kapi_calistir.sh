@@ -182,6 +182,10 @@ mkdir -p "$ORNEK"/{1,2,33,222,"alt klasor"}
 # Kokte de dosya olsun: ekran goruntusunde simgeler ve adlar gorunsun.
 : > "$ORNEK/Govde.SLDASM"
 : > "$ORNEK/Kapak.SLDPRT"
+# Icinde GERCEK gomulu onizleme olan bilesik belge. Wine'da kabuk onizleme
+# saglayicisi yok; bu dosya yedek yolu (dosyanin icindeki onizleme) gorunur
+# kilar - yoksa kapi yalnizca bos bir kutu olcerdi.
+cp "$KOK/araclar/ornek-veri/ornek.sldprt" "$ORNEK/Onizlemeli.SLDPRT"
 : > "$ORNEK/Kapak.SLDDRW"
 : > "$ORNEK/katalog.pdf"
 : > "$ORNEK/okubeni.txt"

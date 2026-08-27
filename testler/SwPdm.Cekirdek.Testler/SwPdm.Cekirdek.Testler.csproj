@@ -28,4 +28,11 @@
     <ProjectReference Include="..\..\src\SwPdm.Cekirdek\SwPdm.Cekirdek.csproj" />
   </ItemGroup>
 
+  <!-- Sentetik bilesik belge: BilesikDosya'nin gercek bir dosyaya karsi
+       olculebilmesi icin. araclar/ornek-veri/bilesik_dosya_uret.py ile
+       uretildi ve bagimsiz bir okuyucuyla (python olefile) dogrulandi. -->
+  <ItemGroup>
+    <None Include="veri\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

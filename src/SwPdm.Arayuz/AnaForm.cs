@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -35,7 +36,11 @@ internal sealed partial class AnaForm : Form
     private readonly AgacDoldurucu _doldurucu;
     private readonly string? _acilistaAcilacakKok;
     private readonly System.Windows.Forms.Timer _aramaGecikmesi = new() { Interval = AramaGecikmesiMs };
+    private OnizlemeYukleyici? _onizlemeYukleyici;
     private CancellationTokenSource? _aramaIptali;
+
+    /// <summary>Onizlemesi beklenen dosya. Gec gelen sonuclari elemek icin.</summary>
+    private string? _onizlemesiBeklenen;
 
     /// <summary>Arama kutusunu KOD degistirdiginde arama tetiklenmesin diye.</summary>
     private bool _araKutusunuKodDegistiriyor;
@@ -72,6 +77,11 @@ internal sealed partial class AnaForm : Form
             }
         };
 
+        // Onizlemeler ayri bir STA is parcaciginda yuklenir: ag surucusunde
+        // saniyeler surebilir ve arayuz donmamali (CLAUDE.md 4: kabuk
+        // onizleme saglayicilari STA istiyor, ThreadPool MTA'dir).
+        _onizlemeYukleyici = new OnizlemeYukleyici(OnizlemeGeldi);
+
         _onizleme.Temizle();
         _durumSol.Text = "Klasör seçilmedi.";
         _durumSag.Text = string.Empty;
@@ -95,6 +105,7 @@ internal sealed partial class AnaForm : Form
     {
         _aramaGecikmesi.Stop();
         _aramaGecikmesi.Dispose();
+        _onizlemeYukleyici?.Dispose();
         _aramaIptali?.Cancel();
         _aramaIptali?.Dispose();
         base.OnFormClosed(e);
@@ -235,6 +246,7 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(dugum))
         {
             case DosyaOgesi dosya:
+                OnizlemeIste(dosya);
                 _onizleme.UstBilgiyiYaz(
                     ad: dosya.Ad,
                     tur: DosyaTurleri.Adi(dosya.Tur),
@@ -254,6 +266,8 @@ internal sealed partial class AnaForm : Form
                 break;
 
             case KlasorOgesi klasor:
+                _onizlemesiBeklenen = null;
+                _onizleme.MesajGoster("Klasör");
                 _onizleme.UstBilgiyiYaz(
                     ad: klasor.Ad,
                     tur: "Klasör",
@@ -265,8 +279,63 @@ internal sealed partial class AnaForm : Form
                 break;
 
             default:
+                _onizlemesiBeklenen = null;
                 _onizleme.Temizle();
                 break;
+        }
+    }
+
+    // --------------------------------------------------------- onizleme
+
+    private void OnizlemeIste(DosyaOgesi dosya)
+    {
+        _onizlemesiBeklenen = dosya.Yol;
+
+        // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
+        // de bunu soyluyoruz ki kullanici bekledigini bilsin.
+        _onizleme.MesajGoster("Önizleme yükleniyor…");
+
+        Size kutu = _onizleme.KutuBoyutu;
+        var istenen = new Size(Math.Max(kutu.Width, 256), Math.Max(kutu.Height, 256));
+        _onizlemeYukleyici?.Iste(dosya.Yol, istenen);
+    }
+
+    /// <summary>
+    /// Onizleme yukleyicinin is parcacigindan gelir - arayuze GECMEDEN
+    /// hicbir denetime dokunulamaz.
+    /// </summary>
+    private void OnizlemeGeldi(OnizlemeSonucu sonuc)
+    {
+        if (IsDisposed || !IsHandleCreated)
+        {
+            sonuc.Resim?.Dispose();
+            return;
+        }
+
+        try
+        {
+            BeginInvoke(() =>
+            {
+                // Kullanici baska bir dosyaya gectiyse bu sonuc BAYAT: gostermek
+                // yanlis dosyanin onizlemesini dogru sanmaya yol acar.
+                if (!string.Equals(_onizlemesiBeklenen, sonuc.Yol, StringComparison.OrdinalIgnoreCase))
+                {
+                    sonuc.Resim?.Dispose();
+                    return;
+                }
+
+                if (sonuc.Resim is not null)
+                {
+                    _onizleme.Onizleme = sonuc.Resim;
+                    return;
+                }
+
+                _onizleme.MesajGoster(sonuc.Sebep ?? "Önizleme yok");
+            });
+        }
+        catch (Exception hata) when (hata is ObjectDisposedException or InvalidOperationException)
+        {
+            sonuc.Resim?.Dispose();   // pencere tam bu sirada kapandi
         }
     }
 

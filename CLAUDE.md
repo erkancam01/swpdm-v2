@@ -111,7 +111,20 @@ olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
   klasör bir daha silinemiyor. `RestoreDirectory = true` + kutu kapandıktan
   sonra çalışma klasörünü sabitle.
 - **Kabuk önizleme sağlayıcıları STA ister.** `ThreadPool` (MTA) içinden
-  çağırınca `E_FAIL` (0x80004005).
+  çağırınca `E_FAIL` (0x80004005). → Önizleme yüklemek için **kendi STA iş
+  parçacığını** kur; `Task.Run` ile olmuyor.
+- **`Image.FromStream` akışı SAHİPLENİYOR.** Çözümlemeyi tembel yapıyor; akış
+  `using` ile kapanınca resim **çizilmiyor** — ama `null` da olmuyor, yani
+  "önizleme yok" dalına da girilmiyor. Belirti tamamen sessiz: **boş kutu,
+  sebep yok.** Bağımsız bir kopya alınmalı (`new Bitmap(resim)`).
+- **`Image.FromHbitmap` ALFA KANALINI yok sayıyor.** Kabuk küçük resimleri
+  32 bit **önçarpımlı alfa** ile döndürüyor; `FromHbitmap` ile alınanda saydam
+  kısımlar çöpe dönüyor (Wine'da gri gradyan, Windows'ta genelde siyah köşe).
+  `GetObject` ile `bmBits` okunup `Format32bppPArgb` olarak kopyalanmalı.
+- **Kabuk `S_OK` dönüp TAMAMEN SAYDAM bir bit eşlem verebiliyor** (ölçüldü).
+  Bunu "önizleme var" saymak iki kez yanlış: boş kutu önizleme diye gösterilir
+  **ve** dosyanın içindeki gömülü önizlemeye hiç geçilmez. Gelen resmin en az
+  bir saydam olmayan pikseli var mı, bakılmalı.
 - **`.bat` iki ayrı şekilde SESSİZCE ölüyor** — ikisinde de görülen aynı:
   *pencere açılıyor, hiçbir şey yazmadan kapanıyor.* Hata yok, günlük yok.
   1. **CRLF şart.** LF'e düşen bir `.bat`'ı `cmd.exe` yarıda kesiyor.

@@ -10,6 +10,11 @@ BU SURUMDE CALISAN
   - ANLIK ARAMA: yazdikca suzuluyor, Enter beklemiyor (Enter beklemeden
     hemen aramak isterseniz yine calisiyor). Alt klasorlere de iner,
     arka planda kosar, aramadan cikinca acik dallariniz geri gelir
+  - ONIZLEME: sectiginiz dosyanin onizlemesi altta gorunur.
+    Once Windows'un kendi onizlemesi denenir - Gezgin'de ne goruyorsaniz o
+    (SOLIDWORKS kuruluysa gercek parca goruntusu). Kabuk vermezse dosyanin
+    ICINDEKI gomulu onizleme okunur. Ikisi de yoksa "Onizleme yok" yazar -
+    bos kutu birakilmaz.
   - Secince ust bilgi: ad, tur, boyut, degistirme tarihi
   - TUM dosyalar gorunur: tanimadigimiz uzantilar ve SOLIDWORKS'un
     gizli "~$" kilit dosyalari dahil
@@ -19,7 +24,6 @@ BU SURUMDE CALISMAYAN - bilerek
     Oraya "0" yazmak "bu parcayi kimse kullanmiyor" demek olurdu ve
     bu yanlis bilgi saglam dosya sildirebilir. Bilmiyorsak bilmedigimizi
     yaziyoruz.
-  - Onizleme kutusu bos - dosyanin kendi kucuk resmi henuz okunmuyor
   - Referans listesi bos - referanslar henuz cozulmuyor
   - Cop ve geri al dugmeleri SOLUK - ne yapacaklari henuz tanimlanmadi
   - Ayarlar sekmesi bos

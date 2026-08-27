@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace SwPdm.Arayuz.Gorunum;
@@ -57,11 +59,51 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         Controls.Add(bilgi, 0, 1);
     }
 
+    /// <summary>Onizleme kutusunun su anki boyutu; istenecek resim olcusu.</summary>
+    internal Size KutuBoyutu => _resim.ClientSize;
+
     /// <summary>Onizleme resmi. null verilirse kutu bos kalir.</summary>
     internal Image? Onizleme
     {
         get => _resim.Image;
-        set => _resim.Image = value;
+        set
+        {
+            _resim.Image?.Dispose();   // eski resim GDI nesnesi tutar
+            _resim.Image = value;
+        }
+    }
+
+    /// <summary>
+    /// Kutunun ORTASINA bir cumle yazar.
+    ///
+    /// CLAUDE.md 3: bos bir kutu "bu dosyanin onizlemesi yok" demek DEGILDIR -
+    /// yukleniyor da olabilir, okunamamis da. Sebebi yazmak, kullanicinin
+    /// yanlis sonuc cikarmasini engelliyor. Yeni bir denetim eklemiyoruz:
+    /// tasarim degismesin diye yazi resmin icine ciziliyor.
+    /// </summary>
+    internal void MesajGoster(string cumle)
+    {
+        int genislik = Math.Max(_resim.ClientSize.Width, 120);
+        int yukseklik = Math.Max(_resim.ClientSize.Height, 60);
+
+        var bmp = new Bitmap(genislik, yukseklik);
+        using (Graphics g = Graphics.FromImage(bmp))
+        {
+            g.Clear(Renkler.OnizlemeArkaPlan);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            using var firca = new SolidBrush(Renkler.UstBilgiYazi);
+            using var bicim = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center,
+            };
+
+            g.DrawString(cumle, Font, firca, new RectangleF(6, 6, genislik - 12, yukseklik - 12), bicim);
+        }
+
+        Onizleme = bmp;
     }
 
     /// <summary>
