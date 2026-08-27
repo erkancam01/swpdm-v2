@@ -244,18 +244,49 @@ internal sealed class AgacDoldurucu
 
     private bool TureUyuyorMu(DosyaTuru tur) => _turSuzgeci is null || _turSuzgeci == tur;
 
+    /// <summary>
+    /// Arama sonucunda klasoru koke gore gosterir. Kokun kendisi icin tam yol
+    /// yazmak ekrani tasiriyordu; kokun ADI yeter.
+    /// </summary>
     private string GoreceliYol(string klasor)
     {
-        if (Kok is null || klasor.Length <= Kok.Length)
+        if (Kok is null)
         {
             return klasor;
+        }
+
+        if (klasor.Length <= Kok.Length)
+        {
+            return WindowsYolu.DosyaAdi(Kok);
         }
 
         return klasor[Kok.Length..].TrimStart(WindowsYolu.Ayirici, WindowsYolu.EgikAyirici);
     }
 
-    private static string Ozet(KlasorIcerigi icerik)
-        => $"{icerik.Klasorler.Count} klasör · {icerik.Dosyalar.Count} dosya";
+    /// <summary>
+    /// Durum cumlesi. Suzgec dosya GIZLIYORSA bunu soyler.
+    ///
+    /// CLAUDE.md 3: gizlenen dosyayi hic soylememek, kullaniciya klasorun
+    /// oldugundan bos gorunmesine yol acar. "1 dosya" yazip 4 tanesini
+    /// susmak, "1 / 5 dosya" yazmakla ayni sey degildir.
+    /// </summary>
+    private string Ozet(KlasorIcerigi icerik)
+    {
+        int gorunen = 0;
+        foreach (DosyaOgesi dosya in icerik.Dosyalar)
+        {
+            if (TureUyuyorMu(dosya.Tur))
+            {
+                gorunen++;
+            }
+        }
+
+        string dosyaKismi = gorunen == icerik.Dosyalar.Count
+            ? $"{gorunen} dosya"
+            : $"{gorunen} / {icerik.Dosyalar.Count} dosya (süzgeç açık)";
+
+        return $"{icerik.Klasorler.Count} klasör · {dosyaKismi}";
+    }
 
     private static string AramaOzeti(AramaSonucu sonuc)
     {
