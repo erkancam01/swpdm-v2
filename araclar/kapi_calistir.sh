@@ -121,8 +121,29 @@ UYGULAMA_LOG="$CALISMA/uygulama.log"
 GORUNTU="$CALISMA/ekran.png"
 : > "$UYGULAMA_LOG"
 
-pkill -f "Xvfb :$EKRAN_NO" > /dev/null 2>&1
-pkill -f "$AD.exe"         > /dev/null 2>&1
+# =========================== OLCULMUS HATA ===========================
+# "pkill -f" KOMUT SATIRININ TAMAMINA bakiyor - yalnizca surec adina degil.
+# Burada "pkill -f SwPdm.exe" yaziyordu ve bir gun cagiran kabugu OLDURDU:
+# o kabugun komut satirinda (uzun bir commit mesajinda) "SwPdm.exe" gecıyordu.
+# Belirti tamamen sessizdi: komut exit 144 ile dustu, hicbir hata yazmadi.
+#
+# Olculdu: pgrep -f <desen>  -> cagiran kabugu ESLIYOR
+#          pgrep -x <desen>  -> ESLEMIYOR (yalnizca surec ADI)
+# Bu yuzden eski surecler ADA gore bulunuyor, komut satirina gore degil;
+# ayrica kendi surecimiz ve atalarimiz elenmis oluyor.
+# =====================================================================
+eskileri_oldur() {
+  local surec_adi="$1" istenen_desen="${2:-}" pid
+  for pid in $(pgrep -x "$surec_adi" 2>/dev/null); do
+    [ "$pid" = "$$" ] && continue
+    if [ -z "$istenen_desen" ] || grep -qa -- "$istenen_desen" "/proc/$pid/cmdline" 2>/dev/null; then
+      kill "$pid" > /dev/null 2>&1
+    fi
+  done
+}
+
+eskileri_oldur Xvfb ":$EKRAN_NO"
+eskileri_oldur "$AD.exe"
 sleep 1
 
 # Onyuklemenin bittigini beklemek. DURUST NOT: bu bekleme, yukaridaki
@@ -150,7 +171,7 @@ sleep 4
 temizle() {
   kill "$UYG_PID"  > /dev/null 2>&1
   kill "$XVFB_PID" > /dev/null 2>&1
-  pkill -f winedbg > /dev/null 2>&1
+  eskileri_oldur winedbg.exe
 }
 trap temizle EXIT
 

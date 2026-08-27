@@ -1,0 +1,28 @@
+BU SURUMDE CALISAN
+  - Klasor ac (arac cubugundaki klasor dugmesi ya da Ctrl+O)
+  - Agac: gercek klasorler ve dosyalar, (n) sayaci, tur simgeleri
+    Klasorler ancak ACILDIGINDA taranir - ag surucusunde donmasin diye
+  - Siralama Gezgin gibi: 1, 2, 33, 222
+  - Tur suzgeci: Tumu / Montaj / Parca / Teknik resim / PDF
+  - Arama: kutuya yazip ENTER. Alt klasorlere de iner, arka planda kosar
+  - Secince ust bilgi: ad, tur, boyut, degistirme tarihi
+  - TUM dosyalar gorunur: tanimadigimiz uzantilar ve SOLIDWORKS'un
+    gizli "~$" kilit dosyalari dahil
+
+BU SURUMDE CALISMAYAN - bilerek
+  - "Kullanan:" alani "taranmadi" yazar. Referans indeksi HENUZ YOK.
+    Oraya "0" yazmak "bu parcayi kimse kullanmiyor" demek olurdu ve
+    bu yanlis bilgi saglam dosya sildirebilir. Bilmiyorsak bilmedigimizi
+    yaziyoruz.
+  - Onizleme kutusu bos - dosyanin kendi kucuk resmi henuz okunmuyor
+  - Referans listesi bos - referanslar henuz cozulmuyor
+  - Cop ve geri al dugmeleri SOLUK - ne yapacaklari henuz tanimlanmadi.
+    Tiklayip hicbir sey olmamasi yerine devre disi birakildilar.
+  - Ayarlar sekmesi bos
+  - Tasima / yeniden adlandirma YOK
+
+DENERKEN BAKILACAKLAR
+  - Ag surucusunde (\\10.34.1.250\ortak) acilis hizi nasil?
+  - Buyuk bir klasorde arama ne kadar suruyor?
+  - Yazi tipi ve hizalamalar Windows'ta nasil gorunuyor?
+    (Buradaki denemeler Wine altinda kosuyor, Segoe UI yok)

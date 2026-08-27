@@ -26,6 +26,13 @@ ihtimalle dosya kaybettirir.
 Dal **`main`**. Commit mesajları Türkçe ve **neden** değiştiğini yazar.
 `--force`, `rebase`, geçmişi yeniden yazma **YOK**. Depo private.
 
+**Her adımın sonunda çalıştırılabilir bir zip verilir** (`araclar/paket.sh`).
+Erkan uygulamayı kendi makinesinde deniyor; Wine'ın ölçemediği her şeyi
+(yazı tipi, tema, ağ sürücüsü hızı, gerçek SOLIDWORKS simgeleri) yalnızca o
+görebiliyor. Pakete giren `SURUM-NOTU.txt` **neyin çalıştığını ve neyin
+bilerek çalışmadığını** yazar — §3'ün gereği: çalışmayan bir şeyi
+söylememek, kullanıcının onu denemesine ve bozuk sanmasına yol açar.
+
 ---
 
 ## 2. ÖLÇ, TAHMİN ETME — en pahalı ders
@@ -94,6 +101,12 @@ olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
   `32 ERROR_SHARING_VIOLATION` (açık tutamak) · `5 ERROR_ACCESS_DENIED`
   (salt-okunur ya da izin). **`ex.Message` bunları ayırt edemiyor** —
   yerelleştirilmiş metin. Win32 kodunu oku.
+- **`pkill -f` / `pgrep -f` KOMUT SATIRININ TAMAMINA bakıyor**, yalnızca süreç
+  adına değil. Bir betikteki `pkill -f "SwPdm.exe"`, komut satırında o metin
+  geçtiği için **çağıran kabuğu öldürdü** — metin uzun bir commit mesajının
+  içindeydi. Belirti tamamen sessiz: komut `exit 144` ile düşüyor, hiçbir hata
+  yazmıyor. `pgrep -x` (yalnızca süreç adı) eşlemiyor; ölçüldü. Eski süreçler
+  **ada** göre aranır, gerekiyorsa `/proc/<pid>/cmdline` ayrıca süzülür.
 - **Kabuk dosya iletişim kutuları sürecin çalışma klasörünü kaydırıyor** ve o
   klasör bir daha silinemiyor. `RestoreDirectory = true` + kutu kapandıktan
   sonra çalışma klasörünü sabitle.
@@ -368,6 +381,7 @@ piksel piksel karşılaştırılır. Aynıysa kayıt yok demektir → çizilmiş
 ### Kapılar
 
 ```
+araclar/paket.sh               # Erkan'in deneyecegi zip (~120 KB)
 araclar/kapilar.sh [--kur]     # üçünü sırayla koşar
 ├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir

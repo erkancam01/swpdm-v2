@@ -23,6 +23,7 @@ command -v dotnet   > /dev/null 2>&1 || EKSIK+=("dotnet-sdk-8.0")
 command -v Xvfb     > /dev/null 2>&1 || EKSIK+=("xvfb")
 command -v xwininfo > /dev/null 2>&1 || EKSIK+=("x11-utils")
 command -v import   > /dev/null 2>&1 || EKSIK+=("imagemagick")
+command -v zip      > /dev/null 2>&1 || EKSIK+=("zip")          # araclar/paket.sh
 if [ ! -x /usr/lib/wine/wine64 ] && ! command -v wine64 > /dev/null 2>&1; then
   EKSIK+=("wine64")
 fi
