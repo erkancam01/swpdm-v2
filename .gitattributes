@@ -1,0 +1,13 @@
+# Windows toplu is (.bat) dosyalari CRLF satir sonu ZORUNLU ister.
+# Saf LF ile cmd.exe dosyayi yarida birakiyor; pencere aciliyor ve
+# aninda kapaniyor - hicbir hata mesaji gostermeden. (Bu vaka yasandi.)
+#
+# -text = git hicbir satir sonu donusumu yapmasin, baytlar oldugu gibi kalsin.
+# Boylece Linux'ta uretilse bile depoda ve ZIP'te CRLF olarak durur.
+*.bat -text
+
+# Kaynak dosyalar normal metin olarak islenir.
+*.cs   text
+*.csproj text
+*.md   text
+*.json text
