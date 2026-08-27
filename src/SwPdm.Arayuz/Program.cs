@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace SwPdm.Arayuz;
@@ -9,7 +10,14 @@ internal static class Program
     private static void Main(string[] argumanlar)
     {
         // Bu ucu ILK pencereden ONCE cagrilmali.
-        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        // OLCULDU (27.08.2026): Wine'da PerMonitorV2 ile ContextMenuStrip
+        // acmak uygulamayi COKERTIYOR:
+        //   Win32Exception 0x80004005 "Failed to get thread's DpiAwareness context"
+        // Wine GetThreadDpiAwarenessContext'i tasimiyor. Gercek Windows'ta boyle
+        // bir sorun yok ve PerMonitorV2 dogru secim - yuksek DPI ekranda yazilar
+        // bulanik cikmasin diye. O yuzden DUSURME YALNIZCA WINE'DA yapiliyor;
+        // Windows'ta tek satir davranis degismiyor.
+        Application.SetHighDpiMode(WineIcinde() ? HighDpiMode.DpiUnaware : HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
@@ -59,5 +67,22 @@ internal static class Program
         Console.Error.WriteLine(baslik + ": " + metin);
 
         MessageBox.Show(metin, baslik, MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+
+    /// <summary>
+    /// Wine altinda miyiz. Wine'in ntdll'i "wine_get_version" disa aktarimini
+    /// tasir; gercek Windows tasimaz. Tek kullanimi yukaridaki DPI kararidir.
+    /// </summary>
+    private static bool WineIcinde()
+    {
+        try
+        {
+            return NativeLibrary.TryLoad("ntdll.dll", out IntPtr ntdll)
+                && NativeLibrary.TryGetExport(ntdll, "wine_get_version", out _);
+        }
+        catch (Exception hata) when (hata is DllNotFoundException or EntryPointNotFoundException)
+        {
+            return false;
+        }
     }
 }

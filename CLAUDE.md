@@ -15,8 +15,8 @@ teknik resim referanslarını koruyan masaüstü uygulaması.
 > §11 depodaki gerçek dosyalara işaret ediyor; oradaki adlar değişirse §11 de
 > değişmeli. §1–§10 hâlâ mimariden bağımsız ve bayatlayamaz.
 >
-> **§1b Erkan'ın koyduğu kalıcı tasarım varsayılanıdır** — her yeni kod ona
-> göre yazılır, ayrıca sorulmaz.
+> **§1b ve §1c Erkan'ın koyduğu kalıcı varsayılanlardır** — §1b her yeni kodun
+> tasarımı, §1c takılınca ne yapılacağı. İkisi de ayrıca sorulmaz.
 
 ---
 
@@ -69,6 +69,35 @@ Bundan çıkan üç kural:
 > olmasını *bir yorum satırı* sağlıyorsa, o hizalama er geç kayar ve hata
 > **sessizdir** — yanlış simge çizilir, hiçbir şey patlamaz. İkinci listeyi
 > birinciden üret; o zaman kayacak bir şey kalmaz.
+
+### 1c — Takılınca BİR kez dene, sonra GEÇ ve söyle
+
+Erkan, 27.08.2026: *"takıldığın yeri düzeltmek için birden fazla deneme yapma,
+atla sonraki özelliğe geç. En son tüm paketi ver ve çalışmayabilecek
+özellikleri söyle — belki bende çalışır, veya göz ardı edilebilir bir
+özelliktir, pas geçerim. Bunu tüm projeler için yap."*
+
+**Bu da kabul edilmiş varsayılan.** Gerekçesi sağlam: bu ortam Wine, Erkan'ın
+makinesi gerçek Windows. Burada saatlerce kovaladığım bir belirti orada hiç
+olmayabilir (§11'de Wine'ın ölçemedikleri sayılı). Kovalamanın bedeli kesin,
+getirisi belirsiz.
+
+Uygulaması:
+
+1. **Bir onarım denemesi.** Tutmazsa kovalama durur. Sebebi bulmuş olmak
+   yetmez — *tutmayan* onarım da denemedir.
+2. **Bulunanlar yazılır, atılmaz.** Elenen hipotezler ve sıradaki ölçüm
+   commit mesajına geçer; sonra bakan (ya da ben) sıfırdan başlamaz.
+3. **Sonraki özelliğe geçilir.** Takılan yer bir sonrakini engellemiyorsa
+   sıra beklemez.
+4. **Paket YİNE DE verilir** — bu §1a'yı bozmaz, çünkü:
+5. **`SURUM-NOTU.txt` çalışmayabilecekleri AÇIKÇA sayar.** "Şu özellik bende
+   çalışmadı, sende çalışabilir" demek §3'ün ta kendisidir; sessizce koymak
+   yalandır.
+
+> **Bu kural §1a'nın yerine geçmez.** *Çalışan* bir şeyi bozan bir değişiklik
+> yine geri alınır. Atlanan şey **yeni ve hiç çalışmamış** bir özelliktir;
+> bozulmuş bir özellik değil.
 
 ---
 
@@ -507,6 +536,27 @@ maddesi. Konum, boyutu bulan **aynı satırdan** okunmalı.
 > **çalışıyor ve iz bırakmıyor** — ölçüldü: fare bırakıldıktan sonra ağaç
 > alanında çerçeve renginden tek piksel kalmadı.
 
+### Wine'da `ContextMenuStrip` uygulamayı ÇÖKERTİYOR
+
+Sağ tık menüsü açılınca:
+
+```
+Win32Exception 0x80004005  "Failed to get thread's DpiAwareness context"
+```
+
+Wine `GetThreadDpiAwarenessContext`'i taşımıyor; WinForms'un `ToolStripDropDown`
+ölçekleme yolu onu çağırıyor. Gerçek Windows'ta böyle bir sorun yok.
+
+`HighDpiMode.DpiUnaware`'e düşürmek **denendi, ÇÖZMEDİ** (§1c: bir deneme).
+Düşürme yine de kodda duruyor ama **yalnızca Wine'da** — gerçek Windows
+`PerMonitorV2` ile çalışmaya devam ediyor, yani orada tek satır davranış
+değişmiyor.
+
+→ **Sağ tık menüsü burada ÖLÇÜLEMEZ.** Aynı işlemlerin kısayolları
+(`Ctrl+Shift+N` · `Delete` · `F2` · `Ctrl+X` · `Ctrl+V`) ölçüldü ve **hepsi
+çalıştı**; yani menü öğelerinin çağırdığı kod doğru, ölçülemeyen yalnızca
+menünün kendisi.
+
 ### Wine'ın ÖLÇMEDİĞİ
 
 - **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.
@@ -536,6 +586,11 @@ dosyasında** duruyor:
 | arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
 | çoklu seçim (Ctrl · Shift · dikdörtgen) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
+| sürükleyerek taşıma | `Arayuz/Gorunum/Agac/SurukleBirak.cs` |
+| sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
+| **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
+| yeni klasör · adlandır · sil · taşı | `Islemler/<işlem>.cs` (her biri tek dosya) |
+| diskteki dosya işlemleri + hata sebebi | `Cekirdek/DosyaIslemleri.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |

@@ -1,29 +1,61 @@
-BU PAKETTE DAVRANIS DEGISMEDI - yalnizca kodun yapisi toparlandi.
+BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
 
-  Erkan'in koydugu kural artik varsayilan: BIR OZELLIK TEK YERDE YASAR VE
-  TEK HAMLEDE SILINEBILIR. Olcut tek soru: "bu ozelligi kaldir" dendiginde
-  kac dosyaya dokunuluyor?
+  Artik agacta gercek dosya islemleri var. Hepsi COKLU SECIMLE calisir.
 
-  Buna gore ayrilanlar - her biri artik kendi dosyasinda:
-    onizleme · arama · agac · cift tiklamayla dosya acma · klasor secme ·
-    alttaki durum yazilari · taninan dosya turleri
-  AnaForm 493 satirdan 160 satira indi; artik yalnizca BAGLIYOR.
+  SECME (Gezgin'deki gibi)
+    - Fareyle DIKDORTGEN cizerek (bos alandan basla, surukle)
+    - Ctrl + tik: tek tek ekle/cikar
+    - Shift + tik: aralik
+    - Ctrl+A: gorunen her seyi sec
+    Coklu secimde altta "N oge secildi" ve toplam boyut yazar. Klasor de
+    seciliyse boyut TAM DEGILDIR ve bunu soyler - klasorun ici taranmadi.
 
-  En onemli duzeltme: yeni bir dosya turu eklemek 4 dosyada 5 yere satir
-  ekletiyordu ve iki listenin ayni sirada kalmasini yalnizca bir YORUM
-  sagliyordu - kaysa yanlis simge cizilirdi, hicbir sey patlamazdi.
-  Artik simge listesi ve suzgec seridi tur listesinden URETILIYOR.
-  Olculdu: cekirdege "STEP" turu eklendi, baska hicbir dosyaya dokunulmadi,
-  suzgec seridinde STEP dugmesi kendiliginden belirdi. Sonra geri alindi.
+  ISLEMLER (sag tik menusu VE kisayol)
+    - Yeni klasor .......... Ctrl+Shift+N   (cakisirsa "Yeni klasor (2)")
+    - Yeniden adlandir ..... F2            (tek oge seciliyken)
+    - Sil .................. Delete        (arac cubugundaki "Cop" dugmesi de)
+    - Kes / Yapistir ....... Ctrl+X / Ctrl+V
+    - Surukle-birak ........ secimi bir klasorun uzerine birak
 
-  Ayrica bir dosyanin 600 satiri asmasini engelleyen yeni bir kapi eklendi -
-  v1'de tek bir sinif 9.918 satira cikip bolunemez olmustu.
+  SILME KALICI DEGIL: Windows Cop Kutusu'na gider, geri alinabilir. Kalici
+  silme BILEREK yazilmadi.
 
-  Olculdu: ayni 88 test geciyor, gomulu onizleme ayni (401 renk), PDF metni
-  ayni, suzgec acik dali yine kapatmiyor, arama yine Enter'siz calisiyor,
-  durum cubugu ayni yaziyor.
-  Yani bu paketi bir onceki gibi denerseniz FARK GORMEMENIZ gerekir; bir
-  fark gorurseniz o bir HATADIR, lutfen soyleyin.
+  Silmeden ve tasimadan once ne olacagi tek tek yazilir ve onaylatilir;
+  varsayilan dugme "Vazgec"tir. Bir islem yarim kalirsa NE OLDU NE OLMADI
+  tek tek listelenir - "bazilari olmadi" denmez.
+
+  Klasor silinemezse sebebi AYIRT EDILIR: ici bos degil (SOLIDWORKS'un gizli
+  "~$" kilit dosyalari dahil) · baska program acik tutuyor · izin yok.
+
+*** SIZDE CALISMAYABILIR - BENDE OLCEMEDIM ***
+
+  1. SAG TIK MENUSU
+     Benim test ortamim Wine (Linux'ta Windows taklidi). Orada sag tik menusu
+     acilirken uygulama COKUYOR: Wine bir Windows DPI islevini tasimiyor.
+     GERCEK Windows'ta bu sorunun olmamasi gerekiyor.
+     Bir duzeltme denendi, ise yaramadi; kovalamayi biraktim.
+     ONEMLI: menunun CAGIRDIGI kodun tamami ayri ayri OLCULDU ve calisti -
+     Ctrl+Shift+N ile klasor gercekten olustu, Delete ile dosya gercekten
+     cop kutusuna gitti, Ctrl+X / Ctrl+V ile klasor gercekten tasindi, F2
+     kutusu gercekten acildi. Yani calismayan sey islemler degil, menunun
+     kendisi.
+     LUTFEN DENEYIN: sag tik menusu sizde aciliyor mu? Acilmiyorsa hepsini
+     kisayolla yapabilirsiniz.
+
+  2. COP KUTUSU
+     Wine'in cop kutusu gercek Windows kabugu degil. Burada silme calisti ama
+     dosyanin gercekten Windows Cop Kutusu'nda gorunup gorunmeyecegini
+     BURADAN goremem. Silip cop kutusuna bakin.
+
+  3. SUZGEC DUGMESI - BILINEN HATA
+     Agacta bir ogeye tikladiktan SONRA ust taraftaki tur suzgeci
+     (Montaj/Parca/...) dugmesine basmak bende islemiyordu. Once suzgece
+     basip sonra agaca tiklamak calisiyor. Dort sebep olcumle elendi, hala
+     bulamadim. Sizde de oluyorsa soyleyin; olmuyorsa Wine'a ozgudur.
+
+  4. SURUKLE-BIRAK
+     Kod yazildi ama Wine'da fare suruklemesini guvenilir taklit edemedigim
+     icin OLCEMEDIM. Kes/Yapistir ayni tasima kodunu kullaniyor ve O OLCULDU.
 
 BU SURUMDE CALISAN
   - Klasor ac (arac cubugundaki klasor dugmesi ya da Ctrl+O)

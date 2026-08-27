@@ -27,6 +27,8 @@ internal sealed partial class AnaForm : Form
     private readonly AgacDoldurucu _doldurucu;
     private readonly AramaSurucusu _arama;
     private readonly KokSecici _kokSecici;
+    private readonly AgacMenusu _menu;
+    private readonly SurukleBirak _surukleBirak;
     private readonly Gorunum.Onizleme _onizleme;
     private readonly string? _acilistaAcilacakKok;
 
@@ -49,6 +51,17 @@ internal sealed partial class AnaForm : Form
                 _durum.Bilgi(DosyaAcici.Ac(this, dosya));
             }
         };
+
+        // --- sag tik menusu ve dosya islemleri (yeni klasor / adlandir / sil / tasi)
+        _menu = new AgacMenusu(_agac);
+        _menu.SecimKaynagi(SecimBaglamiKur);
+        _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
+        _menu.Tazele += (_, yol) => AgaciTazele(yol);
+        _surukleBirak = new SurukleBirak(_agac);
+        _surukleBirak.Tasindi += (_, e) => Tasi.Yurut(
+            new IslemBaglami(this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi),
+            e.Yollar,
+            e.HedefKlasor);
 
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
@@ -79,8 +92,22 @@ internal sealed partial class AnaForm : Form
             {
                 e.SuppressKeyPress = true;
                 _kokSecici.Sor();
+                return;
+            }
+
+            // Kisayollar islem listesinden geliyor; menudeki yazi ile calisan
+            // tus AYRISAMAZ (CLAUDE.md 1b).
+            if (_agac.Focused && _menu.TusaBasildi(e.KeyData))
+            {
+                e.SuppressKeyPress = true;
             }
         };
+
+        // Arac cubugundaki "Cop" dugmesi de silme islemini calistirir - ayni
+        // kod, ikinci kopya yok (CLAUDE.md 8).
+        _copDugmesi.Enabled = true;
+        _copDugmesi.ToolTipText = "Seçilenleri çöp kutusuna gönder (Delete)";
+        _copDugmesi.Click += (_, _) => _menu.TusaBasildi(Keys.Delete);
 
         _onizleme.Temizle();
         _durum.Bekliyor();
@@ -119,6 +146,56 @@ internal sealed partial class AnaForm : Form
         _onizleme.Temizle();
         _durum.Kok(yol);
         _kokSecici.GecmiseEkle(yol);
+    }
+
+    /// <summary>
+    /// Islemlere verilecek secim. "Etkin klasor" = secili klasor, yoksa secili
+    /// dosyanin klasoru, o da yoksa kok.
+    /// </summary>
+    private SecimBaglami SecimBaglamiKur()
+    {
+        var ogeler = new List<object>();
+        foreach (TreeNode dugum in _agac.Secililer)
+        {
+            if (AgacDoldurucu.Etiket(dugum) is object etiket)
+            {
+                ogeler.Add(etiket);
+            }
+        }
+
+        string? etkin = null;
+        foreach (object oge in ogeler)
+        {
+            etkin = oge switch
+            {
+                KlasorOgesi klasor => klasor.Yol,
+                DosyaOgesi dosya => WindowsYolu.Klasor(dosya.Yol),
+                _ => etkin,
+            };
+
+            if (oge is KlasorOgesi)
+            {
+                break;   // klasor secimi dosyanin klasorune tercih edilir
+            }
+        }
+
+        return new SecimBaglami(ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde);
+    }
+
+    /// <summary>
+    /// Bir dosya islemi bitti: agaci diskten tazeler, acik dallari korur.
+    /// <paramref name="secilecekYol"/> verilirse orasi secili gelir.
+    /// </summary>
+    private void AgaciTazele(string? secilecekYol)
+    {
+        _doldurucu.Yenile();
+
+        if (secilecekYol is not null)
+        {
+            _doldurucu.YoluSec(secilecekYol);
+        }
+
+        SecimiGoster();
     }
 
     private void SecimiGoster()

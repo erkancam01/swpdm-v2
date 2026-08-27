@@ -67,6 +67,20 @@ public static class WindowsYolu
     public static bool AyiriciMi(char karakter) => karakter == Ayirici || karakter == EgikAyirici;
 
     /// <summary>
+    /// Bu yolun KENDI ayiricisi. Icinde ters bolu yoksa ama egik bolu varsa
+    /// egik bolu, yoksa ters bolu.
+    ///
+    /// TEK KOPYA (CLAUDE.md 8): bu karar once <see cref="Birlestir"/> icinde
+    /// yaziliydi, sonra ayni karar bir baska yerde ELLE tekrar yazildi ve
+    /// AYRISTI - "kendi altina tasima" denetimi Linux'ta yanlis cevap verdi,
+    /// testi kirdi. Karar burada durur, herkes buraya sorar.
+    /// </summary>
+    public static char Ayiricisi(string? yol)
+        => yol is not null && yol.IndexOf(Ayirici) < 0 && yol.IndexOf(EgikAyirici) >= 0
+            ? EgikAyirici
+            : Ayirici;
+
+    /// <summary>
     /// Yolun son parcasi (dosya ya da klasor adi). Kok verilirse bos doner.
     /// Bos ya da null girdide ISTISNA ATMAZ, bos doner.
     /// </summary>
@@ -153,7 +167,13 @@ public static class WindowsYolu
 
     /// <summary>
     /// Klasor ile adi birlestirir. Klasor zaten ayiriciyla bitiyorsa ikincisini
-    /// eklemez; bitmiyorsa ters bolu koyar.
+    /// eklemez.
+    ///
+    /// Ayirici, yolun KENDI kullandigi ayiricidir: icinde ters bolu yoksa ama
+    /// egik bolu varsa egik bolu konur. Sebep somut: dosya islemleri Linux'ta
+    /// GERCEK klasorlerle test ediliyor ve orada "/tmp/x" + "y" birlesimi
+    /// "/tmp/x\y" olsaydi tek parcali, adinda ters bolu olan bir dosya
+    /// olusurdu. Windows yollarinda davranis aynen eskisi gibi.
     /// </summary>
     public static string Birlestir(string? klasor, string? ad)
     {
@@ -172,7 +192,7 @@ public static class WindowsYolu
             return klasor + ad;
         }
 
-        return klasor + Ayirici + ad;
+        return klasor + Ayiricisi(klasor) + ad;
     }
 
     /// <summary>

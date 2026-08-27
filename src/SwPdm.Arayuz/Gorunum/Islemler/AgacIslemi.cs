@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using SwPdm.Cekirdek;
+
+namespace SwPdm.Arayuz.Gorunum;
+
+/// <summary>
+/// Bir islemin uzerinde calisacagi secim. Dugumler DEGIL, cekirdek nesneleri
+/// ve yollar tasinir - islemler agac denetimini bilmez.
+/// </summary>
+/// <param name="Ogeler">Secili ogeler (dosya ve/veya klasor).</param>
+/// <param name="EtkinKlasor">
+/// "Buraya" anlamina gelen klasor: secili klasor, yoksa secili dosyanin
+/// klasoru, o da yoksa kok. Yeni klasor buraya acilir.
+/// </param>
+/// <param name="AramaKipinde">Agac su an arama sonucu mu gosteriyor.</param>
+internal sealed record SecimBaglami(
+    IReadOnlyList<object> Ogeler,
+    string? EtkinKlasor,
+    bool AramaKipinde)
+{
+    /// <summary>Secili tek oge; birden fazlaysa null.</summary>
+    internal object? TekOge => Ogeler.Count == 1 ? Ogeler[0] : null;
+
+    /// <summary>Bir ogenin diskteki yolu.</summary>
+    internal static string? Yolu(object? oge) => oge switch
+    {
+        DosyaOgesi dosya => dosya.Yol,
+        KlasorOgesi klasor => klasor.Yol,
+        _ => null,
+    };
+
+    /// <summary>Bir ogenin adi.</summary>
+    internal static string Adi(object? oge) => oge switch
+    {
+        DosyaOgesi dosya => dosya.Ad,
+        KlasorOgesi klasor => klasor.Ad,
+        _ => "?",
+    };
+}
+
+/// <summary>
+/// Bir islemin dis dunyaya acilan yuzu: pencere sahibi ve "bitti, agaci
+/// tazele" cagrisi. Islem, agacin nasil tazelendigini BILMEZ.
+/// </summary>
+/// <param name="Sahip">Iletisim kutularinin sahibi.</param>
+/// <param name="Secim">Uzerinde calisilacak secim.</param>
+/// <param name="Tazele">Islem bittiginde cagrilir; yol verilirse orasi secilir.</param>
+/// <param name="Bildir">Durum cubuguna yazilacak cumle.</param>
+internal sealed record IslemBaglami(
+    IWin32Window Sahip,
+    SecimBaglami Secim,
+    Action<string?> Tazele,
+    Action<string> Bildir);
+
+/// <summary>
+/// BIR AGAC ISLEMI. CLAUDE.md 1b: her islem KENDI dosyasinda yasar; menu
+/// listeden URETILIR. Bir islemi kaldirmak = dosyasini sil + AgacIslemleri
+/// listesinden bir satir cikar.
+/// </summary>
+internal interface IAgacIslemi
+{
+    /// <summary>Menude gorunen yazi.</summary>
+    string Ad { get; }
+
+    /// <summary>Kisayol (menude sagda yazar). Yoksa <see cref="Keys.None"/>.</summary>
+    Keys Kisayol { get; }
+
+    /// <summary>
+    /// Bu secimde uygulanabilir mi. Uygulanamiyorsa <paramref name="nedenOlmaz"/>
+    /// EKRANDA gosterilecek bir cumle doner - oge GIZLENMEZ, gri durur ve
+    /// sebebini soyler (CLAUDE.md 3).
+    /// </summary>
+    bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz);
+
+    /// <summary>Islemi yapar.</summary>
+    void Uygula(IslemBaglami baglam);
+}

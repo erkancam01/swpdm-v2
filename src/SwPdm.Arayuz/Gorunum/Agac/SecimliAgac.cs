@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
@@ -52,6 +53,14 @@ internal sealed class SecimliAgac : TreeView
     /// <summary>Secim degistiginde tetiklenir.</summary>
     internal event EventHandler? SecimDegisti;
 
+    /// <summary>Dugumun diskteki yolu; yoksa null.</summary>
+    internal static string? Yolu(TreeNode? dugum) => dugum?.Tag switch
+    {
+        DosyaOgesi dosya => dosya.Yol,
+        KlasorOgesi klasor => klasor.Yol,
+        _ => null,
+    };
+
     /// <summary>
     /// Su an secili dugumler, agactaki sirayla.
     ///
@@ -94,6 +103,9 @@ internal sealed class SecimliAgac : TreeView
             }
         }
     }
+
+    /// <summary>Bir dugum su an secili kumede mi (SurukleBirak icin).</summary>
+    internal bool KumedeMi(TreeNode dugum) => _secililer.Contains(dugum);
 
     /// <summary>Bir dugum secili mi.</summary>
     internal bool Secili(TreeNode dugum) => _secililer.Contains(dugum);

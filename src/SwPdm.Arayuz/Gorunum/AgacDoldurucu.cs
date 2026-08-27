@@ -218,6 +218,23 @@ internal sealed class AgacDoldurucu
         KokuAc(Kok, geri);
     }
 
+    /// <summary>
+    /// Verilen yoldaki dugumu secer ve gorunur yapar. Dugum agacta yoksa
+    /// (ust dali acilmamissa) hicbir sey yapmaz - sessizce baska bir sey
+    /// SECMEZ, cunku yanlis oge secmek sonraki islemi yanlis hedefe yollar.
+    /// </summary>
+    internal void YoluSec(string yol)
+    {
+        TreeNode? dugum = DuguuBul(yol);
+        if (dugum is null)
+        {
+            return;
+        }
+
+        _agac.YalnizSec(dugum);
+        dugum.EnsureVisible();
+    }
+
     /// <summary>Dugume bagli cekirdek nesnesi; yoksa null.</summary>
     internal static object? Etiket(TreeNode? dugum)
         => ReferenceEquals(dugum?.Tag, HenuzTaranmadi) ? null : dugum?.Tag;
