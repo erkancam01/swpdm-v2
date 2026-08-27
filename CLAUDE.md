@@ -14,10 +14,15 @@ teknik resim referanslarını koruyan masaüstü uygulaması.
 > **27.08.2026 güncellemesi:** ilk ölçülmüş yapı maddeleri geldi (§11). Artık
 > §11 depodaki gerçek dosyalara işaret ediyor; oradaki adlar değişirse §11 de
 > değişmeli. §1–§10 hâlâ mimariden bağımsız ve bayatlayamaz.
+>
+> **§1b Erkan'ın koyduğu kalıcı tasarım varsayılanıdır** — her yeni kod ona
+> göre yazılır, ayrıca sorulmaz.
 
 ---
 
-## 1. Altın kural
+## 1. Altın kurallar
+
+### 1a — Çalışan hiçbir şeyi bozma
 
 **Çalışan hiçbir şeyi bozma.** Bu bir CAD dosya yöneticisi: hatalı bir
 değişiklik gerçek montaj ve teknik resimlerin referanslarını kırar, en kötü
@@ -32,6 +37,38 @@ Erkan uygulamayı kendi makinesinde deniyor; Wine'ın ölçemediği her şeyi
 görebiliyor. Pakete giren `SURUM-NOTU.txt` **neyin çalıştığını ve neyin
 bilerek çalışmadığını** yazar — §3'ün gereği: çalışmayan bir şeyi
 söylememek, kullanıcının onu denemesine ve bozuk sanmasına yol açar.
+
+### 1b — Bir özellik tek yerde yaşar ve TEK HAMLEDE silinebilir
+
+Erkan, 27.08.2026: *"ileride bir özelliği değiştirmek ya da silmek istediğimde
+minimum sayıda koda ve dosyaya dokunmak isterim; bunu bundan sonra yapacağın
+tüm kodlarda varsayılan olarak kabul et."*
+
+**Bu bir tercih değil, kabul edilmiş varsayılan.** Her yeni kod buna göre
+yazılır; ayrıca istenmez.
+
+Ölçütü tek soru: **"Bu özelliği kaldır" dendiğinde kaç dosyaya dokunurum?**
+Cevap *bir dosyayı sil + bir satır bağlantıyı kes*'ten fazlaysa yapı yanlıştır.
+
+Bundan çıkan üç kural:
+
+1. **Özelliğin BÜTÜN kararı kendi dosyasında durur.** Hangi kaynak, hangi
+   sıra, hangi mesaj, hangi iş parçacığı, hangi hata metni — hepsi orada.
+   Yarısı burada yarısı çağıranda olan bir özellik, silinemeyen bir özelliktir.
+2. **Hiçbir özellik başka bir özelliğin dosyasına satır ekletmez.** Merkezî
+   listeler (bir enum + bir simge listesi + bir menü listesi) bu kuralın en
+   sık ihlali: yeni bir şey eklemek dört dosyaya satır ekletir, **silmek de
+   dört dosyadan satır sildirir** ve biri unutulur. Liste tek yerde durur,
+   ötekiler ondan **türetilir**.
+3. **Ortak araç ≠ özellik.** Renk, boyut/tarih biçimi, yol mantığı tek kopya
+   kalır (§8); bunlar silinecek özellikler değil, herkesin kullandığı
+   araçlardır. Karışmasın: özellik **dikey** (kendi dosyası), araç **yatay**
+   (tek kopya).
+
+> **Türetmek, yorumla hizalamaktan üstündür.** İki listenin sırasının aynı
+> olmasını *bir yorum satırı* sağlıyorsa, o hizalama er geç kayar ve hata
+> **sessizdir** — yanlış simge çizilir, hiçbir şey patlamaz. İkinci listeyi
+> birinciden üret; o zaman kayacak bir şey kalmaz.
 
 ---
 
@@ -470,10 +507,24 @@ dosyasında** duruyor:
 | önizleme (kaynak, sıra, mesaj, iş parçacığı) | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
 | arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
+| çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
+| klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
+| alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
+| **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
 `AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı
-bilmez. Ölçüldü: bu ayrımdan sonra `AnaForm.cs` **493 → 266 satır**.
+bilmez. Ölçüldü: bu ayrımdan sonra `AnaForm.cs` **493 → 160 satır**.
+
+> **Tür kaydı ÖLÇÜLDÜ (27.08.2026).** Önce yeni bir tür **4 dosyada 5 yere**
+> satır ekletiyordu (enum · simge sırası sabiti · simge listesi · süzgeç
+> listesi) ve iki listenin aynı sırada kalmasını yalnızca **bir yorum satırı**
+> sağlıyordu — kaysa hata sessizdi.
+>
+> Şimdi simge listesi, simge sıraları ve süzgeç şeridi `DosyaTurleri.Tumu`'den
+> **türetiliyor**. Ölçüm: çekirdeğe `Step` türü eklendi, **başka hiçbir dosyaya
+> dokunulmadı**; Wine'da süzgeç şeridinde `STEP` düğmesi belirdi ve
+> `Kaide.STEP` ağaçta kendi sırasıyla çizildi. Sonra geri alındı.
 
 > **Klasör adı ile tip adı çakışırsa derleme kırılır.** `Onizleme/` klasörü
 > içindeki `Onizleme` sınıfına ad alanı da verilseydi (`...Gorunum.Onizleme`)

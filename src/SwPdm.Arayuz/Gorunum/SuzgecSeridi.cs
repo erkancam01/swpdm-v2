@@ -7,18 +7,19 @@ using SwPdm.Cekirdek;
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
-/// Tur suzgeci seridi: Tumu / Montaj / Parca / Teknik resim / PDF.
+/// Tur suzgeci seridi: "Tumu" + cekirdekteki her tur.
 ///
-/// Etiketler ile TURLER burada birlikte duruyor; boylece disarida
-/// "Montaj yazisi hangi ture karsilik geliyordu" diye metin esleme yapilmiyor
-/// (CLAUDE.md 8: ayni bilginin ikinci kopyasi yazilmaz).
+/// Dugmeler <see cref="DosyaTurleri.Tumu"/>'den URETILIYOR - burada elle
+/// yazilmis bir tur listesi YOK (CLAUDE.md 1b). Yeni bir tur eklendiginde
+/// dugmesi kendiliginden cikar, bir tur kaldirildiginda kendiliginden gider;
+/// bu dosya degismez.
 /// </summary>
 internal sealed class SuzgecSeridi : FlowLayoutPanel
 {
     private readonly List<Button> _dugmeler = [];
     private Button? _secili;
 
-    internal SuzgecSeridi(params (string Etiket, DosyaTuru? Tur)[] secenekler)
+    internal SuzgecSeridi()
     {
         FlowDirection = FlowDirection.LeftToRight;
         WrapContents = false;
@@ -27,12 +28,10 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         Padding = new Padding(4, 2, 4, 2);
         BackColor = Renkler.GovdeArkaPlan;
 
-        foreach ((string etiket, DosyaTuru? tur) in secenekler)
+        Ekle("Tümü", null);
+        foreach (DosyaTuru tur in DosyaTurleri.Turler())
         {
-            Button d = Dugme(etiket);
-            d.Tag = tur;
-            _dugmeler.Add(d);
-            Controls.Add(d);
+            Ekle(DosyaTurleri.Adi(tur), tur);
         }
 
         if (_dugmeler.Count > 0)
@@ -46,6 +45,14 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
 
     /// <summary>Su an secili tur. null = butun turler.</summary>
     internal DosyaTuru? SeciliTur => _secili?.Tag as DosyaTuru?;
+
+    private void Ekle(string etiket, DosyaTuru? tur)
+    {
+        Button d = Dugme(etiket);
+        d.Tag = tur;
+        _dugmeler.Add(d);
+        Controls.Add(d);
+    }
 
     private Button Dugme(string etiket)
     {

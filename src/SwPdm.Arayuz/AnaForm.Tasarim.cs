@@ -25,9 +25,7 @@ internal sealed partial class AnaForm
     private SplitContainer _altBolen = null!;
     private OnizlemePaneli _onizlemePaneli = null!;
     private ReferansListesi _referanslar = null!;
-    private StatusStrip _durumCubugu = null!;
-    private ToolStripStatusLabel _durumSol = null!;
-    private ToolStripStatusLabel _durumSag = null!;
+    private DurumCubugu _durum = null!;
 
     private void TasarimiKur()
     {
@@ -42,57 +40,18 @@ internal sealed partial class AnaForm
         BackColor = Renkler.GovdeArkaPlan;
         Icon = PencereSimgesi();
 
-        _simgeler = SimgeListesi();
+        _simgeler = TurSimgeleri.Liste();
         _baslik = new BaslikSeridi { Dock = DockStyle.Top };
         _sekmeler = SekmeleriKur();
-        _durumCubugu = DurumCubugunuKur();
+        _durum = new DurumCubugu();
 
         // WinForms yerlestirme sirasi: SONRA eklenen ONCE yerlesir ve dis kenari alir.
         // Bu yuzden Fill olan once, kenara yapisanlar sonra eklenir.
         Controls.Add(_sekmeler);
-        Controls.Add(_durumCubugu);
+        Controls.Add(_durum);
         Controls.Add(_baslik);
 
         ResumeLayout(performLayout: true);
-    }
-
-    private static ImageList SimgeListesi()
-    {
-        var liste = new ImageList
-        {
-            ImageSize = new Size(Simgeler.Boy, Simgeler.Boy),
-            ColorDepth = ColorDepth.Depth32Bit,
-        };
-
-        // Sira SimgeSirasi ile birebir ayni olmak ZORUNDA.
-        //
-        // Once WINDOWS KABUGU denenir: SOLIDWORKS kurulu bir makinede
-        // .SLDPRT/.SLDASM/.SLDDRW simgeleri kabuga kayitlidir ve Gezgin'de
-        // gorunen GERCEK simge gelir. Kabuk vermezse koda cizilmis yedege
-        // dusulur - hicbir durumda simgesiz kalinmaz.
-        (string? Uzanti, Func<Bitmap> Yedek)[] girdiler =
-        [
-            (null,      Simgeler.Klasor),        // SimgeSirasi.Klasor
-            (".SLDPRT", Simgeler.Parca),         // SimgeSirasi.Parca
-            (".SLDASM", Simgeler.Montaj),        // SimgeSirasi.Montaj
-            (".SLDDRW", Simgeler.TeknikResim),   // SimgeSirasi.TeknikResim
-            (".PDF",    Simgeler.Pdf),           // SimgeSirasi.Pdf
-            (null,      Simgeler.Dosya),         // SimgeSirasi.Dosya (tanimadigimiz uzantilar)
-        ];
-
-        foreach ((string? uzanti, Func<Bitmap> yedek) in girdiler)
-        {
-            // Ilk girdi klasor, sonuncusu "tanimadigimiz dosya". Ikisi de
-            // uzantisiz; klasor kabuktan alinir, genel dosya cizilmis kalir
-            // (kabugun genel simgesi zaten bizim yedegimizle ayni ise gerek yok).
-            Bitmap? kabuktan = uzanti is null
-                ? (liste.Images.Count == 0 ? KabukSimgeleri.Klasor() : null)
-                : KabukSimgeleri.Dosya(uzanti);
-
-            liste.Images.Add(kabuktan ?? yedek());
-        }
-
-        return liste;
     }
 
     private TabControl SekmeleriKur()
@@ -111,15 +70,7 @@ internal sealed partial class AnaForm
         };
 
         _araclar = AracSeridiniKur();
-        _suzgecler = new SuzgecSeridi(
-            ("Tümü", null),
-            ("Montaj", DosyaTuru.Montaj),
-            ("Parça", DosyaTuru.Parca),
-            ("Teknik resim", DosyaTuru.TeknikResim),
-            ("PDF", DosyaTuru.Pdf))
-        {
-            Dock = DockStyle.Top,
-        };
+        _suzgecler = new SuzgecSeridi { Dock = DockStyle.Top };
         _dikeyBolen = GovdeyiKur();
 
         _dosyalarSekmesi.Controls.Add(_dikeyBolen);
@@ -234,29 +185,6 @@ internal sealed partial class AnaForm
         bolen.Panel2.Controls.Add(_altBolen);
         bolen.Panel2.Controls.Add(_altBolumBasligi);
         return bolen;
-    }
-
-    private StatusStrip DurumCubugunuKur()
-    {
-        var cubuk = new StatusStrip
-        {
-            Dock = DockStyle.Bottom,
-            SizingGrip = false,
-        };
-
-        _durumSol = new ToolStripStatusLabel
-        {
-            Spring = true,
-            TextAlign = ContentAlignment.MiddleLeft,
-        };
-        _durumSag = new ToolStripStatusLabel
-        {
-            TextAlign = ContentAlignment.MiddleRight,
-        };
-
-        cubuk.Items.Add(_durumSol);
-        cubuk.Items.Add(_durumSag);
-        return cubuk;
     }
 
     /// <summary>

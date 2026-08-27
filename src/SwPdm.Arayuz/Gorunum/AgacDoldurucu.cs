@@ -90,8 +90,8 @@ internal sealed class AgacDoldurucu
 
         var kokDugum = new TreeNode(WindowsYolu.DosyaAdi(yol))
         {
-            ImageIndex = SimgeSirasi.Klasor,
-            SelectedImageIndex = SimgeSirasi.Klasor,
+            ImageIndex = TurSimgeleri.Klasor,
+            SelectedImageIndex = TurSimgeleri.Klasor,
             Tag = new KlasorOgesi(yol, WindowsYolu.DosyaAdi(yol), null, null, icerik.Hata),
             ToolTipText = yol,
         };
@@ -159,8 +159,8 @@ internal sealed class AgacDoldurucu
         var gruplar = new Dictionary<string, TreeNode>(StringComparer.OrdinalIgnoreCase);
         var kokDugum = new TreeNode(string.Empty)
         {
-            ImageIndex = SimgeSirasi.Klasor,
-            SelectedImageIndex = SimgeSirasi.Klasor,
+            ImageIndex = TurSimgeleri.Klasor,
+            SelectedImageIndex = TurSimgeleri.Klasor,
         };
         _agac.Nodes.Add(kokDugum);
 
@@ -177,8 +177,8 @@ internal sealed class AgacDoldurucu
             {
                 grup = new TreeNode(GoreceliYol(klasor))
                 {
-                    ImageIndex = SimgeSirasi.Klasor,
-                    SelectedImageIndex = SimgeSirasi.Klasor,
+                    ImageIndex = TurSimgeleri.Klasor,
+                    SelectedImageIndex = TurSimgeleri.Klasor,
                     Tag = new KlasorOgesi(klasor, WindowsYolu.DosyaAdi(klasor), null, null, null),
                     ToolTipText = klasor,
                 };
@@ -436,8 +436,8 @@ internal sealed class AgacDoldurucu
 
         var dugum = new TreeNode(etiket)
         {
-            ImageIndex = SimgeSirasi.Klasor,
-            SelectedImageIndex = SimgeSirasi.Klasor,
+            ImageIndex = TurSimgeleri.Klasor,
+            SelectedImageIndex = TurSimgeleri.Klasor,
             Tag = klasor,
             ToolTipText = klasor.Hata is null ? klasor.Yol : klasor.Yol + "\n" + klasor.Hata,
         };
@@ -453,7 +453,7 @@ internal sealed class AgacDoldurucu
 
     private static TreeNode DosyaDugumu(DosyaOgesi dosya)
     {
-        int simge = SimgeSirasi.Turden(dosya.Tur);
+        int simge = TurSimgeleri.Sira(dosya.Tur);
         return new TreeNode(dosya.Ad)
         {
             ImageIndex = simge,

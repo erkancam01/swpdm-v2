@@ -1,10 +1,27 @@
 BU PAKETTE DAVRANIS DEGISMEDI - yalnizca kodun yapisi toparlandi.
-  Onizleme tek bir dosyaya (Onizleme.cs), arama tek bir dosyaya
-  (AramaSurucusu.cs) tasindi; AnaForm 493 satirdan 266 satira indi. Ayrica
-  bir dosyanin 600 satiri asmasini engelleyen yeni bir kapi eklendi - v1'de
-  tek bir sinif 9.918 satira cikip bolunemez olmustu.
+
+  Erkan'in koydugu kural artik varsayilan: BIR OZELLIK TEK YERDE YASAR VE
+  TEK HAMLEDE SILINEBILIR. Olcut tek soru: "bu ozelligi kaldir" dendiginde
+  kac dosyaya dokunuluyor?
+
+  Buna gore ayrilanlar - her biri artik kendi dosyasinda:
+    onizleme · arama · agac · cift tiklamayla dosya acma · klasor secme ·
+    alttaki durum yazilari · taninan dosya turleri
+  AnaForm 493 satirdan 160 satira indi; artik yalnizca BAGLIYOR.
+
+  En onemli duzeltme: yeni bir dosya turu eklemek 4 dosyada 5 yere satir
+  ekletiyordu ve iki listenin ayni sirada kalmasini yalnizca bir YORUM
+  sagliyordu - kaysa yanlis simge cizilirdi, hicbir sey patlamazdi.
+  Artik simge listesi ve suzgec seridi tur listesinden URETILIYOR.
+  Olculdu: cekirdege "STEP" turu eklendi, baska hicbir dosyaya dokunulmadi,
+  suzgec seridinde STEP dugmesi kendiliginden belirdi. Sonra geri alindi.
+
+  Ayrica bir dosyanin 600 satiri asmasini engelleyen yeni bir kapi eklendi -
+  v1'de tek bir sinif 9.918 satira cikip bolunemez olmustu.
+
   Olculdu: ayni 88 test geciyor, gomulu onizleme ayni (401 renk), PDF metni
-  ayni, suzgec acik dali yine kapatmiyor, arama yine Enter'siz calisiyor.
+  ayni, suzgec acik dali yine kapatmiyor, arama yine Enter'siz calisiyor,
+  durum cubugu ayni yaziyor.
   Yani bu paketi bir onceki gibi denerseniz FARK GORMEMENIZ gerekir; bir
   fark gorurseniz o bir HATADIR, lutfen soyleyin.
 
