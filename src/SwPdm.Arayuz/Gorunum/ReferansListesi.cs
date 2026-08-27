@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System;
 using System.Windows.Forms;
 
 namespace SwPdm.Arayuz.Gorunum;
@@ -15,17 +15,15 @@ internal sealed class ReferansListesi : ListView
 {
     private readonly ColumnHeader _adSutunu;
     private readonly ColumnHeader _rolSutunu;
+    private readonly bool _hazir;
 
     internal ReferansListesi()
     {
-        View = View.Details;
-        HeaderStyle = ColumnHeaderStyle.None;
-        FullRowSelect = true;
-        MultiSelect = false;
-        BorderStyle = BorderStyle.None;
-        BackColor = Renkler.OnizlemeArkaPlan;
-        Dock = DockStyle.Fill;
-
+        // Sutunlar, BOYUT DEGISTIREN her seyden (Dock, BorderStyle...) ONCE
+        // olusturuluyor. Bu sinif BaslikSeridi ile AYNI hatayi tasiyordu:
+        // Dock = Fill kurucunun icinden OnResize'i tetikleyebiliyor ve orasi
+        // henuz null olan sutunlara dokunuyordu. BaslikSeridi'nin cokmesi bunu
+        // gizlemisti - uygulama oraya varamadan oluyordu.
         _adSutunu = new ColumnHeader { Text = "Dosya", Width = 170 };
         _rolSutunu = new ColumnHeader
         {
@@ -34,6 +32,17 @@ internal sealed class ReferansListesi : ListView
             TextAlign = HorizontalAlignment.Right,
         };
         Columns.AddRange([_adSutunu, _rolSutunu]);
+
+        View = View.Details;
+        HeaderStyle = ColumnHeaderStyle.None;
+        FullRowSelect = true;
+        MultiSelect = false;
+        BorderStyle = BorderStyle.None;
+        BackColor = Renkler.OnizlemeArkaPlan;
+        Dock = DockStyle.Fill;
+
+        _hazir = true;
+        SutunlariPaylastir();
     }
 
     /// <summary>Bir referans satiri ekler.</summary>
@@ -44,10 +53,8 @@ internal sealed class ReferansListesi : ListView
         Items.Add(satir);
     }
 
-    /// <summary>Sutun genisliklerini panelin genisligine gore paylastirir.</summary>
-    protected override void OnResize(System.EventArgs e)
+    private void SutunlariPaylastir()
     {
-        base.OnResize(e);
         int kullanilabilir = ClientSize.Width - 4;
         if (kullanilabilir <= 0)
         {
@@ -56,5 +63,18 @@ internal sealed class ReferansListesi : ListView
 
         _rolSutunu.Width = (int)(kullanilabilir * 0.42);
         _adSutunu.Width = kullanilabilir - _rolSutunu.Width;
+    }
+
+    /// <summary>Sutun genisliklerini panelin genisligine gore paylastirir.</summary>
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+
+        if (!_hazir)
+        {
+            return;
+        }
+
+        SutunlariPaylastir();
     }
 }

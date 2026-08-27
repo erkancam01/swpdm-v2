@@ -14,8 +14,10 @@ namespace SwPdm.Arayuz.Gorunum;
 /// </summary>
 internal sealed class BaslikSeridi : Control
 {
+    private readonly ToolTip _ipucu;
     private readonly Button _raptiye;
     private readonly Button _ayarlar;
+    private readonly bool _hazir;
     private string _durumMetni = "SOLIDWORKS: kapalı";
     private bool _bagli;
 
@@ -23,16 +25,33 @@ internal sealed class BaslikSeridi : Control
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer
                  | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
+
+        // ============================ OLCULMUS HATA ============================
+        // Alanlar, BOYUT DEGISTIREN her seyden (Height, Dock, BorderStyle...)
+        // ONCE atanmak ZORUNDA. Aksi halde temel sinif kurucunun icinden
+        // OnResize'i cagiriyor ve orasi henuz null olan alanlara dokunuyor.
+        //
+        // Bu tam olarak yasandi (27.08.2026, Windows'ta ilk calistirma):
+        //   Height = 32  ->  Control.set_Height  ->  OnSizeChanged  ->  OnResize
+        //   -> _ayarlar.Height  ->  NullReferenceException, uygulama ACILMADI.
+        // Derleyici bunu yakalamiyor: alanlar readonly ve "atanacak" sayiliyor.
+        // =======================================================================
+        _ipucu = new ToolTip();
+        _ayarlar = SeritDugmesi(Simgeler.Disli(Renkler.BaslikYazi), "Ayarlar");
+        _raptiye = SeritDugmesi(Simgeler.Raptiye(Renkler.BaslikYazi), "Pencereyi üstte tut");
+        _raptiye.BackColor = Renkler.BaslikDugmeVurgu;
+        Controls.Add(_ayarlar);
+        Controls.Add(_raptiye);
+
         BackColor = Renkler.BaslikArkaPlan;
         ForeColor = Renkler.BaslikYazi;
         Height = 32;
 
-        _ayarlar = SeritDugmesi(Simgeler.Disli(Renkler.BaslikYazi), "Ayarlar");
-        _raptiye = SeritDugmesi(Simgeler.Raptiye(Renkler.BaslikYazi), "Pencereyi üstte tut");
-        _raptiye.BackColor = Renkler.BaslikDugmeVurgu;
-
-        Controls.Add(_ayarlar);
-        Controls.Add(_raptiye);
+        // Ikinci kapak. CLAUDE.md 2: iki ucuz hipotezden birini secmek yerine
+        // ikisini birden kapat. Sira dogru olsa bile temel sinif ileride baska
+        // bir noktadan OnResize cagirabilir; bayrak o ihtimali de kapatiyor.
+        _hazir = true;
+        DugmeleriYerlestir();
     }
 
     /// <summary>Raptiye dugmesi. Davranisi disarida baglanir.</summary>
@@ -58,7 +77,7 @@ internal sealed class BaslikSeridi : Control
         }
     }
 
-    private static Button SeritDugmesi(Image simge, string ipucu)
+    private Button SeritDugmesi(Image simge, string ipucuMetni)
     {
         var d = new Button
         {
@@ -70,13 +89,12 @@ internal sealed class BaslikSeridi : Control
         };
         d.FlatAppearance.BorderSize = 0;
         d.FlatAppearance.MouseOverBackColor = Renkler.BaslikDugmeUzerinde;
-        new ToolTip().SetToolTip(d, ipucu);
+        _ipucu.SetToolTip(d, ipucuMetni);
         return d;
     }
 
-    protected override void OnResize(EventArgs e)
+    private void DugmeleriYerlestir()
     {
-        base.OnResize(e);
         const int bosluk = 4;
         int sag = Width - bosluk;
         int y = (Height - _ayarlar.Height) / 2;
@@ -84,6 +102,18 @@ internal sealed class BaslikSeridi : Control
         _ayarlar.Location = new Point(sag - _ayarlar.Width, y);
         sag -= _ayarlar.Width + 2;
         _raptiye.Location = new Point(sag - _raptiye.Width, y);
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+
+        if (!_hazir)
+        {
+            return;
+        }
+
+        DugmeleriYerlestir();
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -121,5 +151,15 @@ internal sealed class BaslikSeridi : Control
 
         g.DrawString(_durumMetni, Font, durumFircasi,
             x + daireCap + daireBosluk, (Height - durumBoyu.Height) / 2f);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _ipucu.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 }
