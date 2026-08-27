@@ -50,7 +50,7 @@ internal sealed class SilIslemi : IAgacIslemi
             return;
         }
 
-        if (!Onayla(baglam.Sahip, ogeler))
+        if (!Onayla(baglam.Sahip, ogeler, baglam.Referanslar))
         {
             baglam.Bildir("Silme iptal edildi.");
             return;
@@ -150,7 +150,8 @@ internal sealed class SilIslemi : IAgacIslemi
                 return olmayan;
             });
 
-    private static bool Onayla(IWin32Window sahip, IReadOnlyList<object> ogeler)
+    private static bool Onayla(
+        IWin32Window sahip, IReadOnlyList<object> ogeler, ReferansSurucusu referanslar)
     {
         var metin = new StringBuilder();
         metin.AppendLine(ogeler.Count == 1
@@ -175,15 +176,75 @@ internal sealed class SilIslemi : IAgacIslemi
         metin.AppendLine("Çöp kutusuna gider; araç çubuğundaki \"Çöp kutusu\"");
         metin.AppendLine("düğmesinden geri yüklenebilir.");
 
-        // CLAUDE.md 3: BILMEDIGIMIZI SOYLE. Referans indeksi yok; "bu parcayi
-        // kimse kullanmiyor" diyemeyiz ve dememeliyiz.
         metin.AppendLine();
-        metin.AppendLine("UYARI: Referans taraması henüz yok — bu dosyaları hangi");
-        metin.AppendLine("montajların kullandığını BİLMİYORUZ.");
+        metin.Append(ReferansUyarisi(ogeler, referanslar));
 
         return MessageBox.Show(
             sahip, metin.ToString(), "Çöp kutusuna gönder",
             MessageBoxButtons.OKCancel, MessageBoxIcon.Warning,
             MessageBoxDefaultButton.Button2) == DialogResult.OK;
+    }
+
+    /// <summary>
+    /// SILINECEK DOSYALARI KIM KULLANIYOR - bu uygulamanin varlik sebebi.
+    ///
+    /// Uc ayri hal, UCU DE ayri yazilir (CLAUDE.md 3):
+    ///   tarama yok      -> "BILMIYORUZ" (sessizce "temiz" DEMEZ)
+    ///   tarama var, 0   -> "kullanan bulunamadi"
+    ///   tarama var, n   -> hangi dosyalar, adlariyla
+    ///
+    /// UYARIR AMA ENGELLEMEZ (Erkan'in karari): kullanici ne yaptigini
+    /// biliyor olabilir; karari ondan almak degil, ona GERCEGI vermek.
+    /// </summary>
+    private static string ReferansUyarisi(
+        IReadOnlyList<object> ogeler, ReferansSurucusu referanslar)
+    {
+        if (!referanslar.Hazir)
+        {
+            return "UYARI: Referans taraması yok ya da eksik — bu dosyaları hangi\n"
+                 + "montajların kullandığını BİLMİYORUZ.\n"
+                 + "Ctrl+Shift+R ile tarayıp yeniden deneyebilirsiniz.\n";
+        }
+
+        var kullananlar = new List<string>();
+        foreach (object oge in ogeler)
+        {
+            if (SecimBaglami.Yolu(oge) is not string yol)
+            {
+                continue;
+            }
+
+            foreach (string kullanan in referanslar.Kullananlarin(yol))
+            {
+                string ad = WindowsYolu.DosyaAdi(kullanan);
+                if (!kullananlar.Exists(v => string.Equals(v, ad, StringComparison.OrdinalIgnoreCase)))
+                {
+                    kullananlar.Add(ad);
+                }
+            }
+        }
+
+        if (kullananlar.Count == 0)
+        {
+            return "Referans taraması tamam: bu dosyaları kullanan bulunamadı.\n";
+        }
+
+        var yazi = new StringBuilder();
+        yazi.AppendLine($"DİKKAT: bunları {kullananlar.Count} dosya KULLANIYOR:");
+        int yazilan = 0;
+        foreach (string ad in kullananlar)
+        {
+            if (yazilan == 8)
+            {
+                yazi.AppendLine($"  … ve {kullananlar.Count - 8} tane daha");
+                break;
+            }
+
+            yazi.AppendLine("  ! " + ad);
+            yazilan++;
+        }
+
+        yazi.AppendLine("Silerseniz o dosyalar bu parçayı bulamaz.");
+        return yazi.ToString();
     }
 }

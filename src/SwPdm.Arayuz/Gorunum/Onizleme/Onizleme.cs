@@ -56,6 +56,9 @@ internal sealed class Onizleme : IDisposable
         + "seçeneğini açarsanız önizleme burada da görünür.\n\n"
         + "get.adobe.com/tr/reader";
 
+    /// <summary>Panelde gosterilecek en fazla ozel ozellik.</summary>
+    private const int EnFazlaOzellik = 3;
+
     /// <summary>Kabuktan istenecek en kucuk olcu; kutu daha kucukse bile net kalsin.</summary>
     private static readonly Size EnKucukIstek = new(256, 256);
 
@@ -87,8 +90,13 @@ internal sealed class Onizleme : IDisposable
         _isParcacigi.Start();
     }
 
-    /// <summary>Bir dosyanin ust bilgisini yazar ve onizlemesini ister.</summary>
-    internal void Goster(DosyaOgesi dosya)
+    /// <summary>
+    /// Bir dosyanin ust bilgisini yazar ve onizlemesini ister.
+    ///
+    /// <paramref name="kullanan"/> DISARIDAN geliyor cunku cevabi referans
+    /// indeksi biliyor; onizleme onu uretmez, yalnizca yazar.
+    /// </summary>
+    internal void Goster(DosyaOgesi dosya, string kullanan)
     {
         _beklenenYol = dosya.Yol;
 
@@ -98,10 +106,11 @@ internal sealed class Onizleme : IDisposable
             boyut: Boyut.Yaz(dosya.Boyut),
             degistirme: Zaman.Yaz(dosya.Degistirme),
 
-            // CLAUDE.md 3'un EN SERT kurali burada. Referans indeksi YOK.
-            // "0" yazmak "bu parcayi kimse kullanmiyor" demektir ve v1'de tam
-            // bu SAGLAM DOSYA SILDIRIYORDU. Bilmiyorsak bilmedigimizi yaziyoruz.
-            kullanan: "taranmadı");
+            // CLAUDE.md 3'un EN SERT kurali burada: "0" yazmak "bu parcayi
+            // kimse kullanmiyor" demektir ve v1'de tam bu SAGLAM DOSYA
+            // SILDIRIYORDU. Indeks taranmamissa buraya sayi degil "taranmadı"
+            // geliyor - ayrimi ReferansSurucusu yapiyor.
+            kullanan: kullanan);
 
         // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
         // de soyluyoruz ki kullanici bekledigini bilsin.
@@ -130,7 +139,10 @@ internal sealed class Onizleme : IDisposable
             tur: "Klasör",
             boyut: "—",
             degistirme: "—",
-            kullanan: "taranmadı");
+
+            // Klasorun "kullanani" olmaz; "taranmadı" yazmak taranınca bir
+            // sey cikacagini ima ederdi.
+            kullanan: "—");
     }
 
     /// <summary>
@@ -146,7 +158,7 @@ internal sealed class Onizleme : IDisposable
             tur: "Çoklu seçim",
             boyut: ozet.DosyaSayisi > 0 && ozet.BoyutTam ? Boyut.Yaz(ozet.ToplamBoyut) : "—",
             degistirme: "—",
-            kullanan: "taranmadı");
+            kullanan: "—");
     }
 
     /// <summary>Secim yokken paneli bosaltir.</summary>
@@ -189,7 +201,89 @@ internal sealed class Onizleme : IDisposable
                 continue;   // daha yeni bir istek zaten aldi
             }
 
-            Sonucu(Yukle(istek.Value.Yol, istek.Value.Boyut));
+            Sonucu(Yukle(istek.Value.Yol, istek.Value.Boyut), Ozellikleri(istek.Value.Yol));
+        }
+    }
+
+    /// <summary>
+    /// Belgenin icindeki ozellikleri tek satira dizer.
+    ///
+    /// ARKA PLANDA cagriliyor cunku dosya aciliyor - olculdu: dosya basina
+    /// ~66 KB ve birkac ms, ama ag surucusunde her tiklamada arayuzu
+    /// bekletmek kabul edilemez.
+    ///
+    /// EN COK <see cref="EnFazlaOzellik"/> tane gosteriliyor: bir parcada
+    /// onlarca ozellik olabilir ve panel iki satirlik bir yer. Kirpildiysa
+    /// bu SOYLENIYOR ("+3 daha") - sessizce kirpmak, kullanicinin gormedigi
+    /// bir ozelligi yok saymasina yol acardi (CLAUDE.md 3).
+    /// </summary>
+    private static string Ozellikleri(string yol)
+    {
+        if (!SwReferans.TasiyabilirMi(yol))
+        {
+            return string.Empty;
+        }
+
+        SwBelgeBilgileri bilgi = SwBelgeBilgisi.Oku(yol);
+        if (!bilgi.Okundu)
+        {
+            return string.Empty;
+        }
+
+        var parcalar = new System.Collections.Generic.List<string>();
+        if (bilgi.SonKaydeden is string kim)
+        {
+            parcalar.Add("Kaydeden: " + kim);
+        }
+
+        if (bilgi.Yapilandirma is string yapi)
+        {
+            parcalar.Add("Yapılandırma: " + yapi);
+        }
+
+        int sayi = 0;
+        foreach (System.Collections.Generic.KeyValuePair<string, string> o in bilgi.Ozel)
+        {
+            if (sayi == EnFazlaOzellik)
+            {
+                parcalar.Add($"+{bilgi.Ozel.Count - EnFazlaOzellik} daha");
+                break;
+            }
+
+            parcalar.Add($"{o.Key}: {(o.Value.Length == 0 ? "—" : o.Value)}");
+            sayi++;
+        }
+
+        return string.Join("  ·  ", parcalar);
+    }
+
+    /// <summary>
+    /// Bayt dizisini bagimsiz bir resme cevirir; olmazsa sebebini verir.
+    ///
+    /// OLCULMUS TUZAK (CLAUDE.md 4): Image.FromStream AKISI SAHIPLENIYOR.
+    /// Akis kapaninca resim CIZILMIYOR ama null da olmuyor - yani "onizleme
+    /// yok" dalina bile girilmiyor, kullanici bos bir kutu ve hicbir sebep
+    /// goruyor. Bagimsiz kopya (new Bitmap) sart.
+    /// </summary>
+    private static Image? Resme(byte[]? veri, out string? sebep)
+    {
+        sebep = null;
+        if (veri is null || veri.Length == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var bellek = new MemoryStream(veri, writable: false);
+            using Image gecici = Image.FromStream(bellek);
+            return new Bitmap(gecici);
+        }
+        catch (Exception hata) when (hata is ArgumentException or OutOfMemoryException
+                                         or IOException or NotSupportedException)
+        {
+            sebep = "Dosyadaki önizleme çözülemedi: " + hata.Message;
+            return null;
         }
     }
 
@@ -206,8 +300,24 @@ internal sealed class Onizleme : IDisposable
             return (yol, kabuktan, null);
         }
 
-        // 2) GOMULU: dosyanin icindeki onizleme. SOLIDWORKS kurulu OLMAYAN bir
-        //    makinede tek sansimiz bu.
+        // 2) SOLIDWORKS PAKETI: dosyanin icindeki "PreviewPNG" akisi.
+        //    OLCULDU (28.08.2026): SOLIDWORKS 2022 dosyalari OLE bilesik belge
+        //    DEGIL, kendi kaplari - o yuzden asagidaki (3) numarali gomulu
+        //    okuyucu bu dosyalarda HIC calismiyordu. Gelen sey gercek bir PNG.
+        //    Kazanci ikili: SOLIDWORKS kurulu olmayan makinede onizleme
+        //    cikiyor, VE Wine'da olculebiliyor (kabuk saglayicisi orada yok).
+        Image? paketten = Resme(SwOnizleme.Oku(yol), out string? paketSebebi);
+        if (paketten is not null)
+        {
+            return (yol, paketten, null);
+        }
+
+        if (paketSebebi is not null)
+        {
+            return (yol, null, paketSebebi);
+        }
+
+        // 3) GOMULU (OLE bilesik belge): eski surumlerin dosyalari icin.
         try
         {
             byte[]? gomulu = OnizlemeOkuyucu.Oku(yol);
@@ -228,7 +338,7 @@ internal sealed class Onizleme : IDisposable
             return (yol, null, "Gömülü önizleme okunamadı: " + hata.Message);
         }
 
-        // 3) HICBIRI YOKSA: "yok" demek yetmez, NEDEN yok ve ne yapilabilir
+        // 4) HICBIRI YOKSA: "yok" demek yetmez, NEDEN yok ve ne yapilabilir
         //    de soylenir (CLAUDE.md 3).
         if (sebep is null && DosyaTurleri.Tani(yol) == DosyaTuru.Pdf)
         {
@@ -238,7 +348,7 @@ internal sealed class Onizleme : IDisposable
         return (yol, null, sebep);
     }
 
-    private void Sonucu((string Yol, Image? Resim, string? Sebep) sonuc)
+    private void Sonucu((string Yol, Image? Resim, string? Sebep) sonuc, string ozellikler)
     {
         if (_arayuz.IsDisposed || !_arayuz.IsHandleCreated)
         {
@@ -258,6 +368,8 @@ internal sealed class Onizleme : IDisposable
                     sonuc.Resim?.Dispose();
                     return;
                 }
+
+                _panel.OzellikleriYaz(ozellikler);
 
                 if (sonuc.Resim is not null)
                 {

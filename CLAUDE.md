@@ -276,9 +276,71 @@ yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
 → Klasör taşınırken yalnızca **DIŞARIDAN verilen referanslar** kırılıyor;
 `Directory.Move` + yalnızca dış ebeveyn onarımı meşru bir hızlı yol.
 
-> **HENÜZ ÖLÇÜLMEDİ — teknik resim → model.** Ölçüm montaj→montaj zincirinde
-> koştu. Teknik resmin model referansı bu kuralı izliyor mu **bilinmiyor**.
-> Ölçülmeden hızlı yol teknik resimleri kapsamaz.
+> **ÖLÇÜLDÜ (28.08.2026) — teknik resim → model de okunuyor.** Yukarıdaki
+> "bilinmiyor" kapandı: `Parça1.SLDDRW → Parça1.SLDPRT` ve
+> `Montaj2.SLDDRW → Montaj2.SLDASM` gerçek dosyalarda ölçüldü. Ama bu,
+> *dosyanın içinde yazan yolun okunabildiği*; SOLIDWORKS'ün klasör taşınınca
+> teknik resmi nasıl bulduğu **hâlâ ölçülmedi**.
+
+### SOLIDWORKS 2022 DOSYA BİÇİMİ — ölçüldü, OLE değil
+
+Yedi gerçek dosyayla ölçüldü (`araclar/ornek-veri/tertemiz/`). **Dosyalar OLE
+Bileşik Belge DEĞİL** — bu önce yanlış varsayıldı ve ilk ölçüm "hiçbir şey
+bulunamadı" dedi. Entropi 7,9/8: dosya baştan sona sıkıştırılmış.
+
+Gerçek yapı, ardarda dizilmiş **adlandırılmış akışlar**:
+
+```
+uint32 sikisikBoyut · uint32 acilmisBoyut · uint32 adUzunlugu
+ad   (her baytın NIBBLE'ları takas edilmiş ASCII: 34 F6 E6 47 -> "Cont")
+veri (ham deflate, zlib başlığı YOK)
+```
+
+Dizeler MFC Unicode `CString`: `FF FE FF <uzunluk:1 bayt> <UTF-16LE>` —
+52 yolun 52'sinde tuttu. SOLIDWORKS bir MFC uygulaması; okunan şey onların
+kendi serileştirme biçimi.
+
+| akış | ne tutuyor |
+|---|---|
+| `Header2` | **doğrudan** referanslar |
+| `Contents/DisplayLists`, `Contents/Definition` | bütün ağaç (torunlar dahil) |
+| `_MO_VERSION_15000/Biography` | belgenin **kendi** yolu |
+| `PreviewPNG` | **gerçek PNG** (`89 50 4E 47`) |
+| `docProps/custom.xml` | kullanıcının özellikleri (Malzeme, Ağırlık…) |
+| `docProps/ISolidWorksInformation.xml` | 46 sistem özelliği |
+| `docProps/core.xml` | kim, ne zaman kaydetti |
+
+**Doğrudan/dolaylı ayrımını `Header2` yapıyor.** Akış ayrımı yapılmazsa
+`Montaj2.SLDASM` torunlarını da doğrudan çocuğu gibi gösteriyor.
+
+> **SAYISAL DENETİM YETMİYOR — akış başlığı AÇILARAK doğrulanır.** Zincir
+> yürütücüsünün ilk hâli sahte başlıklar kabul ediyordu: `Preview 364 → 728`,
+> `PreviewPNG 455 → 910` gibi, hepsinde açılmış boyut sıkışığın tam iki katı
+> ve **adları gerçek akış adlarıydı** (gerçek kaydın adına denk geliyorlardı).
+> Zincir oraya atlıyor, gerçek `Header2` bir daha bulunamıyordu. Belirti
+> sessiz: istisna yok, yalnızca "Header2 okunamadı" — yedi dosyanın DÖRDÜNDE.
+> *"Sonraki başlık da makul mü"* denetimi **denendi, YETMEDİ**. Veriyi
+> gerçekten açmak ayırdı; birkaç on bayt yetiyor, yani hız korunuyor.
+
+**HIZ ÖLÇÜLDÜ:** akışların verisi okunmuyor, **atlanıyor**. Dosya başına
+~66 KB ve 2,8–10 ms — ve bu sayı **dosya boyutundan bağımsız**. "Binlerce
+parçalı montajda uzun sürer mi" sorusunun cevabı bu: montajın kullandığı
+parçaları öğrenmek için parçalar açılmıyor, montajın kendi `Header2`'si
+zaten hepsini yazıyor.
+
+> **ÖLÇÜLMEDİ:** 100 MB+ bir montajda akış *sayısı* artıyor mu; eski
+> SOLIDWORKS sürümlerinin biçimi (2015 öncesi büyük ihtimalle OLE, o yüzden
+> `BilesikDosya` duruyor); 254 karakterden uzun yolların MFC kaçış biçimi.
+
+### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
+
+Ölçüldü: `C:\Users\PC\Desktop\tertemiz\Parça1.SLDPRT`. Aynı dosyalar başka
+bir makinede `\\sunucu\ortak\...` altında duruyor — yani **tam yol
+eşleştirmesi çalışmaz**. Eşleştirme ADA göre yapılır ve birden çok aday
+varsa **komşu kazanır**; bu tahmin değil, yukarıda ölçülen "yanındaki dosya
+yazılı yolun önüne geçer" davranışının kendisi. Karar verilemiyorsa
+**BELİRSİZ** denir, tek cevap uydurulmaz — yanlış bir "bu dosya" cevabı
+kullanıcıya yanlış dosyayı sildirir.
 
 ---
 
@@ -662,6 +724,19 @@ dosyasında** duruyor:
 | kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ayarlar.cs` |
 | Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
+| **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwPaket.cs` |
+| belgenin **doğrudan referansları** | `Cekirdek/SwReferans.cs` |
+| belgenin içindeki önizleme | `Cekirdek/SwOnizleme.cs` |
+| belge özellikleri (Malzeme, Kaydeden…) | `Cekirdek/SwBelgeBilgisi.cs` |
+| **yazılı yol hangi gerçek dosya** | `Cekirdek/ReferansCozucu.cs` |
+| referans indeksi (veri + sorgu) | `Cekirdek/ReferansIndeksi.cs` |
+| indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
+| indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
+| **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
+| tek tek raporlar | `Cekirdek/Raporlar/<rapor>.cs` |
+| referansların arayüzde görünmesi | `Arayuz/Gorunum/ReferansSurucusu.cs` |
+| referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
+| rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
@@ -712,11 +787,36 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı dokuz şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı on bir şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
-mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu**.
+mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
+**önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu**.
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
+> Önizleme yalnızca Windows kabuğundan geliyordu; Wine'da kabuk sağlayıcısı
+> yok, SOLIDWORKS kurulu olmayan Windows'ta da `.SLDPRT` için resim gelmiyor.
+> Yani "önizleme boş" hatası sessizce pakete girebilirdi — boş bir kutu,
+> hiçbir sebep. Artık dosyanın kendi `PreviewPNG` akışı okunuyor ve burada
+> ölçülebiliyor.
+> **EŞİK ÖLÇÜLEREK SEÇİLDİ ve ilk hâli YAKALAMADI:** eşik 500'dü, kaynak
+> devre dışı bırakılınca kapı yine "EVET" dedi — çünkü *"Önizleme yok"*
+> yazısı da 612 piksel üretiyor. Renk sayısı da ayırt etmedi (yazı kenar
+> yumuşatmayla 62 renk veriyor). Ayıran tek şey yirmi katlık fark: gerçek
+> önizleme **12665**, yazı **612**. Eşik 3000'e çekilince YAKALADI.
+
+> **On birincisi neden var (referans listesi):** bu uygulamanın varlık sebebi.
+> Liste sessizce boş kalırsa kullanıcı "bu parçayı kimse kullanmıyor" sanıp
+> **siler** (§3). Ölçüm SAYIYLA olmuyor: liste tarama öncesi de boş değil,
+> içinde *"Bilinmiyor / taranmadı"* satırı duruyor. Ayırt eden şey içeriğin
+> **değişmesi** — aynı kırpmanın parmak izi alınıyor, `Ctrl+Shift+R`
+> öncesi ve sonrası farklı olmalı.
+>
+> **KAPI YİNELENEBİLİR DEĞİLDİ — ve bunu ancak ikinci koşu gösterdi.**
+> Uygulama indeksi `%APPDATA%`'ya yazıyor; önceki koşudan kalan indeks
+> yüzünden ikinci koşu daha baştan "taranmış" hâlde açılıyor ve ölçüm aynı
+> şeyi iki kez ölçüyordu. Kapı artık başlarken o klasörü siliyor.
 
 > **Yedincisi neden var (sıralama):** sıralamanın kendi menüsü Wine'da
 > **çökertiyor** (yukarıdaki `ContextMenuStrip` maddesi), yani menü yoluyla

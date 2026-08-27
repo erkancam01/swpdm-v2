@@ -22,6 +22,7 @@ internal sealed class AgacMenusu
     private Func<SecimBaglami>? _secimKaynagi;
     private IIlerlemeYuzeyi? _ilerleme;
     private Action? _agaciKapat;
+    private ReferansSurucusu? _referanslar;
 
     internal AgacMenusu(SecimliAgac agac)
     {
@@ -63,6 +64,9 @@ internal sealed class AgacMenusu
 
     /// <summary>Butun dallari kapatan isi.</summary>
     internal void AgaciKapatan(Action is_) => _agaciKapat = is_;
+
+    /// <summary>Referans indeksini islemlere ulastirir.</summary>
+    internal void ReferansSurucusunu(ReferansSurucusu surucu) => _referanslar = surucu;
 
     /// <summary>Menu ogelerinin yazilarini ve durumlarini tazeler.</summary>
     internal void YazilariTazele() => YazilariKur(Secim());
@@ -119,7 +123,7 @@ internal sealed class AgacMenusu
             return;
         }
 
-        if (_ilerleme is null)
+        if (_ilerleme is null || _referanslar is null)
         {
             return;
         }
@@ -130,6 +134,7 @@ internal sealed class AgacMenusu
             Tazele: yol => Tazele?.Invoke(this, yol),
             Bildir: cumle => Durum?.Invoke(this, cumle),
             Ilerleme: _ilerleme,
-            AgaciKapat: _agaciKapat ?? (() => { })));
+            AgaciKapat: _agaciKapat ?? (() => { }),
+            Referanslar: _referanslar));
     }
 }

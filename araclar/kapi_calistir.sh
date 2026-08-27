@@ -54,6 +54,10 @@ AGAC_SATIR_YUKSEKLIGI=18
 AGAC_TIK_X=105                                  # dugum metnine denk gelen x
 SUZGEC_Y=95                                     # suzgec seridinin y'si
 SUZGEC_PARCA_X=171                              # "Parca" dugmesinin x'i
+SUZGEC_TUMU_X=38                                # "Tumu" dugmesinin x'i
+# Alt panel: solda onizleme kutusu, sagda referans listesi.
+ONIZLEME_KIRP="250x280+15+458"                  # pencere ici: genislikxyukseklik+x+y
+REFERANS_KIRP="260x150+295+458"
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -168,6 +172,13 @@ eskileri_oldur Xvfb ":$EKRAN_NO"
 eskileri_oldur "$AD.exe"
 sleep 1
 
+# KAPI YINELENEBILIR OLMALI - ve degildi. Uygulama ayarlarini ve referans
+# indeksini %APPDATA%'ya yaziyor; onceki kosudan kalan indeks yuzunden
+# ikinci kosu daha basindan "taranmis" haliyle aciliyordu ve "tarama
+# oncesi / sonrasi" olcumu ayni seyi iki kez olcuyordu. Belirti sinsiydi:
+# kapi ilk kosuda dogru, ikincide yanlis sonuc veriyordu.
+find "$WINEPREFIX" -type d -name "SwPdm" -prune -exec rm -rf {} + 2>/dev/null
+
 # Onyuklemenin bittigini beklemek. DURUST NOT: bu bekleme, yukaridaki
 # mscoree hatasi aranirken "yarim kurulmus on ek" hipoteziyle eklendi ve o
 # hipotez YANLIS cikti - sebep mscoree'ydi. Bekleme yine de duruyor cunku
@@ -227,6 +238,13 @@ cp "$KOK/araclar/ornek-veri/ornek.pdf" "$ORNEK/katalog.pdf"
 mkdir -p "$ORNEK/33/derin/daha-derin"
 : > "$ORNEK/33/derin/daha-derin/Parca9.SLDPRT"
 head -c 83000 /dev/zero > "$ORNEK/33/Parca2.SLDDRW"
+
+# GERCEK SOLIDWORKS 2022 dosyalari. Yukaridaki bos dosyalar agacin
+# gorunusunu olcmeye yetiyor ama ONIZLEME ve REFERANS olcumu icin gercek
+# icerik sart: bos bir dosyada gosterilecek onizleme de, cozulecek referans
+# da yok. Ikisi ayni kumeden: teknik resim parcayi baz aliyor.
+cp "$KOK/araclar/ornek-veri/tertemiz/Parça1.SLDPRT" "$ORNEK/Parça1.SLDPRT"
+cp "$KOK/araclar/ornek-veri/tertemiz/Parça1.SLDDRW" "$ORNEK/Parça1.SLDDRW"
 
 # Wine "Z:" surucusunu koke esliyor; yolu Windows bicimine ceviriyoruz.
 ORNEK_WIN="Z:$(echo "$ORNEK" | tr '/' '\\')"
@@ -289,32 +307,51 @@ agac_izi() {
       +repage -depth 8 rgb:- 2>/dev/null | md5sum | cut -d' ' -f1
 }
 
+# Pencere ICI kirpma: "GxY+x+y" olcusunu ekran koordinatina cevirip beyaz
+# olmayan piksel sayar. Bos bir kutu ~0 verir.
+beyaz_olmayan() {
+  local goruntu="$1" olcu="$2" px="$3" py="$4"
+  local boyut="${olcu%%+*}" kalan="${olcu#*+}"
+  local x="${kalan%%+*}" y="${kalan#*+}"
+  convert "$goruntu" -crop "${boyut}+$(( px + x ))+$(( py + y ))" +repage txt:- 2>/dev/null \
+    | grep -vc '#FFFFFF'
+}
+
+# Ayni kirpmanin ozeti. Icerik degistiyse ozet degisir.
+kirpma_izi() {
+  local goruntu="$1" olcu="$2" px="$3" py="$4"
+  local boyut="${olcu%%+*}" kalan="${olcu#*+}"
+  local x="${kalan%%+*}" y="${kalan#*+}"
+  convert "$goruntu" -crop "${boyut}+$(( px + x ))+$(( py + y ))" +repage \
+    -depth 8 rgb:- 2>/dev/null | md5sum | cut -d' ' -f1
+}
+
 SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/9] surec ayakta ............ EVET"
+  echo "   [1/11] surec ayakta ............ EVET"
 else
-  echo "   [1/9] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/11] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/9] hata akisi temiz ........ HAYIR"
+  echo "   [2/11] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/9] hata akisi temiz ........ EVET"
+  echo "   [2/11] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/9] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/11] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/9] cokme penceresi yok ..... EVET"
+  echo "   [3/11] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -336,9 +373,9 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/9] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/11] ana pencere dogdu ....... EVET ($ANA)"
 else
-  echo "   [4/9] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/11] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -363,13 +400,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/9] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/11] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/9] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/11] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/9] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/11] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -395,13 +432,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/9] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    echo "   [6/11] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/9] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    echo "   [6/11] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/9] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  echo "   [6/11] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -442,13 +479,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
-    echo "   [7/9] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+    echo "   [7/11] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
   else
-    echo "   [7/9] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    echo "   [7/11] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
     SORUN=1
   fi
 else
-  echo "   [7/9] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  echo "   [7/11] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -471,13 +508,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [8/9] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    echo "   [8/11] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [8/9] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    echo "   [8/11] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [8/9] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  echo "   [8/11] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -503,13 +540,83 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [9/9] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/11] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [9/9] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/11] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [9/9] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  echo "   [9/11] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 10) ONIZLEME: dosyanin ICINDEKI onizleme cikiyor mu
+#
+# NEDEN VAR: bu alan BUGUNE KADAR HIC OLCULEMEDI. Onizleme yalnizca Windows
+# kabugundan geliyordu; Wine'da kabuk saglayicisi YOK, SOLIDWORKS kurulu
+# olmayan Windows'ta da .SLDPRT icin resim gelmiyor. Yani "onizleme bos"
+# hatasi sessizce pakete girebilirdi - bos bir kutu, hicbir sebep.
+# Artik dosyanin kendi "PreviewPNG" akisi okunuyor ve BURADA olculebiliyor.
+#
+# Olcum: gercek bir .SLDPRT secilir, onizleme kutusundaki BEYAZ OLMAYAN
+# piksel sayilir. Bos kutu ~0 verir; gercek onizleme binlerce.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # "Tumu" suzgecine don, yoksa .SLDPRT gorunmeyebilir
+  xdotool mousemove "$(( PENCERE_X + SUZGEC_TUMU_X ))" "$(( PENCERE_Y + SUZGEC_Y ))" click 1 > /dev/null 2>&1
+  sleep 2
+  SON_SATIR=$(( PENCERE_Y + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * 13 ))
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/onizleme.png" > /dev/null 2>&1
+  PIKSEL="$(beyaz_olmayan "$CALISMA/onizleme.png" "$ONIZLEME_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  # ESIK OLCULEREK SECILDI: gercek onizleme 12665 piksel, "Önizleme yok"
+  # yazisi 612. Ilk halinde esik 500'du ve kaynak devre disi birakildiginda
+  # kapi YAKALAMADI - yazinin kendisi esigi geciyordu. Renk sayisi da
+  # ayirt etmedi (yazi kenar yumusatmayla 62 renk uretiyor). Ayiran tek sey
+  # piksel sayisinin YIRMI KATLIK farki.
+  if [ "${PIKSEL:-0}" -gt 3000 ]; then
+    echo "   [10/11] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
+  else
+    echo "   [10/11] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
+    SORUN=1
+  fi
+else
+  echo "   [10/11] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 11) REFERANS LISTESI: tarama sonrasi "kim kullaniyor" doluyor mu
+#
+# NEDEN VAR: bu uygulamanin VARLIK SEBEBI. Liste sessizce bos kalirsa
+# kullanici "bu parcayi kimse kullanmiyor" sanip SILER (CLAUDE.md 3).
+# Olcum: Ctrl+Shift+R ile taranir, parca secilir, sag alt listedeki
+# beyaz olmayan piksel sayilir. Tarama ONCESI de bakiliyor - liste
+# taramadan once BOS olmali, sonra DOLMALI; ikisi birden olcum.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # SAYI DEGIL PARMAK IZI: liste tarama ONCESI de bos degil - icinde
+  # "Bilinmiyor / taranmadı" satiri duruyor (CLAUDE.md 3: bos birakmak
+  # "referansi yok" diye okunurdu). Yani "doldu mu" sorusu ayirt etmiyor;
+  # ayirt eden sey ICERIGIN DEGISMESI.
+  IZ_ONCE="$(kirpma_izi "$CALISMA/onizleme.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+  ONCE_L="$(beyaz_olmayan "$CALISMA/onizleme.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+r > /dev/null 2>&1
+  sleep 8
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/referans.png" > /dev/null 2>&1
+  IZ_SONRA="$(kirpma_izi "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+  SONRA_L="$(beyaz_olmayan "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_ONCE" != "$IZ_SONRA" ] && [ "${SONRA_L:-0}" -gt 50 ]; then
+    echo "   [11/11] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
+  else
+    echo "   [11/11] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
+    SORUN=1
+  fi
+else
+  echo "   [11/11] referans listesi ...... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

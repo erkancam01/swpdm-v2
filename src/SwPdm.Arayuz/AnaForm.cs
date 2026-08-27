@@ -32,6 +32,7 @@ internal sealed partial class AnaForm : Form
     private readonly SurukleBirak _surukleBirak;
     private readonly IlerlemeYuzeyi _ilerleme;
     private readonly DiskIzleyici _izleyici;
+    private readonly ReferansSurucusu _referansSurucusu = new();
     private readonly Ayarlar _ayarlar = Ayarlar.Oku();
     private AyarlarSayfasi? _ayarlarSayfasi;
     private readonly Gorunum.Onizleme _onizleme;
@@ -95,13 +96,14 @@ internal sealed partial class AnaForm : Form
         _menu.SecimKaynagi(SecimBaglamiKur);
         _menu.IlerlemeYuzeyi(_ilerleme);
         _menu.AgaciKapatan(_doldurucu.HepsiniKapat);
+        _menu.ReferansSurucusunu(_referansSurucusu);
         _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _menu.Tazele += (_, yol) => AgaciTazele(yol);
         _surukleBirak = new SurukleBirak(_agac);
         _surukleBirak.Tasindi += (_, e) => Aktar.Yurut(
             new IslemBaglami(
                 this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme,
-                _doldurucu.HepsiniKapat),
+                _doldurucu.HepsiniKapat, _referansSurucusu),
             e.Yollar,
             e.HedefKlasor,
             AktarmaKipi.Tasi);
@@ -217,6 +219,7 @@ internal sealed partial class AnaForm : Form
         _onizleme.Temizle();
         _durum.KokAcildi();
         _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
+        _referansSurucusu.KokuKur(_doldurucu.Kok);
         _kokSecici.GecmiseEkle(yol);
 
         // Kok HATIRLANIR: bir dahaki acilista dosya yolunu yeniden gostermeye
@@ -409,6 +412,7 @@ internal sealed partial class AnaForm : Form
 
             SecimOzeti ozet = SecimOzeti.Hesapla(etiketler);
             _onizleme.Goster(ozet);
+            _referansSurucusu.Doldur(_referanslar, null);
             _durum.Secildi(ozet);
             return;
         }
@@ -416,19 +420,22 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(secililer.Count == 1 ? secililer[0] : null))
         {
             case DosyaOgesi dosya:
-                _onizleme.Goster(dosya);
+                _onizleme.Goster(dosya, _referansSurucusu.KullananMetni(dosya.Yol));
+                _referansSurucusu.Doldur(_referanslar, dosya.Yol);
                 _durum.Secildi(dosya);
                 _yol.Goster(WindowsYolu.Klasor(dosya.Yol));
                 break;
 
             case KlasorOgesi klasor:
                 _onizleme.Goster(klasor);
+                _referansSurucusu.Doldur(_referanslar, null);
                 _durum.Secildi(klasor);
                 _yol.Goster(klasor.Yol);
                 break;
 
             default:
                 _onizleme.Temizle();
+                _referansSurucusu.Doldur(_referanslar, null);
                 break;
         }
     }

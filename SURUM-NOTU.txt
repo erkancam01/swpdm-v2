@@ -1,4 +1,99 @@
-BU SURUMDE YENI - ISTEDIGIN DORT SEY
+BU SURUMDE YENI - PDM'IN ASIL ISI: REFERANSLAR
+
+  Bu surumde uygulama artik SOLIDWORKS dosyalarinin ICINE bakiyor.
+  SOLIDWORKS'un kurulu olmasina GEREK YOK, API'ye de gerek yok.
+
+  1. KIM KIMI KULLANIYOR
+     Sag tikta "Referanslari tara" ve Ctrl+Shift+R. Bir kez tarayin;
+     sonra her dosyaya tikladiginizda sag altta gorursunuz:
+       - bu dosyanin KULLANDIKLARI (montajin parcalari, teknik resmin modeli)
+       - bu dosyayi KULLANANLAR (onu iceren montajlar, teknik resimler)
+     Onizleme panelinde de "Kullanan: 2 dosya" yaziyor.
+
+     TARAMA ARTIMLIDIR. Ilk tarama bir kez pahalidir; sonrasinda boyutu ve
+     tarihi degismeyen dosya BIR DAHA ACILMAZ. Gunluk kullanimda yalnizca
+     degisenler okunur.
+
+     TARAMA KENDI HIZINI YAZAR: "15 dosya · 15 okundu · 0 degismemis ·
+     0,1 sn". Ag surucusundeki gercek maliyeti tahmin etmiyorum, oradan
+     goreceksiniz. Iptal edilebilir.
+
+     INDEKS AG SURUCUSUNE YAZILMIYOR - %APPDATA%\SwPdm\indeks altina
+     yaziliyor. Sebep: ortak klasor salt-okunur olabilir, iki kullanici
+     birbirinin indeksini bozar, ve proje klasorunuze bizim dosyamiz
+     girmemeli. Indeks kaybolursa yeniden taranir, bir sey kaybolmaz.
+
+  2. SILMEDEN ONCE UYARI
+     Bir dosyayi silmeye kalktiginizda, onu KULLANAN dosyalari adlariyla
+     listeliyor: "DIKKAT: bunlari 3 dosya KULLANIYOR". Uyariyor ama
+     ENGELLEMIYOR - karar sizin.
+     Tarama yapilmadiysa "BILMIYORUZ" diyor. Sessizce "temiz" DEMIYOR.
+
+  3. RAPORLAR - Ctrl+Shift+D
+     Bes sekme:
+       Kirik referanslar     : icinde yazan bir dosyanin karsiligi taranan
+                               agacta yok. Montaji hic acmadan, SOLIDWORKS'un
+                               "dosya bulunamadi" diyecegi yerleri gosterir.
+       Yetim parcalar        : hicbir montajin/teknik resmin kullanmadigi
+                               PARCALAR. (Montaj ve teknik resmin yetim
+                               olmasi normaldir, onlar listeye girmez.)
+       Teknik resmi olmayanlar: hicbir teknik resmin baz almadigi modeller.
+       Tasinmis dosyalar     : son kaydedildigi yer ile simdiki yeri farkli.
+       Okunamayan dosyalar   : referanslari cikarilamayanlar. BU SEKME
+                               OTEKI RAPORLARIN NE KADARINI BILMEDIGIMIZI
+                               gosterir; bos olmasi iyi haberdir.
+
+     NOT: "Tasinmis dosyalar" ilk taramada COK dosya gosterebilir. Bu dogru:
+     dosyalarin icinde en son kaydedildikleri yol yazili ve o yol baska bir
+     makineden gelmisse gercekten bayattir.
+
+  4. ONIZLEME ARTIK SOLIDWORKS'SUZ DE CIKIYOR
+     Onceden onizleme yalnizca Windows kabugundan geliyordu; SOLIDWORKS
+     kurulu olmayan bir makinede kutu BOS kaliyordu. Artik dosyanin kendi
+     icindeki onizleme okunuyor. Yan kazanc: bu alan ilk kez TEST
+     EDILEBILIR hale geldi (kapiya 10. olcum olarak girdi).
+
+  5. BELGE BILGILERI
+     Onizleme panelinin altinda: "Kaydeden: PC · Yapilandirma: Varsayilan"
+     ve girdiginiz OZEL OZELLIKLER - "Malzeme: Pirinç · Ağırlık: 851.42".
+     En fazla uc tanesi gosteriliyor, gerisi "+3 daha" diye sayiliyor.
+     Bos birakilmis bir ozellik "—" ile gorunur: alan VAR ama doldurulmamis;
+     hic olmayan bir alandan farkli.
+
+     NOT: denkleme bagli ozellikler (ornegin kutleden gelen Agirlik)
+     dosyada ONBELLEKLENMIS haliyle duruyor. Oldugu gibi gosteriyorum,
+     yeniden hesaplamiyorum - model degisip yeniden olusturulmadiysa bayat
+     olabilir.
+
+  DOSYAYA HICBIR SEY YAZILMIYOR. Bu surumde uygulama SOLIDWORKS
+  dosyalarinin icine YAZMIYOR, yalnizca okuyor. Tasima/adlandirma sonrasi
+  onarim gerekiyorsa soyluyor, kendisi duzeltmiyor - cunku yazdigim bir
+  dosyanin SOLIDWORKS'te acildigini burada DOGRULAYAMIYORUM. O adim ancak
+  sizin makinenizde dogrulanabilir.
+
+  OLCULDU
+    yedi gercek SOLIDWORKS 2022 dosyasinda referanslar 7/7 dogru okundu
+    montaj -> parca · montaj -> alt montaj · teknik resim -> model
+    Wine'da: tarama, referans listesi, onizleme, rapor penceresi calisti
+    dosya basina ~66 KB okunuyor, 2,8-10 ms - DOSYA BOYUTUNDAN BAGIMSIZ
+    213 test geciyor (161'di), dort kapi da TEMIZ
+
+  BURADA OLCULEMEYEN
+    - Ag surucusunde tarama SURESI. Buradaki 0,1 sn yerel diskte, 15
+      dosyalik bir agacta. Sizde binlerce dosya var; ilk tarama dakikalar
+      surebilir. Tarama kendi hizini yaziyor, gercek sayiyi oradan
+      goreceksiniz.
+    - 100 MB+ bir montajda okuma maliyeti. Olculen dosyalar 30-90 KB'lik
+      ornekler. Beklentim ayni (~66 KB, boyuttan bagimsiz) ama OLCMEDIM.
+    - ESKI SOLIDWORKS surumleri. Her sey 2022 dosyalariyla olculdu. Daha
+      eski bir surumun bicimi farkli olabilir; bir montaj atarsaniz olcerim.
+    - 254 karakterden uzun yollar. Yol uzunlugu dosyada 1 bayt ile
+      yaziliyor; daha uzunu icin SOLIDWORKS baska bir bicime geciyor ve o
+      bicimi GORMEDIM. Kod boyle bir yol gorurse onu ATLIYOR ve sonucun
+      eksik oldugunu SOYLUYOR - sessizce yanlis cevap vermiyor. Uzun ag
+      yollarinda bunu gorursek bana bildirin.
+
+ONCEKI SURUMDE YENIYDI - DORT SEY
 
   1. OTOMATIK TAZELEME - F5'e basmaya gerek yok
      Diskte bir sey degisince agac kendiliginden tazeleniyor. Acik dallar ve

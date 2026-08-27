@@ -59,13 +59,18 @@ internal sealed record SecimBaglami(
 /// <param name="Bildir">Durum cubuguna yazilacak cumle.</param>
 /// <param name="Ilerleme">Uzun suren isin ilerlemeyi bildirdigi yuzey.</param>
 /// <param name="AgaciKapat">Butun dallari kapatip koke doner.</param>
+/// <param name="Referanslar">
+/// Referans indeksi. ORTAK ARAC, ozellik degil (CLAUDE.md 1b): birden cok
+/// islem ona soruyor - tarama, raporlar, ve silme/tasima oncesi uyari.
+/// </param>
 internal sealed record IslemBaglami(
     IWin32Window Sahip,
     SecimBaglami Secim,
     Action<string?> Tazele,
     Action<string> Bildir,
     IIlerlemeYuzeyi Ilerleme,
-    Action AgaciKapat);
+    Action AgaciKapat,
+    ReferansSurucusu Referanslar);
 
 /// <summary>
 /// Uzun suren islerin ilerlemeyi bildirdigi yuzey.
