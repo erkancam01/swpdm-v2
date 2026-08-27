@@ -2,21 +2,23 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
 /// Tur suzgeci seridi: Tumu / Montaj / Parca / Teknik resim / PDF.
 ///
-/// Yalnizca GORUNUM. Bir dugmeye basmak SADECE secili gorunumu degistirir;
-/// hicbir sey suzulmez. Suzme geldiginde <see cref="SecimDegisti"/> baglanacak.
+/// Etiketler ile TURLER burada birlikte duruyor; boylece disarida
+/// "Montaj yazisi hangi ture karsilik geliyordu" diye metin esleme yapilmiyor
+/// (CLAUDE.md 8: ayni bilginin ikinci kopyasi yazilmaz).
 /// </summary>
 internal sealed class SuzgecSeridi : FlowLayoutPanel
 {
     private readonly List<Button> _dugmeler = [];
     private Button? _secili;
 
-    internal SuzgecSeridi(params string[] etiketler)
+    internal SuzgecSeridi(params (string Etiket, DosyaTuru? Tur)[] secenekler)
     {
         FlowDirection = FlowDirection.LeftToRight;
         WrapContents = false;
@@ -25,9 +27,10 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         Padding = new Padding(4, 2, 4, 2);
         BackColor = Renkler.GovdeArkaPlan;
 
-        foreach (string etiket in etiketler)
+        foreach ((string etiket, DosyaTuru? tur) in secenekler)
         {
             Button d = Dugme(etiket);
+            d.Tag = tur;
             _dugmeler.Add(d);
             Controls.Add(d);
         }
@@ -38,11 +41,11 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         }
     }
 
-    /// <summary>Secili suzgecin etiketi degistiginde tetiklenir.</summary>
-    internal event EventHandler<string>? SecimDegisti;
+    /// <summary>Secim degistiginde tetiklenir. null = butun turler.</summary>
+    internal event EventHandler<DosyaTuru?>? SecimDegisti;
 
-    /// <summary>Su an secili olan suzgecin etiketi.</summary>
-    internal string SeciliEtiket => _secili?.Text ?? string.Empty;
+    /// <summary>Su an secili tur. null = butun turler.</summary>
+    internal DosyaTuru? SeciliTur => _secili?.Tag as DosyaTuru?;
 
     private Button Dugme(string etiket)
     {
@@ -81,6 +84,6 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         d.FlatAppearance.BorderSize = 1;
         d.FlatAppearance.BorderColor = Renkler.SuzgecSeciliKenar;
 
-        SecimDegisti?.Invoke(this, d.Text);
+        SecimDegisti?.Invoke(this, d.Tag as DosyaTuru?);
     }
 }

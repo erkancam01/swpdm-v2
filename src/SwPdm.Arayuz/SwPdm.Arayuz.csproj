@@ -27,6 +27,9 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SwPdm.Cekirdek\SwPdm.Cekirdek.csproj" />
+  </ItemGroup>
 
   <!--
     Linux'ta apphost uretilemez (uretilse Linux apphost'u olurdu, ise yaramaz).

@@ -106,6 +106,26 @@ internal static class Simgeler
         return bmp;
     }
 
+    /// <summary>Tanimadigimiz uzantilar icin genel sayfa simgesi.</summary>
+    internal static Bitmap Dosya()
+    {
+        var bmp = Tuval(out Graphics g);
+        using (g)
+        {
+            using var kagit = new SolidBrush(Color.White);
+            using var kenar = new Pen(Color.FromArgb(0x8A, 0x8A, 0x8A));
+            using var cizgi = new Pen(Color.FromArgb(0xB0, 0xB0, 0xB0));
+            Point[] sayfa = [new(3, 1), new(10, 1), new(13, 4), new(13, 15), new(3, 15)];
+            g.FillPolygon(kagit, sayfa);
+            g.DrawPolygon(kenar, sayfa);
+            g.DrawLine(kenar, 10, 1, 10, 4);
+            g.DrawLine(kenar, 10, 4, 13, 4);
+            g.DrawLine(cizgi, 5, 8, 11, 8);
+            g.DrawLine(cizgi, 5, 11, 11, 11);
+        }
+        return bmp;
+    }
+
     internal static Bitmap Ac()
     {
         var bmp = Tuval(out Graphics g);

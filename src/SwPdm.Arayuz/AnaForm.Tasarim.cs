@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using SwPdm.Arayuz.Gorunum;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz;
 
@@ -76,12 +77,16 @@ internal sealed partial class AnaForm
             (".SLDASM", Simgeler.Montaj),        // SimgeSirasi.Montaj
             (".SLDDRW", Simgeler.TeknikResim),   // SimgeSirasi.TeknikResim
             (".PDF",    Simgeler.Pdf),           // SimgeSirasi.Pdf
+            (null,      Simgeler.Dosya),         // SimgeSirasi.Dosya (tanimadigimiz uzantilar)
         ];
 
         foreach ((string? uzanti, Func<Bitmap> yedek) in girdiler)
         {
+            // Ilk girdi klasor, sonuncusu "tanimadigimiz dosya". Ikisi de
+            // uzantisiz; klasor kabuktan alinir, genel dosya cizilmis kalir
+            // (kabugun genel simgesi zaten bizim yedegimizle ayni ise gerek yok).
             Bitmap? kabuktan = uzanti is null
-                ? KabukSimgeleri.Klasor()
+                ? (liste.Images.Count == 0 ? KabukSimgeleri.Klasor() : null)
                 : KabukSimgeleri.Dosya(uzanti);
 
             liste.Images.Add(kabuktan ?? yedek());
@@ -106,7 +111,12 @@ internal sealed partial class AnaForm
         };
 
         _araclar = AracSeridiniKur();
-        _suzgecler = new SuzgecSeridi("Tümü", "Montaj", "Parça", "Teknik resim", "PDF")
+        _suzgecler = new SuzgecSeridi(
+            ("Tümü", null),
+            ("Montaj", DosyaTuru.Montaj),
+            ("Parça", DosyaTuru.Parca),
+            ("Teknik resim", DosyaTuru.TeknikResim),
+            ("PDF", DosyaTuru.Pdf))
         {
             Dock = DockStyle.Top,
         };
@@ -135,21 +145,26 @@ internal sealed partial class AnaForm
         {
             Image = Simgeler.Ac(),
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ToolTipText = "Klasör aç",
+            ToolTipText = "Klasör aç (Ctrl+O)",
         };
 
+        // CLAUDE.md 3: tiklayip hicbir sey olmamasi SESSIZ YALAN. Ne yapacaklari
+        // henuz tanimlanmadigi icin devre disi duruyorlar; tanimlanip yazilinca
+        // acilacaklar.
         _copDugmesi = new ToolStripButton
         {
             Text = "Çöp",
             DisplayStyle = ToolStripItemDisplayStyle.Text,
-            ToolTipText = "Çöp kutusu",
+            ToolTipText = "Çöp kutusu — henüz yapılmadı",
+            Enabled = false,
         };
 
         _geriAlDugmesi = new ToolStripButton
         {
             Image = Simgeler.GeriAl(),
             DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ToolTipText = "Geri al",
+            ToolTipText = "Geri al — henüz yapılmadı",
+            Enabled = false,
         };
 
         // CLAUDE.md 6 - OLCULMUS TUZAK: ToolStripItem.Width, AutoSize aciksa
@@ -157,7 +172,7 @@ internal sealed partial class AnaForm
         // sey yapmiyor. Iki satirin sirasi onemli.
         _araKutusu = new ToolStripTextBox { AutoSize = false };
         _araKutusu.Width = 150;
-        _araKutusu.TextBox.PlaceholderText = "Ara...";
+        _araKutusu.TextBox.PlaceholderText = "Ara... (Enter)";
 
         serit.Items.Add(_acDugmesi);
         serit.Items.Add(new ToolStripSeparator());
@@ -185,6 +200,7 @@ internal sealed partial class AnaForm
             BackColor = Renkler.AgacArkaPlan,
             ImageList = _simgeler,
             ShowLines = true,
+            ShowNodeToolTips = true,
             ShowPlusMinus = true,
             ShowRootLines = true,
             HideSelection = false,

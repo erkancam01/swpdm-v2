@@ -19,6 +19,11 @@
 #   - Kurulu olmayan bir kapi GECTI sayilmaz: eksik arac varsa ATLAMAZ,
 #     hata verir. --kur verilirse eksikleri kurar.
 #
+# ORNEK KLASOR: uygulama "--klasor <yol>" ile aciliyor. Sebep: bos bir pencere
+# olcmek az sey soyler. Kapi gecici bir klasor kurar (SOLIDWORKS uzantili
+# dosyalar, alt klasorler, okunamayan bir yol, tanimadigimiz uzantilar) ve
+# uygulamayi onunla acar; ekran goruntusunde DOLU agac gorunur.
+#
 # DONUS: 0 = pencere acildi ve hata yok. Diger her sey = KIRIK.
 
 set -uo pipefail
@@ -149,8 +154,36 @@ temizle() {
 }
 trap temizle EXIT
 
+# ---------------------------------------------------------- ornek klasor
+ORNEK="$CALISMA/ornek-klasor/ORJINAL"
+rm -rf "$CALISMA/ornek-klasor"
+mkdir -p "$ORNEK"/{1,2,33,222,"alt klasor"}
+# Kokte de dosya olsun: ekran goruntusunde simgeler ve adlar gorunsun.
+: > "$ORNEK/Govde.SLDASM"
+: > "$ORNEK/Kapak.SLDPRT"
+: > "$ORNEK/Kapak.SLDDRW"
+: > "$ORNEK/katalog.pdf"
+: > "$ORNEK/okubeni.txt"
+: > "$ORNEK/1/Parca3.SLDPRT"
+: > "$ORNEK/1/Montaj1.SLDASM"
+: > "$ORNEK/2/Parca1.SLDPRT"
+: > "$ORNEK/33/Montaj2.SLDASM"
+: > "$ORNEK/33/Parca2.SLDDRW"
+: > "$ORNEK/33/Parca2.SLDPRT"
+: > "$ORNEK/222/asaParcaa1.SLDPRT"
+: > "$ORNEK/222/~\$asaParcaa1.SLDPRT"     # SOLIDWORKS kilit dosyasi: GIZLENMEMELI
+: > "$ORNEK/alt klasor/olcum.pdf"
+: > "$ORNEK/alt klasor/notlar.txt"          # tanimadigimiz uzanti: GORUNMELI
+mkdir -p "$ORNEK/33/derin/daha-derin"
+: > "$ORNEK/33/derin/daha-derin/Parca9.SLDPRT"
+head -c 83000 /dev/zero > "$ORNEK/33/Parca2.SLDDRW"
+
+# Wine "Z:" surucusunu koke esliyor; yolu Windows bicimine ceviriyoruz.
+ORNEK_WIN="Z:$(echo "$ORNEK" | tr '/' '\\')"
+echo "   ornek klasor: $ORNEK_WIN"
+
 echo "   aciliyor, $BEKLE saniye izleniyor..."
-( cd "$YAYIN" && "$WINE" "./$AD.exe" >> "$UYGULAMA_LOG" 2>&1 ) &
+( cd "$YAYIN" && "$WINE" "./$AD.exe" --klasor "$ORNEK_WIN" >> "$UYGULAMA_LOG" 2>&1 ) &
 UYG_PID=$!
 sleep "$BEKLE"
 
