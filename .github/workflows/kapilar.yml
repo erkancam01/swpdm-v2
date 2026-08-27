@@ -1,0 +1,71 @@
+# KAPILAR
+#
+# CLAUDE.md 9: "Depoda ve CI'da olmayan denetim, denetim degildir."
+# v1'de gecici bir dosya olarak duran bir denetim yuzunden kirik kod
+# UC COMMIT yayinlandi.
+#
+# Uc is var ve ucu de AYNI betikleri kosuyor - CI'da ikinci bir kopya YOK:
+#   derleme-linux     : agactaki her csproj + her test projesi
+#   derleme-windows   : ayni kapilar, gercek Windows SDK'siyla. WindowsYolu
+#                       burada System.IO.Path'in KENDISIYLE karsilastiriliyor;
+#                       Linux'ta o olcum yapilamaz cunku orada Path bozuk.
+#   calistirma-linux  : uygulamayi Wine altinda GERCEKTEN acar
+#
+# Ucuncusu neden var: 27.08.2026'da uygulama Windows'ta hic acilmadi ve o
+# anda derleme "0 uyari 0 hata" diyordu. Derleme kapisi o hata SINIFINI
+# gormuyor.
+
+name: kapilar
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  derleme-linux:
+    name: Kapi - derleme + test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Derleme kapisi
+        run: ./araclar/kapi_derleme.sh
+      - name: Test kapisi
+        run: ./araclar/kapi_test.sh
+
+  derleme-windows:
+    name: Kapi - derleme + test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Derleme kapisi
+        shell: bash
+        run: ./araclar/kapi_derleme.sh
+      - name: Test kapisi (Path ile karsilastirma BURADA kosuyor)
+        shell: bash
+        run: ./araclar/kapi_test.sh
+
+  calistirma-linux:
+    name: Kapi - calistirma (Wine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Calistirma kapisi
+        run: ./araclar/kapi_calistir.sh --kur
+      - name: Ekran goruntusunu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ekran-goruntusu
+          path: .kapi/ekran.png
+          if-no-files-found: warn

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>SwPdm.Cekirdek</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    DIKKAT: hedef net8.0, net8.0-windows DEGIL. Bilerek.
+    Cekirdek Windows'a bagli olmadigi surece Linux'ta KOSULABILIR ve
+    testleri her oturumda gercekten olculebilir. v1'de olculemeyen alanin
+    bedeli CLAUDE.md 7'de duruyor.
+  -->
+
+</Project>

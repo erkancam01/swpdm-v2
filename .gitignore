@@ -1,0 +1,17 @@
+# derleme ciktilari
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# arac ve editor
+.vs/
+.vscode/
+*.user
+*.suo
+
+# NuGet
+*.nupkg
+packages/
+.kapi/

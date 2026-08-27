@@ -1,0 +1,40 @@
+﻿using System.Drawing;
+
+namespace SwPdm.Arayuz.Gorunum;
+
+/// <summary>
+/// Ekranin tum renkleri TEK yerde. CLAUDE.md 8: ayni mantigin ikinci kopyasi
+/// yazilmaz - v1'de boyut bicimlendirmesi uc yerdeydi ve biri FARKLI sayi
+/// gosteriyordu. Renk de ayni tuzagin adayi.
+/// </summary>
+internal static class Renkler
+{
+    // Ust baslik seridi (koyu)
+    internal static readonly Color BaslikArkaPlan = Color.FromArgb(0x2F, 0x53, 0x75);
+    internal static readonly Color BaslikYazi = Color.FromArgb(0xFF, 0xFF, 0xFF);
+    internal static readonly Color BaslikSolukYazi = Color.FromArgb(0xC9, 0xD8, 0xE8);
+    internal static readonly Color BaslikDugmeVurgu = Color.FromArgb(0x1F, 0x6F, 0xEB);
+    internal static readonly Color BaslikDugmeUzerinde = Color.FromArgb(0x3F, 0x66, 0x88);
+
+    // SOLIDWORKS durum isareti
+    internal static readonly Color DurumKapali = Color.FromArgb(0x9F, 0xB3, 0xC6);
+    internal static readonly Color DurumAcik = Color.FromArgb(0x4C, 0xC3, 0x8A);
+
+    // Govde
+    internal static readonly Color GovdeArkaPlan = Color.FromArgb(0xF0, 0xF0, 0xF0);
+    internal static readonly Color AgacArkaPlan = Color.FromArgb(0xFF, 0xFF, 0xFF);
+    internal static readonly Color AyracCizgi = Color.FromArgb(0xC8, 0xC8, 0xC8);
+
+    // Suzgec dugmeleri
+    internal static readonly Color SuzgecSeciliArkaPlan = Color.FromArgb(0xDC, 0xE6, 0xF2);
+    internal static readonly Color SuzgecSeciliKenar = Color.FromArgb(0x8F, 0xA8, 0xC2);
+    internal static readonly Color SuzgecYazi = Color.FromArgb(0x1F, 0x1F, 0x1F);
+
+    // Onizleme alti ust bilgi yazisi
+    internal static readonly Color UstBilgiYazi = Color.FromArgb(0x5B, 0x7C, 0x99);
+    internal static readonly Color BolumBasligiYazi = Color.FromArgb(0x3D, 0x3D, 0x3D);
+    internal static readonly Color OnizlemeArkaPlan = Color.FromArgb(0xFF, 0xFF, 0xFF);
+
+    // Referans listesindeki rol yazisi (sagda)
+    internal static readonly Color RolYazi = Color.FromArgb(0x44, 0x44, 0x44);
+}
