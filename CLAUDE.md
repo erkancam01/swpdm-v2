@@ -292,6 +292,11 @@ yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
   hatayla** kırıldı.
 - **`ToolStripItem.Width`, `AutoSize` açıkken YOK SAYILIYOR.** `AutoSize = false`
   yazmadan verilen genişlik hiçbir şey yapmıyor.
+- **Devre dışı bırakılan denetim ODAĞI KAYBEDİYOR.** Uzun bir iş sırasında
+  ağacı `Enabled = false` yapıp sonra geri açmak odağı geri getirmiyor; odağa
+  bağlı kısayollar (`Ctrl+Z`, `Delete`, `F2`) sessizce çalışmaz oluyor.
+  Belirti sinsi: işlem çalışıyor, hemen ardından kısayol hiçbir şey yapmıyor.
+  → İş bitince odak elle geri verilir.
 - **İlerleme çubuğu ileri giderken ANİMASYONLU** (kendi zamanlayıcısıyla). İş
   parçacığı bloke ve mesaj pompalanmıyorsa çubuk **boş oluk** gibi görünür.
   Geriye giden değer **anında** uygulanıyor → önce hedef+1, hemen sonra hedef.
@@ -632,6 +637,10 @@ dosyasında** duruyor:
 | diskteki dosya işlemleri + hata sebebi | `Cekirdek/DosyaIslemleri.cs` |
 | çöp kutusu (sil · listele · geri yükle) | `Cekirdek/Cop.cs` |
 | çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
+| kes · kopyala · yapıştır (pano) | `Arayuz/Gorunum/Islemler/PanoIslemleri.cs` |
+| taşıma/kopyalama motoru + onay | `Arayuz/Gorunum/Islemler/TasiIslemi.cs` |
+| geri alma (yığın + `Ctrl+Z`) | `Arayuz/Gorunum/Islemler/GeriAlIslemi.cs` |
+| alttaki ilerleme çubuğu | `Arayuz/Gorunum/IlerlemeYuzeyi.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
@@ -677,11 +686,17 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yedi şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı sekiz şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **tür süzgeci gerçekten
-süzüyor mu**. Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt
-olarak saklanır.
+süzüyor mu** · **`Ctrl+Z` geri alıyor mu**. Ekran görüntüsünü
+`.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Sekizincisi neden var:** geri alma **dosya siliyor**. Sessizce bozulursa
+> kullanıcı "geri aldım" sanıp devam eder. Kapı `Ctrl+Shift+N` ile ağaca bir
+> satır ekletir, `Ctrl+Z` ile geri aldırır; ikisini de sayar (11 → 12 → 11).
+> §9'a göre eklendi: TEMİZ → geri alma etkisiz bırakılınca **YAKALADI**
+> (11 → 12 → 12) → geri alınca TEMİZ.
 
 > **Altıncısı neden var:** `Ctrl+A` bütün ağacı seçiyordu ve bu bir rahatsızlık
 > değil **tehlikeydi** — ardından `Delete`, kullanıcı bir klasörü temizlediğini

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -64,7 +67,46 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
             return;
         }
 
+        if (rapor.YeniYol is string yeniYol)
+        {
+            GeriAlDefteri.Kaydet(GeriAlmasi(yeniYol, ad));
+        }
+
         baglam.Tazele(rapor.YeniYol);
         baglam.Bildir("Klasör açıldı: " + ad);
     }
+
+    /// <summary>
+    /// Geri alma: klasoru siler - ama YALNIZCA hala bossa. Icine bir sey
+    /// konduysa silmek kullanicinin isini yok etmek olurdu (CLAUDE.md 1a).
+    /// </summary>
+    private static GeriAlinabilir GeriAlmasi(string yol, string ad)
+        => new(
+            $"\"{ad}\" klasörünün açılması",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+
+                try
+                {
+                    if (!Directory.Exists(yol))
+                    {
+                        return olmayan;   // zaten yok, geri alinacak bir sey de yok
+                    }
+
+                    if (Directory.GetFileSystemEntries(yol).Length > 0)
+                    {
+                        olmayan.Add($"{ad} — içine bir şeyler konmuş, silinmedi.");
+                        return olmayan;
+                    }
+
+                    Directory.Delete(yol);
+                }
+                catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+                {
+                    olmayan.Add(ad + " — " + hata.Message);
+                }
+
+                return olmayan;
+            });
 }

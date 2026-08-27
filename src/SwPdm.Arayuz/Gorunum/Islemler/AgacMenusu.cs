@@ -20,6 +20,7 @@ internal sealed class AgacMenusu
     private readonly Dictionary<ToolStripMenuItem, IAgacIslemi> _islemler = [];
 
     private Func<SecimBaglami>? _secimKaynagi;
+    private IIlerlemeYuzeyi? _ilerleme;
 
     internal AgacMenusu(SecimliAgac agac)
     {
@@ -56,6 +57,12 @@ internal sealed class AgacMenusu
     /// <summary>Secimi nereden okuyacagini soyler.</summary>
     internal void SecimKaynagi(Func<SecimBaglami> kaynak) => _secimKaynagi = kaynak;
 
+    /// <summary>Uzun islerin ilerlemeyi bildirecegi yuzey.</summary>
+    internal void IlerlemeYuzeyi(IIlerlemeYuzeyi yuzey) => _ilerleme = yuzey;
+
+    /// <summary>Menu ogelerinin yazilarini ve durumlarini tazeler.</summary>
+    internal void YazilariTazele() => YazilariKur(Secim());
+
     /// <summary>
     /// Bir tusa basildi; listedeki bir islemin kisayoluysa calistirir.
     /// Doner deger: islendi mi.
@@ -75,12 +82,17 @@ internal sealed class AgacMenusu
     }
 
     private void MenuAcilirken(object? gonderen, System.ComponentModel.CancelEventArgs e)
-    {
-        SecimBaglami secim = Secim();
+        => YazilariKur(Secim());
 
+    private void YazilariKur(SecimBaglami secim)
+    {
         foreach ((ToolStripMenuItem oge, IAgacIslemi islem) in _islemler)
         {
             bool olur = islem.Uygulanabilir(secim, out string neden);
+
+            // Yazi her acilista islemden YENIDEN soruluyor: "Geri al" ve
+            // "Yapistir" ne yapacaklarini adlarinda soyluyor.
+            oge.Text = islem.Ad;
 
             // CLAUDE.md 3: uygulanamayan oge GIZLENMEZ. Gizlemek "boyle bir sey
             // yok" demektir; gri durup sebebini soylemek dogrudur.
@@ -103,10 +115,16 @@ internal sealed class AgacMenusu
             return;
         }
 
+        if (_ilerleme is null)
+        {
+            return;
+        }
+
         islem.Uygula(new IslemBaglami(
             Sahip: _agac.FindForm() ?? (IWin32Window)_agac,
             Secim: secim,
             Tazele: yol => Tazele?.Invoke(this, yol),
-            Bildir: cumle => Durum?.Invoke(this, cumle)));
+            Bildir: cumle => Durum?.Invoke(this, cumle),
+            Ilerleme: _ilerleme));
     }
 }

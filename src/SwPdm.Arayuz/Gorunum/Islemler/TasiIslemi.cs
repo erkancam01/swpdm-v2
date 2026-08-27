@@ -1,181 +1,266 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
-/// <summary>
-/// TASIMA - "Kes" ve "Yapistir" ayni ozelliktir, o yuzden AYNI DOSYADA
-/// (CLAUDE.md 1b: ozellik dikey, tek yerde). Surukle-birak de buradaki
-/// <see cref="Tasi.Yurut"/>'u cagirir; tasima karari tek yerde durur.
-/// </summary>
-internal static class Tasi
+/// <summary>Aktarmanin yonu.</summary>
+internal enum AktarmaKipi
 {
-    /// <summary>Kesilmis ogelerin yollari. Uygulama icinde; Windows panosuna DOKUNMAZ.</summary>
-    internal static readonly List<string> Pano = [];
+    /// <summary>Kaynak gider, hedefe konur.</summary>
+    Tasi,
+
+    /// <summary>Kaynak kalir, hedefe kopyasi konur.</summary>
+    Kopyala,
+}
+
+/// <summary>
+/// AKTARMA MOTORU - tasima ve kopyalama. Ikisi ayni istir, farki tek bir
+/// cagri (CLAUDE.md 8: ayni mantigin ikinci kopyasi yazilmaz). Surukle-birak,
+/// "Yapistir" ve gelecekte baska bir cagiran hep buraya gelir.
+///
+/// ARKA PLANDA KOSAR. Sebep olculmus (CLAUDE.md 6): ilerleme cubugu, is
+/// arayuz is parcacigini bloke ederse HIC CIZILMEZ - kullanici bos bir oluk
+/// gorur. Islem arka planda kosuyor, ilerleme arayuze BeginInvoke ile
+/// bildiriliyor.
+/// </summary>
+internal static class Aktar
+{
+    /// <summary>Ayni anda ikinci bir aktarma baslamasin.</summary>
+    private static bool _kosuyor;
 
     /// <summary>
-    /// Ogeleri hedef klasore tasir ve NE OLDUGUNU dondurur.
-    /// Kismi basarisizlikta duran ogeler tek tek sayilir (CLAUDE.md 3).
+    /// Ogeleri hedefe aktarir. Kismi basarisizlikta duran ogeler tek tek
+    /// sayilir (CLAUDE.md 3).
     /// </summary>
-    internal static void Yurut(IslemBaglami baglam, IReadOnlyList<string> yollar, string hedefKlasor)
+    internal static void Yurut(
+        IslemBaglami baglam,
+        IReadOnlyList<string> yollar,
+        string hedefKlasor,
+        AktarmaKipi kip)
     {
-        if (yollar.Count == 0)
+        if (yollar.Count == 0 || _kosuyor)
         {
             return;
         }
 
-        if (!Onayla(baglam.Sahip, yollar, hedefKlasor))
+        if (!Onayla(baglam.Sahip, yollar, hedefKlasor, kip))
         {
-            baglam.Bildir("Taşıma iptal edildi.");
+            baglam.Bildir(kip == AktarmaKipi.Tasi ? "Taşıma iptal edildi." : "Kopyalama iptal edildi.");
             return;
         }
 
-        var tasinan = new List<string>();
-        var kalan = new List<string>();
+        _kosuyor = true;
+        var iptal = new CancellationTokenSource();
+        baglam.Ilerleme.Basladi(yollar.Count, iptal);
 
-        foreach (string yol in yollar)
+        // Kopya SART: arka plan is parcacigi calisirken cagiranin listesi
+        // (ornegin pano) temizlenebilir.
+        var kaynaklar = new List<string>(yollar);
+
+        Task.Run(
+            () => Isle(baglam, kaynaklar, hedefKlasor, kip, iptal.Token))
+            .ContinueWith(
+                _ =>
+                {
+                    _kosuyor = false;
+                    iptal.Dispose();
+                },
+                TaskScheduler.Default);
+    }
+
+    private static void Isle(
+        IslemBaglami baglam,
+        List<string> yollar,
+        string hedefKlasor,
+        AktarmaKipi kip,
+        CancellationToken belirtec)
+    {
+        var olan = new List<string>();
+        var olmayan = new List<string>();
+        bool kesildi = false;
+
+        for (int i = 0; i < yollar.Count; i++)
         {
-            IslemRaporu rapor = DosyaIslemleri.Tasi(yol, hedefKlasor);
+            if (belirtec.IsCancellationRequested)
+            {
+                // Iptal yalnizca ogeler ARASINDA olur; yarim dosya birakmayiz.
+                kesildi = true;
+                break;
+            }
+
+            string yol = yollar[i];
+            string ad = WindowsYolu.DosyaAdi(yol);
+            baglam.Ilerleme.Adim(i, yollar.Count, ad);
+
+            IslemRaporu rapor = kip == AktarmaKipi.Tasi
+                ? DosyaIslemleri.Tasi(yol, hedefKlasor)
+                : DosyaIslemleri.Kopyala(yol, hedefKlasor);
+
             if (rapor.Oldu)
             {
-                tasinan.Add(WindowsYolu.DosyaAdi(yol));
+                olan.Add(rapor.YeniYol ?? WindowsYolu.Birlestir(hedefKlasor, ad));
             }
             else
             {
-                kalan.Add(WindowsYolu.DosyaAdi(yol) + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
             }
         }
 
-        Pano.Clear();
+        baglam.Ilerleme.Adim(yollar.Count, yollar.Count, string.Empty);
+        baglam.Ilerleme.Bitti(() => Topla(baglam, yollar, olan, olmayan, kip, kesildi));
+    }
+
+    private static void Topla(
+        IslemBaglami baglam,
+        List<string> kaynaklar,
+        List<string> olan,
+        List<string> olmayan,
+        AktarmaKipi kip,
+        bool kesildi)
+    {
+        Pano.Bosalt();
+
+        if (olan.Count > 0)
+        {
+            // Her ozellik KENDI geri almasini yaziyor (CLAUDE.md 1b): defter
+            // hicbir islemi adiyla bilmez.
+            GeriAlDefteri.Kaydet(kip == AktarmaKipi.Tasi
+                ? TasimayiGeriAl(kaynaklar, olan)
+                : KopyalamayiGeriAl(olan));
+        }
+
         baglam.Tazele(null);
 
-        if (kalan.Count > 0)
+        string is_ = kip == AktarmaKipi.Tasi ? "taşındı" : "kopyalandı";
+        string olumsuz = kip == AktarmaKipi.Tasi ? "TAŞINMADI (yerinde duruyor)" : "KOPYALANMADI";
+
+        if (olmayan.Count > 0)
         {
             var metin = new StringBuilder();
-            metin.AppendLine($"{tasinan.Count} öğe taşındı.");
+            metin.AppendLine($"{olan.Count} öğe {is_}.");
             metin.AppendLine();
-            metin.AppendLine($"{kalan.Count} öğe TAŞINMADI (yerinde duruyor):");
-            foreach (string satir in kalan)
+            metin.AppendLine($"{olmayan.Count} öğe {olumsuz}:");
+            foreach (string satir in olmayan)
             {
                 metin.AppendLine("  • " + satir);
             }
 
             MessageBox.Show(
-                baglam.Sahip, metin.ToString(), "Bazı öğeler taşınamadı",
+                baglam.Sahip, metin.ToString(), "Bazı öğeler aktarılamadı",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        baglam.Bildir(kalan.Count == 0
-            ? $"{tasinan.Count} öğe taşındı."
-            : $"{tasinan.Count} taşındı · {kalan.Count} taşınamadı");
+        string kuyruk = kesildi ? " · iptal edildi" : string.Empty;
+        baglam.Bildir(olmayan.Count == 0
+            ? $"{olan.Count} öğe {is_}.{kuyruk}"
+            : $"{olan.Count} {is_} · {olmayan.Count} olmadı{kuyruk}");
     }
 
-    private static bool Onayla(IWin32Window sahip, IReadOnlyList<string> yollar, string hedef)
+    /// <summary>Tasinanlari eski klasorlerine geri gonderir.</summary>
+    private static GeriAlinabilir TasimayiGeriAl(
+        IReadOnlyList<string> eskiYollar, IReadOnlyList<string> yeniYollar)
+    {
+        // Eski KLASORLER yakalanip tutuluyor; geri alirken dosya adindan
+        // degil, geldigi yerden gidiyoruz.
+        var eskiKlasorler = new List<string>(yeniYollar.Count);
+        for (int i = 0; i < yeniYollar.Count && i < eskiYollar.Count; i++)
+        {
+            eskiKlasorler.Add(WindowsYolu.Klasor(eskiYollar[i]));
+        }
+
+        var yollar = new List<string>(yeniYollar);
+
+        return new GeriAlinabilir(
+            $"{yollar.Count} öğenin taşınması",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+                for (int i = 0; i < yollar.Count; i++)
+                {
+                    IslemRaporu rapor = DosyaIslemleri.Tasi(yollar[i], eskiKlasorler[i]);
+                    if (!rapor.Oldu)
+                    {
+                        olmayan.Add(WindowsYolu.DosyaAdi(yollar[i])
+                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    }
+                }
+
+                return olmayan;
+            });
+    }
+
+    /// <summary>Olusan kopyalari cope gonderir - kalici silmez.</summary>
+    private static GeriAlinabilir KopyalamayiGeriAl(IReadOnlyList<string> yeniYollar)
+    {
+        var yollar = new List<string>(yeniYollar);
+
+        return new GeriAlinabilir(
+            $"{yollar.Count} öğenin kopyalanması",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+                if (baglam.Secim.Kok is not string kok)
+                {
+                    olmayan.Add("Kök klasör kapalı; kopyalar kaldırılamadı.");
+                    return olmayan;
+                }
+
+                foreach (string yol in yollar)
+                {
+                    // KALICI SILME YOK: kopyalar da cope gider, oradan geri
+                    // alinabilir (CLAUDE.md 1a).
+                    IslemRaporu rapor = Cop.Sil(kok, yol);
+                    if (!rapor.Oldu)
+                    {
+                        olmayan.Add(WindowsYolu.DosyaAdi(yol)
+                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    }
+                }
+
+                return olmayan;
+            });
+    }
+
+    private static bool Onayla(
+        IWin32Window sahip,
+        IReadOnlyList<string> yollar,
+        string hedef,
+        AktarmaKipi kip)
     {
         var metin = new StringBuilder();
+        string fiil = kip == AktarmaKipi.Tasi ? "taşınacak" : "kopyalanacak";
+
         metin.AppendLine(yollar.Count == 1
-            ? $"\"{WindowsYolu.DosyaAdi(yollar[0])}\" taşınacak:"
-            : $"{yollar.Count} öğe taşınacak:");
+            ? $"\"{WindowsYolu.DosyaAdi(yollar[0])}\" {fiil}:"
+            : $"{yollar.Count} öğe {fiil}:");
         metin.AppendLine();
         metin.AppendLine(hedef);
         metin.AppendLine();
 
-        // CLAUDE.md 5'te OLCULDU - oldugu gibi soyleniyor, fazlasi da eksigi de degil.
-        metin.AppendLine("Ölçüldü: bir klasör taşındığında içindeki montaj–parça");
-        metin.AppendLine("bağları YAŞIYOR. Kırılan, DIŞARIDAN bu dosyalara verilen");
-        metin.AppendLine("referanslardır; onları şu an ONARAMIYORUZ.");
-        metin.AppendLine();
-        metin.AppendLine("Teknik resim → model bağı için bu ölçüm HENÜZ YAPILMADI.");
+        if (kip == AktarmaKipi.Tasi)
+        {
+            // CLAUDE.md 5'te OLCULDU - oldugu gibi soyleniyor.
+            metin.AppendLine("Ölçüldü: bir klasör taşındığında içindeki montaj–parça");
+            metin.AppendLine("bağları YAŞIYOR. Kırılan, DIŞARIDAN bu dosyalara verilen");
+            metin.AppendLine("referanslardır; onları şu an ONARAMIYORUZ.");
+            metin.AppendLine();
+            metin.AppendLine("Teknik resim → model bağı için bu ölçüm HENÜZ YAPILMADI.");
+        }
+        else
+        {
+            metin.AppendLine("Kopyalar, kaynak dosyanın referanslarını AYNEN taşır;");
+            metin.AppendLine("yani kopya da özgün parçaları gösterir. Referans");
+            metin.AppendLine("düzenlemesi (Pack and Go gibi) HENÜZ YAPILMIYOR.");
+        }
 
         return MessageBox.Show(
-            sahip, metin.ToString(), "Taşı",
+            sahip, metin.ToString(), kip == AktarmaKipi.Tasi ? "Taşı" : "Kopyala",
             MessageBoxButtons.OKCancel, MessageBoxIcon.Warning,
             MessageBoxDefaultButton.Button2) == DialogResult.OK;
-    }
-}
-
-/// <summary>Secili ogeleri tasinmak uzere isaretler.</summary>
-internal sealed class KesIslemi : IAgacIslemi
-{
-    /// <inheritdoc/>
-    public string Ad => "Kes";
-
-    /// <inheritdoc/>
-    public Keys Kisayol => Keys.Control | Keys.X;
-
-    /// <inheritdoc/>
-    public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
-    {
-        if (secim.Ogeler.Count == 0)
-        {
-            nedenOlmaz = "Önce taşınacak öğeleri seçin.";
-            return false;
-        }
-
-        nedenOlmaz = string.Empty;
-        return true;
-    }
-
-    /// <inheritdoc/>
-    public void Uygula(IslemBaglami baglam)
-    {
-        Tasi.Pano.Clear();
-        foreach (object oge in baglam.Secim.Ogeler)
-        {
-            string? yol = SecimBaglami.Yolu(oge);
-            if (yol is not null)
-            {
-                Tasi.Pano.Add(yol);
-            }
-        }
-
-        baglam.Bildir($"{Tasi.Pano.Count} öğe kesildi — yapıştırılacak klasörü seçip Ctrl+V.");
-    }
-}
-
-/// <summary>Kesilmis ogeleri etkin klasore tasir.</summary>
-internal sealed class YapistirIslemi : IAgacIslemi
-{
-    /// <inheritdoc/>
-    public string Ad => "Yapıştır";
-
-    /// <inheritdoc/>
-    public Keys Kisayol => Keys.Control | Keys.V;
-
-    /// <inheritdoc/>
-    public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
-    {
-        if (Tasi.Pano.Count == 0)
-        {
-            nedenOlmaz = "Kesilmiş bir şey yok.";
-            return false;
-        }
-
-        if (secim.AramaKipinde)
-        {
-            nedenOlmaz = "Arama sonucuna yapıştırılamaz — önce aramayı temizleyin.";
-            return false;
-        }
-
-        if (secim.EtkinKlasor is null)
-        {
-            nedenOlmaz = "Hedef klasörü seçin.";
-            return false;
-        }
-
-        nedenOlmaz = string.Empty;
-        return true;
-    }
-
-    /// <inheritdoc/>
-    public void Uygula(IslemBaglami baglam)
-    {
-        if (baglam.Secim.EtkinKlasor is string hedef)
-        {
-            Tasi.Yurut(baglam, [.. Tasi.Pano], hedef);
-        }
     }
 }

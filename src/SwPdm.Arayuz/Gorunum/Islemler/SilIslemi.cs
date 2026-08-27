@@ -57,6 +57,7 @@ internal sealed class SilIslemi : IAgacIslemi
         }
 
         var silinen = new List<string>();
+        var silinenYollar = new List<string>();
         var kalan = new List<string>();
 
         foreach (object oge in ogeler)
@@ -71,11 +72,17 @@ internal sealed class SilIslemi : IAgacIslemi
             if (rapor.Oldu)
             {
                 silinen.Add(SecimBaglami.Adi(oge));
+                silinenYollar.Add(yol);
             }
             else
             {
                 kalan.Add(SecimBaglami.Adi(oge) + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
             }
+        }
+
+        if (silinenYollar.Count > 0)
+        {
+            GeriAlDefteri.Kaydet(GeriAlmasi(kok, silinenYollar));
         }
 
         baglam.Tazele(null);
@@ -102,6 +109,46 @@ internal sealed class SilIslemi : IAgacIslemi
             ? $"{silinen.Count} öğe çöp kutusuna gönderildi."
             : $"{silinen.Count} silindi · {kalan.Count} silinemedi");
     }
+
+    /// <summary>
+    /// Geri alma: silinenleri copten geri yukler. Oge, ESKI YOLUNDAN
+    /// bulunuyor; ayni yoldan birden fazla varsa en YENI silinen aliniyor
+    /// (Cop.Listele en yeniyi basta veriyor).
+    /// </summary>
+    private static GeriAlinabilir GeriAlmasi(string kok, IReadOnlyList<string> yollar)
+        => new(
+            $"{yollar.Count} öğenin silinmesi",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+
+                foreach (string yol in yollar)
+                {
+                    CopOgesi? oge = null;
+                    foreach (CopOgesi aday in Cop.Listele(kok))
+                    {
+                        if (string.Equals(aday.EskiYol, yol, StringComparison.OrdinalIgnoreCase))
+                        {
+                            oge = aday;
+                            break;
+                        }
+                    }
+
+                    if (oge is null)
+                    {
+                        olmayan.Add(WindowsYolu.DosyaAdi(yol) + " — çöp kutusunda bulunamadı.");
+                        continue;
+                    }
+
+                    IslemRaporu rapor = Cop.GeriYukle(kok, oge);
+                    if (!rapor.Oldu)
+                    {
+                        olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    }
+                }
+
+                return olmayan;
+            });
 
     private static bool Onayla(IWin32Window sahip, IReadOnlyList<object> ogeler)
     {

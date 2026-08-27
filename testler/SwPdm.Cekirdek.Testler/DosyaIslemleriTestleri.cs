@@ -223,6 +223,72 @@ public class DosyaIslemleriTestleri : IDisposable
             DosyaIslemleri.Tasi(Yol("p.SLDPRT"), Yol("yok")).Sonuc);
     }
 
+    // -------------------------------------------------------------- kopyalama
+
+    [Fact]
+    public void Kopyala_DosyayiKopyalar_KAYNAK_YERINDE_KALIR()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "icerik");
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(Yol("p.SLDPRT"), Yol("hedef"));
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("icerik", File.ReadAllText(Yol("p.SLDPRT")));            // kaynak duruyor
+        Assert.Equal("icerik", File.ReadAllText(Yol("hedef", "p.SLDPRT")));   // kopya var
+    }
+
+    [Fact]
+    public void Kopyala_AYNI_KLASORE_KOPYALAYINCA_COGALTIR()
+    {
+        File.WriteAllText(Yol("Parca.SLDPRT"), "v");
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(Yol("Parca.SLDPRT"), _kok);
+
+        Assert.True(rapor.Oldu);
+        Assert.True(File.Exists(Yol("Parca.SLDPRT")));
+        Assert.True(File.Exists(Yol("Parca (2).SLDPRT")));   // uzanti korunmus
+    }
+
+    [Fact]
+    public void Kopyala_KlasoruALTINDAKILERLE_kopyalar()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        Directory.CreateDirectory(Yol("montaj", "derin"));
+        File.WriteAllText(Yol("montaj", "a.SLDPRT"), "a");
+        File.WriteAllText(Yol("montaj", "derin", "b.SLDPRT"), "b");
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(Yol("montaj"), Yol("hedef"));
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("a", File.ReadAllText(Yol("hedef", "montaj", "a.SLDPRT")));
+        Assert.Equal("b", File.ReadAllText(Yol("hedef", "montaj", "derin", "b.SLDPRT")));
+        Assert.True(File.Exists(Yol("montaj", "a.SLDPRT")));   // kaynak duruyor
+    }
+
+    [Fact]
+    public void Kopyala_BASKA_KLASORDE_AYNI_AD_VARSA_USTUNE_YAZMAZ()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "kaynak");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "hedefteki");
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(Yol("p.SLDPRT"), Yol("hedef"));
+
+        Assert.Equal(IslemSonucu.ZatenVar, rapor.Sonuc);
+        Assert.Equal("hedefteki", File.ReadAllText(Yol("hedef", "p.SLDPRT")));
+    }
+
+    [Fact]
+    public void Kopyala_KENDI_ALTINA_KOPYALAMAZ()
+    {
+        Directory.CreateDirectory(Yol("ust", "alt"));
+
+        Assert.Equal(
+            IslemSonucu.KendiAltina,
+            DosyaIslemleri.Kopyala(Yol("ust"), Yol("ust", "alt")).Sonuc);
+    }
+
     [Fact]
     public void KendiAltindaMi_KomsuKlasoruALTI_SAYMAZ()
     {

@@ -29,6 +29,7 @@ internal sealed partial class AnaForm : Form
     private readonly KokSecici _kokSecici;
     private readonly AgacMenusu _menu;
     private readonly SurukleBirak _surukleBirak;
+    private readonly IlerlemeYuzeyi _ilerleme;
     private readonly Gorunum.Onizleme _onizleme;
     private readonly string? _acilistaAcilacakKok;
 
@@ -53,15 +54,35 @@ internal sealed partial class AnaForm : Form
         };
 
         // --- sag tik menusu ve dosya islemleri (yeni klasor / adlandir / sil / tasi)
+        _ilerleme = new IlerlemeYuzeyi(this, _durum, mesgul =>
+        {
+            _agac.Enabled = !mesgul;
+
+            // ================== OLCULMUS TUZAK ==================
+            // Devre disi birakilan bir denetim ODAGI KAYBEDIYOR. Aktarma
+            // bitip agac yeniden acilinca odak baska yerde kaliyordu ve
+            // kisayollar (Ctrl+Z, Delete, F2...) CALISMIYORDU - cunku
+            // asagidaki kisayol kancasi "_agac.Focused" sartina bagli.
+            // Belirti sinsi: kopyalama calisiyor, hemen ardindan Ctrl+Z
+            // hicbir sey yapmiyor. Odak geri veriliyor.
+            // ====================================================
+            if (!mesgul && !_agac.IsDisposed)
+            {
+                _agac.Focus();
+            }
+        });
+
         _menu = new AgacMenusu(_agac);
         _menu.SecimKaynagi(SecimBaglamiKur);
+        _menu.IlerlemeYuzeyi(_ilerleme);
         _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _menu.Tazele += (_, yol) => AgaciTazele(yol);
         _surukleBirak = new SurukleBirak(_agac);
-        _surukleBirak.Tasindi += (_, e) => Tasi.Yurut(
-            new IslemBaglami(this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi),
+        _surukleBirak.Tasindi += (_, e) => Aktar.Yurut(
+            new IslemBaglami(this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme),
             e.Yollar,
-            e.HedefKlasor);
+            e.HedefKlasor,
+            AktarmaKipi.Tasi);
 
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
@@ -107,9 +128,14 @@ internal sealed partial class AnaForm : Form
         // tusunda ve sag tik menusunde (Erkan: "silme zaten sag tikta var").
         _copDugmesi.Click += (_, _) => CopKutusunuAc();
 
+        // Cop kutusunun YANINDA geri al. Ayni kodu cagiriyor - ikinci kopya
+        // yok (CLAUDE.md 8): kisayol, menu ogesi ve bu dugme hep ayni islem.
+        _geriAlDugmesi.Click += (_, _) => _menu.TusaBasildi(Keys.Control | Keys.Z);
+
         _onizleme.Temizle();
         _durum.Bekliyor();
         CopDugmesiniTazele();
+        GeriAlDugmesiniTazele();
 
     }
 
@@ -146,7 +172,12 @@ internal sealed partial class AnaForm : Form
         _onizleme.Temizle();
         _durum.Kok(yol);
         _kokSecici.GecmiseEkle(yol);
+
+        // Kok degisti: eski yollara bakan geri alma adimlari artik BASKA bir
+        // agacin yollari olur ve yanlis yere dokunurdu (CLAUDE.md 1a).
+        GeriAlDefteri.Temizle();
         CopDugmesiniTazele();
+        GeriAlDugmesiniTazele();
     }
 
     /// <summary>
@@ -191,6 +222,7 @@ internal sealed partial class AnaForm : Form
     {
         _doldurucu.Yenile();
         CopDugmesiniTazele();
+        GeriAlDugmesiniTazele();
 
         if (secilecekYol is not null)
         {
@@ -228,6 +260,18 @@ internal sealed partial class AnaForm : Form
         _copDugmesi.Enabled = true;
         _copDugmesi.Text = adet == 0 ? "Çöp kutusu" : $"Çöp kutusu ({adet})";
         _copDugmesi.ToolTipText = "Silinenleri gör ve geri yükle";
+    }
+
+    /// <summary>
+    /// Geri al dugmesini tazeler. Ipucu NEYIN geri alinacagini yazar -
+    /// kullanici neye bastigini bilmeli (CLAUDE.md 3).
+    /// </summary>
+    private void GeriAlDugmesiniTazele()
+    {
+        _geriAlDugmesi.Enabled = GeriAlDefteri.Var;
+        _geriAlDugmesi.ToolTipText = GeriAlDefteri.Sonraki is string ad
+            ? $"Geri al: {ad}  (Ctrl+Z)"
+            : "Geri al — geri alınacak bir işlem yok";
     }
 
     private void SecimiGoster()

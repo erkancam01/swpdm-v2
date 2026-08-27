@@ -234,6 +234,102 @@ public static class DosyaIslemleri
         }
     }
 
+    /// <summary>
+    /// Bir dosya ya da klasoru hedef klasore KOPYALAR. Kaynak yerinde kalir.
+    ///
+    /// AYNI klasore kopyalamak mesrudur ve "cogaltma"dir: ad cakisacagi icin
+    /// numaralanir ("Parca (2).SLDPRT"). BASKA bir klasore kopyalarken ad
+    /// cakisiyorsa USTUNE YAZILMAZ - islem yapilmaz ve sebebi soylenir,
+    /// cunku oradaki dosya baska bir dosyadir (CLAUDE.md 3).
+    /// </summary>
+    public static IslemRaporu Kopyala(string kaynak, string hedefKlasor)
+    {
+        bool klasorMu = Directory.Exists(kaynak);
+        if (!klasorMu && !File.Exists(kaynak))
+        {
+            return new IslemRaporu(IslemSonucu.Bulunamadi, null, "Kaynak bulunamadı: " + kaynak);
+        }
+
+        if (!Directory.Exists(hedefKlasor))
+        {
+            return new IslemRaporu(IslemSonucu.Bulunamadi, null, "Hedef klasör yok: " + hedefKlasor);
+        }
+
+        string ad = WindowsYolu.DosyaAdi(kaynak);
+        string kaynakKlasoru = WindowsYolu.Klasor(kaynak);
+        bool ayniKlasor = string.Equals(kaynakKlasoru, hedefKlasor, StringComparison.OrdinalIgnoreCase);
+
+        if (klasorMu && KendiAltindaMi(kaynak, hedefKlasor))
+        {
+            return new IslemRaporu(
+                IslemSonucu.KendiAltina, null, $"\"{ad}\" kendi içine kopyalanamaz.");
+        }
+
+        string hedefAd = ayniKlasor ? BosAdBul(hedefKlasor, ad) : ad;
+        string hedef = WindowsYolu.Birlestir(hedefKlasor, hedefAd);
+
+        if (Var(hedef))
+        {
+            return new IslemRaporu(IslemSonucu.ZatenVar, null, $"Hedefte \"{ad}\" zaten var.");
+        }
+
+        try
+        {
+            if (klasorMu)
+            {
+                KlasoruKopyala(kaynak, hedef);
+            }
+            else
+            {
+                File.Copy(kaynak, hedef, overwrite: false);
+            }
+
+            return IslemRaporu.Basarili(hedef);
+        }
+        catch (Exception hata)
+        {
+            // Yarim kalan kopya BIRAKILMAZ: kullanici onu tam sanip
+            // kaynagi silebilir (CLAUDE.md 1a).
+            YarimKalaniSil(hedef, klasorMu);
+            return HatayiCevir(hata);
+        }
+    }
+
+    private static void KlasoruKopyala(string kaynak, string hedef)
+    {
+        Directory.CreateDirectory(hedef);
+
+        foreach (string dosya in Directory.GetFiles(kaynak))
+        {
+            File.Copy(dosya, WindowsYolu.Birlestir(hedef, WindowsYolu.DosyaAdi(dosya)),
+                overwrite: false);
+        }
+
+        foreach (string alt in Directory.GetDirectories(kaynak))
+        {
+            KlasoruKopyala(alt, WindowsYolu.Birlestir(hedef, WindowsYolu.DosyaAdi(alt)));
+        }
+    }
+
+    private static void YarimKalaniSil(string hedef, bool klasorMu)
+    {
+        try
+        {
+            if (klasorMu && Directory.Exists(hedef))
+            {
+                Directory.Delete(hedef, recursive: true);
+            }
+            else if (!klasorMu && File.Exists(hedef))
+            {
+                File.Delete(hedef);
+            }
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            // Temizlik tutmazsa asil hatanin sebebini gizlemeyiz.
+        }
+    }
+
     /// <summary>Hedef klasor, kaynak klasorun kendi altinda mi.</summary>
     public static bool KendiAltindaMi(string kaynakKlasor, string hedefKlasor)
     {

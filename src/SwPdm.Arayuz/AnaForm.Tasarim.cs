@@ -110,11 +110,14 @@ internal sealed partial class AnaForm
             Enabled = false,
         };
 
+        // Cop kutusunun YANINDA, yazisiyla birlikte: simge tek basina "bu ne
+        // yapiyor" sorusunu birakiyordu.
         _geriAlDugmesi = new ToolStripButton
         {
             Image = Simgeler.GeriAl(),
-            DisplayStyle = ToolStripItemDisplayStyle.Image,
-            ToolTipText = "Geri al — henüz yapılmadı",
+            Text = "Geri al",
+            DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+            ToolTipText = "Geri al (Ctrl+Z)",
             Enabled = false,
         };
 

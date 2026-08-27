@@ -1,3 +1,44 @@
+BU SURUMDE YENI - ISTEDIGIN DORT SEY
+
+  1. GERI AL - cop kutusunun YANINDA, yazisiyla birlikte bir dugme.
+     Sag tik menusunde ve Ctrl+Z ile de var. Ipucu NEYIN geri alinacagini
+     yazar: "Geri al: 3 ogenin tasinmasi".
+     Geri alinabilenler: yeni klasor · yeniden adlandirma · tasima ·
+     kopyalama · SILME (copten geri yukler). Son 20 islem tutulur.
+     Kok klasor degisince defter SIFIRLANIR - eski yollar artik baska bir
+     agacin yollari olur ve geri alma yanlis yere dokunurdu.
+     Yeni klasorun geri alinmasi, klasor HALA BOSSA siler; icine bir sey
+     konduysa silmez ve bunu soyler.
+
+  2. ILERLEME CUBUGU - en altta, durum cubugunun icinde.
+     Tasima ve kopyalamada: "15 / 30", dolan cubuk, o an islenen dosyanin
+     adi ve bir IPTAL dugmesi.
+     Is ARKA PLANDA kosuyor - uygulama artik buyuk aktarmada donmuyor.
+     Iptal yalnizca dosyalar ARASINDA olur; yarim kalmis dosya birakilmaz.
+     Sayilar uydurma degil: kac ogeden kacinin bittigi sayiliyor.
+
+  3. YENILE - sag tik menusunde ve F5.
+     Agaci diskten bastan okur; acik dallar ve secim KORUNUR. Ortak
+     surucude baskasi bir sey degistirdiginde isinize yarar.
+
+  4. KOPYALA (Ctrl+C) - artik sadece Kes yok.
+     Menude: Kes · Kopyala · Yapistir. Yapistir ne yapacagini adinda yazar:
+     "Yapistir (3 oge kopyalanacak)".
+     AYNI klasore yapistirmak COGALTMADIR: "Parca (2).SLDPRT" olur, uzanti
+     korunur. Baska klasorde ayni ad varsa USTUNE YAZILMAZ, islem yapilmaz
+     ve sebebi soylenir.
+     Kopyalar kaynak dosyanin referanslarini AYNEN tasir - yani kopya da
+     ozgun parcalari gosterir. Pack and Go gibi referans duzenlemesi HENUZ
+     YAPILMIYOR; onay kutusunda bu yaziyor.
+
+  OLCULDU - Wine'da gercek klavye/fareyle:
+    Ctrl+Shift+N -> klasor olustu -> Ctrl+Z -> klasor gitti
+    Ctrl+C ile 3 parca -> Ctrl+V -> kopyalar hedefte, KAYNAK YERINDE
+    Ctrl+Z -> kopyalar cop kutusuna gitti
+    30 dosya x 6 MB kopyalanirken: "15 / 30" + dolan cubuk + Iptal dugmesi
+    30 dosyayi kendi klasorune yapistirma -> 30 cogaltma, adlari "(2)"
+  Geri alma icin KAPI eklendi (kapi artik 8 sey olcuyor).
+
 BU SURUMDE DEGISEN - Ctrl+A ARTIK TEK KLASORU KAPSIYOR
 
   Bildirdigin gibi: Ctrl+A butun agaci seciyordu, artik yalnizca icinde
@@ -70,7 +111,9 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
     - Yeni klasor .......... Ctrl+Shift+N   (cakisirsa "Yeni klasor (2)")
     - Yeniden adlandir ..... F2            (tek oge seciliyken)
     - Sil .................. Delete        (arac cubugundaki "Cop" dugmesi de)
-    - Kes / Yapistir ....... Ctrl+X / Ctrl+V
+    - Kes / Kopyala / Yapistir  Ctrl+X / Ctrl+C / Ctrl+V
+    - Geri al .............. Ctrl+Z
+    - Yenile ............... F5
     - Surukle-birak ........ secimi bir klasorun uzerine birak
 
   SILME KALICI DEGIL: kokun icindeki ".SwPdmCop" klasorune tasinir ve
@@ -136,7 +179,6 @@ BU SURUMDE CALISMAYAN - bilerek
     bu yanlis bilgi saglam dosya sildirebilir. Bilmiyorsak bilmedigimizi
     yaziyoruz.
   - Referans listesi bos - referanslar henuz cozulmuyor
-  - Cop ve geri al dugmeleri SOLUK - ne yapacaklari henuz tanimlanmadi
   - Ayarlar sekmesi bos
   - Tasima / yeniden adlandirma YOK
 

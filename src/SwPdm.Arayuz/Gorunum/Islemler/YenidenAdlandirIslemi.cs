@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
@@ -89,9 +90,30 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             return;
         }
 
+        if (rapor.YeniYol is string yeniYol)
+        {
+            GeriAlDefteri.Kaydet(GeriAlmasi(yeniYol, eskiAd, yeniAd));
+        }
+
         baglam.Tazele(rapor.YeniYol);
         baglam.Bildir($"{eskiAd} → {yeniAd}");
     }
+
+    /// <summary>Geri alma: eski adi geri koyar.</summary>
+    private static GeriAlinabilir GeriAlmasi(string yeniYol, string eskiAd, string yeniAd)
+        => new(
+            $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+                IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yeniYol, eskiAd);
+                if (!rapor.Oldu)
+                {
+                    olmayan.Add(yeniAd + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                }
+
+                return olmayan;
+            });
 
     private static bool SolidworksMu(DosyaTuru tur)
         => tur is DosyaTuru.Parca or DosyaTuru.Montaj or DosyaTuru.TeknikResim;

@@ -21,6 +21,10 @@ internal static class AgacIslemleri
         new SilIslemi(),
         null,
         new KesIslemi(),
+        new KopyalaIslemi(),
         new YapistirIslemi(),
+        null,
+        new GeriAlIslemi(),
+        new YenileIslemi(),
     ];
 }

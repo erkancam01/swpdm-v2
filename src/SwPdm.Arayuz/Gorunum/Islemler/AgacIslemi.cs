@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -50,11 +51,32 @@ internal sealed record SecimBaglami(
 /// <param name="Secim">Uzerinde calisilacak secim.</param>
 /// <param name="Tazele">Islem bittiginde cagrilir; yol verilirse orasi secilir.</param>
 /// <param name="Bildir">Durum cubuguna yazilacak cumle.</param>
+/// <param name="Ilerleme">Uzun suren isin ilerlemeyi bildirdigi yuzey.</param>
 internal sealed record IslemBaglami(
     IWin32Window Sahip,
     SecimBaglami Secim,
     Action<string?> Tazele,
-    Action<string> Bildir);
+    Action<string> Bildir,
+    IIlerlemeYuzeyi Ilerleme);
+
+/// <summary>
+/// Uzun suren islerin ilerlemeyi bildirdigi yuzey.
+///
+/// Islem IS PARCACIGI BILMEZ - arayuze gecmek uygulayanin isi. Boylece
+/// islemler saf kalir ve ilerleme gosterimi tek bir dosyada degisir
+/// (CLAUDE.md 1b).
+/// </summary>
+internal interface IIlerlemeYuzeyi
+{
+    /// <summary>Is basladi; toplam SAYILABILIR olmali (CLAUDE.md 3).</summary>
+    void Basladi(int toplam, CancellationTokenSource iptal);
+
+    /// <summary>Bir adim bitti.</summary>
+    void Adim(int yapilan, int toplam, string ad);
+
+    /// <summary>Is bitti; verilen is ARAYUZ parcaciginda kosar.</summary>
+    void Bitti(Action arayuzdeCalistir);
+}
 
 /// <summary>
 /// BIR AGAC ISLEMI. CLAUDE.md 1b: her islem KENDI dosyasinda yasar; menu
