@@ -24,23 +24,16 @@ namespace SwPdm.Arayuz.Gorunum;
 /// </summary>
 internal sealed class SecimliAgac : TreeView
 {
-    /// <summary>
-    /// Dikdortgenin baslamasi icin gereken en kucuk suruklenme. Altinda kalan
-    /// hareket "titreyen el"dir; her tikta dikdortgen baslatmak secimi bozar.
-    /// </summary>
-    private const int SurtunmeEsigi = 4;
-
     private readonly HashSet<TreeNode> _secililer = [];
 
     /// <summary>Shift ile aralik secerken sabit kalan uc.</summary>
     private TreeNode? _capa;
 
-    private bool _dikdortgenBasladi;
-    private Point _basildigiYer;
-    private Rectangle _dikdortgen;
-
     /// <summary>Kod secimi degistirirken olay yagmurunu kesen bayrak.</summary>
     private bool _kendimDegistiriyorum;
+
+    /// <summary>Sirada bekleyen bir secim duyurusu var mi (bkz. Bildir).</summary>
+    private bool _duyuruBekliyor;
 
     internal SecimliAgac()
     {
@@ -227,16 +220,12 @@ internal sealed class SecimliAgac : TreeView
                 return;
             }
 
-            // Gercekten bos alan: dikdortgen secimi ADAYI. Baslamasi icin
-            // esigi asan bir hareket gerekiyor - yoksa her bos tik dikdortgen
-            // aciyormus gibi gorunurdu.
+            // Gercekten bos alan: secim bosalir.
+            //
             // Bos alana tiklaninca odak kendiliginden gelmiyor; Ctrl+A ve ok
-            // tuslari calissin diye elle aliniyor. DUGUM uzerinde ise
-            // CAGRILMIYOR - orada denetim odagi zaten aliyor ve mousedown'un
-            // ortasinda odak degistirmek fare yakalamasini bozuyor (asagida).
+            // tuslari calissin diye elle aliniyor. DUGUM uzerinde CAGRILMIYOR -
+            // orada denetim odagi zaten kendisi aliyor.
             Focus();
-            _basildigiYer = e.Location;
-            _dikdortgenBasladi = false;
 
             if (e.Button == MouseButtons.Left && (ModifierKeys & (Keys.Control | Keys.Shift)) == 0)
             {
@@ -291,51 +280,6 @@ internal sealed class SecimliAgac : TreeView
         {
             YalnizSec(vurulan);
         }
-    }
-
-    protected override void OnMouseMove(MouseEventArgs e)
-    {
-        if (e.Button != MouseButtons.Left)
-        {
-            base.OnMouseMove(e);
-            return;
-        }
-
-        if (!_dikdortgenBasladi)
-        {
-            if (_basildigiYer.IsEmpty
-                || (Math.Abs(e.X - _basildigiYer.X) < SurtunmeEsigi
-                    && Math.Abs(e.Y - _basildigiYer.Y) < SurtunmeEsigi))
-            {
-                base.OnMouseMove(e);
-                return;
-            }
-
-            _dikdortgenBasladi = true;
-            _dikdortgen = Rectangle.Empty;
-        }
-
-        CerceveyiSil();
-        _dikdortgen = Rectangle.FromLTRB(
-            Math.Min(_basildigiYer.X, e.X), Math.Min(_basildigiYer.Y, e.Y),
-            Math.Max(_basildigiYer.X, e.X), Math.Max(_basildigiYer.Y, e.Y));
-        CerceveyiCiz();
-
-        DikdortgendekileriSec();
-        base.OnMouseMove(e);
-    }
-
-    protected override void OnMouseUp(MouseEventArgs e)
-    {
-        if (_dikdortgenBasladi)
-        {
-            CerceveyiSil();
-            _dikdortgenBasladi = false;
-            _dikdortgen = Rectangle.Empty;
-        }
-
-        _basildigiYer = Point.Empty;
-        base.OnMouseUp(e);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -475,22 +419,6 @@ internal sealed class SecimliAgac : TreeView
         Bildir();
     }
 
-    private void DikdortgendekileriSec()
-    {
-        _secililer.Clear();
-        for (TreeNode? d = IlkGorunen(); d is not null; d = d.NextVisibleNode)
-        {
-            Rectangle alan = d.Bounds;
-            alan.Inflate(1, 0);
-            if (alan.IntersectsWith(_dikdortgen))
-            {
-                _secililer.Add(d);
-            }
-        }
-
-        Bildir();
-    }
-
     private TreeNode? IlkGorunen() => Nodes.Count > 0 ? Nodes[0] : null;
 
     private TreeNode? SonGorunen()
@@ -515,23 +443,52 @@ internal sealed class SecimliAgac : TreeView
         _kendimDegistiriyorum = false;
     }
 
+    /// <summary>
+    /// Secim degisikligini duyurur.
+    ///
+    /// ================== NEDEN ERTELENIYOR ==================
+    /// Duyuruyu dinleyenler HAFIF DEGIL: onizleme kendi is parcacigini
+    /// uyandiriyor, panel yeniden ciziliyor, durum cubugu yaziliyor. Bunlarin
+    /// tamami eskiden farenin WM_LBUTTONDOWN mesajinin ICINDE kosuyordu.
+    ///
+    /// OLCULEN SONUC: agacta bir ogeye tiklandiktan sonra BIR SONRAKI tik
+    /// yutuluyordu - suzgec dugmesi odagi aliyor ama Click'i hic dogmuyordu.
+    /// Erkan'in "Montaj/Parca dugmeleri tepki vermiyor" dedigi seyin ta
+    /// kendisi. Boslu alana tiklamak durumu duzeltiyordu; yani sorun benim
+    /// fare isleyicimin biraktigi durumdaydi.
+    ///
+    /// Cozum tek bir tahmini onarmak degil: fare mesajinin icinde agir is
+    /// YAPMAMAK. BeginInvoke ile duyuru, tiklama mesaji TAMAMEN islendikten
+    /// sonra kosuyor. Kullanici acisindan fark yok (bir mesaj sonrasi),
+    /// yeniden girisin tamami ortadan kalkiyor.
+    /// =======================================================
+    /// </summary>
     private void Bildir()
     {
         Invalidate();
-        SecimDegisti?.Invoke(this, EventArgs.Empty);
-    }
 
-    // Ters cerceve EKRAN koordinatlarinda cizilir; ayni cagri ikinci kez
-    // yapilinca siliniyor (XOR). Cizim ile silme SIMETRIK olmak zorunda,
-    // yoksa ekranda iz kaliyor.
-    private void CerceveyiCiz()
-    {
-        if (_dikdortgen.Width > 0 && _dikdortgen.Height > 0)
+        if (!IsHandleCreated || IsDisposed)
         {
-            ControlPaint.DrawReversibleFrame(
-                RectangleToScreen(_dikdortgen), BackColor, FrameStyle.Dashed);
+            SecimDegisti?.Invoke(this, EventArgs.Empty);
+            return;
         }
+
+        // Ust uste gelen degisiklikler TEK duyuruya iner: Shift ile aralik
+        // secerken her adimda onizleme yuklemeye kalkmiyoruz.
+        if (_duyuruBekliyor)
+        {
+            return;
+        }
+
+        _duyuruBekliyor = true;
+        BeginInvoke(() =>
+        {
+            _duyuruBekliyor = false;
+            if (!IsDisposed)
+            {
+                SecimDegisti?.Invoke(this, EventArgs.Empty);
+            }
+        });
     }
 
-    private void CerceveyiSil() => CerceveyiCiz();
 }

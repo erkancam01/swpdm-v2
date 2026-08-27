@@ -30,7 +30,7 @@
 # olcum yolu bu. CLAUDE.md 9: depoda ve CI'da olmayan denetim, denetim
 # degildir.
 #
-# DONUS: 0 = pencere acildi, hata yok, coklu secim calisiyor.
+# DONUS: 0 = pencere acildi, hata yok, coklu secim ve tur suzgeci calisiyor.
 
 set -uo pipefail
 
@@ -233,32 +233,41 @@ secili_satir_say() {
     | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
 }
 
+# Agactaki GORUNUR satir sayisi: beyaz olmayan piksel iceren yatay bantlar.
+# Suzgec uygulaninca satir sayisi AZALMALI.
+agac_satir_say() {
+  convert "$1" -crop "560x300+$(( $2 + 5 ))+$(( $3 + 112 ))" +repage txt:- 2>/dev/null \
+    | grep -v '#FFFFFF' | grep -o '^[0-9]*,[0-9]*:' \
+    | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
+    | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
+}
+
 SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/5] surec ayakta ............ EVET"
+  echo "   [1/6] surec ayakta ............ EVET"
 else
-  echo "   [1/5] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/6] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/5] hata akisi temiz ........ HAYIR"
+  echo "   [2/6] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/5] hata akisi temiz ........ EVET"
+  echo "   [2/6] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/5] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/6] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/5] cokme penceresi yok ..... EVET"
+  echo "   [3/6] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -280,9 +289,9 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/5] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/6] ana pencere dogdu ....... EVET ($ANA)"
 else
-  echo "   [4/5] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/6] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -307,13 +316,42 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/5] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/6] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/5] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/6] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/5] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/6] coklu secim ............. OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 6) tur suzgeci: "Parca" dugmesine tiklaninca agac gercekten suzuluyor mu
+#
+# NEDEN VAR: bu kapinin olmadigi bir turda suzgec dugmesinin Click baglantisi
+# SILINDI ve kimse gormeden pakete girdi; Erkan bildirdi. Dugmeler ciziliyor,
+# odagi aliyor, uzerine gelince renk degistiriyor - ama hicbir sey yapmiyordu.
+# Derleme de testler de TEMIZ diyordu (CLAUDE.md 9).
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  ONCE="$(agac_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  # Suzgec seridi: pencere ici y=95. "Parca" ucuncu dugme, x=171.
+  xdotool mousemove "$(( PENCERE_X + 171 ))" "$(( PENCERE_Y + 95 ))" > /dev/null 2>&1
+  sleep 1
+  xdotool click 1 > /dev/null 2>&1
+  sleep 2
+
+  import -window root "$CALISMA/suzgec.png" > /dev/null 2>&1
+  SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
+    echo "   [6/6] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+  else
+    echo "   [6/6] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    SORUN=1
+  fi
+else
+  echo "   [6/6] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

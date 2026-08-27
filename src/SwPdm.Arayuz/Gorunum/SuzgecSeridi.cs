@@ -38,6 +38,7 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         {
             Sec(_dugmeler[0]);
         }
+
     }
 
     /// <summary>Secim degistiginde tetiklenir. null = butun turler.</summary>
@@ -69,6 +70,16 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
             TabStop = false,
         };
         d.FlatAppearance.BorderSize = 0;
+
+        // ================== BU SATIR BIR KEZ SILINDI ==================
+        // Bu baglanti olmadan dugmeler CIZILIYOR, odagi aliyor, uzerine
+        // gelince renk degistiriyor - ama TIKLAMA HICBIR SEY YAPMIYOR.
+        // Erkan'in "Montaj/Parca/Teknik resim/PDF tepki vermiyor" dedigi sey
+        // tam olarak buydu ve sebebi bir WinForms tuzagi degil, bu eksik
+        // satirdi. Nasil silindigi CLAUDE.md 8'de yaziyor.
+        // ==============================================================
+        d.Click += (_, _) => Sec(d);
+
         return d;
     }
 

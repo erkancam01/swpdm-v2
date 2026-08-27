@@ -378,6 +378,28 @@ Bunlar yalnızca kod **başka bir uygulamanın süreci içinde** koşuyorsa geç
   girdide `NullReferenceException` atıyordu, bir kısmı sondaki ayırıcıyı
   kırpmıyordu, ikisi `/` tanımıyordu. Boyut biçimlendirmesi üç yerdeydi ve biri
   **farklı sayı** gösteriyordu — aynı dosya iki ekranda farklı boyutta.
+- **TANI SATIRI ÜRETİM KODUYLA AYNI SATIRA YAZILMAZ.** 27.08.2026'da tam
+  bunun bedeli ödendi. Bir düğmenin bağlantısı geçici olarak şuna çevrildi:
+
+  ```csharp
+  d.Click += (_, _) => { Console.Error.WriteLine("TANI ..."); Sec(d); };
+  ```
+
+  Sonra tanılar `"TANI" geçen satırları sil` diye temizlendi — ve **`Sec(d)`
+  de gitti.** Sonuç: süzgeç düğmeleri çiziliyor, odağı alıyor, üstüne gelince
+  renk değiştiriyor ama **hiçbir şey yapmıyordu**. Derleme TEMİZ, testler
+  TEMİZ, uygulama açılıyor; hata kullanıcıya kadar gitti.
+  → Tanı **kendi satırında** durur. Temizlik gözle değil, **bir önceki
+  commit'e karşı `git diff` ile** doğrulanır.
+
+- **"Önceden çalışıyordu" ise ÖNCE ESKİ SÜRÜMÜ DERLE.** Yukarıdaki hatada
+  belirti derin bir WinForms/Wine sorunu gibi görünüyordu ve **beş hipotez**
+  (fare yakalaması · `base` çağrı sırası · `Focus()` · owner-draw · DPI kipi)
+  ölçülerek elendi. Hepsi boşa gitti. `git archive <eski-commit>` ile eski
+  sürümü derleyip aynı ölçümü koşmak **tek adımda** doğru commit'i gösterdi;
+  oradan `git diff` bir satırlık sebebi verdi. Bu, tahmin kovalamaktan
+  **önce** yapılacak iştir.
+
 - **Bir belge yorumunu sahibinden ayırma.** Araya üye eklerken en sık yapılan
   kaza bu; sonuç, artık orada olmayan bir üyeyi anlatan bir yorum.
 
@@ -636,9 +658,16 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı beş şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
-çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu**.
-Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+**Çalıştırma kapısı altı şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
+**tür süzgeci gerçekten süzüyor mu**. Ekran görüntüsünü `.kapi/ekran.png`
+olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Altıncısı neden var:** süzgeç düğmesinin `Click` bağlantısı bir tanı
+> temizliğinde silindi (§8) ve **kimse görmeden pakete girdi** — bakan bir şey
+> yoktu. Kapı "Parça"ya tıklar ve ağaçtaki satır sayısının **azaldığını**
+> ölçer. §9'a göre eklendi: TEMİZ → o satır tekrar silinince **YAKALADI**
+> (15 → 15, süzülmedi) → geri konunca TEMİZ (15 → 11).
 
 > **Beşincisi neden var:** çoklu seçim WinForms'ta yok, elle yazıldı (§6) ve
 > arayüz kodu olduğu için **birim testi yazılamıyor**. Tek ölçüm yolu gerçek

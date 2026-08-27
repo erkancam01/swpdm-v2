@@ -111,6 +111,7 @@ internal sealed partial class AnaForm : Form
 
         _onizleme.Temizle();
         _durum.Bekliyor();
+
     }
 
     protected override void OnLoad(EventArgs e)
