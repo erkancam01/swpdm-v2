@@ -172,7 +172,7 @@ internal sealed partial class AnaForm
         // sey yapmiyor. Iki satirin sirasi onemli.
         _araKutusu = new ToolStripTextBox { AutoSize = false };
         _araKutusu.Width = 150;
-        _araKutusu.TextBox.PlaceholderText = "Ara... (Enter)";
+        _araKutusu.TextBox.PlaceholderText = "Ara...";
 
         serit.Items.Add(_acDugmesi);
         serit.Items.Add(new ToolStripSeparator());

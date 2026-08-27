@@ -230,6 +230,11 @@ yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
   → Aynı hata `ReferansListesi`'nde de vardı ve yalnızca uygulama daha erken
   öldüğü için görülmemişti. **Bir `On*` ezmesi yazan her sınıf bu açıdan
   denetlenir.**
+- **`TreeNode`'un BÜTÜN çocukları silinince düğüm DARALIYOR** ve çocuk geri
+  eklendiğinde açık hâli **geri gelmiyor**. Süzgeç uygularken yalnızca dosya
+  içeren bir klasör bir an sıfır çocuklu kalıyor ve kullanıcının açtığı dal
+  kendiliğinden kapanıyor. `IsExpanded` silmeden **önce** okunup sonra geri
+  konmalı. *"Ağacı yeniden kurmuyorum"* demek tek başına yetmiyor.
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.

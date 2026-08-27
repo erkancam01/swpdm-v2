@@ -5,16 +5,21 @@ using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
+/// <summary>Agacin acik dallari ve secili ogesi. Yeniden kurulurken geri yuklenir.</summary>
+internal sealed record AgacDurumu(IReadOnlyList<string> AcikYollar, string? SeciliYol);
+
 /// <summary>
 /// Agaci doldurur. Diski KENDISI okumaz - <see cref="KlasorTarayici"/>'ya sorar.
 ///
 /// CLAUDE.md 7: bir arayuz sinifi hem ekran hem is akisi surucusu olmaz.
-/// Bu sinif yalnizca "cekirdegin verdigi listeyi dugumlere cevirmek"ten
-/// sorumlu; tarama, arama, hata uretme onun isi degil.
 ///
-/// TEMBEL YUKLEME: bir klasor ancak ACILDIGINDA taranir. Sebep olculmemis
-/// bir hiz iddiasi degil, somut bir risk: dosyalar ag surucusunde duruyor
-/// (\\10.34.1.250\ortak) ve her seyi bastan taramak dakikalarca donma demek.
+/// TEMBEL YUKLEME: bir klasor ancak ACILDIGINDA taranir. Sebep somut: dosyalar
+/// ag surucusunde duruyor ve her seyi bastan taramak dakikalarca donma demek.
+///
+/// TARANANI HATIRLAR: her acilan klasorun icerigi onbellege aliniyor. Boylece
+/// tur suzgeci degistiginde agac YENIDEN KURULMUYOR - yalnizca dosya dugumleri
+/// tazeleniyor. Erkan'in bildirdigi hata buydu: suzgece basinca actigi butun
+/// dallar kapaniyordu.
 /// </summary>
 internal sealed class AgacDoldurucu
 {
@@ -22,7 +27,11 @@ internal sealed class AgacDoldurucu
     private static readonly object HenuzTaranmadi = new();
 
     private readonly TreeView _agac;
+    private readonly Dictionary<TreeNode, KlasorIcerigi> _taranan = [];
     private DosyaTuru? _turSuzgeci;
+    private string? _aramaMetni;
+    private AramaSonucu? _aramaSonucu;
+    private AgacDurumu? _gezinmeDurumu;
 
     internal AgacDoldurucu(TreeView agac)
     {
@@ -36,6 +45,9 @@ internal sealed class AgacDoldurucu
     /// <summary>Su an acik olan kok klasor. Yoksa null.</summary>
     internal string? Kok { get; private set; }
 
+    /// <summary>Agac su an arama sonucu mu gosteriyor.</summary>
+    internal bool AramaKipinde => _aramaSonucu is not null;
+
     /// <summary>null = butun turler.</summary>
     internal DosyaTuru? TurSuzgeci
     {
@@ -48,17 +60,29 @@ internal sealed class AgacDoldurucu
             }
 
             _turSuzgeci = value;
-            if (Kok is not null)
+
+            if (_aramaSonucu is not null)
             {
-                KokuAc(Kok);
+                AramaSonucunuGoster(_aramaMetni ?? string.Empty, _aramaSonucu);
+            }
+            else if (Kok is not null)
+            {
+                // Agac YENIDEN KURULMUYOR: acik dallar oldugu gibi kaliyor,
+                // yalnizca dosya dugumleri onbellekten tazeleniyor.
+                SuzgeciYenidenUygula();
             }
         }
     }
 
     /// <summary>Bir kok klasoru acar ve ilk seviyeyi gosterir.</summary>
-    internal void KokuAc(string yol)
+    internal void KokuAc(string yol, AgacDurumu? geriYuklenecek = null)
     {
         Kok = yol;
+        _aramaMetni = null;
+        _aramaSonucu = null;
+        _taranan.Clear();
+        _agac.SelectedNode = null;
+
         KlasorIcerigi icerik = KlasorTarayici.Tara(yol);
 
         _agac.BeginUpdate();
@@ -76,6 +100,11 @@ internal sealed class AgacDoldurucu
         kokDugum.Expand();
         _agac.EndUpdate();
 
+        if (geriYuklenecek is not null)
+        {
+            DurumuGeriYukle(geriYuklenecek);
+        }
+
         if (icerik.Hata is not null)
         {
             // CLAUDE.md 3: sebep EKRANDA. Bos agac "burada bir sey yok" demek DEGILDIR.
@@ -87,19 +116,25 @@ internal sealed class AgacDoldurucu
         }
     }
 
-    /// <summary>Acik kokü bastan tarar.</summary>
+    /// <summary>Acik kokü bastan tarar; acik dallari ve secimi KORUR.</summary>
     internal void Yenile()
     {
-        if (Kok is not null)
+        if (Kok is null)
         {
-            KokuAc(Kok);
+            return;
         }
+
+        AgacDurumu durum = DurumuAl();
+        KokuAc(Kok, durum);
     }
 
     /// <summary>Agaci bosaltir.</summary>
     internal void Temizle()
     {
         Kok = null;
+        _aramaMetni = null;
+        _aramaSonucu = null;
+        _taranan.Clear();
         _agac.Nodes.Clear();
     }
 
@@ -109,18 +144,26 @@ internal sealed class AgacDoldurucu
     /// </summary>
     internal void AramaSonucunuGoster(string metin, AramaSonucu sonuc)
     {
+        // Arama kipine ILK geciste gezinme durumu saklanir; aramadan cikinca
+        // kullanici actigi dallari acik bulur.
+        _gezinmeDurumu ??= DurumuAl();
+
+        _aramaMetni = metin;
+        _aramaSonucu = sonuc;
+        _taranan.Clear();
+
         _agac.BeginUpdate();
         _agac.Nodes.Clear();
 
-        string kokAdi = Kok is null ? "Arama" : WindowsYolu.DosyaAdi(Kok);
-        var kokDugum = new TreeNode($"{kokAdi}  —  \"{metin}\": {sonuc.Bulunanlar.Count} eşleşme")
+        int gosterilen = 0;
+        var gruplar = new Dictionary<string, TreeNode>(StringComparer.OrdinalIgnoreCase);
+        var kokDugum = new TreeNode(string.Empty)
         {
             ImageIndex = SimgeSirasi.Klasor,
             SelectedImageIndex = SimgeSirasi.Klasor,
         };
         _agac.Nodes.Add(kokDugum);
 
-        var gruplar = new Dictionary<string, TreeNode>(StringComparer.OrdinalIgnoreCase);
         foreach (DosyaOgesi dosya in sonuc.Bulunanlar)
         {
             if (!TureUyuyorMu(dosya.Tur))
@@ -128,6 +171,7 @@ internal sealed class AgacDoldurucu
                 continue;
             }
 
+            gosterilen++;
             string klasor = WindowsYolu.Klasor(dosya.Yol);
             if (!gruplar.TryGetValue(klasor, out TreeNode? grup))
             {
@@ -145,15 +189,191 @@ internal sealed class AgacDoldurucu
             grup.Nodes.Add(DosyaDugumu(dosya));
         }
 
+        string kokAdi = Kok is null ? "Arama" : WindowsYolu.DosyaAdi(Kok);
+        kokDugum.Text = $"{kokAdi}  —  \"{metin}\": {gosterilen} eşleşme";
         kokDugum.ExpandAll();
         _agac.EndUpdate();
 
-        Durum?.Invoke(this, AramaOzeti(sonuc));
+        Durum?.Invoke(this, AramaOzeti(sonuc, gosterilen));
+    }
+
+    /// <summary>
+    /// Arama kipinden gezinme kipine doner ve aramadan ONCEKI acik dallari
+    /// geri yukler.
+    /// </summary>
+    internal void GezinmeyeDon()
+    {
+        if (Kok is null)
+        {
+            return;
+        }
+
+        AgacDurumu? geri = _gezinmeDurumu;
+        _gezinmeDurumu = null;
+        KokuAc(Kok, geri);
     }
 
     /// <summary>Dugume bagli cekirdek nesnesi; yoksa null.</summary>
     internal static object? Etiket(TreeNode? dugum)
         => ReferenceEquals(dugum?.Tag, HenuzTaranmadi) ? null : dugum?.Tag;
+
+    // ------------------------------------------------------------- durum
+
+    /// <summary>Acik dallari ve secili ogeyi yakalar.</summary>
+    internal AgacDurumu DurumuAl()
+    {
+        var acik = new List<string>();
+        Topla(_agac.Nodes, acik);
+
+        string? secili = Etiket(_agac.SelectedNode) switch
+        {
+            DosyaOgesi dosya => dosya.Yol,
+            KlasorOgesi klasor => klasor.Yol,
+            _ => null,
+        };
+
+        // Kisa yollar once: ust dal acilmadan alt dal acilamaz.
+        acik.Sort(static (a, b) => a.Length.CompareTo(b.Length));
+        return new AgacDurumu(acik, secili);
+
+        static void Topla(TreeNodeCollection dugumler, List<string> acik)
+        {
+            foreach (TreeNode dugum in dugumler)
+            {
+                if (dugum.IsExpanded && dugum.Tag is KlasorOgesi klasor)
+                {
+                    acik.Add(klasor.Yol);
+                }
+
+                Topla(dugum.Nodes, acik);
+            }
+        }
+    }
+
+    private void DurumuGeriYukle(AgacDurumu durum)
+    {
+        _agac.BeginUpdate();
+        foreach (string yol in durum.AcikYollar)
+        {
+            DuguuBul(yol)?.Expand();   // Expand -> BeforeExpand -> tembel tarama
+        }
+
+        if (durum.SeciliYol is not null)
+        {
+            TreeNode? secili = DuguuBul(durum.SeciliYol);
+            if (secili is not null)
+            {
+                _agac.SelectedNode = secili;
+                secili.EnsureVisible();
+            }
+        }
+
+        _agac.EndUpdate();
+    }
+
+    private TreeNode? DuguuBul(string yol)
+    {
+        return Ara(_agac.Nodes);
+
+        TreeNode? Ara(TreeNodeCollection dugumler)
+        {
+            foreach (TreeNode dugum in dugumler)
+            {
+                string? dugumYolu = Etiket(dugum) switch
+                {
+                    DosyaOgesi dosya => dosya.Yol,
+                    KlasorOgesi klasor => klasor.Yol,
+                    _ => null,
+                };
+
+                if (string.Equals(dugumYolu, yol, StringComparison.OrdinalIgnoreCase))
+                {
+                    return dugum;
+                }
+
+                TreeNode? derin = Ara(dugum.Nodes);
+                if (derin is not null)
+                {
+                    return derin;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    // ------------------------------------------------------------- suzgec
+
+    /// <summary>
+    /// Tur suzgeci degisince yalnizca DOSYA dugumlerini tazeler. Klasor
+    /// dugumlerine ve aciklik durumuna DOKUNMAZ - Erkan'in bildirdigi hata
+    /// (suzgece basinca acik dallarin kapanmasi) tam olarak buydu.
+    /// Disk yeniden okunmaz; onbellekten calisir.
+    /// </summary>
+    private void SuzgeciYenidenUygula()
+    {
+        string? seciliyken = Etiket(_agac.SelectedNode) switch
+        {
+            DosyaOgesi dosya => dosya.Yol,
+            KlasorOgesi klasor => klasor.Yol,
+            _ => null,
+        };
+
+        _agac.BeginUpdate();
+        foreach ((TreeNode dal, KlasorIcerigi icerik) in _taranan)
+        {
+            // ================== OLCULMUS TUZAK (CLAUDE.md 6) ==================
+            // Bir dugumun BUTUN cocuklari silinince TreeView onu DARALTIYOR ve
+            // cocuk geri eklendiginde acik hali GERI GELMIYOR.
+            //
+            // Erkan'in bildirdigi hata tam buydu: yalnizca dosya iceren bir
+            // klasorde suzgec butun cocuklari kaldiriyor, dugum o an sifir
+            // cocuklu kaliyor ve kapaniyor. Ilk duzeltmem yetmedi cunku
+            // "agaci yeniden kurmuyorum" demek tek basina yetmiyor.
+            // ===================================================================
+            bool acikti = dal.IsExpanded;
+
+            for (int i = dal.Nodes.Count - 1; i >= 0; i--)
+            {
+                if (dal.Nodes[i].Tag is DosyaOgesi)
+                {
+                    dal.Nodes.RemoveAt(i);
+                }
+            }
+
+            foreach (DosyaOgesi dosya in icerik.Dosyalar)
+            {
+                if (TureUyuyorMu(dosya.Tur))
+                {
+                    dal.Nodes.Add(DosyaDugumu(dosya));
+                }
+            }
+
+            if (acikti && dal.Nodes.Count > 0)
+            {
+                dal.Expand();
+            }
+        }
+
+        // Secili dosya suzgecle gizlendiyse secim kaybolur; geri konabiliyorsa konur.
+        if (seciliyken is not null && _agac.SelectedNode is null)
+        {
+            TreeNode? geri = DuguuBul(seciliyken);
+            if (geri is not null)
+            {
+                _agac.SelectedNode = geri;
+            }
+        }
+
+        _agac.EndUpdate();
+
+        if (_agac.Nodes.Count > 0 && _taranan.TryGetValue(_agac.Nodes[0], out KlasorIcerigi? kokIcerik))
+        {
+            Durum?.Invoke(this, Ozet(kokIcerik));
+        }
+    }
+
+    // ------------------------------------------------------------- doldurma
 
     private void DalAcilirken(object? gonderen, TreeViewCancelEventArgs e)
     {
@@ -187,6 +407,8 @@ internal sealed class AgacDoldurucu
 
     private void DaliDoldur(TreeNode dal, KlasorIcerigi icerik)
     {
+        _taranan[dal] = icerik;   // suzgec degisince diske geri donmemek icin
+
         foreach (KlasorOgesi klasor in icerik.Klasorler)
         {
             dal.Nodes.Add(KlasorDugumu(klasor));
@@ -223,7 +445,6 @@ internal sealed class AgacDoldurucu
         bool icindeBirSeyVar = (klasor.AltKlasorVarMi ?? false) || (klasor.DosyaSayisi ?? 0) > 0;
         if (icindeBirSeyVar)
         {
-            // "+" kutusu ancak bir cocuk varsa cikiyor; gercek icerik acilinca taranacak.
             dugum.Nodes.Add(new TreeNode(string.Empty) { Tag = HenuzTaranmadi });
         }
 
@@ -267,8 +488,7 @@ internal sealed class AgacDoldurucu
     /// Durum cumlesi. Suzgec dosya GIZLIYORSA bunu soyler.
     ///
     /// CLAUDE.md 3: gizlenen dosyayi hic soylememek, kullaniciya klasorun
-    /// oldugundan bos gorunmesine yol acar. "1 dosya" yazip 4 tanesini
-    /// susmak, "1 / 5 dosya" yazmakla ayni sey degildir.
+    /// oldugundan bos gorunmesine yol acar.
     /// </summary>
     private string Ozet(KlasorIcerigi icerik)
     {
@@ -288,9 +508,13 @@ internal sealed class AgacDoldurucu
         return $"{icerik.Klasorler.Count} klasör · {dosyaKismi}";
     }
 
-    private static string AramaOzeti(AramaSonucu sonuc)
+    private static string AramaOzeti(AramaSonucu sonuc, int gosterilen)
     {
-        string ozet = $"{sonuc.Bulunanlar.Count} eşleşme · {sonuc.TarananKlasor} klasör tarandı";
+        string ozet = gosterilen == sonuc.Bulunanlar.Count
+            ? $"{gosterilen} eşleşme"
+            : $"{gosterilen} / {sonuc.Bulunanlar.Count} eşleşme (süzgeç açık)";
+
+        ozet += $" · {sonuc.TarananKlasor} klasör tarandı";
 
         // Sessiz kirpma "hepsini kapsadim" gibi okunur (CLAUDE.md 9).
         if (sonuc.Iptal)

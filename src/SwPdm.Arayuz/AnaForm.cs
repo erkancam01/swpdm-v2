@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -23,9 +25,20 @@ internal sealed partial class AnaForm : Form
     /// <summary>Aramada en fazla kac eslesme toplanir. Asilirsa SOYLENIR, sessizce kirpilmaz.</summary>
     private const int AramaSiniri = 2000;
 
+    /// <summary>
+    /// Tusa her basista aramaya baslamak ag surucusunu bogar. Bu gecikme,
+    /// yazma duruncaya kadar bekletir - kullaniciya "anlik" hissettirir ama
+    /// diske her harfte gitmez.
+    /// </summary>
+    private const int AramaGecikmesiMs = 350;
+
     private readonly AgacDoldurucu _doldurucu;
     private readonly string? _acilistaAcilacakKok;
+    private readonly System.Windows.Forms.Timer _aramaGecikmesi = new() { Interval = AramaGecikmesiMs };
     private CancellationTokenSource? _aramaIptali;
+
+    /// <summary>Arama kutusunu KOD degistirdiginde arama tetiklenmesin diye.</summary>
+    private bool _araKutusunuKodDegistiriyor;
 
     internal AnaForm(string? acilistaAcilacakKok = null)
     {
@@ -37,8 +50,17 @@ internal sealed partial class AnaForm : Form
 
         _acDugmesi.ButtonClick += (_, _) => KlasorSec();
         _agac.AfterSelect += (_, e) => SecimiGoster(e.Node);
+        _agac.NodeMouseDoubleClick += (_, e) => OgeyiAc(e.Node);
         _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
+
+        // Anlik arama: yazarken suzuluyor, Enter beklemiyor.
+        _araKutusu.TextChanged += AramaMetniDegisti;
         _araKutusu.KeyDown += AramaTusu;
+        _aramaGecikmesi.Tick += (_, _) =>
+        {
+            _aramaGecikmesi.Stop();
+            AramayiBaslat(_araKutusu.Text);
+        };
 
         KeyPreview = true;
         KeyDown += (_, e) =>
@@ -71,9 +93,60 @@ internal sealed partial class AnaForm : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        _aramaGecikmesi.Stop();
+        _aramaGecikmesi.Dispose();
         _aramaIptali?.Cancel();
         _aramaIptali?.Dispose();
         base.OnFormClosed(e);
+    }
+
+    // ------------------------------------------------------------- acma
+
+    /// <summary>
+    /// Dosyayi Windows'un varsayilan uygulamasiyla acar - Gezgin'de cift
+    /// tiklamakla ayni. Klasorlere DOKUNMAZ: orada agacin kendi ac/kapa
+    /// davranisi dogru olan.
+    ///
+    /// CalismaKlasoru BILEREK verilmiyor: cocuk surec bir klasoru calisma
+    /// klasoru yaparsa o klasor bir daha silinemez (CLAUDE.md 5'te SOLIDWORKS
+    /// icin olculmus tuzagin ta kendisi) ve bu bir dosya yoneticisi icin
+    /// dogrudan zarar olurdu.
+    /// </summary>
+    private void OgeyiAc(TreeNode? dugum)
+    {
+        if (AgacDoldurucu.Etiket(dugum) is not DosyaOgesi dosya)
+        {
+            return;
+        }
+
+        try
+        {
+            using Process? surec = Process.Start(new ProcessStartInfo(dosya.Yol)
+            {
+                UseShellExecute = true,
+            });
+
+            _durumSag.Text = dosya.Ad + " açılıyor…";
+        }
+        catch (Exception hata) when (hata is Win32Exception or InvalidOperationException
+                                         or FileNotFoundException or ObjectDisposedException)
+        {
+            // CLAUDE.md 3: her istek bir YANIT alir. Cift tiklayip hicbir sey
+            // olmamasi, kullanicinin ikinci kez tiklamasina yol acar.
+            string sebep = hata is Win32Exception
+                ? hata.Message + "\n\nBu uzantı için kayıtlı bir uygulama olmayabilir."
+                : hata.Message;
+
+            // Durum cubugu KISA kalir - uzun hata metni cubugu tasiriyordu.
+            // Ayrinti kutuda; sebep yine de EKRANDA (CLAUDE.md 3).
+            _durumSag.Text = "Açılamadı — " + dosya.Ad;
+            MessageBox.Show(
+                this,
+                dosya.Yol + "\n\n" + sebep,
+                "Dosya açılamadı",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
     }
 
     // --------------------------------------------------------------- klasor
@@ -127,7 +200,11 @@ internal sealed partial class AnaForm : Form
 
     private void KokuAc(string yol)
     {
+        _araKutusunuKodDegistiriyor = true;
         _araKutusu.Text = string.Empty;
+        _araKutusunuKodDegistiriyor = false;
+        _aramaGecikmesi.Stop();
+
         _doldurucu.KokuAc(yol);
         _onizleme.Temizle();
         _durumSol.Text = yol;
@@ -195,6 +272,25 @@ internal sealed partial class AnaForm : Form
 
     // --------------------------------------------------------------- arama
 
+    private void AramaMetniDegisti(object? gonderen, EventArgs e)
+    {
+        if (_araKutusunuKodDegistiriyor)
+        {
+            return;
+        }
+
+        // Kutu bosaltildiysa beklemeye gerek yok: hemen gezinmeye don.
+        if (string.IsNullOrWhiteSpace(_araKutusu.Text))
+        {
+            _aramaGecikmesi.Stop();
+            AramayiBaslat(string.Empty);
+            return;
+        }
+
+        _aramaGecikmesi.Stop();
+        _aramaGecikmesi.Start();
+    }
+
     private void AramaTusu(object? gonderen, KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter)
@@ -203,6 +299,7 @@ internal sealed partial class AnaForm : Form
         }
 
         e.SuppressKeyPress = true;   // Windows'un uyari sesini bastirir
+        _aramaGecikmesi.Stop();      // beklemeden, hemen
         AramayiBaslat(_araKutusu.Text);
     }
 
@@ -223,7 +320,14 @@ internal sealed partial class AnaForm : Form
         if (string.IsNullOrWhiteSpace(metin))
         {
             _aramaIptali = null;
-            _doldurucu.Yenile();     // gezinme kipine don
+            _agac.Enabled = true;
+
+            if (_doldurucu.AramaKipinde)
+            {
+                // Aramadan cikarken kullanici actigi dallari ACIK bulmali.
+                _doldurucu.GezinmeyeDon();
+            }
+
             return;
         }
 
