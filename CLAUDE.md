@@ -379,6 +379,39 @@ Belirti yanıltıcı: dosya **oradadır**. Korelasyon birebir ölçüldü — bu
 olduğu her koşu kırıldı, olmadığı her koşu çalıştı. Yolda **iki yanlış hipotez**
 kuruldu (eski derleme · yol tuhaflığı); ikisi de 2×2 ölçümle elendi.
 
+### WinRT kullanılabiliyor — hedef çerçeve `net8.0-windows10.0.19041.0`
+
+`Windows.Data.Pdf` gibi WinRT API'leri için hedef çerçeveyi sürümlemek gerekiyor.
+**Ölçüldü (27.08.2026): bu, Linux derlemesini ve üç kapıyı KIRMIYOR.**
+
+```
+<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+```
+
+`EnableWindowsTargeting` + `FrameworkReference` aynen kalıyor; SDK
+`Microsoft.Windows.SDK.NET.Ref`'i NuGet'ten çekiyor. `TreatWarningsAsErrors`
+açıkken **0 uyarı** — CA1416 çıkmadı, `TargetPlatformMinVersion` doğru kurulduğu için.
+
+→ Windows'un içindeki motorlara (PDF, medya, OCR) **pakete tek bayt eklemeden**
+ulaşılabiliyor. Alternatifi PDFium gibi yerli bir kütüphaneydi: paket 136 KB'den
+~10 MB'a çıkardı.
+
+### Wine WinRT TAŞIMIYOR — ve belirtisi yanıltıcı
+
+Wine'da hiçbir `Windows.*` çalışma zamanı sınıfı yok. Ama eksiklik
+`TypeLoadException` olarak **gelmiyor**:
+
+```
+COMException 0x80040154 (REGDB_E_CLASSNOTREG)
+```
+
+Yalnızca tip yükleme hatalarını yakalayan bir denetim bunu kaçırır ve kullanıcıya
+ham HRESULT gösterir (ölçüldü, ilk yazışta öyle oldu).
+
+→ **WinRT'ye dayanan hiçbir yol burada ölçülemez.** Ölçülebilen tek şey:
+çökmediği ve sebebini söylediği. Gerçek davranış yalnızca Windows'ta görülür.
+
 ### Wine'ın ÖLÇMEDİĞİ
 
 - **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.

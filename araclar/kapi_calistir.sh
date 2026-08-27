@@ -187,7 +187,10 @@ mkdir -p "$ORNEK"/{1,2,33,222,"alt klasor"}
 # kilar - yoksa kapi yalnizca bos bir kutu olcerdi.
 cp "$KOK/araclar/ornek-veri/ornek.sldprt" "$ORNEK/Onizlemeli.SLDPRT"
 : > "$ORNEK/Kapak.SLDDRW"
-: > "$ORNEK/katalog.pdf"
+# GERCEK, tek sayfalik PDF (araclar/ornek-veri/pdf_uret.py ile uretildi).
+# Wine WinRT tasimiyor, yani PDF yolu burada CIZEMEZ - olculebilen tek sey
+# COKMEDIGI ve sebebini soyledigi.
+cp "$KOK/araclar/ornek-veri/ornek.pdf" "$ORNEK/katalog.pdf"
 : > "$ORNEK/okubeni.txt"
 : > "$ORNEK/1/Parca3.SLDPRT"
 : > "$ORNEK/1/Montaj1.SLDASM"

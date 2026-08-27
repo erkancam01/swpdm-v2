@@ -12,9 +12,10 @@ BU SURUMDE CALISAN
     arka planda kosar, aramadan cikinca acik dallariniz geri gelir
   - ONIZLEME: sectiginiz dosyanin onizlemesi altta gorunur.
     Once Windows'un kendi onizlemesi denenir - Gezgin'de ne goruyorsaniz o
-    (SOLIDWORKS kuruluysa gercek parca goruntusu). Kabuk vermezse dosyanin
-    ICINDEKI gomulu onizleme okunur. Ikisi de yoksa "Onizleme yok" yazar -
-    bos kutu birakilmaz.
+    (SOLIDWORKS kuruluysa gercek parca goruntusu). PDF ise Windows'un kendi
+    PDF motoruyla ILK SAYFA cizilir. Kabuk vermezse dosyanin ICINDEKI gomulu
+    onizleme okunur. Hicbiri yoksa sebebi yazilir - bos kutu birakilmaz.
+    PDF onizlemesi Windows 10 surum 1809 ve ustunu ister.
   - Secince ust bilgi: ad, tur, boyut, degistirme tarihi
   - TUM dosyalar gorunur: tanimadigimiz uzantilar ve SOLIDWORKS'un
     gizli "~$" kilit dosyalari dahil

@@ -102,7 +102,25 @@ internal sealed class OnizlemeYukleyici : IDisposable
             return new OnizlemeSonucu(yol, kabuktan, null);
         }
 
-        // 2) YEDEK: dosyanin ICINDEKI gomulu onizleme. SOLIDWORKS kurulu
+        // 2) PDF ise Windows'un KENDI PDF motoru. Kabuk PDF icin onizleme
+        //    uretmiyor (olculdu: Gezgin de gostermiyor), o yuzden ilk sayfayi
+        //    kendimiz ciziyoruz. Tur bilgisi cekirdekten geliyor; uzanti
+        //    eslemesinin ikinci kopyasi yazilmiyor (CLAUDE.md 8).
+        if (DosyaTurleri.Tani(yol) == DosyaTuru.Pdf)
+        {
+            Bitmap? pdften = PdfOnizleme.Al(yol, boyut, out string? pdfSebebi);
+            if (pdften is not null)
+            {
+                return new OnizlemeSonucu(yol, pdften, null);
+            }
+
+            if (pdfSebebi is not null)
+            {
+                sebep = pdfSebebi;
+            }
+        }
+
+        // 3) YEDEK: dosyanin ICINDEKI gomulu onizleme. SOLIDWORKS kurulu
         //    OLMAYAN bir makinede tek sansimiz bu.
         try
         {
