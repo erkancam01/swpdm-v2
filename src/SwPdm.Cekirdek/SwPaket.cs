@@ -57,6 +57,12 @@ public sealed class SwPaket : IDisposable
     /// <summary>Akil disi bir "acilmis boyut" okumaya karsi ust sinir.</summary>
     private const int EnFazlaAcilmisBoyut = 512 * 1024 * 1024;
 
+    /// <summary>Dogrulama icin okunan sikisik bayt.</summary>
+    private const int DogrulamaGirdisi = 512;
+
+    /// <summary>Dogrulamada uretilmesi beklenen acilmis bayt.</summary>
+    private const int DogrulamaCiktisi = 64;
+
     private readonly FileStream _akis;
     private readonly List<SwAkis> _akislar;
 
@@ -240,7 +246,7 @@ public sealed class SwPaket : IDisposable
                 continue;
             }
 
-            if (!SonrasiTutuyorMu(akis, veri + sikisik, uzunluk))
+            if (!AcilabiliyorMu(akis, veri, (int)sikisik))
             {
                 continue;
             }
@@ -252,42 +258,50 @@ public sealed class SwPaket : IDisposable
     }
 
     /// <summary>
-    /// Adayin verisinin bittigi yerde zincirin devam edip etmedigine bakar.
-    /// Dosyanin sonuna gelinmisse de tutar.
+    /// ADAY GERCEKTEN DEFLATE MI - tek gecerli ayirt edici bu.
+    ///
+    /// OLCULDU (28.08.2026): sayisal denetimler ve ad denetimi YETMIYOR.
+    /// Yedi dosyanin dordunde yurutucu sahte akislar kabul ediyordu -
+    /// "Preview 364 -> 728", "PreviewPNG 455 -> 910" gibi, hepsinde acilmis
+    /// boyut sikisigin tam iki kati. Ad gercek bir akis adiydi (cunku gercek
+    /// kaydin adina denk geliyordu), sayilar da makul goruntuyordu; zincir
+    /// oraya atliyor ve GERCEK Header2 bir daha bulunamiyordu. Belirti
+    /// sessizdi: istisna yok, yalnizca "Header2 akisi okunamadi".
+    ///
+    /// "Sonraki baslik da makul mu" denetimi DENENDI, YETMEDI - sahte
+    /// kayitlarin ardindan da makul gorunen bir baslik cikabiliyor.
+    ///
+    /// Veriyi ACMAK kesin ayirir. Tamami acilmiyor: birkac on bayt yeter,
+    /// cunku rastgele baytlarin gecerli deflate olma ihtimali yok denecek
+    /// kadar az. Boylece "veriyi atla" hizi da korunuyor.
     /// </summary>
-    private static bool SonrasiTutuyorMu(FileStream akis, long yer, long uzunluk)
+    private static bool AcilabiliyorMu(FileStream akis, long veriBaslangici, int sikisikBoyut)
     {
-        if (yer >= uzunluk - 16)
-        {
-            return true;
-        }
-
         long eskiYer = akis.Position;
         try
         {
-            var tampon = new byte[TamponBoyu];
-            akis.Position = yer;
-            int okunan = akis.Read(tampon, 0, tampon.Length);
+            int alinacak = Math.Min(sikisikBoyut, DogrulamaGirdisi);
+            var sikisik = new byte[alinacak];
+            akis.Position = veriBaslangici;
 
-            for (int i = 0; i + 12 < okunan; i++)
+            int toplam = 0;
+            while (toplam < alinacak)
             {
-                uint sikisik = Oku32(tampon, i);
-                uint acilmis = Oku32(tampon, i + 4);
-                uint adUzunlugu = Oku32(tampon, i + 8);
+                int okunan = akis.Read(sikisik, toplam, alinacak - toplam);
+                if (okunan <= 0)
+                {
+                    return false;
+                }
 
-                long baslik = yer + i;
-                if (sikisik == 0 || sikisik > uzunluk - baslik) { continue; }
-                if (acilmis == 0 || acilmis > EnFazlaAcilmisBoyut) { continue; }
-                if (adUzunlugu < 4 || adUzunlugu > 200 || i + 12 + adUzunlugu > okunan) { continue; }
-                if (AdiCoz(tampon, i + 12, (int)adUzunlugu) is null) { continue; }
-                if (baslik + 12 + adUzunlugu + sikisik > uzunluk) { continue; }
-
-                return true;
+                toplam += okunan;
             }
 
-            return false;
+            using var kaynak = new MemoryStream(sikisik, writable: false);
+            using var acici = new DeflateStream(kaynak, CompressionMode.Decompress);
+            var deneme = new byte[DogrulamaCiktisi];
+            return acici.Read(deneme, 0, deneme.Length) > 0;
         }
-        catch (IOException)
+        catch (Exception hata) when (hata is IOException or InvalidDataException)
         {
             return false;
         }

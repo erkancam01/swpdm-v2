@@ -35,4 +35,18 @@
     <None Include="veri\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- GERCEK SOLIDWORKS 2022 dosyalari (Erkan uretti, izniyle depoda).
+       BAGLANTI ile aliniyor, KOPYALANMIYOR: depoda tek kopya kalsin
+       (CLAUDE.md 8 - ayni seyin ikinci kopyasi yazilmaz).
+       Sentetik dosyayla olcmek bir kez yanlis yola soktu: bu dosyalar OLE
+       Bilesik Belge DEGIL ve o fark ancak gercekle gorulur. -->
+  <ItemGroup>
+    <None Include="..\..\araclar\ornek-veri\tertemiz\**"
+          Link="veri\tertemiz\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\araclar\ornek-veri\ozellikli\**"
+          Link="veri\ozellikli\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
