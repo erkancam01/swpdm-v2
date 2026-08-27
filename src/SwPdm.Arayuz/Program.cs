@@ -34,6 +34,11 @@ internal static class Program
             ? "SW PDM — kurtarılamayan hata"
             : "SW PDM — hata";
 
+        // CLAUDE.md 4: cikti bir yere DE yazilmali. Kutu kapaninca kullanicinin
+        // elinde hicbir kanit kalmiyor; hata akisa da dusuyor ki hem gunluge
+        // yonlendirilebilsin hem de calistirma kapisi okuyabilsin.
+        Console.Error.WriteLine(baslik + ": " + metin);
+
         MessageBox.Show(metin, baslik, MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }
