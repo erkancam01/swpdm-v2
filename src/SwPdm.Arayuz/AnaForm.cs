@@ -1,11 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Globalization;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using SwPdm.Arayuz.Gorunum;
 using SwPdm.Cekirdek;
@@ -23,27 +19,10 @@ namespace SwPdm.Arayuz;
 /// </summary>
 internal sealed partial class AnaForm : Form
 {
-    /// <summary>Aramada en fazla kac eslesme toplanir. Asilirsa SOYLENIR, sessizce kirpilmaz.</summary>
-    private const int AramaSiniri = 2000;
-
-    /// <summary>
-    /// Tusa her basista aramaya baslamak ag surucusunu bogar. Bu gecikme,
-    /// yazma duruncaya kadar bekletir - kullaniciya "anlik" hissettirir ama
-    /// diske her harfte gitmez.
-    /// </summary>
-    private const int AramaGecikmesiMs = 350;
-
     private readonly AgacDoldurucu _doldurucu;
+    private readonly AramaSurucusu _arama;
     private readonly string? _acilistaAcilacakKok;
-    private readonly System.Windows.Forms.Timer _aramaGecikmesi = new() { Interval = AramaGecikmesiMs };
-    private OnizlemeYukleyici? _onizlemeYukleyici;
-    private CancellationTokenSource? _aramaIptali;
-
-    /// <summary>Onizlemesi beklenen dosya. Gec gelen sonuclari elemek icin.</summary>
-    private string? _onizlemesiBeklenen;
-
-    /// <summary>Arama kutusunu KOD degistirdiginde arama tetiklenmesin diye.</summary>
-    private bool _araKutusunuKodDegistiriyor;
+    private Onizleme? _onizleme;
 
     internal AnaForm(string? acilistaAcilacakKok = null)
     {
@@ -58,13 +37,20 @@ internal sealed partial class AnaForm : Form
         _agac.NodeMouseDoubleClick += (_, e) => OgeyiAc(e.Node);
         _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
 
-        // Anlik arama: yazarken suzuluyor, Enter beklemiyor.
-        _araKutusu.TextChanged += AramaMetniDegisti;
-        _araKutusu.KeyDown += AramaTusu;
-        _aramaGecikmesi.Tick += (_, _) =>
+        // Aramaya dair HER SEY AramaSurucusu'nda: ne zaman baslar, ne kadar
+        // bekler, hangi is parcaciginda kosar, nasil iptal edilir. Bu sinif
+        // yalnizca sonucu agaca baglar (CLAUDE.md 7).
+        _arama = new AramaSurucusu(_araKutusu, this);
+        _arama.Durum += (_, cumle) => _durumSag.Text = cumle;
+        _arama.Mesgul += (_, mesgul) => _agac.Enabled = !mesgul;
+        _arama.Bitti += (_, sonuc) => _doldurucu.AramaSonucunuGoster(sonuc.Metin, sonuc.Sonuc);
+        _arama.Bosaltildi += (_, _) =>
         {
-            _aramaGecikmesi.Stop();
-            AramayiBaslat(_araKutusu.Text);
+            if (_doldurucu.AramaKipinde)
+            {
+                // Aramadan cikarken kullanici actigi dallari ACIK bulmali.
+                _doldurucu.GezinmeyeDon();
+            }
         };
 
         KeyPreview = true;
@@ -77,12 +63,12 @@ internal sealed partial class AnaForm : Form
             }
         };
 
-        // Onizlemeler ayri bir STA is parcaciginda yuklenir: ag surucusunde
-        // saniyeler surebilir ve arayuz donmamali (CLAUDE.md 4: kabuk
-        // onizleme saglayicilari STA istiyor, ThreadPool MTA'dir).
-        _onizlemeYukleyici = new OnizlemeYukleyici(OnizlemeGeldi);
+        // Onizlemeye dair HER SEY Onizleme sinifinda. Bu sinif yalnizca
+        // "sunu goster" der; hangi kaynak, hangi sira, hangi mesaj, hangi is
+        // parcacigi - hicbirini bilmez (CLAUDE.md 7).
+        _onizleme = new Onizleme(_onizlemePaneli, this);
 
-        _onizleme.Temizle();
+        _onizleme?.Temizle();
         _durumSol.Text = "Klasör seçilmedi.";
         _durumSag.Text = string.Empty;
     }
@@ -103,11 +89,8 @@ internal sealed partial class AnaForm : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
-        _aramaGecikmesi.Stop();
-        _aramaGecikmesi.Dispose();
-        _onizlemeYukleyici?.Dispose();
-        _aramaIptali?.Cancel();
-        _aramaIptali?.Dispose();
+        _arama.Dispose();
+        _onizleme?.Dispose();
         base.OnFormClosed(e);
     }
 
@@ -211,13 +194,14 @@ internal sealed partial class AnaForm : Form
 
     private void KokuAc(string yol)
     {
-        _araKutusunuKodDegistiriyor = true;
-        _araKutusu.Text = string.Empty;
-        _araKutusunuKodDegistiriyor = false;
-        _aramaGecikmesi.Stop();
+        _arama.MetniTemizle();
 
         _doldurucu.KokuAc(yol);
-        _onizleme.Temizle();
+
+        // Kokun tek sahibi AgacDoldurucu; arama onun bildigi kokte arar.
+        _arama.Kok = _doldurucu.Kok;
+
+        _onizleme?.Temizle();
         _durumSol.Text = yol;
         SonKoklereEkle(yol);
     }
@@ -246,230 +230,19 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(dugum))
         {
             case DosyaOgesi dosya:
-                OnizlemeIste(dosya);
-                _onizleme.UstBilgiyiYaz(
-                    ad: dosya.Ad,
-                    tur: DosyaTurleri.Adi(dosya.Tur),
-                    boyut: Boyut.Yaz(dosya.Boyut),
-                    degistirme: dosya.Degistirme.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture),
-
-                    // CLAUDE.md 3'un EN SERT kurali burada. Referans indeksi YOK.
-                    // "0" yazmak "bu parcayi kimse kullanmiyor" demektir ve
-                    // v1'de tam bu SAGLAM DOSYA SILDIRIYORDU. Bilmiyorsak
-                    // bilmedigimizi yaziyoruz.
-                    kullanan: "taranmadı");
-
+                _onizleme?.Goster(dosya);
                 _durumSol.Text = string.Join("  ·  ",
-                    dosya.Ad,
-                    Boyut.Yaz(dosya.Boyut),
-                    dosya.Degistirme.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture));
+                    dosya.Ad, Boyut.Yaz(dosya.Boyut), Zaman.Yaz(dosya.Degistirme));
                 break;
 
             case KlasorOgesi klasor:
-                _onizlemesiBeklenen = null;
-                _onizleme.MesajGoster("Klasör");
-                _onizleme.UstBilgiyiYaz(
-                    ad: klasor.Ad,
-                    tur: "Klasör",
-                    boyut: "—",
-                    degistirme: "—",
-                    kullanan: "taranmadı");
-
+                _onizleme?.Goster(klasor);
                 _durumSol.Text = klasor.Hata is null ? klasor.Yol : klasor.Yol + "  ·  " + klasor.Hata;
                 break;
 
             default:
-                _onizlemesiBeklenen = null;
-                _onizleme.Temizle();
+                _onizleme?.Temizle();
                 break;
-        }
-    }
-
-    // --------------------------------------------------------- onizleme
-
-    private void OnizlemeIste(DosyaOgesi dosya)
-    {
-        _onizlemesiBeklenen = dosya.Yol;
-
-        // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
-        // de bunu soyluyoruz ki kullanici bekledigini bilsin.
-        _onizleme.MesajGoster("Önizleme yükleniyor…");
-
-        Size kutu = _onizleme.KutuBoyutu;
-        var istenen = new Size(Math.Max(kutu.Width, 256), Math.Max(kutu.Height, 256));
-        _onizlemeYukleyici?.Iste(dosya.Yol, istenen);
-    }
-
-    /// <summary>
-    /// Onizleme yukleyicinin is parcacigindan gelir - arayuze GECMEDEN
-    /// hicbir denetime dokunulamaz.
-    /// </summary>
-    private void OnizlemeGeldi(OnizlemeSonucu sonuc)
-    {
-        if (IsDisposed || !IsHandleCreated)
-        {
-            sonuc.Resim?.Dispose();
-            return;
-        }
-
-        try
-        {
-            BeginInvoke(() =>
-            {
-                // Kullanici baska bir dosyaya gectiyse bu sonuc BAYAT: gostermek
-                // yanlis dosyanin onizlemesini dogru sanmaya yol acar.
-                if (!string.Equals(_onizlemesiBeklenen, sonuc.Yol, StringComparison.OrdinalIgnoreCase))
-                {
-                    sonuc.Resim?.Dispose();
-                    return;
-                }
-
-                if (sonuc.Resim is not null)
-                {
-                    _onizleme.Onizleme = sonuc.Resim;
-                    return;
-                }
-
-                _onizleme.MesajGoster(sonuc.Sebep ?? "Önizleme yok");
-            });
-        }
-        catch (Exception hata) when (hata is ObjectDisposedException or InvalidOperationException)
-        {
-            sonuc.Resim?.Dispose();   // pencere tam bu sirada kapandi
-        }
-    }
-
-    // --------------------------------------------------------------- arama
-
-    private void AramaMetniDegisti(object? gonderen, EventArgs e)
-    {
-        if (_araKutusunuKodDegistiriyor)
-        {
-            return;
-        }
-
-        // Kutu bosaltildiysa beklemeye gerek yok: hemen gezinmeye don.
-        if (string.IsNullOrWhiteSpace(_araKutusu.Text))
-        {
-            _aramaGecikmesi.Stop();
-            AramayiBaslat(string.Empty);
-            return;
-        }
-
-        _aramaGecikmesi.Stop();
-        _aramaGecikmesi.Start();
-    }
-
-    private void AramaTusu(object? gonderen, KeyEventArgs e)
-    {
-        if (e.KeyCode != Keys.Enter)
-        {
-            return;
-        }
-
-        e.SuppressKeyPress = true;   // Windows'un uyari sesini bastirir
-        _aramaGecikmesi.Stop();      // beklemeden, hemen
-        AramayiBaslat(_araKutusu.Text);
-    }
-
-    private void AramayiBaslat(string metin)
-    {
-        string? kok = _doldurucu.Kok;
-        if (kok is null)
-        {
-            _durumSag.Text = "Önce bir klasör açın.";
-            return;
-        }
-
-        // Yeniden giris kilidi: onceki arama HER ZAMAN once iptal edilir
-        // (CLAUDE.md 6). Aksi halde iki arama ayni agaca yazar.
-        _aramaIptali?.Cancel();
-        _aramaIptali?.Dispose();
-
-        if (string.IsNullOrWhiteSpace(metin))
-        {
-            _aramaIptali = null;
-            _agac.Enabled = true;
-
-            if (_doldurucu.AramaKipinde)
-            {
-                // Aramadan cikarken kullanici actigi dallari ACIK bulmali.
-                _doldurucu.GezinmeyeDon();
-            }
-
-            return;
-        }
-
-        var iptal = new CancellationTokenSource();
-        _aramaIptali = iptal;
-        CancellationToken belirtec = iptal.Token;
-
-        _durumSag.Text = "Aranıyor…";
-        _agac.Enabled = false;
-
-        Task.Run(() => KlasorTarayici.Ara(
-                kok, metin, AramaSiniri, belirtec,
-                (klasor, eslesme) => Ilerleme(belirtec, klasor, eslesme)),
-            belirtec)
-            .ContinueWith(is_ => Bitti(is_, metin, belirtec), TaskScheduler.Default);
-    }
-
-    private void Ilerleme(CancellationToken belirtec, int taranan, int eslesme)
-    {
-        // Her klasorde mesaj yollamak arayuzu bogar; ellide bir yeter.
-        // CLAUDE.md 3: uydurma yuzde YOK - sayilabilen sey sayiliyor.
-        if (taranan % 50 != 0)
-        {
-            return;
-        }
-
-        ArayuzeYolla(belirtec, () => _durumSag.Text = $"Aranıyor… {taranan} klasör · {eslesme} eşleşme");
-    }
-
-    private void Bitti(Task<AramaSonucu> is_, string metin, CancellationToken belirtec)
-    {
-        ArayuzeYolla(belirtec, () =>
-        {
-            _agac.Enabled = true;
-
-            if (is_.IsFaulted)
-            {
-                // Sessiz basarisizlik YASAK (CLAUDE.md 3).
-                _durumSag.Text = "Arama başarısız: " + (is_.Exception?.GetBaseException().Message ?? "bilinmeyen sebep");
-                return;
-            }
-
-            if (is_.IsCanceled)
-            {
-                return;
-            }
-
-            _doldurucu.AramaSonucunuGoster(metin, is_.Result);
-        });
-    }
-
-    /// <summary>
-    /// Arayuz is parcacigina gecer. Pencere kapandiysa ya da arama iptal
-    /// edildiyse hicbir sey yapmaz - kapanmis pencereye yazmak coker.
-    /// </summary>
-    private void ArayuzeYolla(CancellationToken belirtec, Action is_)
-    {
-        if (belirtec.IsCancellationRequested || IsDisposed || !IsHandleCreated)
-        {
-            return;
-        }
-
-        try
-        {
-            BeginInvoke(is_);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Pencere tam bu sirada kapandi.
-        }
-        catch (InvalidOperationException)
-        {
-            // Tutamak yok edilmis.
         }
     }
 

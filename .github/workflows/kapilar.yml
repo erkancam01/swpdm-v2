@@ -5,7 +5,7 @@
 # UC COMMIT yayinlandi.
 #
 # Uc is var ve ucu de AYNI betikleri kosuyor - CI'da ikinci bir kopya YOK:
-#   derleme-linux     : agactaki her csproj + her test projesi
+#   derleme-linux     : boyut kapisi + agactaki her csproj + her test projesi
 #   derleme-windows   : ayni kapilar, gercek Windows SDK'siyla. WindowsYolu
 #                       burada System.IO.Path'in KENDISIYLE karsilastiriliyor;
 #                       Linux'ta o olcum yapilamaz cunku orada Path bozuk.
@@ -14,6 +14,10 @@
 # Ucuncusu neden var: 27.08.2026'da uygulama Windows'ta hic acilmadi ve o
 # anda derleme "0 uyari 0 hata" diyordu. Derleme kapisi o hata SINIFINI
 # gormuyor.
+#
+# Boyut kapisi ayri bir is DEGIL: isletim sisteminden bagimsiz ve bir saniye
+# suruyor; kendi runner'ini hak etmiyor. Ama adi gorunur bir adim - kirilirsa
+# CI'da hangi kapinin kirildigi belli olur.
 
 name: kapilar
 
@@ -32,6 +36,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
+      - name: Boyut kapisi
+        run: ./araclar/kapi_boyut.sh
       - name: Derleme kapisi
         run: ./araclar/kapi_derleme.sh
       - name: Test kapisi

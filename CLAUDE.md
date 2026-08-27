@@ -459,11 +459,33 @@ yani "gerçek simge" isteği, gerçekte üç türü **ayırt edilemez** yapıyor
 → Gelen simge, kayıtlı olmadığı **kesin** olan uydurma bir uzantının simgesiyle
 piksel piksel karşılaştırılır. Aynıysa kayıt yok demektir → çizilmiş yedeğe düşülür.
 
+### Bir konu = bir dosya — "nereye dokunacağım" sorusunun cevabı
+
+v1'in §7'deki hastalığı bir günde olmadı: her özellik kendi kararını
+`AnaForm`'a bir parça daha ekleyerek koydu. v2'de karar **konunun kendi
+dosyasında** duruyor:
+
+| konuya müdahale | dokunulacak TEK dosya |
+|---|---|
+| önizleme (kaynak, sıra, mesaj, iş parçacığı) | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
+| arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
+| ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
+| denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
+
+`AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı
+bilmez. Ölçüldü: bu ayrımdan sonra `AnaForm.cs` **493 → 266 satır**.
+
+> **Klasör adı ile tip adı çakışırsa derleme kırılır.** `Onizleme/` klasörü
+> içindeki `Onizleme` sınıfına ad alanı da verilseydi (`...Gorunum.Onizleme`)
+> `Onizleme` adı hem ad alanı hem tip olurdu ve her kullanım belirsiz olurdu.
+> Klasör **ad alanı değil**: dosyalar `SwPdm.Arayuz.Gorunum` içinde kalıyor.
+
 ### Kapılar
 
 ```
 araclar/paket.sh               # Erkan'in deneyecegi zip (~120 KB)
-araclar/kapilar.sh [--kur]     # üçünü sırayla koşar
+araclar/kapilar.sh [--kur]     # dördünü sırayla koşar
+├── kapi_boyut.sh              # ağaçtaki her .cs; satır sınırı 600
 ├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
 └── kapi_calistir.sh [--kur]   # uygulamayı Wine'da GERÇEKTEN açar
@@ -473,6 +495,12 @@ Kapsam **adlara değil ağaca** bağlı (§9): proje `find` ile, WinExe içerikt
 (`OutputType`), test projesi içerikten (`Microsoft.NET.Test.Sdk`), uygulama adı
 `runtimeconfig`'ten bulunur. Hiçbirine dosya/proje adı **yazılmamıştır**.
 
+**Boyut kapısı §7'nin sayısı için var.** v1'de tek bir arayüz sınıfı 9.918
+satıra çıktı, ürün kodunun %38'i oldu ve **bölünemedi**; kimse zamanında
+görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle seçildi:
+27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
+değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
+
 **Çalıştırma kapısı dört şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu. Ekran görüntüsünü `.kapi/ekran.png`
 olarak bırakır; CI'da yapıt olarak saklanır.
@@ -481,13 +509,18 @@ olarak bırakır; CI'da yapıt olarak saklanır.
 > derleme "0 uyarı 0 hata" diyordu ve uygulama hiç açılmıyordu. Çalıştırma kapısı
 > tam olarak bunun için var. **Yeşil derleme, çalışıyor demek değildir.**
 
-Üçü de §9'a göre ölçülerek eklendi — TEMİZ → hata konunca YAKALADI → geri
-alınca TEMİZ. Yakaladıkları gerçek hatalardı: `ToolStripLabel.Refresh()` (§6),
-sürücü kökünde kırpılan ters bölü (§4), kurucudan çağrılan `OnResize` (§6).
+Dördü de §9'a göre ölçülerek eklendi — TEMİZ → hata konunca YAKALADI → geri
+alınca TEMİZ. İlk üçünün yakaladıkları gerçek hatalardı:
+`ToolStripLabel.Refresh()` (§6), sürücü kökünde kırpılan ters bölü (§4),
+kurucudan çağrılan `OnResize` (§6). Boyut kapısı ölçülürken ağaçta **olmayan**
+bir klasöre (`src/YeniProje/Alt/`) 601 satırlık dosya konuldu ve yakalandı —
+kapsamın ada değil ağaca bağlı olduğu böyle görüldü; 600 satırda **yakalamadı**
+(sınır doğru yerde), dosya silinince yine TEMİZ.
 
 CI (`.github/workflows/kapilar.yml`) **aynı betikleri** koşar — ikinci kopya yok
 (§8). Üç iş: Linux derleme+test · Windows derleme+test (gerçek SDK) · Wine
-çalıştırma.
+çalıştırma. Boyut kapısı ayrı bir iş **değil** — işletim sisteminden bağımsız ve
+bir saniye sürüyor; Linux işinin ilk adımı olarak koşuyor.
 
 ### Testler Windows'ta gerçek `Path`'e karşı koşuyor
 

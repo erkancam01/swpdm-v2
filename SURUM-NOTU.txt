@@ -1,3 +1,13 @@
+BU PAKETTE DAVRANIS DEGISMEDI - yalnizca kodun yapisi toparlandi.
+  Onizleme tek bir dosyaya (Onizleme.cs), arama tek bir dosyaya
+  (AramaSurucusu.cs) tasindi; AnaForm 493 satirdan 266 satira indi. Ayrica
+  bir dosyanin 600 satiri asmasini engelleyen yeni bir kapi eklendi - v1'de
+  tek bir sinif 9.918 satira cikip bolunemez olmustu.
+  Olculdu: ayni 88 test geciyor, gomulu onizleme ayni (401 renk), PDF metni
+  ayni, suzgec acik dali yine kapatmiyor, arama yine Enter'siz calisiyor.
+  Yani bu paketi bir onceki gibi denerseniz FARK GORMEMENIZ gerekir; bir
+  fark gorurseniz o bir HATADIR, lutfen soyleyin.
+
 BU SURUMDE CALISAN
   - Klasor ac (arac cubugundaki klasor dugmesi ya da Ctrl+O)
   - Agac: gercek klasorler ve dosyalar, (n) sayaci, tur simgeleri

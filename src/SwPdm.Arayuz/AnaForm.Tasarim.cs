@@ -23,7 +23,7 @@ internal sealed partial class AnaForm
     private TreeView _agac = null!;
     private Label _altBolumBasligi = null!;
     private SplitContainer _altBolen = null!;
-    private OnizlemePaneli _onizleme = null!;
+    private OnizlemePaneli _onizlemePaneli = null!;
     private ReferansListesi _referanslar = null!;
     private StatusStrip _durumCubugu = null!;
     private ToolStripStatusLabel _durumSol = null!;
@@ -226,9 +226,9 @@ internal sealed partial class AnaForm
             BackColor = Renkler.GovdeArkaPlan,
         };
 
-        _onizleme = new OnizlemePaneli();
+        _onizlemePaneli = new OnizlemePaneli();
         _referanslar = new ReferansListesi { SmallImageList = _simgeler };
-        _altBolen.Panel1.Controls.Add(_onizleme);
+        _altBolen.Panel1.Controls.Add(_onizlemePaneli);
         _altBolen.Panel2.Controls.Add(_referanslar);
 
         bolen.Panel2.Controls.Add(_altBolen);
