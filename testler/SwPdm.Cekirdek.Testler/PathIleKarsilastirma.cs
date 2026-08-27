@@ -14,13 +14,14 @@ namespace SwPdm.Cekirdek.Testler;
 /// </summary>
 public class PathIleKarsilastirma
 {
+    // DIKKAT: sondaki ayiriciyla biten yollar bu listede YOK. Orada Path'ten
+    // BILEREK ayriliyoruz; ayrim asagida ayri bir olcumle belgeleniyor.
     private static readonly string[] Yollar =
     [
         @"C:\a\b.SLDPRT",
         @"C:\a.SLDPRT",
         @"C:\Proje 2.0\parca",
         @"C:\Proje 2.0\parca.SLDPRT",
-        @"C:\a\b\",
         @"C:\a\alt klasor\montaj.SLDASM",
         @"\\10.34.1.250\ortak\montaj.SLDASM",
         @"D:\ÜRÜNLER\Parça1.SLDPRT",
@@ -53,6 +54,32 @@ public class PathIleKarsilastirma
             string beklenen = Path.GetDirectoryName(yol) ?? string.Empty;
             Assert.Equal(beklenen, WindowsYolu.Klasor(yol));
         }
+    }
+
+    /// <summary>
+    /// TEK BILEREK AYRILMA - CI'da olculdu (27.08.2026).
+    ///
+    /// .NET'in Path'i sondaki ayiriciyi KIRPMIYOR: "C:\a\b\" icin dosya adi
+    /// BOS doner, ust klasor de yolun kendisi olur. Bir dosya yoneticisinde
+    /// bu YANLIS: kullanicinin gordugu klasorun adi "" olamaz.
+    ///
+    /// CLAUDE.md 8 bunu zaten v1'in KUSURU olarak sayiyor ("bir kismi sondaki
+    /// ayiriciyi kirpmiyordu"). Yani kirpmak bilincli bir karar; bu test o
+    /// karari gorunur tutuyor. Bir gun kirpmaktan vazgecilirse burasi kirilir
+    /// ve karar yeniden konusulur.
+    /// </summary>
+    [WindowsOlgusu]
+    public void SondakiAyirici_PathTEN_BILEREK_AYRILIYOR()
+    {
+        const string yol = @"C:\a\b\";
+
+        // Windows'un kendi cevabi:
+        Assert.Equal(string.Empty, Path.GetFileName(yol));
+        Assert.Equal(@"C:\a\b", Path.GetDirectoryName(yol));
+
+        // Bizim BILEREK farkli cevabimiz:
+        Assert.Equal("b", WindowsYolu.DosyaAdi(yol));
+        Assert.Equal(@"C:\a", WindowsYolu.Klasor(yol));
     }
 
     [WindowsOlgusu]

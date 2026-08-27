@@ -397,6 +397,19 @@ CI (`.github/workflows/kapilar.yml`) **aynı betikleri** koşar — ikinci kopya
 ### Testler Windows'ta gerçek `Path`'e karşı koşuyor
 
 `WindowsYolu` Linux'ta elle yazılmış beklenen değerlerle, **Windows'ta ise
-`System.IO.Path`'in kendisiyle** karşılaştırılıyor. Windows dışında o testler
+`System.IO.Path`'in kendisiyle** karşılaştırılıyor.
+
+> **Bu karşılaştırma ilk koşuşunda İKİ TEST KIRDI** ve iyi ki kırdı — burada
+> ölçülemeyecek bir farkı buldu: **.NET'in `Path`'i sondaki ayırıcıyı
+> KIRPMIYOR.** `GetFileName(@"C:\a\b\")` → **boş**, `GetDirectoryName` →
+> yolun kendisi. Bir dosya yöneticisinde bu yanlış: kullanıcının gördüğü
+> klasörün adı "" olamaz. §8 zaten kırpmamayı v1'in **kusuru** olarak sayıyor.
+> → Kırpmak **bilinçli** bir ayrılmadır; tek ayrılma budur ve ayrı bir testle
+> görünür tutulur.
+>
+> Kapının kendi kusuru da o turda çıktı: `dotnet test -v q` kırılma
+> **ayrıntısını yutuyor**, geriye yalnızca `[FAIL] testAdı` kalıyor ve kırılma
+> CI günlüğünden teşhis edilemiyor. `--logger "console;verbosity=normal"`
+> gerekli (§3: hata sebebi gösterilir). Windows dışında o testler
 **sebebiyle** atlanır (sessizce değil — §3). Linux tarafında ayrıca `Path`'in
 bozukluğu belgeleniyor: .NET bir gün düzeltirse test haber verir.

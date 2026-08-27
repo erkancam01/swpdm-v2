@@ -41,18 +41,26 @@ TOPLAM_GECEN=0
 for PROJE in "${TESTLER[@]}"; do
   GORECELI="${PROJE#"$KOK"/}"
   echo "   -> $GORECELI"
-  CIKTI="$(dotnet test "$PROJE" --nologo -v q 2>&1)"
+
+  # OLCULDU: "-v q" tek basina kirilma AYRINTISINI tamamen yutuyor - yalnizca
+  # "[FAIL] testAdi" kaliyor, beklenen/gelen deger kalmiyor ve kirilma uzaktan
+  # (ornegin CI gunlugunden) teshis EDILEMIYOR. console;verbosity=normal
+  # Error Message + Expected/Actual basiyor. Cikti degiskene aliniyor; gecen
+  # testlerin gurultusu ekrana CIKMIYOR, yalnizca kirilma basiliyor.
+  CIKTI="$(dotnet test "$PROJE" --nologo -v q --logger "console;verbosity=normal" 2>&1)"
   DURUM=$?
-  OZET="$(echo "$CIKTI" | grep -E "^(Passed!|Failed!)" | tail -1)"
-  [ -n "$OZET" ] && echo "      $OZET"
+
+  GECEN="$(echo "$CIKTI" | grep -oE "^[[:space:]]*Passed:[[:space:]]+[0-9]+" | grep -oE "[0-9]+" | head -1)"
+  KALAN="$(echo "$CIKTI" | grep -oE "^[[:space:]]*(Failed|Skipped):[[:space:]]+[0-9]+" | tr '\n' ' ')"
+  echo "      gecen: ${GECEN:-0}   ${KALAN}"
 
   if [ "$DURUM" -ne 0 ]; then
-    echo "$CIKTI" | grep -E "error|Assert|\[FAIL\]" | head -20 | sed 's/^/        /'
+    # CLAUDE.md 3: hata SEBEBI gosterilir, yalnizca "kirildi" degil.
+    echo "$CIKTI" | grep -A 8 -E "^[[:space:]]*Failed [A-Za-z]" | head -80 | sed 's/^/        /'
     KIRIK=1
     continue
   fi
 
-  GECEN="$(echo "$OZET" | grep -oE "Passed:[[:space:]]+[0-9]+" | grep -oE "[0-9]+" | head -1)"
   TOPLAM_GECEN=$(( TOPLAM_GECEN + ${GECEN:-0} ))
 done
 
