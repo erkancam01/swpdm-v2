@@ -97,13 +97,15 @@ internal sealed class ReferansSurucusu
 
             foreach ((string yazilan, Cozum cozum) in _indeks.Kullandiklari(yol))
             {
-                liste.Ekle(WindowsYolu.DosyaAdi(yazilan), RolMetni(cozum), Simge(yazilan));
+                liste.Ekle(
+                    WindowsYolu.DosyaAdi(yazilan), RolMetni(cozum), Simge(yazilan),
+                    cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null);
             }
 
             KullanimSonucu kullananlar = _indeks.Kullananlar(yol);
             foreach (string kullanan in kullananlar.Kullananlar)
             {
-                liste.Ekle(WindowsYolu.DosyaAdi(kullanan), "kullanıyor", Simge(kullanan));
+                liste.Ekle(WindowsYolu.DosyaAdi(kullanan), "kullanıyor", Simge(kullanan), kullanan);
             }
 
             if (liste.Items.Count == 0)

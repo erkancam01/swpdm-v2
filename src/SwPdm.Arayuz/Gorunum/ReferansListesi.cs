@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SwPdm.Arayuz.Gorunum;
@@ -45,13 +46,23 @@ internal sealed class ReferansListesi : ListView
         SutunlariPaylastir();
     }
 
-    /// <summary>Bir referans satiri ekler.</summary>
-    internal void Ekle(string dosyaAdi, string rol, int simgeSirasi)
+    /// <summary>
+    /// Bir referans satiri ekler.
+    ///
+    /// <paramref name="hedefYol"/> verilirse satira cift tiklanabilir ve
+    /// agac oraya gider. Cozulememis bir referansta null gecilir - o satir
+    /// tiklanabilir GORUNMEZ, cunku gidilecek bir yer yok.
+    /// </summary>
+    internal void Ekle(string dosyaAdi, string rol, int simgeSirasi, string? hedefYol = null)
     {
-        var satir = new ListViewItem(dosyaAdi) { ImageIndex = simgeSirasi };
+        var satir = new ListViewItem(dosyaAdi) { ImageIndex = simgeSirasi, Tag = hedefYol };
         satir.SubItems.Add(rol);
         Items.Add(satir);
     }
+
+    /// <summary>Cift tiklanan satirin hedef yolu; yoksa null.</summary>
+    internal string? TiklananHedef(Point nokta)
+        => GetItemAt(nokta.X, nokta.Y)?.Tag as string;
 
     private void SutunlariPaylastir()
     {

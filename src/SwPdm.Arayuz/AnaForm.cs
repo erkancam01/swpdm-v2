@@ -108,6 +108,11 @@ internal sealed partial class AnaForm : Form
             e.HedefKlasor,
             AktarmaKipi.Tasi);
 
+        // --- referans listesinde cift tik: o dosyaya GIT
+        // PDM'de asil ise yarayan sey bu: "bu parcayi Montaj3 kullaniyor"
+        // yazisini gormek yetmez, oraya GIDEBILMEK gerekir.
+        _referanslar.MouseDoubleClick += (_, e) => ReferansaGit(_referanslar.TiklananHedef(e.Location));
+
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
         _kokSecici.Secildi += (_, yol) => KokuAc(yol);
@@ -198,6 +203,35 @@ internal sealed partial class AnaForm : Form
         SonKokuAc();
     }
 
+    /// <summary>
+    /// Pencere GORUNDUKTEN sonra odak agaca verilir.
+    ///
+    /// OLCULMUS TUZAK: Control.Focus() pencere gorunur DEGILKEN hicbir sey
+    /// yapmiyor ve sessizce false donuyor. Odagi acilista <c>KokuAc</c>
+    /// icinde vermek bu yuzden ISE YARAMADI - orasi OnLoad'dan cagriliyor
+    /// ve pencere henuz gorunmemis oluyor. Belirti sinsi: uygulama aciliyor,
+    /// her sey normal gorunuyor, ama HICBIR KISAYOL calismiyor; once agaca
+    /// tiklamak gerekiyor. Hata yok, sebep yok.
+    /// </summary>
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        AgacaOdaklan();
+    }
+
+    /// <summary>
+    /// Odagi agaca verir. Kisayollar "_agac.Focused" sartina bagli
+    /// (menudeki yaziyla calisan tus ayrisamasin diye, CLAUDE.md 1b), yani
+    /// odak agacta degilse Ctrl+Shift+R gibi kisayollar hic calismaz.
+    /// </summary>
+    private void AgacaOdaklan()
+    {
+        if (IsHandleCreated && Visible && _agac.CanFocus)
+        {
+            _agac.Focus();
+        }
+    }
+
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         _izleyici.Dispose();
@@ -220,6 +254,8 @@ internal sealed partial class AnaForm : Form
         _durum.KokAcildi();
         _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
         _referansSurucusu.KokuKur(_doldurucu.Kok);
+
+        AgacaOdaklan();
         _kokSecici.GecmiseEkle(yol);
 
         // Kok HATIRLANIR: bir dahaki acilista dosya yolunu yeniden gostermeye
@@ -306,6 +342,32 @@ internal sealed partial class AnaForm : Form
 
         SecimiGoster();
         _izleyici.Sustur(false);
+    }
+
+    /// <summary>
+    /// Referans listesinden bir dosyaya gider.
+    ///
+    /// GIDILEMEZSE SEBEBI YAZILIR (CLAUDE.md 3). Sessizce hicbir sey
+    /// yapmamak, kullaniciya cift tiklamanin bozuk oldugunu dusundurur;
+    /// oysa sebep genelde belli: dosya taranan kokun disinda ya da
+    /// referans cozulememis.
+    /// </summary>
+    private void ReferansaGit(string? hedef)
+    {
+        if (hedef is null)
+        {
+            _durum.Bilgi("Bu satırda gidilecek bir dosya yok — referans çözülemedi.");
+            return;
+        }
+
+        if (!_doldurucu.YoluAcVeSec(hedef))
+        {
+            _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
+            return;
+        }
+
+        SecimiGoster();
+        _agac.Focus();
     }
 
     /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>

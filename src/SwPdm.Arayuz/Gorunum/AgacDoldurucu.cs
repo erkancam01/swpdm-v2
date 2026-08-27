@@ -257,6 +257,58 @@ internal sealed class AgacDoldurucu
     }
 
     /// <summary>
+    /// Verilen yola GIDER: ust dallari acar, sonra dugumu secer.
+    ///
+    /// <see cref="YoluSec"/>'ten farki: o yalnizca ZATEN ACIK bir dalda
+    /// calisir. Referans listesinden bir dosyaya gecerken hedef cogu zaman
+    /// kapali bir dalda duruyor; ust zincir acilmadan bulunamaz.
+    ///
+    /// Doner deger: gercekten gidildi mi. false donerse cagiran SEBEBI
+    /// soylemeli - sessizce hicbir sey yapmamak, kullaniciya tiklamanin
+    /// bozuk oldugunu dusundurur (CLAUDE.md 3).
+    /// </summary>
+    internal bool YoluAcVeSec(string yol)
+    {
+        if (Kok is not string kok || string.IsNullOrWhiteSpace(yol))
+        {
+            return false;
+        }
+
+        if (!yol.StartsWith(kok, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;   // taranan kokun disinda
+        }
+
+        // Ust klasorler KOKTEN ASAGIYA acilir: her Expand, tembel yuklemeyi
+        // tetikleyip bir alt seviyeyi olusturuyor. Ters sirada acmak
+        // calismaz cunku alt dugum daha var olmamis olur.
+        var zincir = new List<string>();
+        string klasor = WindowsYolu.Klasor(yol);
+        while (klasor.Length > kok.Length
+               && klasor.StartsWith(kok, StringComparison.OrdinalIgnoreCase))
+        {
+            zincir.Add(klasor);
+            klasor = WindowsYolu.Klasor(klasor);
+        }
+
+        zincir.Reverse();
+        foreach (string ata in zincir)
+        {
+            AgacDurumlari.DuguuBul(_agac, ata)?.Expand();
+        }
+
+        TreeNode? dugum = AgacDurumlari.DuguuBul(_agac, yol);
+        if (dugum is null)
+        {
+            return false;
+        }
+
+        _agac.YalnizSec(dugum);
+        dugum.EnsureVisible();
+        return true;
+    }
+
+    /// <summary>
     /// Butun dallari kapatir ve koke doner. KOK ACIK KALIR - her seyi
     /// kapatmak "klasor bosaldi" hissi verirdi.
     /// </summary>

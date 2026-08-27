@@ -737,6 +737,7 @@ dosyasında** duruyor:
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
+| **taşırken bağımlıları da al** | `Arayuz/Gorunum/Islemler/BagimlilariEkle.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
@@ -805,6 +806,15 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > yazısı da 612 piksel üretiyor. Renk sayısı da ayırt etmedi (yazı kenar
 > yumuşatmayla 62 renk veriyor). Ayıran tek şey yirmi katlık fark: gerçek
 > önizleme **12665**, yazı **612**. Eşik 3000'e çekilince YAKALADI.
+
+> **ODAK: `Control.Focus()` PENCERE GORUNMEDEN CALISMIYOR.** Kisayollar
+> `_agac.Focused` sartina bagli; kok acilista `OnLoad` icinde aciliyor ve
+> orada verilen odak SESSIZCE kayboluyordu — `Focus()` hicbir sey yapmadan
+> `false` donuyor. Belirti sinsi: uygulama aciliyor, her sey normal
+> gorunuyor, ama **hicbir kisayol calismiyor**; once agaca tiklamak
+> gerekiyor. Hata yok, sebep yok. Odak `OnShown`'a tasindi.
+> (Bu, §6'daki "devre disi birakilan denetim odagi kaybediyor" maddesinin
+> kardesi: odak her zaman **elle** ve **dogru anda** verilir.)
 
 > **On birincisi neden var (referans listesi):** bu uygulamanın varlık sebebi.
 > Liste sessizce boş kalırsa kullanıcı "bu parçayı kimse kullanmıyor" sanıp

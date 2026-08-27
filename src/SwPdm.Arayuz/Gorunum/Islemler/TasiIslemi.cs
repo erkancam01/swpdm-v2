@@ -48,6 +48,18 @@ internal static class Aktar
             return;
         }
 
+        // ONCE bagimliliklar sorulur, SONRA onay: onay kutusunda gorunen
+        // sayi gercekten aktarilacak sayi olsun (CLAUDE.md 3 - kullanici
+        // "3 oge" onaylayip 7 oge tasinmis bulmasin).
+        IReadOnlyList<string>? tam = BagimlilariEkle.Sor(baglam.Sahip, baglam.Referanslar, yollar);
+        if (tam is null)
+        {
+            baglam.Bildir(kip == AktarmaKipi.Tasi ? "Taşıma iptal edildi." : "Kopyalama iptal edildi.");
+            return;
+        }
+
+        yollar = tam;
+
         if (!Onayla(baglam.Sahip, yollar, hedefKlasor, kip))
         {
             baglam.Bildir(kip == AktarmaKipi.Tasi ? "Taşıma iptal edildi." : "Kopyalama iptal edildi.");

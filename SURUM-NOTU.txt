@@ -65,6 +65,30 @@ BU SURUMDE YENI - PDM'IN ASIL ISI: REFERANSLAR
      yeniden hesaplamiyorum - model degisip yeniden olusturulmadiysa bayat
      olabilir.
 
+  6. REFERANS SATIRINA CIFT TIKLA, O DOSYAYA GIT
+     Sag alttaki listede bir satira cift tiklayin: agac o dosyaya gider,
+     kapali dallari acar, secer. "Bu parcayi Montaj3 kullaniyor" yazisini
+     gormek yetmiyordu; oraya GIDEBILMEK gerekiyordu.
+     Gidilemezse sebebi yaziyor (cozulememis referans, ya da acik kokun
+     disindaki bir dosya) - sessizce hicbir sey yapmiyor.
+
+  7. TASIRKEN KULLANDIGI DOSYALARI DA GOTURME
+     Bir montaji tasidiginizda/kopyaladiginizda, kullandigi dosyalar
+     secimde yoksa soruyor:
+       "Secilenler 3 dosya daha kullaniyor: ... EVET / HAYIR / Vazgec"
+     ZINCIRIN TAMAMI aliniyor: montaj -> alt montaj -> parca.
+
+     NEDEN ONEMLI: dosyanin ICINE yazip yolu duzeltmiyoruz (asagida) ama
+     yazmaya gerek de yok - SOLIDWORKS bir dosyayi ararken once ebeveynin
+     YANINA bakiyor (bunu olctuk). Yani montaj ve parcalari BIRLIKTE
+     tasinirsa referans kendiliginden yasiyor.
+
+     IKI YONU DE SOYLUYOR: goturmezseniz montaj parcalarini kaybedebilir;
+     goturursanuz o parcalari kullanan BASKA dosyalar etkilenir. Kutuda
+     ikinci sayi da yaziyor ("tasinmayan 2 dosya daha kullaniyor").
+     Tarama yapilmadiysa bu soru HIC SORULMUYOR - olmayan bir bilgiye
+     guvendirmemek icin.
+
   DOSYAYA HICBIR SEY YAZILMIYOR. Bu surumde uygulama SOLIDWORKS
   dosyalarinin icine YAZMIYOR, yalnizca okuyor. Tasima/adlandirma sonrasi
   onarim gerekiyorsa soyluyor, kendisi duzeltmiyor - cunku yazdigim bir
@@ -74,7 +98,10 @@ BU SURUMDE YENI - PDM'IN ASIL ISI: REFERANSLAR
   OLCULDU
     yedi gercek SOLIDWORKS 2022 dosyasinda referanslar 7/7 dogru okundu
     montaj -> parca · montaj -> alt montaj · teknik resim -> model
-    Wine'da: tarama, referans listesi, onizleme, rapor penceresi calisti
+    Wine'da: tarama, referans listesi, onizleme, rapor penceresi,
+      referansa cift tik ile gitme, bagimlilik sorusu - hepsi calisti
+    Bagimlilik zinciri dogru: Montaj2 secilince Montaj1 + Parça1 + Parça2
+      cikti ve "tasinmayan 2 dosya daha kullaniyor" dedi (iki teknik resim)
     dosya basina ~66 KB okunuyor, 2,8-10 ms - DOSYA BOYUTUNDAN BAGIMSIZ
     213 test geciyor (161'di), dort kapi da TEMIZ
 
