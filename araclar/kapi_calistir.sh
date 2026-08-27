@@ -24,7 +24,13 @@
 # dosyalar, alt klasorler, okunamayan bir yol, tanimadigimiz uzantilar) ve
 # uygulamayi onunla acar; ekran goruntusunde DOLU agac gorunur.
 #
-# DONUS: 0 = pencere acildi ve hata yok. Diger her sey = KIRIK.
+# COKLU SECIM: pencere acildiktan sonra xdotool ile GERCEK tik atilir ve
+# secili satir sayisi EKRAN GORUNTUSUNDEN sayilir. Sebep: coklu secim
+# WinForms TreeView'de yok, elle yazildi; birim testi mumkun degil, tek
+# olcum yolu bu. CLAUDE.md 9: depoda ve CI'da olmayan denetim, denetim
+# degildir.
+#
+# DONUS: 0 = pencere acildi, hata yok, coklu secim calisiyor.
 
 set -uo pipefail
 
@@ -54,6 +60,7 @@ wine_yolu           > /dev/null 2>&1 || EKSIK+=("wine64")
 command -v Xvfb     > /dev/null 2>&1 || EKSIK+=("xvfb")
 command -v xwininfo > /dev/null 2>&1 || EKSIK+=("x11-utils")
 command -v import   > /dev/null 2>&1 || EKSIK+=("imagemagick")
+command -v xdotool  > /dev/null 2>&1 || EKSIK+=("xdotool")
 
 if [ "${#EKSIK[@]}" -gt 0 ]; then
   if [ "$KUR" -eq 1 ]; then
@@ -216,43 +223,97 @@ UYG_PID=$!
 sleep "$BEKLE"
 
 # ---------------------------------------------------------------- olcumler
+# Secili satir sayisi: secim rengi (#3399FF = Renkler.SecimArkaPlan) tasiyan
+# piksellerin y degerleri kac ayri BANT olusturuyor. Piksel SAYISI ise
+# yaramaz - satir genisligi dosya adinin uzunluguna gore degisiyor.
+secili_satir_say() {
+  convert "$1" -crop "560x320+$(( $2 + 5 ))+$(( $3 + 109 ))" +repage txt:- 2>/dev/null \
+    | grep -o '^[0-9]*,[0-9]*:.*#3399FF' \
+    | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
+    | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
+}
+
 SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/4] surec ayakta ............ EVET"
+  echo "   [1/5] surec ayakta ............ EVET"
 else
-  echo "   [1/4] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/5] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/4] hata akisi temiz ........ HAYIR"
+  echo "   [2/5] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/4] hata akisi temiz ........ EVET"
+  echo "   [2/5] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/4] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/5] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/4] cokme penceresi yok ..... EVET"
+  echo "   [3/5] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
-ANA="$(echo "$PENCERELER" | grep -i "(\"${AD,,}.exe\"" \
+# OLCULMUS TUZAK: Wine her uygulama icin bir suru 1x1 YARDIMCI pencere
+# aciyor (IME, BroadcastEventWindow...). "head -1" bunlardan birini secip
+# +0+0 dondurdu ve tiklama pencerenin DISINA gitti; belirti "hicbir sey
+# secili degil" idi, sebebi degil. Boyut ve KONUM ayni satirdan okunur.
+ANA_KAYIT="$(echo "$PENCERELER" | grep -i "(\"${AD,,}.exe\"" \
       | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' \
-      | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $1"x"$2; exit}')"
+      | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $1" "$2" "$3" "$4; exit}')"
+ANA=""
+PENCERE_X=""
+PENCERE_Y=""
+if [ -n "$ANA_KAYIT" ]; then
+  # shellcheck disable=SC2086
+  set -- $ANA_KAYIT
+  ANA="$1x$2"
+  PENCERE_X="$3"
+  PENCERE_Y="$4"
+fi
 if [ -n "$ANA" ]; then
-  echo "   [4/4] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/5] ana pencere dogdu ....... EVET ($ANA)"
 else
-  echo "   [4/4] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/5] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
+  SORUN=1
+fi
+
+# 5) coklu secim: Ctrl ile iki dosya secilebiliyor mu
+# Agactaki satirlar 18 px; ilk satir ornek klasorun kokudur. Iki KOK
+# seviyesindeki dosyaya Ctrl ile tiklaniyor ve secili satir sayiliyor.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # Pencere ici koordinatlar: agac ilk satiri y=116, satir yuksekligi 18.
+  # Kok seviyesindeki ilk iki dosya 6. ve 7. satirlarda (5 alt klasor var).
+  TIK_X=$(( PENCERE_X + 105 ))
+  SATIR1=$(( PENCERE_Y + 116 + 18 * 6 ))
+  SATIR2=$(( PENCERE_Y + 116 + 18 * 9 ))
+
+  xdotool mousemove "$TIK_X" "$SATIR1" click 1 > /dev/null 2>&1
+  sleep 2
+  xdotool keydown ctrl > /dev/null 2>&1
+  xdotool mousemove "$TIK_X" "$SATIR2" click 1 > /dev/null 2>&1
+  xdotool keyup ctrl > /dev/null 2>&1
+  sleep 2
+
+  import -window root "$CALISMA/secim.png" > /dev/null 2>&1
+  SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
+  if [ "${SECILI:-0}" -eq 2 ]; then
+    echo "   [5/5] coklu secim ............. EVET (Ctrl ile 2 satir)"
+  else
+    echo "   [5/5] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    SORUN=1
+  fi
+else
+  echo "   [5/5] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

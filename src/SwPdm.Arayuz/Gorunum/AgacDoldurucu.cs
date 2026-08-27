@@ -26,14 +26,14 @@ internal sealed class AgacDoldurucu
     /// <summary>Henuz taranmamis bir dali isaretler; "+" kutusu bunun icin var.</summary>
     private static readonly object HenuzTaranmadi = new();
 
-    private readonly TreeView _agac;
+    private readonly SecimliAgac _agac;
     private readonly Dictionary<TreeNode, KlasorIcerigi> _taranan = [];
     private DosyaTuru? _turSuzgeci;
     private string? _aramaMetni;
     private AramaSonucu? _aramaSonucu;
     private AgacDurumu? _gezinmeDurumu;
 
-    internal AgacDoldurucu(TreeView agac)
+    internal AgacDoldurucu(SecimliAgac agac)
     {
         _agac = agac;
         _agac.BeforeExpand += DalAcilirken;
@@ -81,7 +81,10 @@ internal sealed class AgacDoldurucu
         _aramaMetni = null;
         _aramaSonucu = null;
         _taranan.Clear();
-        _agac.SelectedNode = null;
+
+        // Dugumler yok edilecek: kumede kalan olu dugumler "3 oge secili"
+        // yazip ekranda hicbir sey secili gostermezdi (CLAUDE.md 3).
+        _agac.SecimiTemizle();
 
         KlasorIcerigi icerik = KlasorTarayici.Tara(yol);
 
@@ -135,6 +138,7 @@ internal sealed class AgacDoldurucu
         _aramaMetni = null;
         _aramaSonucu = null;
         _taranan.Clear();
+        _agac.SecimiTemizle();
         _agac.Nodes.Clear();
     }
 
@@ -151,6 +155,7 @@ internal sealed class AgacDoldurucu
         _aramaMetni = metin;
         _aramaSonucu = sonuc;
         _taranan.Clear();
+        _agac.SecimiTemizle();
 
         _agac.BeginUpdate();
         _agac.Nodes.Clear();
@@ -263,7 +268,7 @@ internal sealed class AgacDoldurucu
             TreeNode? secili = DuguuBul(durum.SeciliYol);
             if (secili is not null)
             {
-                _agac.SelectedNode = secili;
+                _agac.YalnizSec(secili);
                 secili.EnsureVisible();
             }
         }
@@ -319,6 +324,11 @@ internal sealed class AgacDoldurucu
             _ => null,
         };
 
+        // Dosya dugumleri yok edilip yeniden kurulacak; kumedeki eski dugum
+        // nesneleri artik agacta degil. Secim bosaltilir, odakli dugum
+        // asagida geri konur.
+        _agac.SecimiTemizle();
+
         _agac.BeginUpdate();
         foreach ((TreeNode dal, KlasorIcerigi icerik) in _taranan)
         {
@@ -355,17 +365,22 @@ internal sealed class AgacDoldurucu
             }
         }
 
-        // Secili dosya suzgecle gizlendiyse secim kaybolur; geri konabiliyorsa konur.
-        if (seciliyken is not null && _agac.SelectedNode is null)
+        _agac.EndUpdate();
+
+        // Secim geri koyma BeginUpdate'in DISINDA. Icerideyken secim
+        // degistirmek olay zincirini cizim kapaliyken calistiriyor ve orasi
+        // yerli denetimin guvenilir cevap vermedigi bir hal (bkz. SecimliAgac
+        // .Secililer). Dosya dugumleri yok edilip yeniden kuruldugu icin secim
+        // YOLDAN bulunur; suzgec o dosyayi gizlediyse geri konacak bir sey
+        // yoktur ve secim BOS kalir - eski bir dugume yapisik kalmaz.
+        if (seciliyken is not null)
         {
             TreeNode? geri = DuguuBul(seciliyken);
             if (geri is not null)
             {
-                _agac.SelectedNode = geri;
+                _agac.YalnizSec(geri);
             }
         }
-
-        _agac.EndUpdate();
 
         if (_agac.Nodes.Count > 0 && _taranan.TryGetValue(_agac.Nodes[0], out KlasorIcerigi? kokIcerik))
         {

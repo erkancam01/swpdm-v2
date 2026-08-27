@@ -285,6 +285,15 @@ yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
   içeren bir klasör bir an sıfır çocuklu kalıyor ve kullanıcının açtığı dal
   kendiliğinden kapanıyor. `IsExpanded` silmeden **önce** okunup sonra geri
   konmalı. *"Ağacı yeniden kurmuyorum"* demek tek başına yetmiyor.
+- **`TreeView` ÇOKLU SEÇİMİ DESTEKLEMİYOR.** `SelectedNode` tektir;
+  `MultiSelect` özelliği **yoktur** (o `ListView`'de var), dikdörtgenle seçim
+  de yoktur. Çoklu seçim isteniyorsa yazılacak: seçimi kendi tutan, seçili
+  satırı kendi boyayan bir alt sınıf. `DrawMode = OwnerDrawText` yeter —
+  çizgileri, `+/-` kutularını ve simgeleri denetim çizmeye devam eder, yalnızca
+  metin alanı bizim olur; `OwnerDrawAll` gereksiz risktir.
+  → Denetimin kendi `SelectedNode`'u **odak** olarak yaşatılır ve her zaman
+  kümenin içinde tutulur; böylece ona bakan her şey (önizleme, durum çubuğu,
+  arama, süzgeç) hiçbir şey bilmeden çalışmaya devam eder.
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
@@ -479,6 +488,25 @@ ham HRESULT gösterir (ölçüldü, ilk yazışta öyle oldu).
 → **WinRT'ye dayanan hiçbir yol burada ölçülemez.** Ölçülebilen tek şey:
 çökmediği ve sebebini söylediği. Gerçek davranış yalnızca Windows'ta görülür.
 
+### Wine bir uygulama için bir sürü 1×1 pencere açıyor — `head -1` yanıltıyor
+
+`xwininfo -root -children` çıktısında uygulamanın adı **birden çok** satırda
+geçiyor: `Default IME`, `.NET-BroadcastEventWindow`, adsız `1x1+0+0` pencereler.
+
+```
+0xc00005 (has no name): ("swpdm.exe" ...)  1x1+0+0      +0+0     <- head -1 BUNU aliyor
+0xc00002 "SW PDM ...":  ("swpdm.exe" ...)  572x880+314+123  +314+123
+```
+
+Bir kapıda pencere konumu `head -1` ile okunmuştu: `+0+0` döndü, `xdotool`
+pencerenin **dışına** tıkladı ve kapı *"hiçbir şey seçili değil"* dedi.
+Belirti doğruydu, **sebep başkaydı** — §2'nin "belirtiyi tek sebebe bağlama"
+maddesi. Konum, boyutu bulan **aynı satırdan** okunmalı.
+
+> `ControlPaint.DrawReversibleFrame` (dikdörtgen seçim çerçevesi) Wine'da
+> **çalışıyor ve iz bırakmıyor** — ölçüldü: fare bırakıldıktan sonra ağaç
+> alanında çerçeve renginden tek piksel kalmadı.
+
 ### Wine'ın ÖLÇMEDİĞİ
 
 - **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.
@@ -507,6 +535,7 @@ dosyasında** duruyor:
 | önizleme (kaynak, sıra, mesaj, iş parçacığı) | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
 | arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
+| çoklu seçim (Ctrl · Shift · dikdörtgen) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
@@ -552,9 +581,17 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı dört şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
-çökme penceresi var mı · ana pencere doğdu mu. Ekran görüntüsünü `.kapi/ekran.png`
-olarak bırakır; CI'da yapıt olarak saklanır.
+**Çalıştırma kapısı beş şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu**.
+Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Beşincisi neden var:** çoklu seçim WinForms'ta yok, elle yazıldı (§6) ve
+> arayüz kodu olduğu için **birim testi yazılamıyor**. Tek ölçüm yolu gerçek
+> tıklama: `xdotool` ile `Ctrl`+tık atılır, seçili satır sayısı ekran
+> görüntüsünden **sayılır** (seçim rengi taşıyan piksellerin kaç ayrı *bant*
+> oluşturduğu — piksel *sayısı* işe yaramaz, satır genişliği ada göre değişir).
+> §9'a göre ölçülerek eklendi: TEMİZ → `Ctrl`+tık tek seçim gibi davranınca
+> **YAKALADI** (2 yerine 1) → geri alınca TEMİZ.
 
 > **Derleme kapısının GÖRMEDİĞİ sınıf vardır.** 27.08.2026'daki kurucu hatasında
 > derleme "0 uyarı 0 hata" diyordu ve uygulama hiç açılmıyordu. Çalıştırma kapısı

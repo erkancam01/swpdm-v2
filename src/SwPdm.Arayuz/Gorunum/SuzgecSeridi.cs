@@ -69,7 +69,6 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
             TabStop = false,
         };
         d.FlatAppearance.BorderSize = 0;
-        d.Click += (_, _) => Sec(d);
         return d;
     }
 

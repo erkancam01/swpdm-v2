@@ -133,6 +133,22 @@ internal sealed class Onizleme : IDisposable
             kullanan: "taranmadı");
     }
 
+    /// <summary>
+    /// Birden cok oge seciliyken: tek bir dosyanin onizlemesi gosterilemez.
+    /// Bos kutu birakmak yerine NE SECILDIGI yaziliyor (CLAUDE.md 3).
+    /// </summary>
+    internal void Goster(SecimOzeti ozet)
+    {
+        _beklenenYol = null;
+        _panel.MesajGoster($"{ozet.Toplam} öğe seçildi");
+        _panel.UstBilgiyiYaz(
+            ad: ozet.Yaz(),
+            tur: "Çoklu seçim",
+            boyut: ozet.DosyaSayisi > 0 && ozet.BoyutTam ? Boyut.Yaz(ozet.ToplamBoyut) : "—",
+            degistirme: "—",
+            kullanan: "taranmadı");
+    }
+
     /// <summary>Secim yokken paneli bosaltir.</summary>
     internal void Temizle()
     {

@@ -25,6 +25,12 @@ internal static class Renkler
     internal static readonly Color AgacArkaPlan = Color.FromArgb(0xFF, 0xFF, 0xFF);
     internal static readonly Color AyracCizgi = Color.FromArgb(0xC8, 0xC8, 0xC8);
 
+    // Agacta secim (Gezgin'in mavisi). Odak baska bir denetimdeyken vurgu
+    // SOLAR ama KAYBOLMAZ: kullanici neyi sildigini gormeden onaylamamali.
+    internal static readonly Color SecimArkaPlan = Color.FromArgb(0x33, 0x99, 0xFF);
+    internal static readonly Color SecimArkaPlanPasif = Color.FromArgb(0xD5, 0xE5, 0xF7);
+    internal static readonly Color SecimYazi = Color.FromArgb(0xFF, 0xFF, 0xFF);
+
     // Suzgec dugmeleri
     internal static readonly Color SuzgecSeciliArkaPlan = Color.FromArgb(0xDC, 0xE6, 0xF2);
     internal static readonly Color SuzgecSeciliKenar = Color.FromArgb(0x8F, 0xA8, 0xC2);

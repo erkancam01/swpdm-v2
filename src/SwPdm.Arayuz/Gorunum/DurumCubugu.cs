@@ -63,6 +63,9 @@ internal sealed class DurumCubugu : StatusStrip
     internal void Secildi(KlasorOgesi klasor)
         => _sol.Text = klasor.Hata is null ? klasor.Yol : klasor.Yol + "  ·  " + klasor.Hata;
 
+    /// <summary>Agacta birden cok oge secildi.</summary>
+    internal void Secildi(SecimOzeti ozet) => _sol.Text = ozet.Yaz();
+
     /// <summary>
     /// Sag taraftaki bilgi cumlesi. Cumlenin kendisi onu URETEN ozelligin
     /// dosyasinda yazilir (agac kendi ozetini, arama kendi ilerlemesini);

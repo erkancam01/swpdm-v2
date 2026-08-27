@@ -20,7 +20,7 @@ internal sealed partial class AnaForm
     private ToolStripTextBox _araKutusu = null!;
     private SuzgecSeridi _suzgecler = null!;
     private SplitContainer _dikeyBolen = null!;
-    private TreeView _agac = null!;
+    private SecimliAgac _agac = null!;
     private Label _altBolumBasligi = null!;
     private SplitContainer _altBolen = null!;
     private OnizlemePaneli _onizlemePaneli = null!;
@@ -144,7 +144,7 @@ internal sealed partial class AnaForm
             BackColor = Renkler.GovdeArkaPlan,
         };
 
-        _agac = new TreeView
+        _agac = new SecimliAgac
         {
             Dock = DockStyle.Fill,
             BorderStyle = BorderStyle.FixedSingle,

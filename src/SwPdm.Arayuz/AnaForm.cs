@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using SwPdm.Arayuz.Gorunum;
 using SwPdm.Cekirdek;
@@ -37,7 +38,7 @@ internal sealed partial class AnaForm : Form
         // --- agac
         _doldurucu = new AgacDoldurucu(_agac);
         _doldurucu.Durum += (_, cumle) => _durum.Bilgi(cumle);
-        _agac.AfterSelect += (_, e) => SecimiGoster(e.Node);
+        _agac.SecimDegisti += (_, _) => SecimiGoster();
         _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
 
         // --- dosya acma (cift tiklama)
@@ -120,9 +121,27 @@ internal sealed partial class AnaForm : Form
         _kokSecici.GecmiseEkle(yol);
     }
 
-    private void SecimiGoster(TreeNode? dugum)
+    private void SecimiGoster()
     {
-        switch (AgacDoldurucu.Etiket(dugum))
+        IReadOnlyList<TreeNode> secililer = _agac.Secililer;
+
+        // Birden cok oge seciliyken tek bir dosyanin onizlemesi gosterilemez;
+        // ne secildigi yazilir.
+        if (secililer.Count > 1)
+        {
+            var etiketler = new List<object?>(secililer.Count);
+            foreach (TreeNode dugum in secililer)
+            {
+                etiketler.Add(AgacDoldurucu.Etiket(dugum));
+            }
+
+            SecimOzeti ozet = SecimOzeti.Hesapla(etiketler);
+            _onizleme.Goster(ozet);
+            _durum.Secildi(ozet);
+            return;
+        }
+
+        switch (AgacDoldurucu.Etiket(secililer.Count == 1 ? secililer[0] : null))
         {
             case DosyaOgesi dosya:
                 _onizleme.Goster(dosya);
