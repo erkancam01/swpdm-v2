@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>SwPdm</AssemblyName>
+    <RootNamespace>SwPdm.Arayuz</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <!--
+    WinForms hedef paketi DOGRUDAN cagriliyor; UseWindowsForms KULLANILMIYOR.
+
+    Sebep tahmin degil, olcum: Ubuntu deposundaki .NET SDK
+    Sdks/Microsoft.NET.Sdk.WindowsDesktop bilesenini hic tasimiyor
+    (ls ile dogrulandi), o yuzden UseWindowsForms burada MSB4019 ile kiriliyor.
+    FrameworkReference ise UseWindowsForms'un altta yaptigi seyin ta kendisi;
+    hem Windows'ta hem Linux'ta tutuyor.
+
+    Kazanci buyuk: kod her oturumda DERLENEREK olculebiliyor. v1'de olculemeyen
+    alanin bedeli CLAUDE.md 7'de duruyor.
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+  </ItemGroup>
+
+  <!--
+    Linux'ta apphost uretilemez (uretilse Linux apphost'u olurdu, ise yaramaz).
+    Orada yalnizca SwPdm.dll cikar ve amac zaten derleme olcumu.
+    Windows'ta SwPdm.exe cikar.
+  -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
+</Project>
