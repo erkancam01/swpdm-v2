@@ -1,9 +1,38 @@
+BILDIRDIGIN UC MADDE - HEPSI YAPILDI
+
+  1. SUZGEC DUGMELERI (Montaj/Parca/Teknik resim/PDF) ARTIK CALISIYOR.
+     Sebep bir WinForms tuzagi degil, benim hatamdi: bir tani satirini
+     temizlerken dugmenin tiklama baglantisini de silmisim. Dugmeler
+     ciziliyor, odagi aliyor, uzerine gelince renk degistiriyordu - ama
+     tiklamaya bagli hicbir sey yoktu. Derleme ve testler "TEMIZ" diyordu.
+     Bir daha sessizce olmasin diye KAPI koydum: uygulama her seferinde
+     Wine'da acilip "Parca"ya tiklaniyor ve agactaki satir sayisinin
+     azaldigi OLCULUYOR.
+
+  2. COP DUGMESI ARTIK SILMIYOR - COP KUTUSUNU ACIYOR.
+     Silme Delete tusunda ve sag tik menusunde kaldi.
+     Dugmede sayi yaziyor: "Cop kutusu (3)".
+     Pencerede: ad · eski konum · silinme zamani · boyut, coklu secim,
+     GERI YUKLE · KALICI SIL · TUMUNU BOSALT.
+
+     ONEMLI DEGISIKLIK: silinen dosya artik Windows Cop Kutusu'na GITMIYOR.
+     Sebep: Windows Cop Kutusu yalnizca yerel disklerde vardir. AG
+     SURUCUSUNDEN (\\10.34.1.250\ortak) silinen dosya oraya gitmez, KALICI
+     silinir. Yani onceki paketteki "cop kutusundan geri alinabilir" cumlesi
+     senin asil calisma yerinde YALANDI.
+     Artik silinen dosya, actigin kokun icindeki gizli ".SwPdmCop" klasorune
+     TASINIYOR. Ayni diskte oldugu icin 1 GB'lik montaj bile aninda gidiyor
+     ve ag surucusunde de calisiyor. Klasorun yeri Cop Kutusu penceresinin
+     ustunde yaziyor.
+
+  3. FAREYLE DIKDORTGEN SECIM KALDIRILDI.
+     Ctrl+tik, Shift+aralik ve Ctrl+A aynen duruyor.
+
 BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
 
   Artik agacta gercek dosya islemleri var. Hepsi COKLU SECIMLE calisir.
 
   SECME (Gezgin'deki gibi)
-    - Fareyle DIKDORTGEN cizerek (bos alandan basla, surukle)
     - Ctrl + tik: tek tek ekle/cikar
     - Shift + tik: aralik
     - Ctrl+A: gorunen her seyi sec
@@ -17,8 +46,9 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
     - Kes / Yapistir ....... Ctrl+X / Ctrl+V
     - Surukle-birak ........ secimi bir klasorun uzerine birak
 
-  SILME KALICI DEGIL: Windows Cop Kutusu'na gider, geri alinabilir. Kalici
-  silme BILEREK yazilmadi.
+  SILME KALICI DEGIL: kokun icindeki ".SwPdmCop" klasorune tasinir ve
+  Cop Kutusu penceresinden geri yuklenir. Kalici silme yalnizca o pencerede,
+  ayri bir dugmede ve "GERI ALINAMAZ" uyarisiyla.
 
   Silmeden ve tasimadan once ne olacagi tek tek yazilir ve onaylatilir;
   varsayilan dugme "Vazgec"tir. Bir islem yarim kalirsa NE OLDU NE OLMADI
@@ -42,18 +72,12 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
      LUTFEN DENEYIN: sag tik menusu sizde aciliyor mu? Acilmiyorsa hepsini
      kisayolla yapabilirsiniz.
 
-  2. COP KUTUSU
-     Wine'in cop kutusu gercek Windows kabugu degil. Burada silme calisti ama
-     dosyanin gercekten Windows Cop Kutusu'nda gorunup gorunmeyecegini
-     BURADAN goremem. Silip cop kutusuna bakin.
+  2. AG SURUCUSUNDE HIZ
+     Silme ve tasima artik ayni disk icinde "tasima" oldugu icin ANLIK
+     olmali - kopyalama yok. Ama gercek ag surucusunde nasil davrandigini
+     BURADAN olcemem. Buyuk bir montaji silip geri yukleyip bakin.
 
-  3. SUZGEC DUGMESI - BILINEN HATA
-     Agacta bir ogeye tikladiktan SONRA ust taraftaki tur suzgeci
-     (Montaj/Parca/...) dugmesine basmak bende islemiyordu. Once suzgece
-     basip sonra agaca tiklamak calisiyor. Dort sebep olcumle elendi, hala
-     bulamadim. Sizde de oluyorsa soyleyin; olmuyorsa Wine'a ozgudur.
-
-  4. SURUKLE-BIRAK
+  3. SURUKLE-BIRAK
      Kod yazildi ama Wine'da fare suruklemesini guvenilir taklit edemedigim
      icin OLCEMEDIM. Kes/Yapistir ayni tasima kodunu kullaniyor ve O OLCULDU.
 

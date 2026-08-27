@@ -103,14 +103,13 @@ internal sealed partial class AnaForm : Form
             }
         };
 
-        // Arac cubugundaki "Cop" dugmesi de silme islemini calistirir - ayni
-        // kod, ikinci kopya yok (CLAUDE.md 8).
-        _copDugmesi.Enabled = true;
-        _copDugmesi.ToolTipText = "Seçilenleri çöp kutusuna gönder (Delete)";
-        _copDugmesi.Click += (_, _) => _menu.TusaBasildi(Keys.Delete);
+        // Arac cubugundaki dugme SILMEZ - cop kutusunu ACAR. Silme Delete
+        // tusunda ve sag tik menusunde (Erkan: "silme zaten sag tikta var").
+        _copDugmesi.Click += (_, _) => CopKutusunuAc();
 
         _onizleme.Temizle();
         _durum.Bekliyor();
+        CopDugmesiniTazele();
 
     }
 
@@ -147,6 +146,7 @@ internal sealed partial class AnaForm : Form
         _onizleme.Temizle();
         _durum.Kok(yol);
         _kokSecici.GecmiseEkle(yol);
+        CopDugmesiniTazele();
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ internal sealed partial class AnaForm : Form
             }
         }
 
-        return new SecimBaglami(ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde);
+        return new SecimBaglami(ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde, _doldurucu.Kok);
     }
 
     /// <summary>
@@ -190,6 +190,7 @@ internal sealed partial class AnaForm : Form
     private void AgaciTazele(string? secilecekYol)
     {
         _doldurucu.Yenile();
+        CopDugmesiniTazele();
 
         if (secilecekYol is not null)
         {
@@ -197,6 +198,36 @@ internal sealed partial class AnaForm : Form
         }
 
         SecimiGoster();
+    }
+
+    /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>
+    private void CopKutusunuAc()
+    {
+        if (_doldurucu.Kok is not string kok)
+        {
+            _durum.Bilgi("Önce bir klasör açın.");
+            return;
+        }
+
+        CopKutusuPenceresi.Goster(this, kok, cumle => _durum.Bilgi(cumle));
+        AgaciTazele(null);
+    }
+
+    /// <summary>Cop dugmesinin yazisini ve durumunu tazeler.</summary>
+    private void CopDugmesiniTazele()
+    {
+        if (_doldurucu.Kok is not string kok)
+        {
+            _copDugmesi.Enabled = false;
+            _copDugmesi.Text = "Çöp";
+            _copDugmesi.ToolTipText = "Çöp kutusu — önce bir klasör açın";
+            return;
+        }
+
+        int adet = Cop.Listele(kok).Count;
+        _copDugmesi.Enabled = true;
+        _copDugmesi.Text = adet == 0 ? "Çöp kutusu" : $"Çöp kutusu ({adet})";
+        _copDugmesi.ToolTipText = "Silinenleri gör ve geri yükle";
     }
 
     private void SecimiGoster()

@@ -7,11 +7,12 @@ using SwPdm.Cekirdek;
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
-/// SIL - ve KALICI DEGIL: Windows Cop Kutusu'na gonderir.
+/// SIL - ve KALICI DEGIL: kokun icindeki cop klasorune tasir.
 ///
-/// Neden cop kutusu: bu bir CAD dosya yoneticisi ve yanlis silinen bir parca
-/// bir montaji bozar (CLAUDE.md 1a). Cop kutusu geri alinabilir; kalici silme
-/// degil. Kalici silme BILEREK yazilmadi.
+/// Neden Windows Cop Kutusu DEGIL: o yalnizca yerel disklerde var. AG
+/// SURUCUSUNDEN silinen dosya oraya GITMEZ, kalici gider - ve bu uygulamanin
+/// asil calisma yeri ag surucusu. "Geri alinabilir" demek orada yalan olurdu
+/// (CLAUDE.md 3). Ayrintisi Cekirdek/Cop.cs'te.
 /// </summary>
 internal sealed class SilIslemi : IAgacIslemi
 {
@@ -30,6 +31,12 @@ internal sealed class SilIslemi : IAgacIslemi
             return false;
         }
 
+        if (secim.Kok is null)
+        {
+            nedenOlmaz = "Önce bir klasör açın.";
+            return false;
+        }
+
         nedenOlmaz = string.Empty;
         return true;
     }
@@ -38,7 +45,7 @@ internal sealed class SilIslemi : IAgacIslemi
     public void Uygula(IslemBaglami baglam)
     {
         IReadOnlyList<object> ogeler = baglam.Secim.Ogeler;
-        if (ogeler.Count == 0)
+        if (ogeler.Count == 0 || baglam.Secim.Kok is not string kok)
         {
             return;
         }
@@ -60,7 +67,7 @@ internal sealed class SilIslemi : IAgacIslemi
                 continue;
             }
 
-            IslemRaporu rapor = CopKutusu.Gonder(yol, oge is KlasorOgesi);
+            IslemRaporu rapor = Cop.Sil(kok, yol);
             if (rapor.Oldu)
             {
                 silinen.Add(SecimBaglami.Adi(oge));
@@ -118,7 +125,8 @@ internal sealed class SilIslemi : IAgacIslemi
         }
 
         metin.AppendLine();
-        metin.AppendLine("Çöp kutusundan geri alınabilir.");
+        metin.AppendLine("Çöp kutusuna gider; araç çubuğundaki \"Çöp kutusu\"");
+        metin.AppendLine("düğmesinden geri yüklenebilir.");
 
         // CLAUDE.md 3: BILMEDIGIMIZI SOYLE. Referans indeksi yok; "bu parcayi
         // kimse kullanmiyor" diyemeyiz ve dememeliyiz.

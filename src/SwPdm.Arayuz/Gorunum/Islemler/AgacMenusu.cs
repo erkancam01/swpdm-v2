@@ -90,7 +90,7 @@ internal sealed class AgacMenusu
     }
 
     private SecimBaglami Secim()
-        => _secimKaynagi?.Invoke() ?? new SecimBaglami([], null, AramaKipinde: false);
+        => _secimKaynagi?.Invoke() ?? new SecimBaglami([], null, AramaKipinde: false, Kok: null);
 
     private void Calistir(IAgacIslemi islem)
     {

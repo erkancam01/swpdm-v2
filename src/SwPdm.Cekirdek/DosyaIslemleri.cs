@@ -113,7 +113,7 @@ public static class DosyaIslemleri
         }
         catch (Exception hata)
         {
-            return Cevir(hata);
+            return HatayiCevir(hata);
         }
     }
 
@@ -163,7 +163,7 @@ public static class DosyaIslemleri
         }
         catch (Exception hata)
         {
-            return Cevir(hata);
+            return HatayiCevir(hata);
         }
     }
 
@@ -230,7 +230,7 @@ public static class DosyaIslemleri
         }
         catch (Exception hata)
         {
-            return Cevir(hata);
+            return HatayiCevir(hata);
         }
     }
 
@@ -256,7 +256,7 @@ public static class DosyaIslemleri
     /// ve ucunun cozumu farkli; ex.Message bunlari AYIRT EDEMIYOR cunku metin
     /// yerellestirilmis. Win32 kodu HResult'in dusuk 16 bitinde duruyor.
     /// </summary>
-    private static IslemRaporu Cevir(Exception hata)
+    public static IslemRaporu HatayiCevir(Exception hata)
     {
         int win32 = hata.HResult & 0xFFFF;
 

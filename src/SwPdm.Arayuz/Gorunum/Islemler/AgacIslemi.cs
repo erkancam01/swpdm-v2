@@ -15,10 +15,12 @@ namespace SwPdm.Arayuz.Gorunum;
 /// klasoru, o da yoksa kok. Yeni klasor buraya acilir.
 /// </param>
 /// <param name="AramaKipinde">Agac su an arama sonucu mu gosteriyor.</param>
+/// <param name="Kok">Acik olan kok klasor. Cop kutusu bunun icinde yasiyor.</param>
 internal sealed record SecimBaglami(
     IReadOnlyList<object> Ogeler,
     string? EtkinKlasor,
-    bool AramaKipinde)
+    bool AramaKipinde,
+    string? Kok)
 {
     /// <summary>Secili tek oge; birden fazlaysa null.</summary>
     internal object? TekOge => Ogeler.Count == 1 ? Ogeler[0] : null;

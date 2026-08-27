@@ -75,6 +75,15 @@ public static class KlasorTarayici
         var klasorler = new List<KlasorOgesi>(altYollar.Length);
         foreach (string alt in altYollar)
         {
+            // TEK AYRILMA: cop klasoru agacta gosterilmez. O klasor bizim,
+            // kullanicinin dosyasi degil; icini agacta gormek karisiklik
+            // olurdu. GIZLENMIS de olmuyor - yeri Cop Kutusu penceresinde
+            // acikca yaziyor (CLAUDE.md 3).
+            if (string.Equals(WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             klasorler.Add(KlasoruOlc(alt));
         }
 

@@ -586,6 +586,23 @@ menünün kendisi.
 - → Wine *"açılıyor mu, çöküyor mu"* sorusunu **kesin** cevaplar;
   *"piksel piksel aynı mı"* sorusunu **cevaplamaz**.
 
+### Windows Çöp Kutusu AĞ SÜRÜCÜSÜNDE YOKTUR
+
+Bir dosyayı `\\sunucu\ortak` üzerinden silmek onu çöp kutusuna **göndermez**;
+kalıcı siler. Bu uygulamanın asıl çalışma yeri ağ sürücüsü olduğu için
+*"çöp kutusundan geri alınabilir"* demek orada **yalandır** (§3).
+
+→ Silme, Windows kabuğuna değil **kökün içindeki kendi çöp klasörümüze**
+taşıyor (`.SwPdmCop`). Aynı disk olduğu için `Directory.Move` anlık — 1 GB'lık
+bir montaj kopyalanmıyor — ve davranış her sürücüde aynı. Yan kazanç: Windows
+kabuğu çağrısı kalktığı için silme/geri yükleme **Linux'ta test edilebiliyor**
+(11 test).
+
+> Kabuğun "Geri Yükle" komutunun adı Windows'un diline göre değişiyor
+> ("Restore"/"Geri Yükle"); ona dayanan bir geri yükleme bir makinede çalışıp
+> ötekinde çalışmazdı. Kendi klasörümüzde geri yükleme yalnızca bir
+> `Directory.Move`.
+
 ### Kabuk simgesi: kayıt yoksa hepsi AYNI genel simge
 
 `SHGetFileInfo` + `SHGFI_USEFILEATTRIBUTES` ile uzantıya kayıtlı simge alınıyor —
@@ -613,6 +630,8 @@ dosyasında** duruyor:
 | **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
 | yeni klasör · adlandır · sil · taşı | `Islemler/<işlem>.cs` (her biri tek dosya) |
 | diskteki dosya işlemleri + hata sebebi | `Cekirdek/DosyaIslemleri.cs` |
+| çöp kutusu (sil · listele · geri yükle) | `Cekirdek/Cop.cs` |
+| çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
