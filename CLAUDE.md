@@ -10,6 +10,10 @@ teknik resim referanslarını koruyan masaüstü uygulaması.
 >
 > Yapıya dair maddeler (katmanlar, kapılar, paketleme) kapsam belirlendikçe
 > **ölçülerek** eklenecek — tahminle değil.
+>
+> **27.08.2026 güncellemesi:** ilk ölçülmüş yapı maddeleri geldi (§11). Artık
+> §11 depodaki gerçek dosyalara işaret ediyor; oradaki adlar değişirse §11 de
+> değişmeli. §1–§10 hâlâ mimariden bağımsız ve bayatlayamaz.
 
 ---
 
@@ -202,6 +206,17 @@ yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
 - **`Refresh()` çocuk denetimi boyamıyor.** `Update()` → `UpdateWindow` yalnızca
   kendi penceresine `WM_PAINT` yolluyor. Barındırılan bir denetim (örn. bir
   `ToolStripControlHost` içindeki gerçek `ProgressBar`) ayrıca tazelenmeli.
+- **Kurucudan çağrılan sanal metot, alanlar atanmadan çalışıyor.** `Height`,
+  `Dock`, `BorderStyle` gibi **boyut değiştiren** her atama, temel sınıfın
+  `OnResize`'ını **o anda** çağırıyor. Alan bildirimi kurucunun daha aşağısındaysa
+  orada `null` oluyor. **27.08.2026'da uygulama Windows'ta HİÇ AÇILMADI** bu
+  yüzden; ve derleyici **hiç uyarmadı** — alanlar `readonly` olduğu için
+  "atanacak" sayılıyor, `TreatWarningsAsErrors` açıkken bile 0 uyarı.
+  → Alanlar boyut değiştiren her şeyden **önce** atanır, **ve** kurucu bitene
+  kadar `OnResize`'ı susturan bir bayrak konur. İkisi birden (§2).
+  → Aynı hata `ReferansListesi`'nde de vardı ve yalnızca uygulama daha erken
+  öldüğü için görülmemişti. **Bir `On*` ezmesi yazan her sınıf bu açıdan
+  denetlenir.**
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
@@ -279,3 +294,109 @@ Bunlar yalnızca kod **başka bir uygulamanın süreci içinde** koşuyorsa geç
 
 - **Test ETMEDİĞİN ve riskli noktaları açıkça yaz.** "Oldu" deyip geçme.
 - Sayıları belgeden okuma — **çalıştır**.
+
+---
+
+## 11. ÖLÇÜLMÜŞ YAPI — derleme, çalıştırma, kapılar
+
+> Bu bölüm §1–§10'dan farklı: **depodaki gerçek dosyalara işaret ediyor.**
+> Oradaki adlar değişirse burası da değişmeli.
+
+### Bu depo Linux'ta derleniyor VE çalışıyor — ölçüldü (27.08.2026)
+
+Bulut oturumu Linux. Buna rağmen:
+
+| ölçüm | sonuç |
+|---|---|
+| `dotnet publish -r win-x64 --self-contained` | **gerçek Windows PE32+ `.exe`** üretiyor |
+| Wine 9.0 + Xvfb altında o `.exe` | **açılıyor**, pencere doğuyor, görüntü alınabiliyor |
+| `net8.0` çekirdek + xunit | Linux'ta **koşuyor** |
+
+→ *"Ölçemiyorum"* artık geçerli bir mazeret değil. v1'de ölçülemeyen alanın
+bedeli §7'de duruyor.
+
+### Ubuntu deposundaki .NET SDK, WindowsDesktop bileşenini TAŞIMIYOR
+
+`Sdks/Microsoft.NET.Sdk.WindowsDesktop` klasörü **yok** (`ls` ile doğrulandı).
+Sonuç: `UseWindowsForms` burada **MSB4019** ile kırılıyor. Microsoft'un kendi
+deposu `noble` için `dotnet-sdk-8.0` yayınlamıyor, `builds.dotnet.microsoft.com`
+vekil tarafından **403**. Yani resmî SDK yolu da kapalı.
+
+**Çalışan yol** — `UseWindowsForms` yerine doğrudan:
+
+```xml
+<EnableWindowsTargeting>true</EnableWindowsTargeting>
+<FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+```
+
+Bu, `UseWindowsForms`'un altta yaptığı şeyin ta kendisi ve **hem Windows'ta hem
+Linux'ta** tutuyor. Bedeli: `ApplicationConfiguration.Initialize()` üreteci
+gelmiyor, üç çağrı elle yazılıyor (`SetHighDpiMode` · `EnableVisualStyles` ·
+`SetCompatibleTextRenderingDefault`).
+
+### Wine: `mscoree` devre dışı bırakılırsa .NET 8 AÇILMIYOR
+
+`WINEDLLOVERRIDES="mscoree,mshtml="` yazmak — .NET Framework için yaygın bir
+tarif — .NET 8 uygulamasını **kendi klasöründeki** `System.Runtime.dll`'i bile
+reddeder hâle getiriyor:
+
+```
+FileNotFoundException: Could not load file or assembly '...\System.Runtime.dll'. Module not found.
+```
+
+Belirti yanıltıcı: dosya **oradadır**. Korelasyon birebir ölçüldü — bu değişkenin
+olduğu her koşu kırıldı, olmadığı her koşu çalıştı. Yolda **iki yanlış hipotez**
+kuruldu (eski derleme · yol tuhaflığı); ikisi de 2×2 ölçümle elendi.
+
+### Wine'ın ÖLÇMEDİĞİ
+
+- **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.
+- Sekme, kaydırma çubuğu, kenarlık çizimi Wine'ın kendi teması.
+- → Wine *"açılıyor mu, çöküyor mu"* sorusunu **kesin** cevaplar;
+  *"piksel piksel aynı mı"* sorusunu **cevaplamaz**.
+
+### Kabuk simgesi: kayıt yoksa hepsi AYNI genel simge
+
+`SHGetFileInfo` + `SHGFI_USEFILEATTRIBUTES` ile uzantıya kayıtlı simge alınıyor —
+SOLIDWORKS kurulu makinede **gerçek** simgeler geliyor. Ama kurulu **değilse**
+kabuk `.SLDPRT`/`.SLDASM`/`.SLDDRW` için **aynı boş sayfa simgesini** dönüyor;
+yani "gerçek simge" isteği, gerçekte üç türü **ayırt edilemez** yapıyor.
+
+→ Gelen simge, kayıtlı olmadığı **kesin** olan uydurma bir uzantının simgesiyle
+piksel piksel karşılaştırılır. Aynıysa kayıt yok demektir → çizilmiş yedeğe düşülür.
+
+### Kapılar
+
+```
+araclar/kapilar.sh [--kur]     # üçünü sırayla koşar
+├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
+├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
+└── kapi_calistir.sh [--kur]   # uygulamayı Wine'da GERÇEKTEN açar
+```
+
+Kapsam **adlara değil ağaca** bağlı (§9): proje `find` ile, WinExe içerikten
+(`OutputType`), test projesi içerikten (`Microsoft.NET.Test.Sdk`), uygulama adı
+`runtimeconfig`'ten bulunur. Hiçbirine dosya/proje adı **yazılmamıştır**.
+
+**Çalıştırma kapısı dört şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+çökme penceresi var mı · ana pencere doğdu mu. Ekran görüntüsünü `.kapi/ekran.png`
+olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Derleme kapısının GÖRMEDİĞİ sınıf vardır.** 27.08.2026'daki kurucu hatasında
+> derleme "0 uyarı 0 hata" diyordu ve uygulama hiç açılmıyordu. Çalıştırma kapısı
+> tam olarak bunun için var. **Yeşil derleme, çalışıyor demek değildir.**
+
+Üçü de §9'a göre ölçülerek eklendi — TEMİZ → hata konunca YAKALADI → geri
+alınca TEMİZ. Yakaladıkları gerçek hatalardı: `ToolStripLabel.Refresh()` (§6),
+sürücü kökünde kırpılan ters bölü (§4), kurucudan çağrılan `OnResize` (§6).
+
+CI (`.github/workflows/kapilar.yml`) **aynı betikleri** koşar — ikinci kopya yok
+(§8). Üç iş: Linux derleme+test · Windows derleme+test (gerçek SDK) · Wine
+çalıştırma.
+
+### Testler Windows'ta gerçek `Path`'e karşı koşuyor
+
+`WindowsYolu` Linux'ta elle yazılmış beklenen değerlerle, **Windows'ta ise
+`System.IO.Path`'in kendisiyle** karşılaştırılıyor. Windows dışında o testler
+**sebebiyle** atlanır (sessizce değil — §3). Linux tarafında ayrıca `Path`'in
+bozukluğu belgeleniyor: .NET bir gün düzeltirse test haber verir.

@@ -5,8 +5,10 @@
 # UC COMMIT yayinlandi.
 #
 # Uc is var ve ucu de AYNI betikleri kosuyor - CI'da ikinci bir kopya YOK:
-#   derleme-linux    : agactaki her csproj, uyarilar hata sayilarak
-#   derleme-windows   : ayni kapi, gercek Windows SDK'siyla
+#   derleme-linux     : agactaki her csproj + her test projesi
+#   derleme-windows   : ayni kapilar, gercek Windows SDK'siyla. WindowsYolu
+#                       burada System.IO.Path'in KENDISIYLE karsilastiriliyor;
+#                       Linux'ta o olcum yapilamaz cunku orada Path bozuk.
 #   calistirma-linux  : uygulamayi Wine altinda GERCEKTEN acar
 #
 # Ucuncusu neden var: 27.08.2026'da uygulama Windows'ta hic acilmadi ve o
@@ -23,7 +25,7 @@ on:
 
 jobs:
   derleme-linux:
-    name: Kapi - derleme (Linux)
+    name: Kapi - derleme + test (Linux)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,9 +34,11 @@ jobs:
           dotnet-version: "8.0.x"
       - name: Derleme kapisi
         run: ./araclar/kapi_derleme.sh
+      - name: Test kapisi
+        run: ./araclar/kapi_test.sh
 
   derleme-windows:
-    name: Kapi - derleme (Windows)
+    name: Kapi - derleme + test (Windows)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +48,9 @@ jobs:
       - name: Derleme kapisi
         shell: bash
         run: ./araclar/kapi_derleme.sh
+      - name: Test kapisi (Path ile karsilastirma BURADA kosuyor)
+        shell: bash
+        run: ./araclar/kapi_test.sh
 
   calistirma-linux:
     name: Kapi - calistirma (Wine)

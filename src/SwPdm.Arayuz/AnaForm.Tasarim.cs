@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using SwPdm.Arayuz.Gorunum;
 
@@ -63,11 +64,29 @@ internal sealed partial class AnaForm
         };
 
         // Sira SimgeSirasi ile birebir ayni olmak ZORUNDA.
-        liste.Images.Add(Simgeler.Klasor());
-        liste.Images.Add(Simgeler.Parca());
-        liste.Images.Add(Simgeler.Montaj());
-        liste.Images.Add(Simgeler.TeknikResim());
-        liste.Images.Add(Simgeler.Pdf());
+        //
+        // Once WINDOWS KABUGU denenir: SOLIDWORKS kurulu bir makinede
+        // .SLDPRT/.SLDASM/.SLDDRW simgeleri kabuga kayitlidir ve Gezgin'de
+        // gorunen GERCEK simge gelir. Kabuk vermezse koda cizilmis yedege
+        // dusulur - hicbir durumda simgesiz kalinmaz.
+        (string? Uzanti, Func<Bitmap> Yedek)[] girdiler =
+        [
+            (null,      Simgeler.Klasor),        // SimgeSirasi.Klasor
+            (".SLDPRT", Simgeler.Parca),         // SimgeSirasi.Parca
+            (".SLDASM", Simgeler.Montaj),        // SimgeSirasi.Montaj
+            (".SLDDRW", Simgeler.TeknikResim),   // SimgeSirasi.TeknikResim
+            (".PDF",    Simgeler.Pdf),           // SimgeSirasi.Pdf
+        ];
+
+        foreach ((string? uzanti, Func<Bitmap> yedek) in girdiler)
+        {
+            Bitmap? kabuktan = uzanti is null
+                ? KabukSimgeleri.Klasor()
+                : KabukSimgeleri.Dosya(uzanti);
+
+            liste.Images.Add(kabuktan ?? yedek());
+        }
+
         return liste;
     }
 

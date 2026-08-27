@@ -12,6 +12,8 @@ KIRIK=0
 
 "$KOK/araclar/kapi_derleme.sh"        || KIRIK=1
 echo
+"$KOK/araclar/kapi_test.sh"           || KIRIK=1
+echo
 "$KOK/araclar/kapi_calistir.sh" "$@"  || KIRIK=1
 
 echo
