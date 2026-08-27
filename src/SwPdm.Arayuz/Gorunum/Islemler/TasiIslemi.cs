@@ -82,7 +82,12 @@ internal static class Aktar
     {
         var olan = new List<string>();
         var olmayan = new List<string>();
+        var atlanan = new List<string>();
         bool kesildi = false;
+
+        // "Hepsine uygula" isaretlenirse kalan cakismalar sorulmadan bu
+        // kararla gecer.
+        Cakisma hepsiIcin = Cakisma.Sor;
 
         for (int i = 0; i < yollar.Count; i++)
         {
@@ -97,13 +102,35 @@ internal static class Aktar
             string ad = WindowsYolu.DosyaAdi(yol);
             baglam.Ilerleme.Adim(i, yollar.Count, ad);
 
-            IslemRaporu rapor = kip == AktarmaKipi.Tasi
-                ? DosyaIslemleri.Tasi(yol, hedefKlasor)
-                : DosyaIslemleri.Kopyala(yol, hedefKlasor);
+            IslemRaporu rapor = Uygula(baglam, yol, hedefKlasor, kip, hepsiIcin);
+
+            // Cakisma var ve daha once "hepsine" denmedi: KULLANICIYA SOR.
+            if (rapor.Sonuc == IslemSonucu.ZatenVar && hepsiIcin == Cakisma.Sor)
+            {
+                CakismaKarari karar = SorArayuzde(
+                    baglam, yol, WindowsYolu.Birlestir(hedefKlasor, ad));
+
+                if (karar.Vazgecti)
+                {
+                    kesildi = true;
+                    break;
+                }
+
+                if (karar.Hepsine)
+                {
+                    hepsiIcin = karar.Karar;
+                }
+
+                rapor = Uygula(baglam, yol, hedefKlasor, kip, karar.Karar);
+            }
 
             if (rapor.Oldu)
             {
                 olan.Add(rapor.YeniYol ?? WindowsYolu.Birlestir(hedefKlasor, ad));
+            }
+            else if (rapor.Sonuc == IslemSonucu.Atlandi)
+            {
+                atlanan.Add(ad);
             }
             else
             {
@@ -112,7 +139,66 @@ internal static class Aktar
         }
 
         baglam.Ilerleme.Adim(yollar.Count, yollar.Count, string.Empty);
-        baglam.Ilerleme.Bitti(() => Topla(baglam, yollar, olan, olmayan, kip, kesildi));
+        baglam.Ilerleme.Bitti(() => Topla(baglam, yollar, olan, olmayan, atlanan, kip, kesildi));
+    }
+
+    /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
+    private static IslemRaporu Uygula(
+        IslemBaglami baglam,
+        string yol,
+        string hedefKlasor,
+        AktarmaKipi kip,
+        Cakisma cakisma)
+    {
+        // "Degistir" secilirse uzerine yazilan dosya YOK EDILMEZ, once cope
+        // tasinir. Kurtarma tutmazsa cekirdek islemi YAPMAZ (CLAUDE.md 1a).
+        bool Kurtar(string eskisi)
+            => baglam.Secim.CopKlasoru is string cop && Cop.Sil(cop, eskisi).Oldu;
+
+        return kip == AktarmaKipi.Tasi
+            ? DosyaIslemleri.Tasi(yol, hedefKlasor, cakisma, Kurtar)
+            : DosyaIslemleri.Kopyala(yol, hedefKlasor, cakisma, Kurtar);
+    }
+
+    /// <summary>
+    /// Cakismayi ARAYUZ is parcaciginda sorar ve cevabi bekler. Is arka
+    /// planda kosuyor; oradan pencere acmak coker.
+    /// </summary>
+    private static CakismaKarari SorArayuzde(IslemBaglami baglam, string kaynak, string hedef)
+    {
+        CakismaKarari karar = default;
+        using var bekle = new ManualResetEventSlim(false);
+
+        // Pencere kapandiysa kutu HIC acilmaz; o zaman beklemek sonsuz
+        // askida kalmak olurdu (CLAUDE.md 3). Kuyruga girmediyse "vazgecildi".
+        bool kuyrukta = baglam.Ilerleme.Arayuzde(() =>
+        {
+            try
+            {
+                karar = CakismaKutusu.Sor(baglam.Sahip, kaynak, hedef);
+            }
+            finally
+            {
+                bekle.Set();
+            }
+        });
+
+        if (!kuyrukta)
+        {
+            return new CakismaKarari(Cakisma.Atla, Hepsine: true, Vazgecti: true);
+        }
+
+        // Kuyruga girdi ama pencere cevap gelmeden kapanabilir: mesaj pompasi
+        // durdugunda delege HIC kosmaz. O yuzden beklemek KOSULLU.
+        while (!bekle.Wait(200))
+        {
+            if (baglam.Sahip is Control sahip && (sahip.IsDisposed || !sahip.IsHandleCreated))
+            {
+                return new CakismaKarari(Cakisma.Atla, Hepsine: true, Vazgecti: true);
+            }
+        }
+
+        return karar;
     }
 
     private static void Topla(
@@ -120,6 +206,7 @@ internal static class Aktar
         List<string> kaynaklar,
         List<string> olan,
         List<string> olmayan,
+        List<string> atlanan,
         AktarmaKipi kip,
         bool kesildi)
     {
@@ -156,6 +243,11 @@ internal static class Aktar
         }
 
         string kuyruk = kesildi ? " · iptal edildi" : string.Empty;
+        if (atlanan.Count > 0)
+        {
+            kuyruk = $" · {atlanan.Count} atlandı" + kuyruk;
+        }
+
         baglam.Bildir(olmayan.Count == 0
             ? $"{olan.Count} öğe {is_}.{kuyruk}"
             : $"{olan.Count} {is_} · {olmayan.Count} olmadı{kuyruk}");

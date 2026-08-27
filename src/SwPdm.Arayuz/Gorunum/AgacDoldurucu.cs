@@ -5,9 +5,6 @@ using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
-/// <summary>Agacin acik dallari ve secili ogesi. Yeniden kurulurken geri yuklenir.</summary>
-internal sealed record AgacDurumu(IReadOnlyList<string> AcikYollar, string? SeciliYol);
-
 /// <summary>
 /// Agaci doldurur. Diski KENDISI okumaz - <see cref="KlasorTarayici"/>'ya sorar.
 ///
@@ -29,6 +26,7 @@ internal sealed class AgacDoldurucu
     private readonly SecimliAgac _agac;
     private readonly Dictionary<TreeNode, KlasorIcerigi> _taranan = [];
     private DosyaTuru? _turSuzgeci;
+    private Siralama _siralama = Siralama.Varsayilan;
     private string? _aramaMetni;
     private AramaSonucu? _aramaSonucu;
     private AgacDurumu? _gezinmeDurumu;
@@ -47,6 +45,29 @@ internal sealed class AgacDoldurucu
 
     /// <summary>Agac su an arama sonucu mu gosteriyor.</summary>
     internal bool AramaKipinde => _aramaSonucu is not null;
+
+    /// <summary>
+    /// Agacin sirasi. Degisince agac YENIDEN KURULMUYOR: yalnizca taranmis
+    /// dallar diskten tazeleniyor ve acik dallar korunuyor.
+    /// </summary>
+    internal Siralama Siralama
+    {
+        get => _siralama;
+        set
+        {
+            if (_siralama == value)
+            {
+                return;
+            }
+
+            _siralama = value;
+
+            if (Kok is not null)
+            {
+                Yenile();
+            }
+        }
+    }
 
     /// <summary>null = butun turler.</summary>
     internal DosyaTuru? TurSuzgeci
@@ -86,7 +107,7 @@ internal sealed class AgacDoldurucu
         // yazip ekranda hicbir sey secili gostermezdi (CLAUDE.md 3).
         _agac.SecimiTemizle();
 
-        KlasorIcerigi icerik = KlasorTarayici.Tara(yol);
+        KlasorIcerigi icerik = KlasorTarayici.Tara(yol, _siralama);
 
         _agac.BeginUpdate();
         _agac.Nodes.Clear();
@@ -105,7 +126,7 @@ internal sealed class AgacDoldurucu
 
         if (geriYuklenecek is not null)
         {
-            DurumuGeriYukle(geriYuklenecek);
+            AgacDurumlari.GeriYukle(_agac, geriYuklenecek);
         }
 
         if (icerik.Hata is not null)
@@ -127,7 +148,7 @@ internal sealed class AgacDoldurucu
             return;
         }
 
-        AgacDurumu durum = DurumuAl();
+        AgacDurumu durum = AgacDurumlari.Al(_agac);
         KokuAc(Kok, durum);
     }
 
@@ -150,7 +171,7 @@ internal sealed class AgacDoldurucu
     {
         // Arama kipine ILK geciste gezinme durumu saklanir; aramadan cikinca
         // kullanici actigi dallari acik bulur.
-        _gezinmeDurumu ??= DurumuAl();
+        _gezinmeDurumu ??= AgacDurumlari.Al(_agac);
 
         _aramaMetni = metin;
         _aramaSonucu = sonuc;
@@ -225,7 +246,7 @@ internal sealed class AgacDoldurucu
     /// </summary>
     internal void YoluSec(string yol)
     {
-        TreeNode? dugum = DuguuBul(yol);
+        TreeNode? dugum = AgacDurumlari.DuguuBul(_agac, yol);
         if (dugum is null)
         {
             return;
@@ -261,91 +282,6 @@ internal sealed class AgacDoldurucu
     /// <summary>Dugume bagli cekirdek nesnesi; yoksa null.</summary>
     internal static object? Etiket(TreeNode? dugum)
         => ReferenceEquals(dugum?.Tag, HenuzTaranmadi) ? null : dugum?.Tag;
-
-    // ------------------------------------------------------------- durum
-
-    /// <summary>Acik dallari ve secili ogeyi yakalar.</summary>
-    internal AgacDurumu DurumuAl()
-    {
-        var acik = new List<string>();
-        Topla(_agac.Nodes, acik);
-
-        string? secili = Etiket(_agac.SelectedNode) switch
-        {
-            DosyaOgesi dosya => dosya.Yol,
-            KlasorOgesi klasor => klasor.Yol,
-            _ => null,
-        };
-
-        // Kisa yollar once: ust dal acilmadan alt dal acilamaz.
-        acik.Sort(static (a, b) => a.Length.CompareTo(b.Length));
-        return new AgacDurumu(acik, secili);
-
-        static void Topla(TreeNodeCollection dugumler, List<string> acik)
-        {
-            foreach (TreeNode dugum in dugumler)
-            {
-                if (dugum.IsExpanded && dugum.Tag is KlasorOgesi klasor)
-                {
-                    acik.Add(klasor.Yol);
-                }
-
-                Topla(dugum.Nodes, acik);
-            }
-        }
-    }
-
-    private void DurumuGeriYukle(AgacDurumu durum)
-    {
-        _agac.BeginUpdate();
-        foreach (string yol in durum.AcikYollar)
-        {
-            DuguuBul(yol)?.Expand();   // Expand -> BeforeExpand -> tembel tarama
-        }
-
-        if (durum.SeciliYol is not null)
-        {
-            TreeNode? secili = DuguuBul(durum.SeciliYol);
-            if (secili is not null)
-            {
-                _agac.YalnizSec(secili);
-                secili.EnsureVisible();
-            }
-        }
-
-        _agac.EndUpdate();
-    }
-
-    private TreeNode? DuguuBul(string yol)
-    {
-        return Ara(_agac.Nodes);
-
-        TreeNode? Ara(TreeNodeCollection dugumler)
-        {
-            foreach (TreeNode dugum in dugumler)
-            {
-                string? dugumYolu = Etiket(dugum) switch
-                {
-                    DosyaOgesi dosya => dosya.Yol,
-                    KlasorOgesi klasor => klasor.Yol,
-                    _ => null,
-                };
-
-                if (string.Equals(dugumYolu, yol, StringComparison.OrdinalIgnoreCase))
-                {
-                    return dugum;
-                }
-
-                TreeNode? derin = Ara(dugum.Nodes);
-                if (derin is not null)
-                {
-                    return derin;
-                }
-            }
-
-            return null;
-        }
-    }
 
     // ------------------------------------------------------------- suzgec
 
@@ -415,7 +351,7 @@ internal sealed class AgacDoldurucu
         // yoktur ve secim BOS kalir - eski bir dugume yapisik kalmaz.
         if (seciliyken is not null)
         {
-            TreeNode? geri = DuguuBul(seciliyken);
+            TreeNode? geri = AgacDurumlari.DuguuBul(_agac, seciliyken);
             if (geri is not null)
             {
                 _agac.YalnizSec(geri);
@@ -450,7 +386,7 @@ internal sealed class AgacDoldurucu
 
         _agac.BeginUpdate();
         dugum.Nodes.Clear();
-        KlasorIcerigi icerik = KlasorTarayici.Tara(klasor.Yol);
+        KlasorIcerigi icerik = KlasorTarayici.Tara(klasor.Yol, _siralama);
         DaliDoldur(dugum, icerik);
         _agac.EndUpdate();
 

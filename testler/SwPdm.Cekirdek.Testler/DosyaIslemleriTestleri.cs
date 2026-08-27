@@ -289,6 +289,105 @@ public class DosyaIslemleriTestleri : IDisposable
             DosyaIslemleri.Kopyala(Yol("ust"), Yol("ust", "alt")).Sonuc);
     }
 
+    // ----------------------------------------------------------- cakisma
+
+    [Fact]
+    public void Cakisma_ATLA_HICBIRINE_DOKUNMAZ()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "kaynak");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "hedefteki");
+
+        IslemRaporu rapor = DosyaIslemleri.Tasi(Yol("p.SLDPRT"), Yol("hedef"), Cakisma.Atla);
+
+        Assert.Equal(IslemSonucu.Atlandi, rapor.Sonuc);
+        Assert.Equal("kaynak", File.ReadAllText(Yol("p.SLDPRT")));
+        Assert.Equal("hedefteki", File.ReadAllText(Yol("hedef", "p.SLDPRT")));
+    }
+
+    [Fact]
+    public void Cakisma_IKISINI_DE_TUT_NUMARALAR()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "kaynak");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "hedefteki");
+
+        IslemRaporu rapor = DosyaIslemleri.Tasi(
+            Yol("p.SLDPRT"), Yol("hedef"), Cakisma.IkisiniDeTut);
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("hedefteki", File.ReadAllText(Yol("hedef", "p.SLDPRT")));
+        Assert.Equal("kaynak", File.ReadAllText(Yol("hedef", "p (2).SLDPRT")));
+    }
+
+    [Fact]
+    public void Cakisma_DEGISTIR_ESKISINI_ONCE_KURTARIR()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "yeni");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "eski");
+
+        string? kurtarilan = null;
+        IslemRaporu rapor = DosyaIslemleri.Tasi(
+            Yol("p.SLDPRT"), Yol("hedef"), Cakisma.Degistir,
+            eskisi =>
+            {
+                kurtarilan = File.ReadAllText(eskisi);
+                File.Delete(eskisi);   // gercekte cope tasinir
+                return true;
+            });
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("eski", kurtarilan);                                 // kurtarildi
+        Assert.Equal("yeni", File.ReadAllText(Yol("hedef", "p.SLDPRT"))); // degisti
+    }
+
+    [Fact]
+    public void Cakisma_DEGISTIR_KURTARMA_TUTMAZSA_ISLEM_YAPILMAZ()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "yeni");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "eski");
+
+        IslemRaporu rapor = DosyaIslemleri.Tasi(
+            Yol("p.SLDPRT"), Yol("hedef"), Cakisma.Degistir, _ => false);
+
+        // Kurtarma tutmadiysa USTUNE YAZILMAZ - CLAUDE.md 1a.
+        Assert.False(rapor.Oldu);
+        Assert.Equal("eski", File.ReadAllText(Yol("hedef", "p.SLDPRT")));
+        Assert.Equal("yeni", File.ReadAllText(Yol("p.SLDPRT")));
+    }
+
+    [Fact]
+    public void Cakisma_DEGISTIR_KLASORDE_GECERSIZ()
+    {
+        Directory.CreateDirectory(Yol("hedef", "montaj"));
+        Directory.CreateDirectory(Yol("montaj"));
+        File.WriteAllText(Yol("hedef", "montaj", "onemli.SLDPRT"), "kaybolmamali");
+
+        IslemRaporu rapor = DosyaIslemleri.Tasi(
+            Yol("montaj"), Yol("hedef"), Cakisma.Degistir, _ => true);
+
+        // Klasoru "degistirmek" icini silmek demektir; yasak.
+        Assert.Equal(IslemSonucu.ZatenVar, rapor.Sonuc);
+        Assert.Equal("kaybolmamali", File.ReadAllText(Yol("hedef", "montaj", "onemli.SLDPRT")));
+    }
+
+    [Fact]
+    public void Cakisma_Kopyalamada_da_GECERLI()
+    {
+        Directory.CreateDirectory(Yol("hedef"));
+        File.WriteAllText(Yol("p.SLDPRT"), "kaynak");
+        File.WriteAllText(Yol("hedef", "p.SLDPRT"), "hedefteki");
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(
+            Yol("p.SLDPRT"), Yol("hedef"), Cakisma.IkisiniDeTut);
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("kaynak", File.ReadAllText(Yol("p.SLDPRT")));          // kaynak duruyor
+        Assert.Equal("kaynak", File.ReadAllText(Yol("hedef", "p (2).SLDPRT")));
+    }
+
     [Fact]
     public void KendiAltindaMi_KomsuKlasoruALTI_SAYMAZ()
     {

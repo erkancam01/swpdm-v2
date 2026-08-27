@@ -39,7 +39,14 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
             Sec(_dugmeler[0]);
         }
 
+        // Siralama secicisi de bu seritte: ikisi de "agac neyi nasil
+        // gosteriyor" sorusunun cevabi, yan yana dursunlar.
+        SiralamaSecici = new SiralamaSecici { Margin = new Padding(16, 1, 0, 0) };
+        Controls.Add(SiralamaSecici);
     }
+
+    /// <summary>Seritteki siralama secicisi.</summary>
+    internal SiralamaSecici SiralamaSecici { get; }
 
     /// <summary>Secim degistiginde tetiklenir. null = butun turler.</summary>
     internal event EventHandler<DosyaTuru?>? SecimDegisti;

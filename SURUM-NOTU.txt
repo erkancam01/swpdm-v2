@@ -1,5 +1,91 @@
 BU SURUMDE YENI - ISTEDIGIN DORT SEY
 
+  1. OTOMATIK TAZELEME - F5'e basmaya gerek yok
+     Diskte bir sey degisince agac kendiliginden tazeleniyor. Acik dallar ve
+     secim KORUNUYOR; durum cubugunda "Diskte degisiklik goruldu" yaziyor ki
+     agacin neden oynadigi belli olsun.
+     GECIKMELI: tek bir kopyalama onlarca olay uretiyor: son olaydan 0,9
+     saniye sonra TEK tazeleme yapiliyor, yoksa agac titrer ve ag surucusu
+     bogulur.
+     KENDI ISLEMIMIZ SAYILMIYOR. Tasima/kopyalama/silmeden sonra durum
+     cubugunda "2 oge kopyalandi" yazisi kaliyor - onun uzerine "diskte
+     degisiklik goruldu" YAZILMIYOR. (Bu ilk denemede bozuktu: 0,9 saniye
+     yetmedi, olaylar isten sonra geliyordu. Sure 2 saniyeye cikarildi VE
+     bekleyen olaylar artik sessizce tazeleniyor.)
+     KAPATILABILIR: Ayarlar sekmesinden. Kapaliyken F5 elde.
+     COP KLASORU IZLENMIYOR - her silme orada dosya olusturuyor, izlenseydi
+     sonsuz tazeleme dongusu olurdu.
+     DURUST NOT: Windows'un dosya izleyicisi AG SURUCUSUNDE olay
+     KACIRABILIYOR ve tamponu tasabiliyor. Kacirirsa sessiz kalmiyor:
+     "Otomatik tazeleme kesintiye ugradi - F5 ile elle yenileyin" yaziyor.
+     Bunu burada olcemedim; ag surucusu yok. Sende nasil davrandigini gormek
+     isterim.
+
+  2. KLASOR BOYUTU - "kac GB" sorusunun cevabi
+     Sag tik menusunde "Boyut hesapla" ve Ctrl+Shift+B.
+     Sonuc: "7,6 MB · 2 dosya · 1 klasor". Klasorun KENDISI sayilmiyor,
+     icindekiler sayiliyor.
+     ISTEK UZERINE, kendiliginden DEGIL: bir klasorun boyutu ancak icindeki
+     her sey gezilerek bulunur ve ag surucusunde bu dakikalar surebilir. Her
+     klasore tiklandiginda hesaplamak uygulamayi kullanilmaz yapardi.
+     ARKA PLANDA kosuyor, ILERLEME cubugu gercek sayilari gosteriyor ve
+     IPTAL edilebiliyor.
+     EKSIK SONUC SAKLANMIYOR: iptal edilirse "(YARIM - hesaplama
+     durduruldu)", okunamayan klasor varsa "(EKSIK - 3 klasor okunamadi)"
+     yaziyor. Yarim bir sayiyi tam gibi gostermek yanlis karar verdirir.
+
+  3. SIRALAMA - suzgec seridinin sagindaki dugme
+     Uzerinde su anki sira yaziyor: "Ad ↑". Tiklayinca dort olcut cikiyor:
+     Ad · Tur · Boyut · Tarih. Ayni olcute yeniden basmak YONU cevirir.
+     KISAYOL: Ctrl+Shift+S. Tek tusla sekiz halin hepsi geziliyor
+     (dort olcut x iki yon), basa doner.
+     KALICI: secim ayarlarda saklaniyor, her aciliste yeniden secmiyorsun.
+     KLASORLER HER ZAMAN ONCE - olcut ne olursa olsun. Gezgin de boyle;
+     klasorler gezinme, dosyalar icerik.
+     Boyut/Tarih secilince KLASORLER ADA GORE kaliyor: bir klasorun boyutu
+     taranmadan BILINMIYOR, uydurma bir siraya sokmak yalan olurdu. (Boyutu
+     ogrenmek icin madde 2.)
+
+  4. AD CAKISMASINDA ARTIK SECENEK VAR
+     Onceden tek davranis vardi: islem yapilmaz, "zaten var" denirdi.
+     Guvenliydi ama 50 dosya yapistirirken cakisan 3'u icin karar hakki
+     yoktu.
+     Simdi bir pencere cikiyor ve IKI DOSYAYI DA gosteriyor - boyut ve
+     degistirme tarihiyle. "Hangisi yeni" sorusunu senin yerine tahmin
+     etmiyorum.
+       - Ikisini de tut : yeni gelen "(2)" ekiyle konur (VARSAYILAN)
+       - Atla           : oge oldugu yerde kalir
+       - Degistir       : hedeftekI dosya ONCE COP KUTUSUNA tasinir, sonra
+                          yenisi konur. Cope tasima tutmazsa islem YAPILMAZ.
+       - Vazgec         : kalan her sey durur
+     "Kalan butun cakismalara da uygula" kutusu isaretlenirse ayni karar
+     kalanlara sorulmadan uygulanir.
+     KLASOR DEGISTIRILMEZ. Bir klasoru "degistirmek" icini silmek demektir
+     ve birlestirme kurallari sinsi: gormedigin alt dosyalar yok olur.
+     Klasorde yalnizca "Ikisini de tut" ve "Atla" var.
+     Varsayilan dugme en GUVENLI olan; "Degistir" kirmizi ve varsayilan
+     degil - elin kaysa dosya kaybettirirdi.
+
+  OLCULDU - Wine'da gercek klavye/fareyle:
+    disaridan klasor olusturuldu -> agac 4 saniye icinde kendiliginden
+      tazelendi, "Diskte degisiklik goruldu" yazdi
+    8 MB'lik klasorde Ctrl+Shift+B -> "7,6 MB · 2 dosya"
+    Ctrl+Shift+S bir kez -> agac ters dondu; sekiz kez -> basa dondu
+    ayni adli iki dosya yapistirildi -> kutu acildi, boyutlar (100 B / 500 B)
+      dogru, "Ikisini de tut" -> "kucuk (2).SLDPRT"
+    "kalan butun cakismalara da uygula" isaretli -> ikinci dosya SORULMADI,
+      ikisi de "(2)" ile kondu, durum cubugunda "2 oge kopyalandi"
+
+  BURADA OLCULEMEYEN
+    - Siralama MENUSU (dugmeye tiklayinca acilan liste) Wine'da uygulamayi
+      cokertiyor - sag tik menusuyle ayni sebep, Wine'in tasimadigi bir DPI
+      cagrisi. Gercek Windows'ta boyle bir sorun yok. Ayni kodu cagiran
+      Ctrl+Shift+S burada olculdu ve calisti; menunun KENDISI sende
+      calismazsa haber ver.
+    - Ag surucusunde otomatik tazeleme (yukarida yaziyor).
+
+ONCEKI SURUMDE YENIYDI - DORT SEY
+
   1. KLASOR YOLU ARTIK HATIRLANIYOR
      Uygulama actiginizda EN SON calistiginiz klasoru kendiliginden aciyor.
      Klasor dugmesinin yanindaki ok, son 10 klasoru listeliyor - bunlar da
@@ -75,7 +161,9 @@ ONCEKI SURUMDEN
     Ctrl+Z -> kopyalar cop kutusuna gitti
     30 dosya x 6 MB kopyalanirken: "15 / 30" + dolan cubuk + Iptal dugmesi
     30 dosyayi kendi klasorune yapistirma -> 30 cogaltma, adlari "(2)"
-  Geri alma icin KAPI eklendi (kapi artik 8 sey olcuyor).
+  Geri alma icin KAPI eklendi. Kapi artik DOKUZ sey olcuyor;
+  dokuzuncusu bu surumde geldi: Ctrl+Shift+S siralamayi gercekten
+  degistiriyor mu.
 
 BU SURUMDE DEGISEN - Ctrl+A ARTIK TEK KLASORU KAPSIYOR
 

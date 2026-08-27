@@ -31,6 +31,7 @@ internal sealed partial class AnaForm : Form
     private readonly AgacMenusu _menu;
     private readonly SurukleBirak _surukleBirak;
     private readonly IlerlemeYuzeyi _ilerleme;
+    private readonly DiskIzleyici _izleyici;
     private readonly Ayarlar _ayarlar = Ayarlar.Oku();
     private AyarlarSayfasi? _ayarlarSayfasi;
     private readonly Gorunum.Onizleme _onizleme;
@@ -46,6 +47,21 @@ internal sealed partial class AnaForm : Form
         _doldurucu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _agac.SecimDegisti += (_, _) => SecimiGoster();
         _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
+
+        // --- siralama: secim KALICI
+        _suzgecler.SiralamaSecici.Kur(_ayarlar.Siralama);
+        _doldurucu.Siralama = _ayarlar.Siralama;
+        _suzgecler.SiralamaSecici.Degisti += (_, sira) =>
+        {
+            _doldurucu.Siralama = sira;
+            _ayarlar.Siralama = sira;
+            _ayarlar.Yaz();
+        };
+
+        // --- otomatik tazeleme
+        _izleyici = new DiskIzleyici(this);
+        _izleyici.Degisti += (_, sessiz) => DisaridanDegisti(sessiz);
+        _izleyici.Sorun += (_, cumle) => _durum.Bilgi(cumle);
 
         // --- dosya acma (cift tiklama)
         _agac.NodeMouseDoubleClick += (_, e) =>
@@ -125,6 +141,14 @@ internal sealed partial class AnaForm : Form
                 return;
             }
 
+            // Siralama kisayolu: karari SiralamaSecici veriyor, burada
+            // yalnizca tus iletiliyor (CLAUDE.md 1b).
+            if (_suzgecler.SiralamaSecici.TusaBasildi(e.KeyData))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // Kisayollar islem listesinden geliyor; menudeki yazi ile calisan
             // tus AYRISAMAZ (CLAUDE.md 1b).
             if (_agac.Focused && _menu.TusaBasildi(e.KeyData))
@@ -174,6 +198,7 @@ internal sealed partial class AnaForm : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        _izleyici.Dispose();
         _arama.Dispose();
         _onizleme.Dispose();
         base.OnFormClosed(e);
@@ -191,6 +216,7 @@ internal sealed partial class AnaForm : Form
 
         _onizleme.Temizle();
         _durum.KokAcildi();
+        _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
         _kokSecici.GecmiseEkle(yol);
 
         // Kok HATIRLANIR: bir dahaki acilista dosya yolunu yeniden gostermeye
@@ -243,11 +269,29 @@ internal sealed partial class AnaForm : Form
     }
 
     /// <summary>
+    /// Diskte BASKASI bir sey degistirdi. Agac tazelenir ama secim ve acik
+    /// dallar korunur - kullanicinin yeri kaybolmaz.
+    /// </summary>
+    private void DisaridanDegisti(bool sessiz)
+    {
+        _doldurucu.Yenile();
+        CopDugmesiniTazele();
+
+        if (!sessiz)
+        {
+            _durum.Bilgi("Diskte değişiklik görüldü — ağaç tazelendi.");
+        }
+    }
+
+    /// <summary>
     /// Bir dosya islemi bitti: agaci diskten tazeler, acik dallari korur.
     /// <paramref name="secilecekYol"/> verilirse orasi secili gelir.
     /// </summary>
     private void AgaciTazele(string? secilecekYol)
     {
+        // Kendi islemimiz: izleyici susturuluyor, yoksa iki tazeleme
+        // carpisir ve "yeni klasoru sec" davranisi kaybolur.
+        _izleyici.Sustur(true);
         _doldurucu.Yenile();
         CopDugmesiniTazele();
         GeriAlDugmesiniTazele();
@@ -258,6 +302,7 @@ internal sealed partial class AnaForm : Form
         }
 
         SecimiGoster();
+        _izleyici.Sustur(false);
     }
 
     /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>
@@ -336,7 +381,11 @@ internal sealed partial class AnaForm : Form
     private Control AyarlarSayfasiKur()
     {
         var sayfa = new AyarlarSayfasi(_ayarlar, () => _doldurucu?.Kok);
-        sayfa.Degisti += (_, _) => CopDugmesiniTazele();
+        sayfa.Degisti += (_, _) =>
+        {
+            CopDugmesiniTazele();
+            _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
+        };
         _ayarlarSayfasi = sayfa;
         return sayfa;
     }

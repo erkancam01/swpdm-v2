@@ -30,8 +30,8 @@
 # olcum yolu bu. CLAUDE.md 9: depoda ve CI'da olmayan denetim, denetim
 # degildir.
 #
-# DONUS: 0 = pencere acildi, hata yok, coklu secim / Ctrl+A kapsami / tur
-# suzgeci calisiyor.
+# DONUS: 0 = pencere acildi, hata yok, coklu secim / Ctrl+A kapsami /
+# siralama / tur suzgeci / geri alma calisiyor.
 
 set -uo pipefail
 
@@ -254,39 +254,67 @@ secili_satir_say() {
 # Kirpma AGACIN ICINDE kalmali: altta bolen cizgisi ve "Onizleme ve
 # Referanslar" basligi var, onlar da bant sayilir ve sayiyi sisirir.
 # (Olculdu: 250 px yukseklik agac alaninin icinde kaliyor.)
+#
+# BANT EN AZ 3 PIKSEL OLMALI - ve bu sart OLCULEREK eklendi (27.08.2026).
+# TreeView'in NOKTALI baglanti cizgileri iki pikselde bir nokta koyuyor;
+# aradaki bosluk 1'den buyuk oldugu icin her nokta AYRI BANT sayiliyordu ve
+# ayni agac 12 yerine 17 satir gorunuyordu. Hata o zamana kadar gorunmedi
+# cunku olcum hep Ctrl+A'dan SONRA aliniyordu: secim boyasi noktali
+# cizgileri ortuyordu. Yani sayi dogru degildi, sadece dogru gorunuyordu.
+# Metin satirlari ~9 piksel; noktalar 1 piksel - esik ikisini ayiriyor.
 agac_satir_say() {
   convert "$1" -crop "560x250+$(( $2 + 5 ))+$(( $3 + AGAC_ILK_SATIR - 7 ))" +repage txt:- 2>/dev/null \
     | grep -v '#FFFFFF' | grep -o '^[0-9]*,[0-9]*:' \
     | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
-    | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
+    | awk 'NR==1{bas=$1; onceki=$1; next}
+           {if ($1-onceki>1) {if (onceki-bas>=3) bant++; bas=$1} onceki=$1}
+           END{if (NR>0 && onceki-bas>=3) bant++; print bant+0}'
+}
+
+# DOSYA SATIRLARININ PARMAK IZI. Siralama satir SAYISINI degistirmiyor,
+# SIRASINI degistiriyor; sayan bir olcum bunu goremez. Ayni kirpmanin ozeti
+# aliniyor: sira degisirse ozet degisir, degismezse aynen kalir.
+#
+# NEDEN YALNIZCA DOSYALAR: butun agac kirpilinca kapi DUYARSIZ kaliyordu ve
+# bu OLCULDU - dosya karsilastiricisi bilerek bozulup kapi kosuldu, kapi
+# "TEMIZ" dedi. Sebep: klasorler ayri bir yoldan siralaniyor ve onlar hala
+# ters donuyordu, yani iz yine degisiyordu. Kirpma dosya satirlarina
+# indirilince ayni bozuk yapi YAKALANDI.
+# Ornek klasorde kok + 5 klasor var, dosyalar 7. satirdan basliyor.
+ILK_DOSYA_SATIRI=6           # kok + 5 klasor
+DOSYA_SATIR_SAYISI=6
+agac_izi() {
+  convert "$1" -crop \
+      "560x$(( DOSYA_SATIR_SAYISI * AGAC_SATIR_YUKSEKLIGI + 6 ))+$(( $2 + 5 ))+$(( $3 + AGAC_ILK_SATIR + ILK_DOSYA_SATIRI * AGAC_SATIR_YUKSEKLIGI - 7 ))" \
+      +repage -depth 8 rgb:- 2>/dev/null | md5sum | cut -d' ' -f1
 }
 
 SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/8] surec ayakta ............ EVET"
+  echo "   [1/9] surec ayakta ............ EVET"
 else
-  echo "   [1/8] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/9] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/8] hata akisi temiz ........ HAYIR"
+  echo "   [2/9] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/8] hata akisi temiz ........ EVET"
+  echo "   [2/9] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/8] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/9] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/8] cokme penceresi yok ..... EVET"
+  echo "   [3/9] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -308,9 +336,9 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/8] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/9] ana pencere dogdu ....... EVET ($ANA)"
 else
-  echo "   [4/8] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/9] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -335,13 +363,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/8] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/9] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/8] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/9] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/8] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/9] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -367,24 +395,71 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/8] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    echo "   [6/9] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/8] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    echo "   [6/9] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/8] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  echo "   [6/9] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
-# 7) tur suzgeci: "Parca" dugmesine tiklaninca agac gercekten suzuluyor mu
+# 7) SIRALAMA: Ctrl+Shift+S sirayi gercekten degistiriyor mu
+#
+# NEDEN VAR: siralama menusu bir ContextMenuStrip ve Wine'da ToolStrip acmak
+# uygulamayi COKERTIYOR (CLAUDE.md 11) - yani menu burada OLCULEMEZ. Ayni
+# kodu cagiran kisayol olculuyor.
+#
+# Olcum SAYIYLA yapilamaz: siralama satir sayisini degistirmez, SIRASINI
+# degistirir. Onun icin agac alaninin parmak izi aliniyor:
+#   Ad artan -> bir kez bas (Ad azalan): iz DEGISMELI
+#   yedi kez daha bas (dort olcut x iki yon = sekiz hal, basa doner):
+#   iz ILK IZE ESIT olmali.
+# Ikinci kosul onemli: yalnizca "degisti" demek, dugmenin etiketi degistigi
+# icin de saglanabilirdi - donguyu kapatmak siranin GERCEKTEN uygulandigini
+# gosterir.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # Ctrl+A'nin coklu secimi kalkmali: tek tik yalnizca koku secer, yoksa
+  # secim vurgusu izi kirletir.
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" \
+                    "$(( PENCERE_Y + AGAC_ILK_SATIR ))" click 1 > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/sira0.png" > /dev/null 2>&1
+  IZ_BAS="$(agac_izi "$CALISMA/sira0.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+s > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/sira1.png" > /dev/null 2>&1
+  IZ_TERS="$(agac_izi "$CALISMA/sira1.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  for _ in 1 2 3 4 5 6 7; do
+    xdotool key --clearmodifiers ctrl+shift+s > /dev/null 2>&1
+    sleep 1
+  done
+  sleep 1
+  import -window root "$CALISMA/sira8.png" > /dev/null 2>&1
+  IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
+    echo "   [7/9] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+  else
+    echo "   [7/9] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    SORUN=1
+  fi
+else
+  echo "   [7/9] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 8) tur suzgeci: "Parca" dugmesine tiklaninca agac gercekten suzuluyor mu
 #
 # NEDEN VAR: bu kapinin olmadigi bir turda suzgec dugmesinin Click baglantisi
 # SILINDI ve kimse gormeden pakete girdi; Erkan bildirdi. Dugmeler ciziliyor,
 # odagi aliyor, uzerine gelince renk degistiriyor - ama hicbir sey yapmiyordu.
 # Derleme de testler de TEMIZ diyordu (CLAUDE.md 9).
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  ONCE="$(agac_satir_say "$CALISMA/ctrla.png" "$PENCERE_X" "$PENCERE_Y")"
+  ONCE="$(agac_satir_say "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   xdotool mousemove "$(( PENCERE_X + SUZGEC_PARCA_X ))" \
                     "$(( PENCERE_Y + SUZGEC_Y ))" > /dev/null 2>&1
@@ -396,17 +471,17 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [7/8] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    echo "   [8/9] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [7/8] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    echo "   [8/9] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [7/8] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  echo "   [8/9] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
-# 8) GERI AL: yeni klasor acilir, Ctrl+Z ile geri alinir
+# 9) GERI AL: yeni klasor acilir, Ctrl+Z ile geri alinir
 #
 # NEDEN VAR: geri alma DOSYA SILIYOR. Sessizce bozulursa kullanici "geri
 # aldim" sanip devam eder. Olcum: Ctrl+Shift+N agaca bir satir EKLER,
@@ -428,13 +503,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [8/8] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/9] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [8/8] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/9] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [8/8] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  echo "   [9/9] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

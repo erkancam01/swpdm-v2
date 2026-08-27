@@ -84,6 +84,16 @@ internal interface IIlerlemeYuzeyi
 
     /// <summary>Is bitti; verilen is ARAYUZ parcaciginda kosar.</summary>
     void Bitti(Action arayuzdeCalistir);
+
+    /// <summary>
+    /// Verilen isi ARAYUZ parcaciginda kosturur (is bitirmeden). Arka
+    /// plandan pencere acmak icin - oradan dogrudan acmak coker.
+    /// </summary>
+    /// <returns>
+    /// Is kuyruga girdiyse true. false donerse pencere kapanmistir ve
+    /// cagiran CEVAP BEKLEMEMELIDIR (CLAUDE.md 3).
+    /// </returns>
+    bool Arayuzde(Action is_);
 }
 
 /// <summary>

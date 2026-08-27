@@ -30,6 +30,9 @@ public enum IslemSonucu
     /// <summary>Hedef, kaynagin kendi altinda.</summary>
     KendiAltina,
 
+    /// <summary>Kullanici bu ogeyi atlamayi secti. Hata DEGIL.</summary>
+    Atlandi,
+
     /// <summary>Ayirt edilemedi; sebep metni yine de verilir.</summary>
     Bilinmeyen,
 }
@@ -175,7 +178,11 @@ public static class DosyaIslemleri
     /// geciyor. Kirilan yalnizca DISARIDAN verilen referanslar. Bu yuzden
     /// Directory.Move mesru bir hizli yol.
     /// </summary>
-    public static IslemRaporu Tasi(string kaynak, string hedefKlasor)
+    public static IslemRaporu Tasi(
+        string kaynak,
+        string hedefKlasor,
+        Cakisma cakisma = Cakisma.Sor,
+        Func<string, bool>? eskisiniKurtar = null)
     {
         bool klasorMu = Directory.Exists(kaynak);
         if (!klasorMu && !File.Exists(kaynak))
@@ -204,10 +211,11 @@ public static class DosyaIslemleri
                 $"\"{ad}\" kendi içine taşınamaz.");
         }
 
-        string hedef = WindowsYolu.Birlestir(hedefKlasor, ad);
-        if (Var(hedef))
+        IslemRaporu? karar = CakismayiCoz(
+            hedefKlasor, ad, klasorMu, cakisma, eskisiniKurtar, out string hedef);
+        if (karar is not null)
         {
-            return new IslemRaporu(IslemSonucu.ZatenVar, null, $"Hedefte \"{ad}\" zaten var.");
+            return karar;
         }
 
         try
@@ -242,7 +250,11 @@ public static class DosyaIslemleri
     /// cakisiyorsa USTUNE YAZILMAZ - islem yapilmaz ve sebebi soylenir,
     /// cunku oradaki dosya baska bir dosyadir (CLAUDE.md 3).
     /// </summary>
-    public static IslemRaporu Kopyala(string kaynak, string hedefKlasor)
+    public static IslemRaporu Kopyala(
+        string kaynak,
+        string hedefKlasor,
+        Cakisma cakisma = Cakisma.Sor,
+        Func<string, bool>? eskisiniKurtar = null)
     {
         bool klasorMu = Directory.Exists(kaynak);
         if (!klasorMu && !File.Exists(kaynak))
@@ -265,12 +277,15 @@ public static class DosyaIslemleri
                 IslemSonucu.KendiAltina, null, $"\"{ad}\" kendi içine kopyalanamaz.");
         }
 
-        string hedefAd = ayniKlasor ? BosAdBul(hedefKlasor, ad) : ad;
-        string hedef = WindowsYolu.Birlestir(hedefKlasor, hedefAd);
+        // AYNI klasore kopyalamak COGALTMADIR: ad zaten cakisacagi icin
+        // dogrudan numaralanir, kullaniciya sorulmaz.
+        Cakisma etkin = ayniKlasor ? Cakisma.IkisiniDeTut : cakisma;
 
-        if (Var(hedef))
+        IslemRaporu? karar = CakismayiCoz(
+            hedefKlasor, ad, klasorMu, etkin, eskisiniKurtar, out string hedef);
+        if (karar is not null)
         {
-            return new IslemRaporu(IslemSonucu.ZatenVar, null, $"Hedefte \"{ad}\" zaten var.");
+            return karar;
         }
 
         try
@@ -327,6 +342,63 @@ public static class DosyaIslemleri
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
             // Temizlik tutmazsa asil hatanin sebebini gizlemeyiz.
+        }
+    }
+
+    /// <summary>
+    /// Ad cakismasini karara baglar.
+    ///
+    /// Doner deger null ise islem SURECEK ve <paramref name="hedef"/> kullanilir.
+    /// Doner deger doluysa islem yapilmayacak; rapor cagirana gider.
+    /// </summary>
+    private static IslemRaporu? CakismayiCoz(
+        string hedefKlasor,
+        string ad,
+        bool klasorMu,
+        Cakisma cakisma,
+        Func<string, bool>? eskisiniKurtar,
+        out string hedef)
+    {
+        hedef = WindowsYolu.Birlestir(hedefKlasor, ad);
+
+        if (!Var(hedef))
+        {
+            return null;   // cakisma yok
+        }
+
+        switch (cakisma)
+        {
+            case Cakisma.Atla:
+                return new IslemRaporu(IslemSonucu.Atlandi, null, $"\"{ad}\" atlandı.");
+
+            case Cakisma.IkisiniDeTut:
+                hedef = WindowsYolu.Birlestir(hedefKlasor, BosAdBul(hedefKlasor, ad));
+                return null;
+
+            case Cakisma.Degistir:
+                // KLASOR DEGISTIRILMEZ. Bir klasoru "degistirmek" icini silmek
+                // demektir ve birlestirme kurallari sinsi: kullanicinin
+                // gormedigi alt dosyalar yok olur. Yalnizca dosyada mesru.
+                if (klasorMu)
+                {
+                    return new IslemRaporu(
+                        IslemSonucu.ZatenVar, null,
+                        $"\"{ad}\" bir klasör; klasörün üzerine yazılmaz.");
+                }
+
+                // Var olan dosya YOK EDILMEZ, once kurtarilir (cope tasinir).
+                // Kurtarma tutmazsa islem YAPILMAZ - CLAUDE.md 1a.
+                if (eskisiniKurtar is null || !eskisiniKurtar(hedef))
+                {
+                    return new IslemRaporu(
+                        IslemSonucu.ZatenVar, null,
+                        $"\"{ad}\" değiştirilemedi: eskisi çöp kutusuna alınamadı.");
+                }
+
+                return null;
+
+            default:
+                return new IslemRaporu(IslemSonucu.ZatenVar, null, $"Hedefte \"{ad}\" zaten var.");
         }
     }
 

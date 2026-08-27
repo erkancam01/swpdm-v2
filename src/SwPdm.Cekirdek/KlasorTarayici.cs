@@ -53,7 +53,7 @@ public sealed record AramaSonucu(
 public static class KlasorTarayici
 {
     /// <summary>Bir klasorun DOGRUDAN icerigini okur. Alt klasorlere INMEZ.</summary>
-    public static KlasorIcerigi Tara(string? klasorYolu)
+    public static KlasorIcerigi Tara(string? klasorYolu, Siralama? siralama = null)
     {
         if (string.IsNullOrWhiteSpace(klasorYolu))
         {
@@ -98,8 +98,10 @@ public static class KlasorTarayici
         }
 
         // Gezgin gibi: "1, 2, 33, 222" - "1, 2, 222, 33" degil.
-        klasorler.Sort(static (a, b) => DogalKarsilastirici.Ortak.Compare(a.Ad, b.Ad));
-        dosyalar.Sort(static (a, b) => DogalKarsilastirici.Ortak.Compare(a.Ad, b.Ad));
+        // Hangi olcute gore siralandigi Siralama'da, tek yerde.
+        Siralama sira = siralama ?? Siralama.Varsayilan;
+        sira.Uygula(klasorler);
+        sira.Uygula(dosyalar);
 
         return new KlasorIcerigi(klasorler, dosyalar, null);
     }

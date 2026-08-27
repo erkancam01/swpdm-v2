@@ -39,6 +39,15 @@ public sealed class Ayarlar
     /// </summary>
     public string? CopUstKlasoru { get; set; }
 
+    /// <summary>Agacin siralamasi.</summary>
+    public Siralama Siralama { get; set; } = Siralama.Varsayilan;
+
+    /// <summary>
+    /// Diskte degisiklik olunca agac kendiliginden tazelensin mi.
+    /// Varsayilan ACIK: ortak surucude calisirken gordugun sey gercek olmali.
+    /// </summary>
+    public bool OtomatikTazele { get; set; } = true;
+
     /// <summary>Diskten okur. Dosya yoksa bos ayarlar doner - hata degildir.</summary>
     public static Ayarlar Oku(string? dosya = null)
     {
@@ -85,6 +94,14 @@ public sealed class Ayarlar
                 case "copUstKlasoru":
                     ayarlar.CopUstKlasoru = deger;
                     break;
+
+                case "siralama":
+                    ayarlar.Siralama = Siralama.Coz(deger);
+                    break;
+
+                case "otomatikTazele":
+                    ayarlar.OtomatikTazele = deger != "hayir";
+                    break;
             }
         }
 
@@ -118,6 +135,9 @@ public sealed class Ayarlar
             {
                 satirlar.Add("copUstKlasoru=" + CopUstKlasoru);
             }
+
+            satirlar.Add("siralama=" + Siralama.Yaz());
+            satirlar.Add("otomatikTazele=" + (OtomatikTazele ? "evet" : "hayir"));
 
             File.WriteAllLines(yol, satirlar);
             return true;

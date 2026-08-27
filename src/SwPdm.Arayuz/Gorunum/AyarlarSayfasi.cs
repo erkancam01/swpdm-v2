@@ -18,6 +18,7 @@ internal sealed class AyarlarSayfasi : Panel
     private readonly Func<string?> _kok;
     private readonly Label _copYolu = new();
     private readonly Label _ayarDosyasi = new();
+    private readonly CheckBox _otomatikTazele = new();
 
     internal AyarlarSayfasi(Ayarlar ayarlar, Func<string?> kok)
     {
@@ -73,16 +74,47 @@ internal sealed class AyarlarSayfasi : Panel
         };
         varsayilan.Click += (_, _) => Varsayilana();
 
+        var tazeleBaslik = new Label
+        {
+            Text = "Otomatik tazeleme",
+            Font = new Font(Font, FontStyle.Bold),
+            AutoSize = true,
+            Location = new Point(14, 186),
+        };
+
+        _otomatikTazele.Text = "Diskte bir şey değişince ağacı kendiliğinden tazele";
+        _otomatikTazele.AutoSize = true;
+        _otomatikTazele.Location = new Point(14, 212);
+        _otomatikTazele.Checked = _ayarlar.OtomatikTazele;
+        _otomatikTazele.CheckedChanged += (_, _) =>
+        {
+            _ayarlar.OtomatikTazele = _otomatikTazele.Checked;
+            Kaydet();
+        };
+
+        var tazeleAciklama = new Label
+        {
+            Text = "Ortak sürücüde başkası bir klasör eklediğinde ya da sildiğinde\n"
+                 + "görürsünüz. Ağ sürücüsünde bazı değişiklikler kaçabilir; her\n"
+                 + "durumda F5 ile elle yenileyebilirsiniz.",
+            AutoSize = true,
+            ForeColor = Renkler.UstBilgiYazi,
+            Location = new Point(32, 234),
+        };
+
         _ayarDosyasi.Text = "Ayarlar: " + Ayarlar.Yolu;
         _ayarDosyasi.AutoSize = true;
         _ayarDosyasi.ForeColor = Renkler.UstBilgiYazi;
-        _ayarDosyasi.Location = new Point(14, 180);
+        _ayarDosyasi.Location = new Point(14, 302);
 
         Controls.Add(baslik);
         Controls.Add(aciklama);
         Controls.Add(_copYolu);
         Controls.Add(degistir);
         Controls.Add(varsayilan);
+        Controls.Add(tazeleBaslik);
+        Controls.Add(_otomatikTazele);
+        Controls.Add(tazeleAciklama);
         Controls.Add(_ayarDosyasi);
 
         Tazele();

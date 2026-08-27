@@ -584,6 +584,13 @@ değişmiyor.
 çalıştı**; yani menü öğelerinin çağırdığı kod doğru, ölçülemeyen yalnızca
 menünün kendisi.
 
+> **İKİNCİ KURBAN ÖLÇÜLDÜ (27.08.2026):** sıralama düğmesinin açılır listesi
+> de bir `ContextMenuStrip` ve Wine'da **aynı** yığın izini verip uygulamayı
+> indirdi. Yani bu, sağ tık menüsüne özgü değil: **her `ToolStripDropDown`.**
+> Sonuç bir kural oldu — *bir açılır menüye bağlanan her özellik, aynı kodu
+> çağıran bir **kısayol** da alır.* Kısayol hem kullanıcıya yarar hem de
+> özelliği ölçülebilir kılar; menüsüz kalan bir özellik burada **kör noktadır**.
+
 ### Wine'ın ÖLÇMEDİĞİ
 
 - **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.
@@ -630,6 +637,7 @@ dosyasında** duruyor:
 | arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
 | çoklu seçim (Ctrl · Shift · dikdörtgen) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
+| açık dalların ve seçimin korunması | `Arayuz/Gorunum/Agac/AgacDurumu.cs` |
 | sürükleyerek taşıma | `Arayuz/Gorunum/Agac/SurukleBirak.cs` |
 | sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
 | **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
@@ -639,7 +647,14 @@ dosyasında** duruyor:
 | çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
 | kes · kopyala · yapıştır (pano) | `Arayuz/Gorunum/Islemler/PanoIslemleri.cs` |
 | taşıma/kopyalama motoru + onay | `Arayuz/Gorunum/Islemler/TasiIslemi.cs` |
+| **ad çakışmasında ne olur** (çekirdek) | `Cekirdek/Cakisma.cs` + `DosyaIslemleri.cs` |
+| ad çakışması penceresi | `Arayuz/Gorunum/Islemler/CakismaKutusu.cs` |
 | geri alma (yığın + `Ctrl+Z`) | `Arayuz/Gorunum/Islemler/GeriAlIslemi.cs` |
+| **sıralama kuralı** (ölçüt, yön, klasörler önce) | `Cekirdek/Siralama.cs` |
+| sıralama düğmesi + `Ctrl+Shift+S` | `Arayuz/Gorunum/SiralamaSecici.cs` |
+| klasör boyutu hesabı (gezme, iptal) | `Cekirdek/KlasorBoyutu.cs` |
+| klasör boyutu işlemi (`Ctrl+Shift+B`) | `Arayuz/Gorunum/Islemler/BoyutHesaplaIslemi.cs` |
+| otomatik tazeleme (izleme, gecikme) | `Arayuz/Gorunum/DiskIzleyici.cs` |
 | alttaki ilerleme çubuğu | `Arayuz/Gorunum/IlerlemeYuzeyi.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
@@ -697,17 +712,50 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı sekiz şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı dokuz şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
-**`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **tür süzgeci gerçekten
-süzüyor mu** · **`Ctrl+Z` geri alıyor mu**. Ekran görüntüsünü
-`.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+**`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
+mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu**.
+Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
+
+> **Yedincisi neden var (sıralama):** sıralamanın kendi menüsü Wine'da
+> **çökertiyor** (yukarıdaki `ContextMenuStrip` maddesi), yani menü yoluyla
+> hiç ölçülemez. Aynı kodu çağıran `Ctrl+Shift+S` ölçülüyor. Ölçüm **sayıyla
+> olmuyor** — sıralama satır *sayısını* değil *sırasını* değiştirir; bu yüzden
+> **parmak izi** (aynı kırpmanın md5'i) alınıyor: bir basış → iz **değişmeli**;
+> yedi basış daha (dört ölçüt × iki yön = sekiz hâl, başa döner) → iz **ilk
+> izle aynı** olmalı. İkinci koşul şart: yalnızca "değişti" demek, düğmenin
+> *etiketi* değiştiği için de sağlanabilirdi.
+>
+> **İLK HÂLİ DUYARSIZDI — ve bunu ancak ölçüm gösterdi.** Kırpma bütün ağacı
+> kapsıyordu. `Siralama`'daki gerçek hata (aşağıda) bilerek geri konulup kapı
+> koşuldu: kapı **"TEMİZ" dedi.** Sebep, hatanın yalnızca *dosyaları*
+> etkilemesi; klasörler ayrı bir yoldan sıralanıyor ve onlar hâlâ ters
+> dönüyordu, yani iz yine değişiyordu. Kırpma **dosya satırlarına** indirilince
+> aynı bozuk yapı **YAKALANDI** → düzeltilince yine TEMİZ.
+> Ders §9'un kendisi: *bir kapı, yazıldığı anda inert olabilir ve hep "TEMİZ"
+> der; ancak bilerek bir ihlal konunca anlaşılır.*
+>
+> **Yakalanan gerçek hata:** `Siralama`'da *ad* ölçütünde karşılaştırma her
+> zaman `0` dönüyordu ve yön **hiç uygulanmıyordu** — düğmede `Ad ↓` yazıyor,
+> ağaç artan duruyordu. Hiçbir istisna yok, yalnızca yanlış sıra. Birim testi
+> de aynı hatayı yakalıyor (`Ad_AZALAN_TERSINE_DIZER`); kapı **bağlantıyı**,
+> test **karşılaştırıcıyı** koruyor.
+
+> **Satır sayacı ÖLÇÜLEREK düzeltildi (27.08.2026).** `agac_satir_say`
+> noktalı bağlantı çizgilerinin her noktasını **ayrı satır** sayıyordu: aynı
+> ağaç 12 yerine **17** görünüyordu. Hata o güne kadar ortaya çıkmadı çünkü
+> ölçüm hep `Ctrl+A`'dan **sonra** alınıyordu ve seçim boyası noktaları
+> örtüyordu — yani sayı doğru değildi, **doğru görünüyordu**. Bant en az
+> 3 piksel şartı kondu; metin satırları ~9 piksel, noktalar 1. Bugünkü
+> gerçek sayılar: ağaç **12**, "Parça" süzgeciyle **8**.
 
 > **Sekizincisi neden var:** geri alma **dosya siliyor**. Sessizce bozulursa
 > kullanıcı "geri aldım" sanıp devam eder. Kapı `Ctrl+Shift+N` ile ağaca bir
 > satır ekletir, `Ctrl+Z` ile geri aldırır; ikisini de sayar (11 → 12 → 11).
 > §9'a göre eklendi: TEMİZ → geri alma etkisiz bırakılınca **YAKALADI**
-> (11 → 12 → 12) → geri alınca TEMİZ.
+> (11 → 12 → 12) → geri alınca TEMİZ. (Sayaç düzeltilince aynı ölçüm
+> 8 → 9 → 8 okuyor; ölçülen davranış aynı.)
 
 > **Altıncısı neden var:** `Ctrl+A` bütün ağacı seçiyordu ve bu bir rahatsızlık
 > değil **tehlikeydi** — ardından `Delete`, kullanıcı bir klasörü temizlediğini
@@ -720,7 +768,8 @@ süzüyor mu** · **`Ctrl+Z` geri alıyor mu**. Ekran görüntüsünü
 > temizliğinde silindi (§8) ve **kimse görmeden pakete girdi** — bakan bir şey
 > yoktu. Kapı "Parça"ya tıklar ve ağaçtaki satır sayısının **azaldığını**
 > ölçer. §9'a göre eklendi: TEMİZ → o satır tekrar silinince **YAKALADI**
-> (15 → 15, süzülmedi) → geri konunca TEMİZ (15 → 11).
+> (15 → 15, süzülmedi) → geri konunca TEMİZ (15 → 11). (O günkü sayılar
+> düzeltilmemiş sayaçtan; bugün aynı ölçüm 12 → 8.)
 
 > **Beşincisi neden var:** çoklu seçim WinForms'ta yok, elle yazıldı (§6) ve
 > arayüz kodu olduğu için **birim testi yazılamıyor**. Tek ölçüm yolu gerçek
@@ -733,6 +782,9 @@ süzüyor mu** · **`Ctrl+Z` geri alıyor mu**. Ekran görüntüsünü
 > **Derleme kapısının GÖRMEDİĞİ sınıf vardır.** 27.08.2026'daki kurucu hatasında
 > derleme "0 uyarı 0 hata" diyordu ve uygulama hiç açılmıyordu. Çalıştırma kapısı
 > tam olarak bunun için var. **Yeşil derleme, çalışıyor demek değildir.**
+
+Bu maddelerin numaraları kapının **çıktısındaki** sıradır; sıralama ölçümü
+yedinci olarak araya girdiği için süzgeç sekizinci, geri alma dokuzuncu oldu.
 
 Dördü de §9'a göre ölçülerek eklendi — TEMİZ → hata konunca YAKALADI → geri
 alınca TEMİZ. İlk üçünün yakaladıkları gerçek hatalardı:

@@ -37,7 +37,7 @@ internal sealed class IlerlemeYuzeyi : IIlerlemeYuzeyi
     public void Basladi(int toplam, CancellationTokenSource iptal)
     {
         _iptal = iptal;
-        Arayuzde(() =>
+        ArayuzeGec(() =>
         {
             _durum.IsBasladi(toplam);
             _mesgul(true);
@@ -46,11 +46,11 @@ internal sealed class IlerlemeYuzeyi : IIlerlemeYuzeyi
 
     /// <inheritdoc/>
     public void Adim(int yapilan, int toplam, string ad)
-        => Arayuzde(() => _durum.Ilerleme(yapilan, toplam, ad));
+        => ArayuzeGec(() => _durum.Ilerleme(yapilan, toplam, ad));
 
     /// <inheritdoc/>
     public void Bitti(Action arayuzdeCalistir)
-        => Arayuzde(() =>
+        => ArayuzeGec(() =>
         {
             _durum.IsBitti();
             _mesgul(false);
@@ -58,15 +58,22 @@ internal sealed class IlerlemeYuzeyi : IIlerlemeYuzeyi
             arayuzdeCalistir();
         });
 
+    /// <inheritdoc/>
+    public bool Arayuzde(Action is_) => ArayuzeGec(is_);
+
     /// <summary>
     /// Arayuz is parcacigina gecer. Pencere kapandiysa hicbir sey yapmaz -
     /// kapanmis pencereye yazmak coker.
+    ///
+    /// DONER DEGER GEREKLI: cagiran, isin CEVABINI bekliyor olabilir. Sessizce
+    /// "yapmadim" demek onu SONSUZA KADAR bekletirdi (CLAUDE.md 3: sessiz
+    /// askida kalma yasak). false = is hic kuyruga girmedi.
     /// </summary>
-    private void Arayuzde(Action is_)
+    private bool ArayuzeGec(Action is_)
     {
         if (_arayuz.IsDisposed || !_arayuz.IsHandleCreated)
         {
-            return;
+            return false;
         }
 
         try
@@ -79,14 +86,18 @@ internal sealed class IlerlemeYuzeyi : IIlerlemeYuzeyi
             {
                 is_();
             }
+
+            return true;
         }
         catch (ObjectDisposedException)
         {
             // Pencere tam bu sirada kapandi.
+            return false;
         }
         catch (InvalidOperationException)
         {
             // Tutamak yok edilmis.
+            return false;
         }
     }
 }
