@@ -1,3 +1,30 @@
+BU SURUMDE DEGISEN - Ctrl+A ARTIK TEK KLASORU KAPSIYOR
+
+  Bildirdigin gibi: Ctrl+A butun agaci seciyordu, artik yalnizca icinde
+  bulundugun klasoru kapsiyor.
+
+    - Bir KLASORUN uzerindeyken Ctrl+A -> o klasorun ICINDEKILER secilir.
+      Klasor kapaliysa acilir ve ici taranir.
+    - Bir DOSYANIN uzerindeyken Ctrl+A -> o dosyanin bulundugu klasorun
+      icindekiler (kardesleri) secilir.
+    - Hicbir sey secili degilse -> kokun icindekiler.
+
+  ALT KLASORLERIN ICINE INMEZ. Bilerek: ekranda gormedigin bir dosyanin
+  secime girip Delete ile gitmesi kabul edilemez.
+
+  Bu bir rahatsizlik degil TEHLIKEYDI: Ctrl+A'dan sonra Delete, bir klasoru
+  temizledigini sanirken KOKUN TAMAMINI cope atardi.
+
+  OLCULDU (Wine, gercek klavye/fare):
+    kapali "33" klasorune tikla + Ctrl+A  -> acildi, YALNIZCA 4 cocugu secili
+    33'un icindeki bir dosyaya tikla + Ctrl+A -> yine ayni 4 oge
+    kok seviyesindeki bir dosyaya tikla + Ctrl+A -> kokun 11 cocugu
+  Ve bir KAPI eklendi: bu bir daha sessizce bozulamaz.
+
+  NOT: Shift+Home / Shift+End hala agacin tamamini kapsiyor. Bilerek
+  dokunulmadi - onlar senin surukledigin bir ARALIK, "hepsini sec" degil.
+  Boyle olmasini istemezsen soyle, degistiririm.
+
 BILDIRDIGIN UC MADDE - HEPSI YAPILDI
 
   1. SUZGEC DUGMELERI (Montaj/Parca/Teknik resim/PDF) ARTIK CALISIYOR.
@@ -35,7 +62,7 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
   SECME (Gezgin'deki gibi)
     - Ctrl + tik: tek tek ekle/cikar
     - Shift + tik: aralik
-    - Ctrl+A: gorunen her seyi sec
+    - Ctrl+A: icinde bulundugun klasorun icindekiler
     Coklu secimde altta "N oge secildi" ve toplam boyut yazar. Klasor de
     seciliyse boyut TAM DEGILDIR ve bunu soyler - klasorun ici taranmadi.
 
@@ -59,18 +86,11 @@ BU SURUMDE YENI - AGACTA DOSYA ISLEMLERI
 
 *** SIZDE CALISMAYABILIR - BENDE OLCEMEDIM ***
 
-  1. SAG TIK MENUSU
-     Benim test ortamim Wine (Linux'ta Windows taklidi). Orada sag tik menusu
-     acilirken uygulama COKUYOR: Wine bir Windows DPI islevini tasimiyor.
-     GERCEK Windows'ta bu sorunun olmamasi gerekiyor.
-     Bir duzeltme denendi, ise yaramadi; kovalamayi biraktim.
-     ONEMLI: menunun CAGIRDIGI kodun tamami ayri ayri OLCULDU ve calisti -
-     Ctrl+Shift+N ile klasor gercekten olustu, Delete ile dosya gercekten
-     cop kutusuna gitti, Ctrl+X / Ctrl+V ile klasor gercekten tasindi, F2
-     kutusu gercekten acildi. Yani calismayan sey islemler degil, menunun
-     kendisi.
-     LUTFEN DENEYIN: sag tik menusu sizde aciliyor mu? Acilmiyorsa hepsini
-     kisayolla yapabilirsiniz.
+  1. SAG TIK MENUSU - SIZDE CALISTIGINI SOYLEDINIZ, TESEKKURLER
+     Bende (Wine) hala acilamiyor: Wine bir Windows DPI islevini tasimiyor
+     ve menu acilirken uygulama cokuyor. Yani menuyu BURADAN olcemiyorum;
+     menunun cagirdigi islemleri kisayolla olcuyorum. Sizin bildirmeniz bu
+     belirsizligi kapatti.
 
   2. AG SURUCUSUNDE HIZ
      Silme ve tasima artik ayni disk icinde "tasima" oldugu icin ANLIK

@@ -287,7 +287,7 @@ internal sealed class SecimliAgac : TreeView
         if (e.Control && e.KeyCode == Keys.A)
         {
             e.SuppressKeyPress = true;
-            TumGorunenleriSec();
+            KlasorIcindekileriSec();
             return;
         }
 
@@ -408,15 +408,90 @@ internal sealed class SecimliAgac : TreeView
         Bildir();
     }
 
-    private void TumGorunenleriSec()
+    /// <summary>
+    /// Ctrl+A: YALNIZCA icinde bulunulan klasorun icindekiler.
+    ///
+    /// ================== NEDEN BOYLE ==================
+    /// Once butun agaci seciyordu ve bu bir rahatsizlik degil TEHLIKEYDI:
+    /// Ctrl+A'dan sonra Delete, kullanicinin bir klasoru temizledigini
+    /// sanirken KOKUN TAMAMINI cope atardi (CLAUDE.md 1a).
+    ///
+    /// Kural:
+    ///   klasor odakta  -> o klasorun DOGRUDAN cocuklari (ici)
+    ///   dosya odakta   -> dosyanin bulundugu klasorun dogrudan cocuklari
+    ///   odak yok       -> kokun dogrudan cocuklari
+    ///
+    /// OZYINELEME YOK - alt klasorlerin ici secime GIRMEZ. Ekranda gormedigin
+    /// bir dosyanin secilip silinmesi kabul edilemez.
+    /// =================================================
+    /// </summary>
+    private void KlasorIcindekileriSec()
     {
-        _secililer.Clear();
-        for (TreeNode? d = IlkGorunen(); d is not null; d = d.NextVisibleNode)
+        TreeNode? kapsayan = Kapsayan();
+        if (kapsayan is null)
         {
-            _secililer.Add(d);
+            return;
+        }
+
+        // Ici henuz taranmamis olabilir; acmak tembel yuklemeyi tetikler.
+        // Yoksa kapali bir klasorde Ctrl+A hicbir sey secmezdi.
+        if (!kapsayan.IsExpanded)
+        {
+            kapsayan.Expand();
+        }
+
+        var icindekiler = new List<TreeNode>(kapsayan.Nodes.Count);
+        foreach (TreeNode cocuk in kapsayan.Nodes)
+        {
+            // Tembel yukleme yer tutucusu gercek bir oge DEGILDIR.
+            if (cocuk.Tag is DosyaOgesi or KlasorOgesi)
+            {
+                icindekiler.Add(cocuk);
+            }
+        }
+
+        // Bos klasorde HICBIR SEY YAPILMAZ. Secimi sessizce bosaltmak,
+        // kullanicinin elindekini kaybettirir.
+        if (icindekiler.Count == 0)
+        {
+            return;
+        }
+
+        _secililer.Clear();
+        foreach (TreeNode cocuk in icindekiler)
+        {
+            _secililer.Add(cocuk);
+        }
+
+        _capa = icindekiler[0];
+
+        // Odak KUMENIN ICINDE kalmali - bu sinifin degismezi. Klasorun
+        // uzerindeyken odak klasorde kalsaydi onizleme ve durum cubugu
+        // secimle celisirdi (CLAUDE.md 3).
+        if (SelectedNode is null || !_secililer.Contains(SelectedNode))
+        {
+            OdagiTasi(icindekiler[0]);
         }
 
         Bildir();
+    }
+
+    /// <summary>Ctrl+A'nin kapsayacagi klasor dugumu.</summary>
+    private TreeNode? Kapsayan()
+    {
+        TreeNode? odak = SelectedNode;
+
+        if (odak is null)
+        {
+            return Nodes.Count > 0 ? Nodes[0] : null;
+        }
+
+        if (odak.Tag is KlasorOgesi)
+        {
+            return odak;
+        }
+
+        return odak.Parent ?? (Nodes.Count > 0 ? Nodes[0] : null);
     }
 
     private TreeNode? IlkGorunen() => Nodes.Count > 0 ? Nodes[0] : null;

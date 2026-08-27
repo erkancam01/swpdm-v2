@@ -677,12 +677,20 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı altı şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı yedi şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
-**tür süzgeci gerçekten süzüyor mu**. Ekran görüntüsünü `.kapi/ekran.png`
-olarak bırakır; CI'da yapıt olarak saklanır.
+**`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **tür süzgeci gerçekten
+süzüyor mu**. Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt
+olarak saklanır.
 
-> **Altıncısı neden var:** süzgeç düğmesinin `Click` bağlantısı bir tanı
+> **Altıncısı neden var:** `Ctrl+A` bütün ağacı seçiyordu ve bu bir rahatsızlık
+> değil **tehlikeydi** — ardından `Delete`, kullanıcı bir klasörü temizlediğini
+> sanırken **kökün tamamını** çöpe atardı (§1a). Kapı köke tıklayıp `Ctrl+A`
+> basar ve seçili satırın **görünen satır − 1** olduğunu ölçer (kökün kendisi
+> seçime girmemeli). §9'a göre eklendi: TEMİZ (11/12) → eski davranış geri
+> konunca **YAKALADI** (12) → geri alınca TEMİZ.
+
+> **Yedincisi neden var:** süzgeç düğmesinin `Click` bağlantısı bir tanı
 > temizliğinde silindi (§8) ve **kimse görmeden pakete girdi** — bakan bir şey
 > yoktu. Kapı "Parça"ya tıklar ve ağaçtaki satır sayısının **azaldığını**
 > ölçer. §9'a göre eklendi: TEMİZ → o satır tekrar silinince **YAKALADI**
