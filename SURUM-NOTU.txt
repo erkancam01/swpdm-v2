@@ -16,6 +16,12 @@ BU SURUMDE CALISAN
     PDF motoruyla ILK SAYFA cizilir. Kabuk vermezse dosyanin ICINDEKI gomulu
     onizleme okunur. Hicbiri yoksa sebebi yazilir - bos kutu birakilmaz.
     PDF onizlemesi Windows 10 surum 1809 ve ustunu ister.
+
+  NOT - PAKET NEDEN BUYUDU: 120 KB'den 6,5 MB'a cikti. Sebep PDF motorunun
+  kendisi degil, ona ulasmak icin gereken WinRT koprusu
+  (Microsoft.Windows.SDK.NET.dll, 24,9 MB). Motor zaten Windows'un icinde;
+  koprusu bizim pakete giriyor. Alternatif PDFium olurdu: benzer boyut, ustelik
+  depoya yerli bir ikili dosya sokardi.
   - Secince ust bilgi: ad, tur, boyut, degistirme tarihi
   - TUM dosyalar gorunur: tanimadigimiz uzantilar ve SOLIDWORKS'un
     gizli "~$" kilit dosyalari dahil

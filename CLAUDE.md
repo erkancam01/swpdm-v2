@@ -393,9 +393,25 @@ kuruldu (eski derleme · yol tuhaflığı); ikisi de 2×2 ölçümle elendi.
 `Microsoft.Windows.SDK.NET.Ref`'i NuGet'ten çekiyor. `TreatWarningsAsErrors`
 açıkken **0 uyarı** — CA1416 çıkmadı, `TargetPlatformMinVersion` doğru kurulduğu için.
 
-→ Windows'un içindeki motorlara (PDF, medya, OCR) **pakete tek bayt eklemeden**
-ulaşılabiliyor. Alternatifi PDFium gibi yerli bir kütüphaneydi: paket 136 KB'den
-~10 MB'a çıkardı.
+→ Windows'un içindeki motorlara (PDF, medya, OCR) **yerli bir kütüphane
+eklemeden** ulaşılabiliyor.
+
+> **BEDELİ ÖNCE YANLIŞ YAZDIM** — §2'nin ihlali. *"Pakete tek bayt eklemez"*
+> dedim; sonra ölçtüm:
+>
+> | | WinRT'den önce | sonra |
+> |---|---|---|
+> | zip | 120.343 bayt | **6.486.532 bayt** |
+> | diskte | ~264 KB | **25 MB** |
+>
+> Motorun kendisi Windows'ta, **ama köprüsü değil**:
+> `Microsoft.Windows.SDK.NET.dll` **24,9 MB** ve `WinRT.Runtime.dll` 529 KB
+> çıktıya kopyalanıyor. Kıyas hâlâ WinRT'nin lehine ama sandığım kadar değil —
+> PDFium ~10 MB olur **ve depoya ikili dosya sokardı**; burada depoya ikili
+> girmiyor, DLL NuGet'ten geliyor.
+>
+> Ağırlık tek bir köprü derlemesinde. İlke olarak CsWinRT ile yalnızca
+> kullanılan ad alanlarına indirgenebilir — **denenmedi.**
 
 ### Wine WinRT TAŞIMIYOR — ve belirtisi yanıltıcı
 
