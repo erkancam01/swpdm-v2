@@ -1,0 +1,281 @@
+# CLAUDE.md — SW PDM v2
+
+Bu depo **SW PDM v2**: SOLIDWORKS dosyalarını taşırken/adlandırırken montaj ve
+teknik resim referanslarını koruyan masaüstü uygulaması.
+
+> **BU DOSYA v2'NİN YAPISINI ANLATMIYOR — daha yazılmadı.** İçinde yalnızca
+> v1'de (`erkancam01/swpdm`) **ölçülmüş** gerçekler ve bedeli ödenmiş çalışma
+> kuralları var. Hiçbiri bu depodaki bir dosyaya, sınıfa ya da projeye işaret
+> etmiyor; o yüzden hiçbiri bayatlayamaz.
+>
+> Yapıya dair maddeler (katmanlar, kapılar, paketleme) kapsam belirlendikçe
+> **ölçülerek** eklenecek — tahminle değil.
+
+---
+
+## 1. Altın kural
+
+**Çalışan hiçbir şeyi bozma.** Bu bir CAD dosya yöneticisi: hatalı bir
+değişiklik gerçek montaj ve teknik resimlerin referanslarını kırar, en kötü
+ihtimalle dosya kaybettirir.
+
+Dal **`main`**. Commit mesajları Türkçe ve **neden** değiştiğini yazar.
+`--force`, `rebase`, geçmişi yeniden yazma **YOK**. Depo private.
+
+---
+
+## 2. ÖLÇ, TAHMİN ETME — en pahalı ders
+
+v1'de doğrulanmamış üç SOLIDWORKS API varsayımı **üç tur** yedirdi.
+
+- **Yeni bir API'ye dayanmadan önce bir "Kapı" yaz:** geçici klasörde kendi
+  test dosyasını üretir, çağrıyı yapar, sonucu **doğrular**, temizler,
+  raporlar. Kapı geçmeden asıl özellik yazılmaz.
+- **İmzadan emin değilsen yansımayla çağır**, tutan varyantı raporla.
+- **Dönüş değerine GÜVENME.** `IDrawingDoc.ReplaceViewModel` `true` döndü ve
+  **hiçbir şey yapmadı**. Başarı bir iddia değil **ölçüm**: işlemden sonra
+  sonucu diskten/bellekten yeniden oku ve karşılaştır.
+- **Belirtiyi tek sebebe bağlama.** "Klasör silinmiyor" dört tur yedi çünkü
+  aynı belirtinin **iki ayrı sebebi** vardı. İki ucuz hipotezden birini
+  seçmek yerine ikisini birden kapat.
+- **Sayıyı belgeden okuma, çalıştır.** v1'de bu dosyanın kendisi iki kez
+  yalan söyledi (test sayısı, dosya satır sayısı).
+
+---
+
+## 3. Dürüstlük — kullanıcı buna bakıp dosya SİLİYOR
+
+- **Boş liste "yok" demek DEĞİLDİR.** Referans indeksi yalnızca taranmış
+  kökleri bilir; taranmamış klasörde sorgu boş döner. Bunu "bu parçayı kimse
+  kullanmıyor" diye göstermek **sağlam dosya sildirir**. Tarama yoksa hiçbir
+  sayı ve hiçbir liste gösterilmez, sebebi yazılır.
+- **Kısmi başarısızlıkta eski dosyayı KORU:** `KOPYALA → ONAR → SİL`. Bir
+  onarım tutmazsa kaynak silinmez. `File.Move` bu yüzden kullanılmıyor.
+- **İndekse yalan yazma.** v1'de başarısız bir onarımdan sonra indeks
+  "düzeldi" diye güncellendi; teknik resim ilişkisi sessizce kayboldu.
+- **Hata sebebini EKRANDA göster**, yalnızca günlüğe değil.
+- **Uydurma ya da donmuş ilerleme gösterme.** Sayılabilir ilerleme yoksa
+  yüzde uydurma; animasyon işletilemiyorsa hiç gösterme.
+- **Sessiz başarı ve sessiz askıda kalma YASAK.** Her istek bir yanıt alır,
+  her terminal hâl sebebini yazar. Bir işlemin yapılıp yapılmadığını
+  **bilmiyorsak** "yapılmadı" demek yalandır — kullanıcı ikinci kez yapar.
+
+---
+
+## 4. ÖLÇÜLMÜŞ GERÇEKLER — .NET ve Windows
+
+### `System.IO.Path`'in yol parçalama üyeleri Linux'ta Windows yolunu YANLIŞ parçalıyor
+
+```
+Path.GetExtension(@"C:\Proje 2.0\parca")  ->  ".0\parca"     (dogrusu "")
+Path.GetFileName(@"C:\a\b.SLDPRT")        ->  yolun TAMAMI    (dogrusu "b.SLDPRT")
+Path.GetDirectoryName(@"C:\a\b.SLDPRT")   ->  ""              (dogrusu "C:\a")
+```
+
+Linux'ta `\` ayırıcı **sayılmıyor**. Testler Linux'ta koşuyorsa test **yanlış
+sonucu doğrular** ve hata kullanıcının makinesine kalır. Windows'a bağımlı
+olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
+
+> Kendi yardımcını yazarken **sürücü kökü** tuzağı:
+> `Path.GetDirectoryName(@"C:\a.SLDPRT")` → `"C:\"`. `"C:"` döndüren bir
+> yardımcı, `Path.Combine("C:", "x")` ile sürücüye **göreli** `"C:x"` üretir.
+
+### Diğerleri
+
+- **`Path.GetInvalidFileNameChars()` Linux'ta yalnızca `/` ve `\0` döndürür.**
+  Windows'ta geçersiz bir adı testler kabul eder. Geçersiz karakter listeleri
+  **elle** yazılır.
+- **Windows bir klasörü ÜÇ ayrı sebeple sildirmiyor** ve üçünün çözümü farklı:
+  `145 ERROR_DIR_NOT_EMPTY` (içinde bir şey var — **gizli** dosyalar dahil) ·
+  `32 ERROR_SHARING_VIOLATION` (açık tutamak) · `5 ERROR_ACCESS_DENIED`
+  (salt-okunur ya da izin). **`ex.Message` bunları ayırt edemiyor** —
+  yerelleştirilmiş metin. Win32 kodunu oku.
+- **Kabuk dosya iletişim kutuları sürecin çalışma klasörünü kaydırıyor** ve o
+  klasör bir daha silinemiyor. `RestoreDirectory = true` + kutu kapandıktan
+  sonra çalışma klasörünü sabitle.
+- **Kabuk önizleme sağlayıcıları STA ister.** `ThreadPool` (MTA) içinden
+  çağırınca `E_FAIL` (0x80004005).
+- **`.bat` iki ayrı şekilde SESSİZCE ölüyor** — ikisinde de görülen aynı:
+  *pencere açılıyor, hiçbir şey yazmadan kapanıyor.* Hata yok, günlük yok.
+  1. **CRLF şart.** LF'e düşen bir `.bat`'ı `cmd.exe` yarıda kesiyor.
+     `.gitattributes`'ta `*.bat -text`; `.bat` üreten/kopyalayan her betik de
+     CRLF'i korumalı (Python'da `newline=""`).
+  2. **Blok içinde kaçışsız parantez.** `if ... ( … )` içindeki `(`/`)` —
+     **tırnak içinde bile** — cmd'nin ayrıştırıcısını yanıltıyor
+     (`SOLIDWORKS (2)` yazmak bu tuzağa düştü). Doğrusu `^(` / `^)`, ya da
+     blok yerine `goto`.
+  3. `.bat` çıktısı bir dosyaya da yazılmalı — pencere kapandığında
+     kullanıcının elinde hiçbir kanıt kalmıyor.
+- **Verbatim string (`@"..."`) içine ASLA çift tırnak yazma.** Oradaki bir `"`
+  string'i **o noktada bitirir**; kaçış `\"` değil `""`. Bir SQL yorumuna
+  tırnaklı cümle yazmak **230 derleme hatası** üretti ve iki statik denetim de
+  "TEMİZ" dedi — stray tırnaklar çift sayıda olunca parantez dengesi bozulmuyor.
+  **DDL yorumlarında tırnak kullanma.**
+
+---
+
+## 5. ÖLÇÜLMÜŞ GERÇEKLER — SOLIDWORKS ve COM
+
+### CS0104 — takma ad ŞART
+
+`SolidWorks.Interop.sldworks` kendi `Environment`, `View`, `Timer`,
+`Application`, `Color`, `Point`, `Component`, `Attribute`, `Feature`
+tiplerini tanımlıyor. Çıplak kullanmak derlemeyi kırıyor.
+
+```csharp
+using Environment = System.Environment;
+```
+
+Tek tek `System.` öneki eklemek **YETMEZ**: bugünü düzeltir, o dosyaya
+yazılacak bir sonraki kullanım hatayı geri getirir. v1'de `Environment` tam bu
+yüzden **aylarca** her pakette elle düzeltildi.
+
+→ Sonucu bir tasarım kuralı: **interop'a dokunan dosya sayısını az tut.** v1'de
+tüm interop dört dosyadaydı ve en büyük dosya bu riskin tamamen dışındaydı.
+
+### `GetType()` — iki tuzak, biri SESSİZ
+
+1. **Derleme kırar:** interop arayüzlerinin KENDİ `GetType()` üyesi var.
+   `IModelDoc2.GetType()` belge türünü **`int`** döndürüyor ve
+   `object.GetType()`'ı gölgeliyor.
+2. **Derlenir ama HER ZAMAN yanlış çalışır:** COM sarmalayıcısında `GetType()`
+   **`System.__ComObject`** döndürüyor; o tipte arayüzün hiçbir üyesi yok, yani
+   `.GetType().GetMethod("X")` **her zaman `null`**. Kod derlenir, çalışır ve
+   *"üye bulunamadı"* raporlar — hiç denemeden. v1'de **iki tur üst üste** oldu.
+
+```csharp
+belge.GetType().GetMethod("IsOpenedReadOnly");     // YANLIS: her zaman null
+typeof(ModelDoc2).GetMethod("IsOpenedReadOnly");   // DOGRU
+```
+
+- **`Type.GetMethod` bir ARAYÜZ tipinde miras alınan üyeleri DÖNDÜRMÜYOR**
+  (sınıflardan farklı) — tip + `GetInterfaces()` birlikte taranmalı.
+- **Arayüz adını metin yazma, `typeof(T)` geçir.** Var olmayan bir tip adı
+  yazmak v1'de iki kez derlemeyi kırdı.
+
+### SOLIDWORKS davranışı
+
+- **Kendi çalışma klasörü var** (`Get/SetCurrentWorkingDirectory`). `OpenDoc6`
+  onu dosyanın klasörüne kaydırıyor ve **orada bırakıyor**; `CloseDoc` geri
+  almıyor. *"Bütün belgeleri kapattım ama klasör hâlâ kilitli"*nin sebebi bu.
+- **Her açılan belge için aynı klasöre gizli `~$Parca1.SLDPRT` kilit dosyası
+  yazıyor.** Temiz kapanmazsa geride kalıyor: kullanıcı Gezgin'de göremiyor
+  (gizli), Windows "dizin boş değil" diyor.
+- **Kapatılan belgeyi oturumda tutuyor** (görünmez belge). Açtığımız belgeleri
+  kapatırken kullanıcının kendi açtıklarına dokunma: yalnızca görünmez **ve**
+  kaydedilmemiş değişikliği olmayanlar kapatılır.
+- **Diskteki `ReadOnly` bitini kaldırmak AÇIK bir belgenin oturum içi durumunu
+  DEĞİŞTİRMİYOR** — SOLIDWORKS onu açılışta önbelleğe alıyor.
+
+### ÖLÇÜLDÜ — klasör taşınınca İÇ referanslar YAŞIYOR
+
+Bir montaj + aynı klasördeki alt montajları geçici klasöre kopyalandı, klasör
+adı `Directory.Move` ile değiştirildi, `GetDocumentDependencies2` okundu:
+SOLIDWORKS çocukları **YENİ** klasörde buldu.
+
+Beklenenden güçlü sonuç: dosyanın içinde yazan eski yol o an **hâlâ
+geçerliydi** ve SOLIDWORKS yine **yanındaki kopyayı** seçti. Yani *"ebeveynin
+yanındaki dosya"* kuralı, yazılı mutlak yolun **önüne geçiyor**.
+
+→ Klasör taşınırken yalnızca **DIŞARIDAN verilen referanslar** kırılıyor;
+`Directory.Move` + yalnızca dış ebeveyn onarımı meşru bir hızlı yol.
+
+> **HENÜZ ÖLÇÜLMEDİ — teknik resim → model.** Ölçüm montaj→montaj zincirinde
+> koştu. Teknik resmin model referansı bu kuralı izliyor mu **bilinmiyor**.
+> Ölçülmeden hızlı yol teknik resimleri kapsamaz.
+
+---
+
+## 6. WinForms kullanılırsa — ölçülmüş tuzaklar
+
+- **`ToolStrip*` öğeleri `Control` DEĞİL.** `ToolStripLabel`,
+  `ToolStripButton`, `ToolStripStatusLabel`, `ToolStripMenuItem` →
+  `ToolStripItem`. `Refresh`, `Invalidate`, `Focus`, `Controls`, `Parent`
+  **yok**; taşıyıcıya `Owner` / `GetCurrentParent()` ile çıkılır. v1'de 18
+  çağrı toplu değiştirildi, üç statik denetim TEMİZ dedi, derleme **17
+  hatayla** kırıldı.
+- **`ToolStripItem.Width`, `AutoSize` açıkken YOK SAYILIYOR.** `AutoSize = false`
+  yazmadan verilen genişlik hiçbir şey yapmıyor.
+- **İlerleme çubuğu ileri giderken ANİMASYONLU** (kendi zamanlayıcısıyla). İş
+  parçacığı bloke ve mesaj pompalanmıyorsa çubuk **boş oluk** gibi görünür.
+  Geriye giden değer **anında** uygulanıyor → önce hedef+1, hemen sonra hedef.
+- **`Refresh()` çocuk denetimi boyamıyor.** `Update()` → `UpdateWindow` yalnızca
+  kendi penceresine `WM_PAINT` yolluyor. Barındırılan bir denetim (örn. bir
+  `ToolStripControlHost` içindeki gerçek `ProgressBar`) ayrıca tazelenmeli.
+- **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
+  zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
+  giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
+
+### Barındırılan süreçte (SOLIDWORKS'ün içinde) çalışılırsa
+
+Bunlar yalnızca kod **başka bir uygulamanın süreci içinde** koşuyorsa geçerli:
+
+- **`Application.DoEvents` YASAK.** Sürecin mesaj kuyruğunun **tamamını**
+  pompalıyor. Kendi `.exe`'mizde zararsız; barındırıcının içinde, yarım kalmış
+  bir API çağrısının üstüne yeniden giriş demek — ve çökme. Etiket güncellemek
+  için `<denetim>.Refresh()`.
+- **İSTİSNA SIZDIRMAK BARINDIRICIYI ÖLDÜRÜR.** Olay işleyicisinden ya da
+  `BeginInvoke` delegesinden sızan .NET istisnası **yerli** mesaj döngüsünde
+  çözülemiyor ve süreci indiriyor. Kendi `.exe`'mizde aynı istisna zararsız —
+  `Main` kancaları kuruyor. *"exe'de çalışıyor ama barındırıcıda çöküyor"*
+  tablosunun sebebi bu asimetri.
+- **İki kanca aynı şey değil:** `AppDomain.UnhandledException` sonlanmayı
+  **engelleyemiyor** (yalnızca ölümü seyrediyor); `Application.ThreadException`
+  **gerçekten engelliyor**.
+
+---
+
+## 7. v1'den SAYILAR — v2'nin gerekçesi
+
+| ölçüm | sonuç |
+|---|---|
+| Ürün kodu | **15.231 satır** |
+| Bunun *"referans bağını koru"* kısmı | **2.769 · %18** |
+| Arayüz kabuğu | 7.113 · %47 |
+| **Tek bir arayüz sınıfı** | **9.918 satır · ürün kodunun %38'i** (ikinci en büyük dosya 526 satır) |
+
+- O sınıf **bölünemedi**, çünkü SOLIDWORKS eklentisi onu barındırıyordu ve
+  `internal` yüzeyini bölmek o yüzeyi bir sözleşmeye çevirirdi.
+  → **Bir arayüz sınıfı hem ekran hem iş akışı sürücüsü olmaz.**
+- **Eklenti üç kez yazıldı ve dört tur çökme yedirdi** — dört **ayrı** sebep,
+  ve her seferinde "bu sonuncusu" sanıldı. *"Kalan sebep yok"* diyen bir ölçüm
+  hiçbir zaman olmadı. Onu kurtarmak için yazılan süreçler-arası köprü ise
+  **kendi hata sınıfını** doğurdu (son iki hata da köprü hatasıydı: durum
+  yazmanın iki yolundan biri köprüden geçmiyordu; gizli süreçte açılan bir
+  bilgi kutusu paneli **sonsuza kadar** bekletiyordu).
+
+---
+
+## 8. Kod değiştirirken
+
+- **Bir satırı silmeden önce o satırın BİLDİRDİĞİ her adı ara** — yalnızca
+  çağırdıklarını değil, `=` solundaki adı da. v1'de silinen bir **yerel
+  değişken** bildirimi üç denetimden geçti ve derlemeyi kırdı.
+- **Toplu değişiklikte alıcının tipini VARSAYMA — bildirimini ara.**
+- **Aynı mantığın ikinci kopyasını yazma.** v1'de "yolun son parçası" mantığı
+  **dokuz** yerde elle yazılmıştı ve üç ayrı biçimde ayrışmıştı: üçü boş
+  girdide `NullReferenceException` atıyordu, bir kısmı sondaki ayırıcıyı
+  kırpmıyordu, ikisi `/` tanımıyordu. Boyut biçimlendirmesi üç yerdeydi ve biri
+  **farklı sayı** gösteriyordu — aynı dosya iki ekranda farklı boyutta.
+- **Bir belge yorumunu sahibinden ayırma.** Araya üye eklerken en sık yapılan
+  kaza bu; sonuç, artık orada olmayan bir üyeyi anlatan bir yorum.
+
+## 9. Kapı disiplini
+
+- **Yanlış alarm veren bir kapı, kapı olmaktan çıkar.** v1'de genel bir
+  "bildirilmemiş ad" denetimi denendi: 125 dosyada 129 bulgunun **tamamı**
+  yanlış alarmdı. Eklenmedi.
+- **Bir kapı ÖLÇÜLEREK eklenir:** gerçek depoda TEMİZ · hata geri konunca
+  YAKALIYOR · geri alınca yine TEMİZ. Bu üçü gösterilmeden kapı eklenmez.
+  v1'de bir kapı yazıldığı anda **inert**ti (yanlış metni okuyordu) ve hep
+  "TEMİZ" diyordu; ancak bilerek bir ihlal konunca anlaşıldı.
+- **Depoda ve CI'da olmayan denetim, denetim değildir.** v1'de geçici bir
+  dosya olarak duran bir denetim yüzünden kırık kod **üç commit** yayınlandı.
+- **Kapının kapsamı ADLARA değil AĞACA bağlanır.** v1'de bir kapı iki proje
+  adına bakıyordu; üçüncü bir proje eklenseydi **sessizce** atlanırdı.
+- **Kurulu olmayan bir kapı "geçti" sayılmaz** — atlamaz, hata verir.
+
+## 10. Bitirmeden önce
+
+- **Test ETMEDİĞİN ve riskli noktaları açıkça yaz.** "Oldu" deyip geçme.
+- Sayıları belgeden okuma — **çalıştır**.
