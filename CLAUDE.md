@@ -790,6 +790,8 @@ dosyasında** duruyor:
 | **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwPaket.cs` |
 | MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
 | **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
+| **ad değişince ebeveynleri onarma** | `Cekirdek/ReferansOnarimi.cs` |
+| onarım onay kutusu | `Arayuz/Gorunum/Islemler/OnarimKutusu.cs` |
 | yazma deneyi paketi | `araclar/DeneyUretici/` |
 | belgenin **doğrudan referansları** | `Cekirdek/SwReferans.cs` |
 | belgenin içindeki önizleme | `Cekirdek/SwOnizleme.cs` |

@@ -122,8 +122,7 @@ public static class IndeksTarama
             catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
             {
                 okunamayan++;
-                indeks.Koy(new IndeksKaydi(
-                    yol, 0, default, [], null, Okundu: false, "Dosya bilgisi okunamadı."));
+                indeks.Koy(Okunamadi(yol));
                 continue;
             }
 
@@ -140,15 +139,14 @@ public static class IndeksTarama
                 continue;
             }
 
-            SwReferanslar r = SwReferans.Oku(yol);
+            IndeksKaydi kayit = Kayit(yol, boyut, degistirme);
             okunan++;
-            if (!r.Okundu)
+            if (!kayit.Okundu)
             {
                 okunamayan++;
             }
 
-            indeks.Koy(new IndeksKaydi(
-                yol, boyut, degistirme, r.Dogrudan, r.KendiYolu, r.Okundu, r.Sebep));
+            indeks.Koy(kayit);
         }
 
         // Diskten silinmis dosyalarin kayitlari DUSER. Yoksa indeks "bu
@@ -180,6 +178,49 @@ public static class IndeksTarama
     /// Agactaki SOLIDWORKS dosyalarini toplar. Yigin ile geziliyor; ozyineleme
     /// derin agaclarda yigini tasirabilir.
     /// </summary>
+    /// <summary>
+    /// TEK BIR DOSYAYI okuyup indekse koyar - butun agaci taramadan.
+    ///
+    /// NEDEN VAR: referans onarimindan sonra indeks ad degisiminden HABERSIZ
+    /// kalir ve referans paneli YALAN soyler (silinmis bir adi "kullaniyor"
+    /// diye gosterir). Onarim biter bitmez dokunulan dosyalar buradan
+    /// tazeleniyor; butun kok yeniden taranmiyor.
+    /// </summary>
+    public static void Tazele(ReferansIndeksi? indeks, string? yol)
+    {
+        if (indeks is null || string.IsNullOrWhiteSpace(yol))
+        {
+            return;
+        }
+
+        if (!File.Exists(yol))
+        {
+            indeks.Sil(yol);
+            return;
+        }
+
+        try
+        {
+            var bilgi = new FileInfo(yol);
+            indeks.Koy(Kayit(yol, bilgi.Length, bilgi.LastWriteTime));
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            indeks.Koy(Okunamadi(yol));
+        }
+    }
+
+    /// <summary>Bir dosyanin indeks kaydini uretir. TEK KOPYA (CLAUDE.md 8).</summary>
+    private static IndeksKaydi Kayit(string yol, long boyut, DateTime degistirme)
+    {
+        SwReferanslar r = SwReferans.Oku(yol);
+        return new IndeksKaydi(yol, boyut, degistirme, r.Dogrudan, r.KendiYolu, r.Okundu, r.Sebep);
+    }
+
+    /// <summary>Dosya bilgisi bile okunamayan kayit.</summary>
+    private static IndeksKaydi Okunamadi(string yol)
+        => new(yol, 0, default, [], null, Okundu: false, "Dosya bilgisi okunamadı.");
+
     private static List<string> Dosyalari_Topla(
         string kok, CancellationToken belirtec, List<string> okunamayanlar)
     {

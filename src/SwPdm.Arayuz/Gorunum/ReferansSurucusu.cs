@@ -75,6 +75,27 @@ internal sealed class ReferansSurucusu
     }
 
     /// <summary>
+    /// Belli dosyalarin indeks kaydini TAZELER - butun koku taramadan.
+    ///
+    /// NEDEN VAR: ad degistirme onarimindan sonra indeks eski adi bilmeye
+    /// devam eder ve referans paneli YALAN soyler (artik olmayan bir dosyayi
+    /// "kullaniyor" diye gosterir). Dokunulan birkac dosya buradan
+    /// tazeleniyor; tarama diske geri donmuyor.
+    /// </summary>
+    internal void Tazele(IEnumerable<string>? yollar)
+    {
+        if (_indeks is null || yollar is null)
+        {
+            return;
+        }
+
+        foreach (string yol in yollar)
+        {
+            IndeksTarama.Tazele(_indeks, yol);
+        }
+    }
+
+    /// <summary>
     /// Onizleme panelindeki iki satir: "Kullandığı:" ve "Kullanan:".
     ///
     /// IKISI AYRI SATIR cunku iki ayri soru ve iki ayri guvenilirlik.

@@ -1,4 +1,72 @@
-BU SURUMDE YENI - "~$" KILIT DOSYALARI ARTIK GURULTU DEGIL, BILGI
+BU SURUMDE YENI - AD DEGISINCE REFERANSLAR ARTIK ONARILIYOR
+
+  Bu, uygulamanin varlik sebebi olan is. Bir parcanin adini degistirince
+  onu kullanan montaj ve teknik resim ESKI ADI arar ve bulamaz. Tasimada
+  durum farkli - SOLIDWORKS once ebeveynin yanina bakiyor - ama ad
+  degisiminde bu kural da kurtarmiyor. Tek cozum ebeveynin ICINE yazmak.
+
+  ARTIK YAZIYOR. F2 ile ad degistirdiginde:
+
+    "Parca1.SLDPRT dosyasini 2 dosya kullaniyor:
+       - Montaj1.SLDASM
+       - Parca1.SLDDRW
+     EVET  - adi degistir VE bu dosyalari onar (onerilen)
+     HAYIR - yalnizca adi degistir; yukaridakiler parcayi bulamayacak
+     VAZGEC"
+
+  HEPSI YA DA HICBIRI. Yarim onarim en kotu sonuc olurdu - bir montaj
+  duzelir, otekinde parca kaybolur ve hangisinin dogru oldugu bilinmez.
+  Sira su: once HER ebeveyn icin yama bir YAN dosyaya yazilir (asillara
+  dokunulmaz), biri bile tutmazsa hicbir sey degismez; sonra ad degisir;
+  sonra yamalar yerine gecer; ortada bir yerde tutmazsa HEPSI geri alinir,
+  ad dahil.
+
+  DOGRULAMA OKUYARAK YAPILIYOR. "Yazdim" demek yetmez - yazilan dosya
+  diskten YENIDEN OKUNUP eski adin gittigi, yeni adin geldigi kontrol
+  ediliyor. Tutmuyorsa dosya degistirilmiyor.
+
+  CTRL+Z DE ONARIYOR. Geri alma yalnizca adi geri koymaz; ebeveynleri de
+  geri onarir. Yoksa geri alma referansi KIRARDI.
+
+  ACIK DOSYAYA YAZILMIYOR. Bir ebeveyn SOLIDWORKS'te aciksa (yaninda "~$"
+  kilidi varsa) islem yapilmaz ve sebebi yazilir.
+
+  TARAMA YAPILMAMISSA SOYLENIYOR. "Kimin kullandigini bilmiyoruz, bos bir
+  liste 'kimse kullanmiyor' demek DEGILDIR, once Ctrl+Shift+R" diyor.
+  Sessizce "temiz" demiyor.
+
+  *** BIR SINIR VAR: AYNI SAYIDA HARF ***
+
+  Senin olcumun (dort deney, tesekkurler) sunu gosterdi:
+     ayni harf sayisinda ad -> SOLIDWORKS ACTI, parcalar yerinde
+     daha uzun ad           -> SOLIDWORKS HATA VERDI
+
+  Yani "Parca1" -> "Govde1" calisiyor, "Parca1" -> "GovdeParcasi1"
+  calismiyor. Neden boyle oldugunu bulamadim; akislarin icinde ne toplam
+  boy ne de dize konumu yaziyor, arandi. Sebebi kovalamak yerine SARTI
+  sagliyorum.
+
+  Farkli uzunlukta bir ad secersen uygulama bunu SOYLUYOR ve "yine de
+  dene (dogrulanmamis)" diyor - sessizce yapmiyor. Ikinci tur deney
+  paketi tam da bunu olcuyor; o klasorleri actiginda bu sinir kalkabilir.
+
+  OLCULDU
+    Iki ebeveynli gercek bir kumede (Montaj1 + teknik resim) ad
+      degistirildi, IKISI de onarildi ve yeni adi gosteriyor
+    Onarim sonrasi gecici dosya KALMIYOR
+    Acik dosya (kilitli) engel sayiliyor ve hicbir sey degismiyor
+    Ayni adda dosya varsa islem yapilmiyor
+    247 test geciyor (239'du), dort kapi da TEMIZ
+
+  BURADA OLCULEMEYEN
+    - Onarilmis dosyayi SOLIDWORKS'un actigi, senin dort deneyinle
+      olculdu. Ama bu KENDI ornek dosyalarimla; SENIN gercek montajlarinda
+      ilk denemeyi bir KOPYA klasorde yapmani oneririm.
+    - F2 akisinin Wine'da tiklanarak olculmesi. Onarim motoru sekiz birim
+      testle korunuyor ama arayuz akisi (kutu -> onay -> onarim) burada
+      tiklanamadi.
+
+ONCEKI SURUMDE YENIYDI - "~$" KILIT DOSYALARI
 
   Ekran goruntunde agacta "~$y1-MASAS PERCINI.SLDDRW" duruyordu. Bu bir
   belge degil: SOLIDWORKS her actigi belge icin ayni klasore gizli bir

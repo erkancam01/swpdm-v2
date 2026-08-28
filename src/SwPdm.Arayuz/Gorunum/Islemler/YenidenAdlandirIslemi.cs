@@ -49,12 +49,6 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         string eskiAd = SecimBaglami.Adi(oge);
 
-        if (oge is DosyaOgesi dosya && SolidworksMu(dosya.Tur) && !ReferansUyarisi(baglam.Sahip))
-        {
-            baglam.Bildir("Ad değiştirme iptal edildi.");
-            return;
-        }
-
         string? yeniAd = AdKutusu.Sor(baglam.Sahip, eskiAd);
         if (yeniAd is null || yeniAd == eskiAd)
         {
@@ -79,6 +73,28 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             return;
         }
 
+        // REFERANS ONARIMI. Bir SOLIDWORKS dosyasinin adi degisince onu
+        // kullanan montaj/teknik resim ESKI ADI arar; komsuluk kurali da
+        // kurtarmiyor (CLAUDE.md 5). Tek cozum ebeveynin ICINE yazmak - ve
+        // bunun calistigi Erkan'in makinesinde OLCULDU (28.08.2026).
+        if (SwReferans.TasiyabilirMi(yol))
+        {
+            OnarimPlani plan = ReferansOnarimi.Planla(baglam.Referanslar.Indeks, yol, yeniAd);
+            switch (OnarimKutusu.Sor(baglam.Sahip, plan, eskiAd))
+            {
+                case OnarimKarari.Vazgec:
+                    baglam.Bildir("Ad değiştirme iptal edildi.");
+                    return;
+
+                case OnarimKarari.Onar:
+                    Onar(baglam, plan, eskiAd, yeniAd);
+                    return;
+
+                default:
+                    break;   // onarmadan devam
+            }
+        }
+
         IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yol, yeniAd);
 
         if (!rapor.Oldu)
@@ -99,6 +115,64 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         baglam.Bildir($"{eskiAd} → {yeniAd}");
     }
 
+    /// <summary>
+    /// Adi degistirir VE onu kullanan dosyalari onarir - hepsi ya da hicbiri.
+    /// Sonuc SAYIYLA yaziliyor; "oldu" demek yetmez (CLAUDE.md 10).
+    /// </summary>
+    private static void Onar(IslemBaglami baglam, OnarimPlani plan, string eskiAd, string yeniAd)
+    {
+        OnarimSonucu sonuc = ReferansOnarimi.Uygula(plan);
+        if (!sonuc.Oldu)
+        {
+            MessageBox.Show(
+                baglam.Sahip, sonuc.Sebep ?? "Bilinmeyen sebep.",
+                "Onarılamadı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            baglam.Bildir("Onarılamadı — " + eskiAd);
+            return;
+        }
+
+        string yeniYol = WindowsYolu.Birlestir(WindowsYolu.Klasor(plan.EskiYol), yeniAd);
+
+        // INDEKS TAZELENIYOR: yoksa referans paneli artik olmayan bir adi
+        // "kullaniyor" diye gosterir (CLAUDE.md 3).
+        baglam.Referanslar.Tazele([yeniYol, .. sonuc.Onarilanlar]);
+
+        GeriAlDefteri.Kaydet(OnarimiGeriAl(yeniYol, plan.EskiYol, eskiAd, yeniAd, sonuc.Onarilanlar));
+
+        baglam.Tazele(yeniYol);
+        baglam.Bildir(
+            $"{eskiAd} → {yeniAd} · onu kullanan {sonuc.Onarilanlar.Count} dosya onarıldı");
+    }
+
+    /// <summary>
+    /// Onarimi GERI ALIR: adi eskiye dondurur VE ebeveynleri geri onarir.
+    ///
+    /// EBEVEYN LISTESI BURADA TASINIYOR, indekse yeniden sorulmuyor: indeks
+    /// ad degisiminden sonra yeni adi bilmez ve sifir ebeveyn dondururdu -
+    /// yani geri alma dosyayi eski adina dondurup ebeveynleri YENI ada bakar
+    /// halde birakirdi. Referansi geri alma KIRARDI.
+    /// </summary>
+    private static GeriAlinabilir OnarimiGeriAl(
+        string yeniYol, string eskiYol, string eskiAd, string yeniAd,
+        IReadOnlyList<string> ebeveynler)
+        => new(
+            $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması ve {ebeveynler.Count} onarım",
+            baglam =>
+            {
+                var olmayan = new List<string>();
+                OnarimSonucu geri = ReferansOnarimi.Uygula(
+                    ReferansOnarimi.PlanlaBilinenlerle(ebeveynler, yeniYol, eskiAd));
+
+                if (!geri.Oldu)
+                {
+                    olmayan.Add(yeniAd + " — " + (geri.Sebep ?? "bilinmeyen sebep"));
+                    return olmayan;
+                }
+
+                baglam.Referanslar.Tazele([eskiYol, .. ebeveynler]);
+                return olmayan;
+            });
+
     /// <summary>Geri alma: eski adi geri koyar.</summary>
     private static GeriAlinabilir GeriAlmasi(string yeniYol, string eskiAd, string yeniAd)
         => new(
@@ -114,32 +188,10 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
                 return olmayan;
             });
-
-    private static bool SolidworksMu(DosyaTuru tur)
-        => tur is DosyaTuru.Parca or DosyaTuru.Montaj or DosyaTuru.TeknikResim;
-
-    /// <summary>
-    /// CLAUDE.md 3: BILMEDIGIMIZI SOYLE. Bu bir "emin misiniz?" degil; eksik
-    /// olanin ADI. Referans indeksi gelince bu uyari kalkar ve yerine gercek
-    /// onarim gelir.
-    /// </summary>
-    private static bool ReferansUyarisi(IWin32Window sahip)
-        => MessageBox.Show(
-            sahip,
-            "Bu bir SOLIDWORKS dosyası.\n\n"
-            + "Adını değiştirirseniz onu kullanan montaj ve teknik resimler "
-            + "parçayı bulamayabilir.\n\n"
-            + "Referans taraması ve onarımı HENÜZ YAPILMIYOR — hangi dosyaların "
-            + "bunu kullandığını bilmiyoruz ve bağı onaramıyoruz.\n\n"
-            + "Yine de devam edilsin mi?",
-            "Referans bağı kırılabilir",
-            MessageBoxButtons.OKCancel,
-            MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) == DialogResult.OK;
 }
 
 /// <summary>
-/// Kucuk ad sorma kutusu. WinForms'ta hazir bir "InputBox" yok; buraya
+/// /// Kucuk ad sorma kutusu. WinForms'ta hazir bir "InputBox" yok; buraya
 /// yaziliyor cunku yalnizca bu islem kullaniyor (CLAUDE.md 1b).
 /// </summary>
 internal static class AdKutusu
