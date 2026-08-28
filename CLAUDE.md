@@ -18,6 +18,11 @@ teknik resim referanslarını koruyan masaüstü uygulaması.
 > **§1b ve §1c Erkan'ın koyduğu kalıcı varsayılanlardır** — §1b her yeni kodun
 > tasarımı, §1c takılınca ne yapılacağı. İkisi de ayrıca sorulmaz.
 
+> **AÇIK İŞLER BURADA DEĞİL — [`SIRADAKI.md`](SIRADAKI.md)'de.** Bu dosya
+> bayatlamayan gerçekleri tutar; günün yapılacakları ayrı bir dosyada durur ve
+> iş bitince oradan silinir (§1b'nin kendisi: değişen şey tek yerde yaşar).
+> Yeni bir oturum önce burayı, sonra `SIRADAKI.md`'yi okur.
+
 ---
 
 ## 1. Altın kurallar
