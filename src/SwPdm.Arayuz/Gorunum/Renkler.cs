@@ -12,13 +12,8 @@ internal static class Renkler
     // Ust baslik seridi (koyu)
     internal static readonly Color BaslikArkaPlan = Color.FromArgb(0x2F, 0x53, 0x75);
     internal static readonly Color BaslikYazi = Color.FromArgb(0xFF, 0xFF, 0xFF);
-    internal static readonly Color BaslikSolukYazi = Color.FromArgb(0xC9, 0xD8, 0xE8);
     internal static readonly Color BaslikDugmeVurgu = Color.FromArgb(0x1F, 0x6F, 0xEB);
     internal static readonly Color BaslikDugmeUzerinde = Color.FromArgb(0x3F, 0x66, 0x88);
-
-    // SOLIDWORKS durum isareti
-    internal static readonly Color DurumKapali = Color.FromArgb(0x9F, 0xB3, 0xC6);
-    internal static readonly Color DurumAcik = Color.FromArgb(0x4C, 0xC3, 0x8A);
 
     // Govde
     internal static readonly Color GovdeArkaPlan = Color.FromArgb(0xF0, 0xF0, 0xF0);

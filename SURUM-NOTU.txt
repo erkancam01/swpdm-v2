@@ -1,4 +1,60 @@
-BU SURUMDE YENI - TAZELEME ARTIK BEKLETMIYOR (ve iki SESSIZ hata gitti)
+BU SURUMDE YENI - PANEL, KLAVYE VE HATIRLANAN YERLESIM
+
+  REFERANS PANELI
+    Satirin IPUCU artik TAM YOL: bulunmus dosyada gercek yeri, bulunamamis
+    referansta dosyanin ICINDE yazan yolu, aciklama satirinda cumlenin
+    tamamini gosteriyor. Once ipucu yalnizca dosya ADINI tekrarliyordu -
+    iki farkli klasordeki ayni adli iki dosya AYIRT EDILEMIYORDU.
+    Enter  : secili satira gider (once yalnizca cift tik vardi)
+    Ctrl+C : satirin yolunu panoya kopyalar, ne kopyalandigini yazar
+    Ctrl+Shift+L : panel odaktayken de calisir (once agaca tiklamak
+             gerekiyordu; oysa panelde secili satirin EBEVEYNI zaten agacta
+             secili olan dosya)
+
+  AGACTA KLAVYE
+    Enter     : dosyayi acar; klasorde dali acar/kapatir
+    Backspace : bir ust klasore cikar (koktesen "zaten en usttesin" der)
+    Esc       : aramadan cikar - arama kutusundayken de, agactayken de
+
+  HATIRLANAN YERLESIM
+    Pencere boyutu, iki bolucunun yeri ve son tur suzgeci artik saklaniyor.
+    Konum BILEREK saklanmiyor: ikinci ekran cikarilinca pencere gorunmez bir
+    koordinatta acilabilirdi.
+
+  EKRANDAKI IKI YALAN KALKTI
+    1. Basliktaki raptiye ve disli dugmeleri ciziliyor, ustune gelince renk
+       degistiriyor ama TIKLANINCA HICBIR SEY YAPMIYORDU. Artik raptiye
+       pencereyi ustte tutuyor (vurgu = acik), disli Ayarlar sekmesini
+       aciyor.
+    2. Ortadaki "SOLIDWORKS: kapalı" yazisi KALDIRILDI. SOLIDWORKS ile
+       hicbir baglantimiz yok ve o yazi hicbir zaman degismiyordu; yani bir
+       DURUM degil bir sustu. Gercek baglanti gelirse gosterge de gelir.
+
+  GRI MENU OGESININ SEBEBI
+    Fare ustune gelince durum cubuguna da dusuyor (once yalnizca ipucunda
+    duruyordu; Wine'da ipucu hic cikmiyor, dar ekranda kirpiliyor).
+
+  KAPIYA 14. OLCUM EKLENDI - VE IKI KEZ "HAYIR" DEDI
+    Esc once Form.KeyDown'a, sonra arama kutusunun kendi KeyDown'ina
+    baglandi; ikisinde de kapi HAYIR dedi. Sebep olculdu: kutu bir
+    ToolStripTextBox ve ToolStrip, Escape'i kendi tus isleyisinde YUTUYOR -
+    ne forma ne kutuya geliyor. ProcessCmdKey ile tuttu ve kapi EVET dedi
+    (agactaki satir sayisi 14 -> 3 -> 14). Yani bu ozellik, kapisi olmadan
+    "calisiyor" sanilarak pakete girebilirdi.
+
+  BOYUT KAPISI DA KONUSTU
+    AnaForm 611 satira cikinca kapi kirildi; klavye AnaForm.Kisayollar.cs'e
+    ayrildi (AnaForm 531). Sinir isini yapiyor.
+
+  OLCULDU
+    277 test (272 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ,
+    calistirma kapisinda 14 olcum.
+
+  OLCULMEDI
+    Ctrl+C'nin panoya gercekten yazdigi WINE'DA olculmedi (pano koprusu
+    ayri bir katman); kod yolu Windows'ta standart. Sende bir dene.
+
+ONCEKI SURUMDE - TAZELEME ARTIK BEKLETMIYOR (ve iki SESSIZ hata gitti)
 
   Sen sormustun: "verdigim komutlar daha iyi olabilecek seyleri kisitliyor
   mu, mesela tazele mantigi". Cevap: KURAL degil, uygulamasi kisitliyordu.

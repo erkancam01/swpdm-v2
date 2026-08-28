@@ -22,6 +22,16 @@ internal sealed class ReferansListesi : ListView
     private readonly ColumnHeader _rolSutunu;
     private readonly bool _hazir;
 
+    /// <summary>
+    /// Bir satirin gorunmeyen tarafi.
+    ///
+    /// <paramref name="Hedef"/> cift tikta gidilecek yer (cozulememis satirda
+    /// null). <paramref name="TamMetin"/> ipucunda gosterilen ve panoya
+    /// kopyalanan metin: cozulmusse dosyanin GERCEK yolu, cozulememisse
+    /// dosyanin ICINDE yazan yol, aciklama satirinda ise cumlenin tamami.
+    /// </summary>
+    private sealed record Satir(string? Hedef, string TamMetin);
+
     private Font? _kalin;
 
     internal ReferansListesi()
@@ -72,7 +82,7 @@ internal sealed class ReferansListesi : ListView
         var satir = new ListViewItem(metin)
         {
             ImageIndex = -1,
-            Tag = null,
+            Tag = new Satir(null, metin),
             BackColor = Renkler.ReferansBolumZemin,
             ForeColor = Renkler.BolumBasligiYazi,
             Font = KalinYazi(),
@@ -93,20 +103,31 @@ internal sealed class ReferansListesi : ListView
     /// agac oraya gider. Cozulememis bir referansta null gecilir - o satir
     /// tiklanabilir GORUNMEZ, cunku gidilecek bir yer yok.
     /// </summary>
+    /// <param name="tamMetin">
+    /// Ipucunda gosterilecek ve panoya kopyalanacak metin - GENELDE TAM YOL.
+    ///
+    /// NEDEN SART (Erkan'in ekraninda olculdu): satirda yalnizca dosya adi
+    /// yaziyordu ve ipucu da AYNI adi tekrarliyordu. Iki farkli klasordeki
+    /// ayni adli iki dosya boylece AYIRT EDILEMIYOR, hedefin nerede oldugu
+    /// hic gorunmuyordu - oysa bu uygulamada "hangi dosya" sorusunun cevabi
+    /// listenin kendisi kadar onemli (CLAUDE.md 5: ad esitligi tek basina
+    /// yeterli degil).
+    /// </param>
     internal void Ekle(
-        string dosyaAdi, string rol, int simgeSirasi, Color yazi, string? hedefYol = null)
+        string dosyaAdi, string rol, int simgeSirasi, Color yazi,
+        string? hedefYol = null, string? tamMetin = null)
     {
         var satir = new ListViewItem(dosyaAdi)
         {
             ImageIndex = simgeSirasi,
-            Tag = hedefYol,
+            Tag = new Satir(hedefYol, tamMetin ?? dosyaAdi),
             ForeColor = yazi,
 
             // Panel dar oldugunda uzun ad ve uzun SEBEP cumlesi kirpiliyor
             // (olculdu: "Tarama yarım kaldı; list..."). Kirpilan sey bir
             // sebepse kullanici NEDEN eksik oldugunu goremez - CLAUDE.md 3.
             // Tam metin ipucunda duruyor.
-            ToolTipText = dosyaAdi,
+            ToolTipText = tamMetin ?? dosyaAdi,
         };
 
         satir.SubItems.Add(rol);
@@ -115,7 +136,19 @@ internal sealed class ReferansListesi : ListView
 
     /// <summary>Cift tiklanan satirin hedef yolu; yoksa null.</summary>
     internal string? TiklananHedef(Point nokta)
-        => GetItemAt(nokta.X, nokta.Y)?.Tag as string;
+        => (GetItemAt(nokta.X, nokta.Y)?.Tag as Satir)?.Hedef;
+
+    /// <summary>Secili satirin hedef yolu (Enter icin); yoksa null.</summary>
+    internal string? SeciliHedef => Secili?.Hedef;
+
+    /// <summary>
+    /// Secili satirin panoya kopyalanacak metni - tam yol ya da aciklama
+    /// cumlesinin tamami. Secim yoksa null.
+    /// </summary>
+    internal string? SeciliMetin => Secili?.TamMetin;
+
+    private Satir? Secili
+        => SelectedItems.Count > 0 ? SelectedItems[0].Tag as Satir : null;
 
     /// <summary>Yazi tipi degisince kalin kopya bayatlar; atilir.</summary>
     protected override void OnFontChanged(EventArgs e)

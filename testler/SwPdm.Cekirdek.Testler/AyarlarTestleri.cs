@@ -136,4 +136,39 @@ public class AyarlarTestleri : IDisposable
 
         Assert.Empty(ayarlar.SonKokler);
     }
+    [Fact]
+    public void YERLESIM_diske_yazilip_geri_OKUNUYOR()
+    {
+        // Pencere boyutu, iki bolucu ve son suzgec: uygulama her acilista
+        // bunlari sifirliyordu.
+        var ayarlar = new Ayarlar
+        {
+            PencereBoyutu = "900x1000",
+            DikeyBolen = 400,
+            AltBolen = 250,
+            Suzgec = "Parça",
+        };
+
+        Assert.True(ayarlar.Yaz(_dosya));
+
+        Ayarlar geri = Ayarlar.Oku(_dosya);
+        Assert.Equal("900x1000", geri.PencereBoyutu);
+        Assert.Equal(400, geri.DikeyBolen);
+        Assert.Equal(250, geri.AltBolen);
+        Assert.Equal("Parça", geri.Suzgec);
+    }
+
+    [Fact]
+    public void BOZUK_SAYI_ayarlarin_TAMAMINI_bozmuyor()
+    {
+        // Dosya elle duzenlenebiliyor; bozuk tek bir satir yuzunden butun
+        // ayarlarin kaybolmasi kabul edilemez (CLAUDE.md 1a).
+        File.WriteAllLines(_dosya, ["dikeyBolen=abc", "altBolen=250", "otomatikTazele=hayir"]);
+
+        Ayarlar geri = Ayarlar.Oku(_dosya);
+        Assert.Null(geri.DikeyBolen);
+        Assert.Equal(250, geri.AltBolen);
+        Assert.False(geri.OtomatikTazele);
+    }
+
 }

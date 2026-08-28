@@ -55,6 +55,8 @@ AGAC_TIK_X=105                                  # dugum metnine denk gelen x
 SUZGEC_Y=95                                     # suzgec seridinin y'si
 SUZGEC_PARCA_X=171                              # "Parca" dugmesinin x'i
 SUZGEC_TUMU_X=38                                # "Tumu" dugmesinin x'i
+ARAMA_X=235                                     # arama kutusunun ortasi
+ARAMA_Y=68                                      # arama kutusunun y'si
 # Agac alani. AGAC_ILK_SATIR'dan TURETILIYOR, ikinci kez yazilmiyor:
 # yerlesim degisince tek bir sayi degisiyor (CLAUDE.md 8).
 AGAC_KIRP="560x250+5+$(( AGAC_ILK_SATIR - 7 ))"
@@ -367,28 +369,28 @@ SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/13] surec ayakta ............ EVET"
+  echo "   [1/14] surec ayakta ............ EVET"
 else
-  echo "   [1/13] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/14] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/13] hata akisi temiz ........ HAYIR"
+  echo "   [2/14] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/13] hata akisi temiz ........ EVET"
+  echo "   [2/14] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/13] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/14] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/13] cokme penceresi yok ..... EVET"
+  echo "   [3/14] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -410,12 +412,12 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/13] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/14] ana pencere dogdu ....... EVET ($ANA)"
   # HICBIR SEY SECILI DEGILKEN bir goruntu: 13. olcum satir rengine bakiyor
   # ve secim boyasi rengi ORTERDI. Sonraki olcumler tiklamaya basliyor.
   import -window root "$CALISMA/ilk.png" > /dev/null 2>&1
 else
-  echo "   [4/13] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/14] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -440,13 +442,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/13] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/14] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/13] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/14] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/13] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/14] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -472,13 +474,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/13] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    echo "   [6/14] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/13] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    echo "   [6/14] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/13] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  echo "   [6/14] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -519,13 +521,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
-    echo "   [7/13] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+    echo "   [7/14] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
   else
-    echo "   [7/13] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    echo "   [7/14] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
     SORUN=1
   fi
 else
-  echo "   [7/13] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  echo "   [7/14] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -548,13 +550,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [8/13] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    echo "   [8/14] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [8/13] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    echo "   [8/14] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [8/13] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  echo "   [8/14] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -580,13 +582,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [9/13] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/14] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [9/13] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/14] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [9/13] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  echo "   [9/14] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -616,13 +618,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # ayirt etmedi (yazi kenar yumusatmayla 62 renk uretiyor). Ayiran tek sey
   # piksel sayisinin YIRMI KATLIK farki.
   if [ "${PIKSEL:-0}" -gt 3000 ]; then
-    echo "   [10/13] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
+    echo "   [10/14] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
   else
-    echo "   [10/13] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
+    echo "   [10/14] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
     SORUN=1
   fi
 else
-  echo "   [10/13] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
+  echo "   [10/14] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -659,16 +661,16 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_TXT="$(kirpma_izi "$CALISMA/referans-txt.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_SW" != "$IZ_TXT" ] && [ "${SW_L:-0}" -gt 50 ]; then
-    echo "   [11/13] referans listesi ...... EVET (referansli/referanssiz ayrisiyor, $SW_L piksel)"
+    echo "   [11/14] referans listesi ...... EVET (referansli/referanssiz ayrisiyor, $SW_L piksel)"
   else
-    echo "   [11/13] referans listesi ...... HAYIR (iz ${IZ_SW:0:8} / ${IZ_TXT:0:8}, $SW_L piksel)"
+    echo "   [11/14] referans listesi ...... HAYIR (iz ${IZ_SW:0:8} / ${IZ_TXT:0:8}, $SW_L piksel)"
     SORUN=1
   fi
 
   # 12. olcum bu goruntuye bakiyor: SOLIDWORKS dosyasi secili olan.
   cp "$CALISMA/referans.png" "$CALISMA/referans-son.png" 2>/dev/null
 else
-  echo "   [11/13] referans listesi ...... OLCULEMEDI (pencere yok)"
+  echo "   [11/14] referans listesi ...... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -689,13 +691,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BASLIK_BANT="$(renk_bant_say "$CALISMA/referans.png" "$REFERANS_KIRP" \
     "$PENCERE_X" "$PENCERE_Y" "$BOLUM_ZEMIN")"
   if [ "${BASLIK_BANT:-0}" -ge 2 ]; then
-    echo "   [12/13] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
+    echo "   [12/14] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
   else
-    echo "   [12/13] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
+    echo "   [12/14] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
     SORUN=1
   fi
 else
-  echo "   [12/13] yon ayrimi ............ OLCULEMEDI (pencere yok)"
+  echo "   [12/14] yon ayrimi ............ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -725,17 +727,57 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   KILIT_BANT="$(renk_bant_say "$CALISMA/ilk.png" "$AGAC_KIRP" \
     "$PENCERE_X" "$PENCERE_Y" "$ACIK_DOSYA")"
   if [ "${KILIT_BANT:-0}" -ge 1 ]; then
-    echo "   [13/13] kilit dosyalari ....... EVET (kilit gizlendi, sahibi isaretli)"
+    echo "   [13/14] kilit dosyalari ....... EVET (kilit gizlendi, sahibi isaretli)"
   else
-    echo "   [13/13] kilit dosyalari ....... HAYIR ($KILIT_BANT isaret, 1 bekleniyordu)"
+    echo "   [13/14] kilit dosyalari ....... HAYIR ($KILIT_BANT isaret, 1 bekleniyordu)"
     SORUN=1
   fi
 else
-  echo "   [13/13] kilit dosyalari ....... OLCULEMEDI (pencere yok)"
+  echo "   [13/14] kilit dosyalari ....... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
-import -window root "$GORUNTU" > /dev/null 2>&1 && echo "   goruntu: $GORUNTU"
+import -window root "$GORUNTU" > /dev/null 2>&1 && # 14) ESC: ARAMADAN CIKIS
+#
+# NEDEN VAR: Esc bu uygulamada BAGLI DEGILDI ve aramadan cikmanin tek yolu
+# kutuyu elle bosaltmakti (olculdu, 28.08.2026). Esc eklendi; eklenen sey
+# olculmezse yarin sessizce kirilir - v1'in suzgec dugmesi tam boyle
+# kirilmisti (CLAUDE.md 8: tani temizliginde Click baglantisi silindi).
+#
+# OLCUM SAYIYLA: arama sonucu agaci DEGISTIRIR (satir sayisi baska olur),
+# Esc gezinmeye DONDURUR (sayi tabana geri gelir). "asa" araniyor cunku
+# ornek klasorde yalnizca "asaParcaa1.SLDPRT" esliyor - sonuc sayisi
+# tabandan kesin farkli.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  import -window root "$CALISMA/esc-once.png" > /dev/null 2>&1
+  ESC_TABAN="$(agac_satir_say "$CALISMA/esc-once.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool mousemove "$(( PENCERE_X + ARAMA_X ))" "$(( PENCERE_Y + ARAMA_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 1
+  xdotool type --clearmodifiers "asa" > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/esc-arama.png" > /dev/null 2>&1
+  ESC_ARAMA="$(agac_satir_say "$CALISMA/esc-arama.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers Escape > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/esc-sonra.png" > /dev/null 2>&1
+  ESC_SONRA="$(agac_satir_say "$CALISMA/esc-sonra.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "${ESC_ARAMA:-0}" -ne "${ESC_TABAN:-0}" ] \
+     && [ "${ESC_SONRA:-0}" -eq "${ESC_TABAN:-0}" ]; then
+    echo "   [14/14] Esc ile aramadan cikis  EVET ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
+  else
+    echo "   [14/14] Esc ile aramadan cikis  HAYIR ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
+    SORUN=1
+  fi
+else
+  echo "   [14/14] Esc ile aramadan cikis  OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+echo "   goruntu: $GORUNTU"
 
 if [ "$SORUN" -ne 0 ]; then
   echo "== KAPI KIRIK =="

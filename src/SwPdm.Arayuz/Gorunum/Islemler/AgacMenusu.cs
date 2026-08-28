@@ -42,6 +42,20 @@ internal sealed class AgacMenusu
                 ShowShortcutKeys = islem.Kisayol != Keys.None,
             };
             oge.Click += (_, _) => Calistir(islem);
+
+            // GRI OGENIN SEBEBI DURUM CUBUGUNA DA DUSER. Once sebep yalnizca
+            // IPUCUNDAYDI: kullanici gri ogenin ustune gelip bekliyor,
+            // ipucu cikmazsa (Wine'da cikmiyor, dar ekranda kirpiliyor)
+            // "neden calismiyor" sorusu cevapsiz kaliyordu. Ipucu KALDI;
+            // bu, ikinci bir kanal (CLAUDE.md 3).
+            oge.MouseEnter += (_, _) =>
+            {
+                if (!oge.Enabled && oge.ToolTipText is string neden && neden.Length > 0)
+                {
+                    Durum?.Invoke(this, neden);
+                }
+            };
+
             _islemler[oge] = islem;
             _menu.Items.Add(oge);
         }

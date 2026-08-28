@@ -356,12 +356,17 @@ internal sealed class ReferansSurucusu
         foreach ((string yazilan, Cozum cozum) in _indeks.Kullandiklari(yol))
         {
             bool bayat = ReferansIndeksi.BayatMi(yol, yazilan, cozum);
+
+            // IPUCUNDA HANGI YOL: bulunduysa dosyanin GERCEK yeri (kullanici
+            // "hangi dosya" diye ona bakiyor), bulunamadiysa dosyanin ICINDE
+            // yazan yol (aranan seyin ne oldugunu ancak o soyluyor).
             liste.Ekle(
                 WindowsYolu.DosyaAdi(yazilan),
                 bayat ? "yol BAYAT" : AsagiRol(cozum),
                 Simge(yazilan),
                 bayat ? Renkler.YolBayatYazi : Renkler.ReferansAsagiYazi,
-                cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null);
+                cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null,
+                cozum.Yol ?? yazilan);
         }
     }
 
@@ -375,7 +380,7 @@ internal sealed class ReferansSurucusu
         {
             liste.Ekle(
                 WindowsYolu.DosyaAdi(kullanan), "kullanan", Simge(kullanan),
-                Renkler.ReferansYukariYazi, kullanan);
+                Renkler.ReferansYukariYazi, kullanan, kullanan);
         }
 
         // GUVENILIR DEGILSE SEBEP HER ZAMAN YAZILIR - liste dolu olsa bile.
@@ -400,7 +405,7 @@ internal sealed class ReferansSurucusu
     /// Simgesi YOK (-1): bir dosya satiri gibi gorunmemeli, cunku degil.
     /// </summary>
     private static void Aciklama(ReferansListesi liste, string cumle, string rol, Color yazi)
-        => liste.Ekle(cumle, rol, -1, yazi);
+        => liste.Ekle(cumle, rol, -1, yazi, hedefYol: null, tamMetin: cumle);
 
     /// <summary>
     /// Asagi yondeki satirin rol kelimesi. BELIRSIZ olan SAKLANMAZ: tek bir

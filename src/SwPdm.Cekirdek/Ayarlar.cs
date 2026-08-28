@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace SwPdm.Cekirdek;
@@ -47,6 +48,25 @@ public sealed class Ayarlar
     /// Varsayilan ACIK: ortak surucude calisirken gordugun sey gercek olmali.
     /// </summary>
     public bool OtomatikTazele { get; set; } = true;
+
+    /// <summary>
+    /// Pencerenin son boyutu ("genislikxyukseklik"); saklanmadiysa null.
+    ///
+    /// NEDEN SAKLANIYOR: uygulama her acilista 572x880 aciliyor ve
+    /// kullanicinin buyuttugu pencere her seferinde kayboluyordu.
+    /// KONUM SAKLANMIYOR - ikinci ekran cikarilirsa pencere gorunmeyen bir
+    /// koordinatta acilabilirdi; boyutta bu risk yok.
+    /// </summary>
+    public string? PencereBoyutu { get; set; }
+
+    /// <summary>Agac ile alt panel arasindaki bolucunun yeri; yoksa null.</summary>
+    public int? DikeyBolen { get; set; }
+
+    /// <summary>Onizleme ile referans listesi arasindaki bolucunun yeri.</summary>
+    public int? AltBolen { get; set; }
+
+    /// <summary>Son tur suzgeci ("Parça" gibi); "Tümü" secilinceye kadar null.</summary>
+    public string? Suzgec { get; set; }
 
     /// <summary>Diskten okur. Dosya yoksa bos ayarlar doner - hata degildir.</summary>
     public static Ayarlar Oku(string? dosya = null)
@@ -102,11 +122,36 @@ public sealed class Ayarlar
                 case "otomatikTazele":
                     ayarlar.OtomatikTazele = deger != "hayir";
                     break;
+
+                case "pencere":
+                    ayarlar.PencereBoyutu = deger;
+                    break;
+
+                case "dikeyBolen":
+                    ayarlar.DikeyBolen = Sayi(deger);
+                    break;
+
+                case "altBolen":
+                    ayarlar.AltBolen = Sayi(deger);
+                    break;
+
+                case "suzgec":
+                    ayarlar.Suzgec = deger;
+                    break;
             }
         }
 
         return ayarlar;
     }
+
+    /// <summary>
+    /// Metni sayiya cevirir; olmazsa null. Bozuk tek bir satir ayarlarin
+    /// TAMAMINI bozmamali - dosya elle duzenlenebiliyor.
+    /// </summary>
+    private static int? Sayi(string deger)
+        => int.TryParse(deger, NumberStyles.Integer, CultureInfo.InvariantCulture, out int sayi)
+            ? sayi
+            : null;
 
     /// <summary>
     /// Diske yazar. Yazilamazsa SESSIZCE gecer ve false doner - ayar
@@ -138,6 +183,28 @@ public sealed class Ayarlar
 
             satirlar.Add("siralama=" + Siralama.Yaz());
             satirlar.Add("otomatikTazele=" + (OtomatikTazele ? "evet" : "hayir"));
+
+            // BOS DEGER YAZILMAZ: "pencere=" gibi bir satir okunurken zaten
+            // atlaniyor; dosyada anlamsiz satir birakmanin faydasi yok.
+            if (!string.IsNullOrWhiteSpace(PencereBoyutu))
+            {
+                satirlar.Add("pencere=" + PencereBoyutu);
+            }
+
+            if (DikeyBolen is int dikey)
+            {
+                satirlar.Add("dikeyBolen=" + dikey.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (AltBolen is int alt)
+            {
+                satirlar.Add("altBolen=" + alt.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (!string.IsNullOrWhiteSpace(Suzgec))
+            {
+                satirlar.Add("suzgec=" + Suzgec);
+            }
 
             File.WriteAllLines(yol, satirlar);
             return true;

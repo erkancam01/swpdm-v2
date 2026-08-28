@@ -69,6 +69,21 @@ internal sealed partial class AnaForm : Form
             _durum.Bilgi(cumle);
         };
 
+        // --- baslik seridindeki iki dugme
+        //
+        // BUNLAR OLU DUGMELERDI: ciziliyor, ustune gelince renk degistiriyor
+        // ama TIKLANINCA HICBIR SEY YAPMIYORLARDI (CLAUDE.md 3'un "sessiz
+        // basari"sinin kardesi: sessiz HICLIK). Ya bagla ya kaldir; baglandi.
+        _baslik.RaptiyeDugmesi.Click += (_, _) =>
+        {
+            TopMost = !TopMost;
+            _baslik.RaptiyeDugmesi.BackColor =
+                TopMost ? Renkler.BaslikDugmeVurgu : Renkler.BaslikArkaPlan;
+            _durum.Bilgi(TopMost ? "Pencere üstte tutuluyor." : "Pencere üstte tutulmuyor.");
+        };
+
+        _baslik.AyarDugmesi.Click += (_, _) => _sekmeler.SelectedTab = _ayarlarSekmesi;
+
         // --- dosya acma (cift tiklama)
         _agac.NodeMouseDoubleClick += (_, e) =>
         {
@@ -142,32 +157,8 @@ internal sealed partial class AnaForm : Form
             }
         };
 
-        // --- kisayollar
-        KeyPreview = true;
-        KeyDown += (_, e) =>
-        {
-            if (e.Control && e.KeyCode == Keys.O)
-            {
-                e.SuppressKeyPress = true;
-                _kokSecici.Sor();
-                return;
-            }
-
-            // Siralama kisayolu: karari SiralamaSecici veriyor, burada
-            // yalnizca tus iletiliyor (CLAUDE.md 1b).
-            if (_suzgecler.SiralamaSecici.TusaBasildi(e.KeyData))
-            {
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            // Kisayollar islem listesinden geliyor; menudeki yazi ile calisan
-            // tus AYRISAMAZ (CLAUDE.md 1b).
-            if (_agac.Focused && _menu.TusaBasildi(e.KeyData))
-            {
-                e.SuppressKeyPress = true;
-            }
-        };
+        // --- kisayollar (AnaForm.Kisayollar.cs)
+        KisayollariKur();
 
         // Arac cubugundaki dugme SILMEZ - cop kutusunu ACAR. Silme Delete
         // tusunda ve sag tik menusunde (Erkan: "silme zaten sag tikta var").
@@ -188,9 +179,10 @@ internal sealed partial class AnaForm : Form
     {
         base.OnLoad(e);
 
-        // Bolenler ancak denetimin gercek boyutu olustuktan sonra ayarlanabilir.
-        BoleniAyarla(_dikeyBolen, 320);
-        BoleniAyarla(_altBolen, 282);
+        // Yerlesim (boyut, boluculer, suzgec) HATIRLANIYOR; karari
+        // Yerlesim dosyasi veriyor (CLAUDE.md 1b). Boluculer ancak denetimin
+        // gercek boyutu olustuktan sonra ayarlanabilir - orasi da orada.
+        Yerlesim.Uygula(this, _dikeyBolen, _altBolen, _suzgecler, _ayarlar);
 
         if (!string.IsNullOrWhiteSpace(_acilistaAcilacakKok))
         {
@@ -235,6 +227,14 @@ internal sealed partial class AnaForm : Form
         {
             _agac.Focus();
         }
+    }
+
+    /// <summary>Kapanirken yerlesim saklanir; bir dahaki acilista geri gelir.</summary>
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        Yerlesim.Sakla(this, _dikeyBolen, _altBolen, _suzgecler, _ayarlar);
+        _ayarlar.Yaz();
+        base.OnFormClosing(e);
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
@@ -342,7 +342,17 @@ internal sealed partial class AnaForm : Form
         // Kendi islemimiz: izleyici susturuluyor, yoksa iki tazeleme
         // carpisir ve "yeni klasoru sec" davranisi kaybolur.
         _izleyici.Sustur(true);
-        _doldurucu.Yenile();
+
+        // ARAMADA KALINIR. "Yenile" arama kipini DUSURUYOR (KokuAc
+        // _aramaSonucu'nu null yapiyor) ve kutuda metin dururken agac
+        // sessizce gezinmeye donuyordu - kullanici sildigi dosyanin
+        // arama sonucunda ne oldugunu goremiyordu. Arama kipindeysek
+        // sonuc yeniden URETILIYOR (diskten), degilse eski yol.
+        if (!_doldurucu.AramaKipinde || !_arama.YenidenAra())
+        {
+            _doldurucu.Yenile();
+        }
+
         CopDugmesiniTazele();
         GeriAlDugmesiniTazele();
 
@@ -518,17 +528,4 @@ internal sealed partial class AnaForm : Form
     /// SplitterDistance araligin disinda kalirsa istisna atar. Sinira kirpiyoruz:
     /// pencere kucukken acilmak, acilmamaktan iyidir.
     /// </summary>
-    private static void BoleniAyarla(SplitContainer bolen, int hedef)
-    {
-        int uzunluk = bolen.Orientation == Orientation.Horizontal ? bolen.Height : bolen.Width;
-        int enBuyuk = uzunluk - bolen.SplitterWidth - bolen.Panel2MinSize;
-        int enKucuk = bolen.Panel1MinSize;
-
-        if (enBuyuk < enKucuk)
-        {
-            return;
-        }
-
-        bolen.SplitterDistance = Math.Clamp(hedef, enKucuk, enBuyuk);
-    }
 }

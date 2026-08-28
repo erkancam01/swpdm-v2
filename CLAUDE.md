@@ -487,6 +487,13 @@ kullanıcıya yanlış dosyayı sildirir.
   → Denetimin kendi `SelectedNode`'u **odak** olarak yaşatılır ve her zaman
   kümenin içinde tutulur; böylece ona bakan her şey (önizleme, durum çubuğu,
   arama, süzgeç) hiçbir şey bilmeden çalışmaya devam eder.
+- **`ToolStrip` `Escape`'i YUTUYOR — `Form.KeyDown` görmüyor.** Odak bir
+  `ToolStripTextBox`'tayken (arama kutusu) `Escape` ne `KeyPreview` açık
+  formun `KeyDown`'ına ne de kutunun kendi `KeyDown`'ına geliyor; ToolStrip
+  onu kendi tuş işleyişinde tüketiyor. **İkisi de denendi ve ölçümde HAYIR
+  dedi.** Çalışan tek kanca `Form.ProcessCmdKey` — komut tuşları, dialog
+  tuşlarından **önce** sorulur. Belirti sinsi: aynı kısayol ağaç odaktayken
+  çalışıyor, kutudayken hiçbir şey yapmıyor; yani "bazen çalışan" bir tuş.
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
@@ -890,6 +897,10 @@ dosyasında** duruyor:
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
 | **taşırken bağımlıları da al** | `Arayuz/Gorunum/Islemler/BagimlilariEkle.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
+| **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
+| ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
+| referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/ReferansPaneliTuslari.cs` |
+| hatırlanan yerleşim (boyut · bölücü · süzgeç) | `Arayuz/Gorunum/Yerlesim.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
 `AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı
@@ -939,13 +950,13 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on üç şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı on dört şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
 mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
 **önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu** ·
 **referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
-sahibi işaretleniyor mu**.
+sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu**.
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1041,6 +1052,14 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > §9 döngüsü: TEMİZ (1 bant) → `Kilit.Coz` etkisiz bırakılınca **YAKALADI**
 > (0 bant) → geri konunca TEMİZ.
 
+> **On dördüncüsü neden var (Esc):** `Esc` bu uygulamada **hiçbir yere
+> bağlı değildi**; aramadan çıkmanın tek yolu kutuyu elle boşaltmaktı.
+> Eklendi — ve ölçüm **iki kez HAYIR dedi**: önce `Form.KeyDown`'a, sonra
+> kutunun kendi `KeyDown`'ına bağlandı, ikisi de tutmadı (§6'daki ToolStrip
+> maddesi bu ölçümden çıktı). `ProcessCmdKey` ile tuttu. Ölçüm sayıyla:
+> ağaçtaki satır sayısı **14 → 3** (arama) **→ 14** (Esc). Tek başına
+> "değişti" demek yetmezdi; asıl şart **tabana geri dönmesi**.
+>
 > **Yedincisi neden var (sıralama):** sıralamanın kendi menüsü Wine'da
 > **çökertiyor** (yukarıdaki `ContextMenuStrip` maddesi), yani menü yoluyla
 > hiç ölçülemez. Aynı kodu çağıran `Ctrl+Shift+S` ölçülüyor. Ölçüm **sayıyla

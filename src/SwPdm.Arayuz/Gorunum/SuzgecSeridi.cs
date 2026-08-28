@@ -54,6 +54,30 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
     /// <summary>Su an secili tur. null = butun turler.</summary>
     internal DosyaTuru? SeciliTur => _secili?.Tag as DosyaTuru?;
 
+    /// <summary>
+    /// Kayitli suzgeci geri koyar (tur ADIYLA). Bulunamazsa "Tümü" kalir -
+    /// bir tur kaldirilirsa eski ayar sessizce yanlis bir suzgec secmesin.
+    ///
+    /// SiralamaSecici.Kur ile ayni kalip: "kalici secim"i geri koymanin tek
+    /// yolu serit dosyasinin kendisidir (CLAUDE.md 1b).
+    /// </summary>
+    internal void Kur(string? turAdi)
+    {
+        if (string.IsNullOrWhiteSpace(turAdi))
+        {
+            return;
+        }
+
+        foreach (Button d in _dugmeler)
+        {
+            if (string.Equals(d.Text, turAdi, StringComparison.Ordinal))
+            {
+                Sec(d);
+                return;
+            }
+        }
+    }
+
     private void Ekle(string etiket, DosyaTuru? tur)
     {
         Button d = Dugme(etiket);

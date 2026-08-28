@@ -72,6 +72,48 @@ internal sealed class AramaSurucusu : IDisposable
         _gecikme.Stop();
     }
 
+    /// <summary>
+    /// Aramayi KAPATIR: kutu bosalir, koşan arama iptal edilir ve
+    /// <see cref="Bosaltildi"/> tetiklenir - yani agac gezinmeye doner.
+    ///
+    /// <see cref="MetniTemizle"/>'den farki bu son adim: o, kutuyu SESSIZCE
+    /// bosaltiyor ve agac arama kipinde KALIYOR. Esc'in bekledigi davranis
+    /// bu degil.
+    /// </summary>
+    /// <returns>Kapatilacak bir arama var miydi.</returns>
+    internal bool Kapat()
+    {
+        if (string.IsNullOrWhiteSpace(_kutu.Text))
+        {
+            return false;
+        }
+
+        MetniTemizle();
+        Baslat(string.Empty);   // iptal + Bosaltildi
+        return true;
+    }
+
+    /// <summary>
+    /// Ayni metinle aramayi YENIDEN kosturur.
+    ///
+    /// NEDEN GEREKLI: arama sonucundayken bir islem yapilinca (sil, tasi,
+    /// adlandir) agac tazeleniyor ve tazeleme arama kipini DUSURUYORDU -
+    /// kutuda metin yazarken agac sessizce gezinmeye donuyordu. Sonuc artik
+    /// yeniden uretiliyor; yeni durum (silinen dosya, degisen ad) da
+    /// dogru gorunsun diye ONBELLEKTEN degil DISKTEN.
+    /// </summary>
+    internal bool YenidenAra()
+    {
+        if (string.IsNullOrWhiteSpace(_kutu.Text))
+        {
+            return false;
+        }
+
+        _gecikme.Stop();
+        Baslat(_kutu.Text);
+        return true;
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {

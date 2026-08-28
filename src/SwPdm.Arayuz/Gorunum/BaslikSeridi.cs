@@ -18,8 +18,6 @@ internal sealed class BaslikSeridi : Control
     private readonly Button _raptiye;
     private readonly Button _ayarlar;
     private readonly bool _hazir;
-    private string _durumMetni = "SOLIDWORKS: kapalı";
-    private bool _bagli;
 
     internal BaslikSeridi()
     {
@@ -39,7 +37,10 @@ internal sealed class BaslikSeridi : Control
         _ipucu = new ToolTip();
         _ayarlar = SeritDugmesi(Simgeler.Disli(Renkler.BaslikYazi), "Ayarlar");
         _raptiye = SeritDugmesi(Simgeler.Raptiye(Renkler.BaslikYazi), "Pencereyi üstte tut");
-        _raptiye.BackColor = Renkler.BaslikDugmeVurgu;
+
+        // VURGU "ACIK" DEMEK. Once dugme daima vurgulu duruyordu, yani
+        // pencere ustte tutulmadigi halde ustte tutuluyormus gibi
+        // gorunuyordu. Vurguyu artik davranis belirliyor (AnaForm).
         Controls.Add(_ayarlar);
         Controls.Add(_raptiye);
 
@@ -60,22 +61,6 @@ internal sealed class BaslikSeridi : Control
     /// <summary>Ayar dugmesi. Davranisi disarida baglanir.</summary>
     internal Button AyarDugmesi => _ayarlar;
 
-    /// <summary>SOLIDWORKS baglantisinin bilinen durumu. Kimse set etmezse kapali kalir.</summary>
-    internal bool Bagli
-    {
-        get => _bagli;
-        set
-        {
-            if (_bagli == value)
-            {
-                return;
-            }
-
-            _bagli = value;
-            _durumMetni = value ? "SOLIDWORKS: açık" : "SOLIDWORKS: kapalı";
-            Invalidate();
-        }
-    }
 
     private Button SeritDugmesi(Image simge, string ipucuMetni)
     {
@@ -124,33 +109,17 @@ internal sealed class BaslikSeridi : Control
 
         using var kalinYazi = new Font(Font.FontFamily, 10.5f, FontStyle.Bold);
         using var urunFircasi = new SolidBrush(Renkler.BaslikYazi);
-        using var durumFircasi = new SolidBrush(Renkler.BaslikSolukYazi);
 
         SizeF urunBoyu = g.MeasureString("SW PDM", kalinYazi);
         g.DrawString("SW PDM", kalinYazi, urunFircasi, 10f, (Height - urunBoyu.Height) / 2f);
 
-        // Ortadaki durum: kucuk daire + metin, ikisi birlikte ortalanir.
-        const float daireCap = 9f;
-        const float daireBosluk = 6f;
-        SizeF durumBoyu = g.MeasureString(_durumMetni, Font);
-        float toplam = daireCap + daireBosluk + durumBoyu.Width;
-        float x = (Width - toplam) / 2f;
-        float dy = (Height - daireCap) / 2f;
-
-        Color daireRengi = _bagli ? Renkler.DurumAcik : Renkler.DurumKapali;
-        if (_bagli)
-        {
-            using var doluDaire = new SolidBrush(daireRengi);
-            g.FillEllipse(doluDaire, x, dy, daireCap, daireCap);
-        }
-        else
-        {
-            using var bosDaire = new Pen(daireRengi, 1.4f);
-            g.DrawEllipse(bosDaire, x, dy, daireCap, daireCap);
-        }
-
-        g.DrawString(_durumMetni, Font, durumFircasi,
-            x + daireCap + daireBosluk, (Height - durumBoyu.Height) / 2f);
+        // ORTADAKI "SOLIDWORKS: kapalı" GOSTERGESI KALDIRILDI (28.08.2026).
+        //
+        // Sebep: SOLIDWORKS ile hicbir baglantimiz YOK ve "Bagli" ozelligini
+        // hicbir yer set etmiyordu; yazi her zaman "kapalı" diyordu. Yani
+        // ekranda duran sey bir DURUM degil, bir SUSTU - ve kullanici ona
+        // bakip "SOLIDWORKS kapali" sanabilirdi (CLAUDE.md 3: uydurma durum
+        // gostermek yasak). Gercek bir baglanti geldiginde gosterge de gelir.
     }
 
     protected override void Dispose(bool disposing)
