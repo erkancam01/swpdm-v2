@@ -43,6 +43,12 @@ internal sealed class SilIslemi : IAgacIslemi
 
     /// <inheritdoc/>
     public void Uygula(IslemBaglami baglam)
+        // ONCE TARA: "bunlari N dosya KULLANIYOR" uyarisi ancak guncel
+        // indeksle dogru olur - ve kullanici bu sayiya bakip siliyor
+        // (CLAUDE.md 3).
+        => ReferansTazeleme.Once(baglam, () => Sil(baglam));
+
+    private static void Sil(IslemBaglami baglam)
     {
         IReadOnlyList<object> ogeler = baglam.Secim.Ogeler;
         if (ogeler.Count == 0 || baglam.Secim.CopKlasoru is not string cop)
@@ -108,6 +114,8 @@ internal sealed class SilIslemi : IAgacIslemi
         baglam.Bildir(kalan.Count == 0
             ? $"{silinen.Count} öğe çöp kutusuna gönderildi."
             : $"{silinen.Count} silindi · {kalan.Count} silinemedi");
+
+        ReferansTazeleme.Sonra(baglam);
     }
 
     /// <summary>

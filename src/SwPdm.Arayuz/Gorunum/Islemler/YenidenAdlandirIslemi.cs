@@ -39,6 +39,11 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
     /// <inheritdoc/>
     public void Uygula(IslemBaglami baglam)
+        // ONCE TARA: kimin kullandigi bilinmeden onarim yapilamaz ve kutudaki
+        // sayi yanlis olur. Tarama iptal edilirse ad da degismez.
+        => ReferansTazeleme.Once(baglam, () => Adlandir(baglam));
+
+    private static void Adlandir(IslemBaglami baglam)
     {
         object? oge = baglam.Secim.TekOge;
         string? yol = SecimBaglami.Yolu(oge);
@@ -115,6 +120,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         baglam.Tazele(rapor.YeniYol);
         baglam.Bildir($"{eskiAd} → {yeniAd}");
+        ReferansTazeleme.Sonra(baglam);
     }
 
     /// <summary>
@@ -144,6 +150,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         baglam.Tazele(yeniYol);
         baglam.Bildir(
             $"{eskiAd} → {yeniAd} · onu kullanan {sonuc.Onarilanlar.Count} dosya onarıldı");
+        ReferansTazeleme.Sonra(baglam);
     }
 
     /// <summary>

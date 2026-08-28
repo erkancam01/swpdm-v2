@@ -834,6 +834,7 @@ dosyasında** duruyor:
 | MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
 | **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
 | **ad değişince / taşınınca ebeveynleri onarma** | `Cekirdek/ReferansOnarimi.cs` |
+| **işlem öncesi/sonrası referans taraması** | `Arayuz/Gorunum/Islemler/ReferansTazeleme.cs` |
 | dosyaya yazılacak yolun şekli (uzunluk, göreli) | `Cekirdek/YazilacakYol.cs` |
 | onarım onay kutusu | `Arayuz/Gorunum/Islemler/OnarimKutusu.cs` |
 | yazma deneyi paketi | `araclar/DeneyUretici/` |
@@ -936,6 +937,15 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > içinde *"Bilinmiyor / taranmadı"* satırı duruyor. Ayırt eden şey içeriğin
 > **değişmesi** — aynı kırpmanın parmak izi alınıyor, `Ctrl+Shift+R`
 > öncesi ve sonrası farklı olmalı.
+>
+> **ÖLÇÜMÜN VARSAYIMI BAYATLADI — ve bunu KAPI söyledi (28.08.2026).**
+> Ölçüm önce *"Ctrl+Shift+R'dan önce ve sonra iz değişti mi"*ydi. Tarama
+> **her işlemden önce kendiliğinden** koşmaya başlayınca indeks tuşa
+> basılmadan dolar oldu, iz değişmedi ve kapı **HAYIR** dedi. Kapı doğru
+> davrandı: kırılan kod değil, ölçümün **varsayımı**ydı. Yeni ölçüm
+> varsayımsız — *referansı olan* bir dosya ile *referansı olmayan* bir
+> dosyanın listesi **farklı** olmalı. Liste hiç dolmazsa ikisi de boş çıkar
+> ve yakalanır (§9 döngüsüyle doğrulandı).
 >
 > **KAPI YİNELENEBİLİR DEĞİLDİ — ve bunu ancak ikinci koşu gösterdi.**
 > Uygulama indeksi `%APPDATA%`'ya yazıyor; önceki koşudan kalan indeks

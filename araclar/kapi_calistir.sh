@@ -617,40 +617,51 @@ else
   SORUN=1
 fi
 
-# 11) REFERANS LISTESI: tarama sonrasi "kim kullaniyor" doluyor mu
+# 11) REFERANS LISTESI: gercek referanslar gorunuyor mu
 #
 # NEDEN VAR: bu uygulamanin VARLIK SEBEBI. Liste sessizce bos kalirsa
 # kullanici "bu parcayi kimse kullanmiyor" sanip SILER (CLAUDE.md 3).
-# Olcum: Ctrl+Shift+R ile taranir, parca secilir, sag alt listedeki
-# beyaz olmayan piksel sayilir. Tarama ONCESI de bakiliyor - liste
-# taramadan once BOS olmali, sonra DOLMALI; ikisi birden olcum.
+#
+# OLCUM DEGISTI (28.08.2026) - VE BUNU KAPI KENDISI SOYLEDI.
+# Eskiden "Ctrl+Shift+R'dan ONCE ve SONRA iz degisti mi" olculuyordu.
+# Tarama artik HER ISLEMDEN ONCE kendiliginden kostugu icin indeks
+# Ctrl+Shift+R'a basilmadan ONCE doluyor; iz degismiyor ve kapi HAYIR
+# dedi. Kapi dogru davrandi: olcumun VARSAYIMI bayatlamisti.
+#
+# Yeni olcum varsayimsiz: REFERANSI OLAN bir dosya ile REFERANSI OLMAYAN
+# bir dosya secildiginde listenin ICERIGI FARKLI olmali.
+#   satir 13 = Parça1.SLDPRT  (teknik resim onu kullaniyor)
+#   satir 10 = okubeni.txt    (referans tasimayan tur - liste bos)
+# Liste hic dolmazsa ikisi de ayni (bos) cikar ve kapi YAKALAR.
+TXT_SATIR=$(( PENCERE_Y + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * 10 ))
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  # SAYI DEGIL PARMAK IZI: liste tarama ONCESI de bos degil - icinde
-  # "Bilinmiyor / taranmadı" satiri duruyor (CLAUDE.md 3: bos birakmak
-  # "referansi yok" diye okunurdu). Yani "doldu mu" sorusu ayirt etmiyor;
-  # ayirt eden sey ICERIGIN DEGISMESI.
-  IZ_ONCE="$(kirpma_izi "$CALISMA/onizleme.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
-  ONCE_L="$(beyaz_olmayan "$CALISMA/onizleme.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
-
   xdotool key --clearmodifiers ctrl+shift+r > /dev/null 2>&1
   sleep 8
+
   xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
   sleep 4
   import -window root "$CALISMA/referans.png" > /dev/null 2>&1
-  IZ_SONRA="$(kirpma_izi "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
-  SONRA_L="$(beyaz_olmayan "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+  IZ_SW="$(kirpma_izi "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+  SW_L="$(beyaz_olmayan "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
-  if [ "$IZ_ONCE" != "$IZ_SONRA" ] && [ "${SONRA_L:-0}" -gt 50 ]; then
-    echo "   [11/13] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$TXT_SATIR" click 1 > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/referans-txt.png" > /dev/null 2>&1
+  IZ_TXT="$(kirpma_izi "$CALISMA/referans-txt.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_SW" != "$IZ_TXT" ] && [ "${SW_L:-0}" -gt 50 ]; then
+    echo "   [11/13] referans listesi ...... EVET (referansli/referanssiz ayrisiyor, $SW_L piksel)"
   else
-    echo "   [11/13] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
+    echo "   [11/13] referans listesi ...... HAYIR (iz ${IZ_SW:0:8} / ${IZ_TXT:0:8}, $SW_L piksel)"
     SORUN=1
   fi
+
+  # 12. olcum bu goruntuye bakiyor: SOLIDWORKS dosyasi secili olan.
+  cp "$CALISMA/referans.png" "$CALISMA/referans-son.png" 2>/dev/null
 else
   echo "   [11/13] referans listesi ...... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
-
 
 # 12) YON AYRIMI: referans listesinde IKI BOLUM BASLIGI var mi
 #

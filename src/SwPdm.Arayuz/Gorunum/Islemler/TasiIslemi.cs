@@ -48,6 +48,14 @@ internal static class Aktar
             return;
         }
 
+        // ONCE TARA, SONRA SOR: onay kutusundaki "kullandigi N dosya" sayisi
+        // ancak guncel indeksle dogru olur, ve onarim buna bagli.
+        ReferansTazeleme.Once(baglam, () => Sor(baglam, yollar, hedefKlasor, kip));
+    }
+
+    private static void Sor(
+        IslemBaglami baglam, IReadOnlyList<string> yollar, string hedefKlasor, AktarmaKipi kip)
+    {
         // BAGIMLILIK KUTUSU KALKTI (28.08.2026). Onarim geldigi icin
         // parcalari birlikte goturmek referans acisindan SART DEGIL; onay
         // kutusundaki tek satir onun yerini aliyor.
@@ -83,20 +91,6 @@ internal static class Aktar
         AktarmaKipi kip,
         CancellationToken belirtec)
     {
-        // ONCE TARAMA (Erkan, 28.08.2026). Indeks hazir degilse kimin
-        // kullandigi bilinmez ve tasima sonrasi ONARIM YAPILAMAZ - bu delik
-        // gercekte acildi: dosya tasindi, uygulama sessizce onarmadi ve
-        // SOLIDWORKS parcayi bulamadi.
-        //
-        // IPTAL EDILIRSE TASIMA DA YAPILMAZ: yarim bilgiyle onarmaktansa
-        // hic dokunmamak dogru (CLAUDE.md 1a).
-        if (kip == AktarmaKipi.Tasi && !baglam.Referanslar.Hazir
-            && !Tara(baglam, belirtec))
-        {
-            baglam.Ilerleme.Bitti(() => baglam.Bildir("Taşıma iptal edildi — tarama yarım kaldı."));
-            return;
-        }
-
         var olan = new List<string>();
         var olmayan = new List<string>();
         var atlanan = new List<string>();
@@ -192,21 +186,6 @@ internal static class Aktar
         baglam.Ilerleme.Bitti(() => Topla(
             baglam, ciftler, olan, olmayan, atlanan, kip, kesildi,
             onarilan, onarimHatalari, tutan, onarimSebebi));
-    }
-
-    /// <summary>
-    /// Tasimadan once referans taramasi. Doner: devam edilebilir mi.
-    ///
-    /// CAGIRAN TEK YER BURASI ama TARAMANIN KENDISI ReferansSurucusu'nda -
-    /// ikinci bir tarama kopyasi yazilmiyor (CLAUDE.md 8).
-    /// </summary>
-    private static bool Tara(IslemBaglami baglam, CancellationToken belirtec)
-    {
-        baglam.Bildir("Referanslar taranıyor — taşımadan önce gerekli…");
-        TaramaSonucu? sonuc = baglam.Referanslar.Tara(
-            belirtec, (yapilan, toplam, ad) => baglam.Ilerleme.Adim(yapilan, toplam, ad));
-
-        return sonuc is not null && !sonuc.Iptal;
     }
 
     /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
@@ -356,6 +335,9 @@ internal static class Aktar
         baglam.Bildir(olmayan.Count == 0
             ? $"{olan.Count} öğe {is_}.{kuyruk}"
             : $"{olan.Count} {is_} · {olmayan.Count} olmadı{kuyruk}");
+
+        // ISLEMDEN SONRA da taranir; bekletmez.
+        ReferansTazeleme.Sonra(baglam);
     }
 
     /// <summary>Tasinanlari eski klasorlerine geri gonderir.</summary>

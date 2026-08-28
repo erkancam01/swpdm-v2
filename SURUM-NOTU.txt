@@ -1,4 +1,36 @@
-BU SURUMDE DUZELTILEN - "AGACTA GORUNUYOR AMA SOLIDWORKS BULAMIYOR"
+BU SURUMDE YENI - TARAMA HER ISLEMIN ONCESINDE VE SONRASINDA
+
+  Istedigin sey: "referans tarama islemi her gerekli islemden once ve sonra
+  calissin - tasima, isimlendirme vs ne varsa."
+
+  ONCESI BEKLETIR, SONRASI BEKLETMEZ - ve bu ayrim bilincli:
+
+    ONCE   islem BUNA BAGLI. Kim kullaniyor bilinmeden ne onay kutusundaki
+           sayi dogru olur ne de onarim yapilabilir. Beklenir, ilerleme
+           cubugunda gorunur, IPTAL edilebilir. Iptal edersen ISLEM DE
+           YAPILMAZ - yarim bilgiyle dosyaya dokunmaktansa hic dokunmamak.
+
+    SONRA  hicbir sey buna bagli degil. Arka planda kosar, seni bekletmez
+           ve durum cubuguna KARISMAZ (islemin kendi sonucu orada kalsin).
+
+  HANGI ISLEMLER: tasima · kopyalama · yeniden adlandirma · silme ·
+  geri alma. Yeni klasor gibi referansa dokunmayan islemler haric.
+
+  MALIYET: tarama ARTIMLI. Boyutu ve tarihi degismeyen dosya ACILMIYOR;
+  degisen yoksa is yalnizca agaci gezmek. Ag surucusundeki gercek maliyeti
+  tahmin etmiyorum - yavas gelirse soyle, olcup konusuruz.
+
+  KAPI KENDI OLCUMUNU BOZDU - VE BU DOGRU DAVRANIS
+    11. olcum "Ctrl+Shift+R'dan once/sonra liste degisti mi" diye
+    bakiyordu. Tarama artik tusa basilmadan kostugu icin liste zaten
+    doluydu, iz degismedi ve kapi HAYIR dedi. Kirilan kod degil, olcumun
+    VARSAYIMIYDI. Yeni olcum varsayimsiz: referansi OLAN bir dosya ile
+    referansi OLMAYAN bir dosyanin listesi farkli olmali. Liste hic
+    dolmazsa ikisi de bos cikar ve yakalanir - bilerek bozup dogrulandi.
+
+  257 test, dort kapi TEMIZ.
+
+ONCEKI SURUMDE - "AGACTA GORUNUYOR AMA SOLIDWORKS BULAMIYOR"
 
   Bildirdigin hata: panel "Parca1.SLDPRT - icinde" diyordu, SOLIDWORKS ise
   dosyayi acamiyordu. Iki ayri kusur vardi, ikisi de kapandi.

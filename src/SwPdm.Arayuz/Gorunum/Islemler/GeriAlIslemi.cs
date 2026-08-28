@@ -127,5 +127,8 @@ internal sealed class GeriAlIslemi : IAgacIslemi
         }
 
         baglam.Bildir("Geri alındı: " + adim.Aciklama);
+
+        // Geri alma dosyalari degistirdi; indeks arka planda tazelenir.
+        ReferansTazeleme.Sonra(baglam);
     }
 }
