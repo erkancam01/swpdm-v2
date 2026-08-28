@@ -1,4 +1,57 @@
-BU SURUMDE YENI - TOPLU ONARIM: "BULUNANLARI DUZELT"
+BU SURUMDE YENI - REFERANSI ELLE BAGLA (Ctrl+Shift+L)
+
+  Senin sorun: "dosyaların referansını kendim seçerek düzeltebiliyor muyum".
+  Artik EVET.
+
+  NEREDE OTOMATIK YETMIYOR
+    Biz bir referansi ADA gore ariyoruz. Dosyanin adi baska bir programla
+    degistiyse ortada eslesecek ad kalmaz - "BULUNAMADI" satiri boyle dogar
+    ve toplu onarim da onu duzeltemez, cunku baglayacagi hedefi bilmiyor.
+    Hangi dosya oldugunu YALNIZCA sen bilirsin.
+
+  NASIL
+    1. Dosyayi sec (montaj ya da teknik resim)
+    2. Ctrl+Shift+L  (sag tik menusunde de var)
+    3. Referanslar taranir (bekletir, iptal edilebilir)
+    4. "Hangi referans baglanacak?" - yalnizca COZULEMEYEN ve BAYAT olanlar
+       listelenir; calisan baglar listeye girmez
+    5. Gercek dosyayi sec (adi farkli olabilir)
+    6. Onay kutusu: neyin yerine ne yazilacak, IKI YOL DA TAM yazar
+    7. Yama: KOPYALA -> YAMA -> DOGRULA -> DEGISTIR
+
+  DURUSTCE
+    GERI ALINAMAZ. Ctrl+Z bunu geri almaz; onay kutusunda da yaziyor.
+    SOLIDWORKS'te acik dosyaya YAZILMAZ (yanindaki "~$" kilidinden anlasilir).
+    Yama tutmazsa asil dosya HIC degismez ve sebep EKRANDA yazar.
+
+  BIR HATA DA BURADA CIKTI VE DUZELDI
+    Yamadan sonraki dogrulama ESKI ADI ariyordu. Tasimada bu dogru (ad
+    degismiyor), ama elle baglamada ad da degisebiliyor: yamadan sonra eski
+    ad dosyada hic gecmedigi icin dogrulama hicbir sey bulamiyor ve TUTMUS
+    bir yama "tutmadi" diye reddediliyordu. Artik yazilan ad araniyor; eski
+    ad geride kalmissa da bu bir KUSUR sayiliyor (SOLIDWORKS onu aramaya
+    devam ederdi).
+
+  OLCULDU
+    6 yeni test (toplam 271; 266 gecti, 5 Windows'a ozel atlandi).
+    Wine'da olculdu: Ctrl+Shift+L penceresi acildi ve alt klasordeki bir
+    montajin IKI bayat yolunu dogru durumuyla ("yol BAYAT") listeledi.
+
+  OLCULMEDI - ACIKCA SOYLUYORUM
+    Kapida KALICI bir olcum YOK. Sebebi: ornek klasordeki satir numaralarina
+    bagli olcumler var ve yeni dosya eklemek onlari kaydiriyor. Yukaridaki
+    olcum tek seferlik yapildi, kapiya girmedi.
+    Farkli ADLA baglanan bir dosyayi SOLIDWORKS aciyor mu - ayrica denenmedi.
+    Ad degistirme onarimi ayni kodu kullaniyor ve o SENDE calisti; yine de
+    ilk denemeni bir KOPYA klasorde yapmani oneririm.
+
+  TASIMA ONARIMI ARTIK OLCULDU
+    Onceki pakette "bunu deneyin" diye duruyordu: tasimanin yazdigi GORELI
+    yolu SOLIDWORKS kabul ediyor mu. Sen denedin, CALISTI. Yani yazma
+    tarafinda olculmemis yol kalmadi: ayni uzunlukta ad, dolgulu ad, goreli
+    yol - ucu de kabul ediliyor.
+
+ONCEKI SURUMDE - TOPLU ONARIM: "BULUNANLARI DUZELT"
 
   Raporlarda yeni bir sekme var: BAYAT YOLLAR. Ve onda bir dugme:
   "Bulunanlari duzelt".

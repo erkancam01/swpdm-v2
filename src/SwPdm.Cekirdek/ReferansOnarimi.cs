@@ -403,117 +403,12 @@ public static class ReferansOnarimi
         return new OnarimSonucu(true, [.. plan.Ebeveynler], null);
     }
 
-    /// <summary>
-    /// BAYAT YOLLARI TOPLUCA ONARIR - gecmiste kirilmis baglari toparlar.
-    ///
-    /// NEDEN GEREKLI: bu surumden onceki tasimalarda (ve baska bir programla
-    /// yapilan tasimalarda) dosyanin icindeki yol eskidi. Dosya duruyor, biz
-    /// onu buluyoruz, ama SOLIDWORKS acamiyor. Ileriye donuk onarim bunu
-    /// ONLUYOR; gecmiste olani ancak bu duzeltir.
-    ///
-    /// HER EBEVEYN ICIN AYRI ISLEM: bir ebeveynde birden cok bayat yol
-    /// olabilir, her biri kendi icinde KOPYALA -> YAMA -> DOGRULA -> DEGISTIR
-    /// olarak gecer. Biri tutmazsa otekiler DURMAZ; tutmayanin sebebi yazilir.
-    ///
-    /// ACIK DOSYAYA DOKUNULMAZ (yaninda "~$" kilidi olan) - sebebi yazilir.
-    /// </summary>
-    public static OnarimOzeti BayatlariOnar(ReferansIndeksi? indeks)
-    {
-        int onarilan = 0;
-        var hatalar = new List<string>();
-        var dokunulan = new List<string>();
-
-        if (indeks is null)
-        {
-            return new OnarimOzeti(0, ["Referans indeksi yok."], []);
-        }
-
-        foreach (IndeksKaydi kayit in new List<IndeksKaydi>(indeks.Kayitlar))
-        {
-            foreach (string yazilan in kayit.YazilanYollar)
-            {
-                Cozum cozum = indeks.Coz(kayit, yazilan);
-                if (!ReferansIndeksi.BayatMi(kayit.Yol, yazilan, cozum) || cozum.Yol is not string gercek)
-                {
-                    continue;
-                }
-
-                string? hata = Tazele(kayit.Yol, WindowsYolu.DosyaAdi(yazilan), gercek);
-                if (hata is null)
-                {
-                    onarilan++;
-                    if (!Iceriyor(dokunulan, kayit.Yol))
-                    {
-                        dokunulan.Add(kayit.Yol);
-                    }
-                }
-                else
-                {
-                    hatalar.Add(WindowsYolu.DosyaAdi(kayit.Yol) + " — " + hata);
-                }
-            }
-        }
-
-        return new OnarimOzeti(onarilan, hatalar, dokunulan);
-    }
-
-    /// <summary>
-    /// Tek bir ebeveyndeki tek bir bayat yolu gercek hedefe cevirir.
-    /// Doner: hata sebebi; tuttuysa null.
-    /// </summary>
-    private static string? Tazele(string ebeveyn, string dosyaAdi, string gercekYol)
-    {
-        foreach (string acik in AcikOlanlar([ebeveyn]))
-        {
-            return "SOLIDWORKS'te açık görünüyor; önce kapatın.";
-        }
-
-        string yeni = ebeveyn + YeniUzanti;
-        YamaSonucu s = SwYazici.YoluDegistir(
-            ebeveyn, yeni, dosyaAdi, gercekYol, WindowsYolu.Klasor(ebeveyn));
-
-        if (!s.Oldu)
-        {
-            Sil(yeni);
-            return s.Sebep;
-        }
-
-        string yedek = ebeveyn + YedekUzanti;
-        try
-        {
-            File.Move(ebeveyn, yedek);
-            File.Move(yeni, ebeveyn);
-            Sil(yedek);
-            return null;
-        }
-        catch (Exception hata) when (Dosya(hata))
-        {
-            Sil(yeni);
-            return hata.Message;
-        }
-    }
-
-    private static bool Iceriyor(List<string> liste, string aranan)
-    {
-        foreach (string v in liste)
-        {
-            if (string.Equals(v, aranan, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /// <summary>Yaninda "~$" kilidi olan, yani SOLIDWORKS'te acik gorunenler.</summary>
     private static IEnumerable<string> AcikOlanlar(IReadOnlyList<string> yollar)
     {
         foreach (string yol in yollar)
         {
-            string kilit = WindowsYolu.Birlestir(
-                WindowsYolu.Klasor(yol), Kilit.Onek + WindowsYolu.DosyaAdi(yol));
-            if (File.Exists(kilit))
+            if (Kilit.AcikMi(yol))
             {
                 yield return yol;
             }
@@ -565,22 +460,7 @@ public static class ReferansOnarimi
         }
     }
 
-    private static void Sil(string yol)
-    {
-        try
-        {
-            if (File.Exists(yol))
-            {
-                File.Delete(yol);
-            }
-        }
-        catch (Exception hata) when (Dosya(hata))
-        {
-            // silinemeyen gecici dosya isi bozmaz
-        }
-    }
+    private static void Sil(string yol) => DosyaIslemleri.GeciciyiSil(yol);
 
-    private static bool Dosya(Exception hata)
-        => hata is IOException or UnauthorizedAccessException
-            or NotSupportedException or ArgumentException;
+    private static bool Dosya(Exception hata) => DosyaIslemleri.DiskHatasi(hata);
 }

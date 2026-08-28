@@ -146,6 +146,15 @@ echo "   uretilen: $AD.exe ($(stat -c%s "$EXE") bayt)"
 # yol dogruydu, ayni yayin bu degisken olmadan SORUNSUZ aciliyordu.
 # Korelasyon birebir: bu degiskenin oldugu HER kosu kirildi, olmadigi HER
 # kosu calisti. Yalnizca mshtml (Gecko) kapatiliyor.
+# OLCULDU (28.08.2026) - LOCALE ASCII ISE WINE TURKCE DOSYA ADINI BOZUYOR.
+# Kapsayicinin varsayilani LC_CTYPE=POSIX. Wine dosya adlarini o kod
+# sayfasina cevirmeye calisiyor ve "Parça1.SLDPRT" uygulamaya
+# "ParC\'a1.SLDPRT" olarak geliyor. Belirti SESSIZ ve YANILTICI: dosya
+# agacta gorunuyor, ama dosyanin ICINDE yazan "Parça1.SLDPRT" ile eslesmiyor
+# ve referans "BULUNAMADI" cikiyor - yani kapi, uygulamada olmayan bir hatayi
+# olcmus olur (gercek Windows'ta adlar UTF-16, boyle bir cevrim yok).
+# Ilk gorulusu: elle baglama penceresi olculurken. Duzeltmesi tek satir.
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
 export WINEPREFIX="$CALISMA/wine" WINEDEBUG=-all WINEDLLOVERRIDES="mshtml="
 export DISPLAY=":$EKRAN_NO"
 UYGULAMA_LOG="$CALISMA/uygulama.log"

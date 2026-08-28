@@ -33,36 +33,23 @@ internal sealed class KokSecici
     /// <summary>Klasor secme kutusunu acar.</summary>
     internal void Sor()
     {
-        // CLAUDE.md 4 - OLCULMUS TUZAK: kabuk dosya iletisim kutulari surecin
-        // CALISMA KLASORUNU kaydiriyor ve o klasor bir daha silinemiyor.
-        // Bir dosya yoneticisinde bu gercek bir hata: kullanicinin tasidigi
-        // klasor "kullanimda" diye silinmez olur. Kutudan once yaziyoruz,
-        // kapandiktan sonra geri koyuyoruz.
-        string oncekiCalismaKlasoru = Directory.GetCurrentDirectory();
-
-        try
+        // Kutu KabukKutusu'ndan geciyor: o, surecin calisma klasorunu geri
+        // koyuyor (CLAUDE.md 4'te olculen tuzak, tek kopya).
+        using var kutu = new FolderBrowserDialog
         {
-            using var kutu = new FolderBrowserDialog
-            {
-                Description = "Çalışılacak kök klasörü seçin",
-                UseDescriptionForTitle = true,
-                ShowNewFolderButton = false,
-            };
+            Description = "Çalışılacak kök klasörü seçin",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = false,
+        };
 
-            if (BaslangicYolu is not null)
-            {
-                kutu.SelectedPath = BaslangicYolu;
-            }
-
-            DialogResult sonuc = Sahip is null ? kutu.ShowDialog() : kutu.ShowDialog(Sahip);
-            if (sonuc == DialogResult.OK)
-            {
-                Secildi?.Invoke(this, kutu.SelectedPath);
-            }
+        if (BaslangicYolu is not null)
+        {
+            kutu.SelectedPath = BaslangicYolu;
         }
-        finally
+
+        if (KabukKutusu.Goster(kutu, Sahip) == DialogResult.OK)
         {
-            GeriKoy(oncekiCalismaKlasoru);
+            Secildi?.Invoke(this, kutu.SelectedPath);
         }
     }
 
@@ -87,16 +74,4 @@ internal sealed class KokSecici
         _dugme.DropDownItems.Insert(0, girdi);
     }
 
-    private static void GeriKoy(string klasor)
-    {
-        try
-        {
-            Directory.SetCurrentDirectory(klasor);
-        }
-        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException
-                                         or DirectoryNotFoundException)
-        {
-            // Eski klasor artik yoksa yapacak bir sey yok; uygulamayi dusurmez.
-        }
-    }
 }

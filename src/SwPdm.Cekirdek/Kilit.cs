@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SwPdm.Cekirdek;
 
@@ -74,6 +75,18 @@ public static class Kilit
         => dosyaAdi is not null
             && dosyaAdi.Length > Onek.Length
             && dosyaAdi.StartsWith(Onek, StringComparison.Ordinal);
+
+    /// <summary>Bu dosyanin kilidinin (varsa) tam yolu.</summary>
+    public static string KilidininYolu(string yol)
+        => WindowsYolu.Birlestir(WindowsYolu.Klasor(yol), Onek + WindowsYolu.DosyaAdi(yol));
+
+    /// <summary>
+    /// Bu dosya SOLIDWORKS'te ACIK gorunuyor mu - yani yaninda "~$" kilidi
+    /// var mi (CLAUDE.md 5). Dosyaya yazan her yol once bunu sormali; acik
+    /// bir belgeyi yamalamak oturumdaki halle catisir.
+    /// </summary>
+    public static bool AcikMi(string? yol)
+        => !string.IsNullOrWhiteSpace(yol) && File.Exists(KilidininYolu(yol));
 
     /// <summary>Kilit adindan sahibinin adi; kilit degilse null.</summary>
     public static string? SahibininAdi(string? dosyaAdi)

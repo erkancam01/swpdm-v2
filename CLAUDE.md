@@ -410,6 +410,15 @@ Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek
 >
 > Kalan tek sınır: adın kendisi eski **yolun tamamından** uzunsa dolgu
 > yapılamaz — o zaman onarım **reddedilir ve sebebi yazılır**.
+>
+> **ÜÇÜNCÜ TUR ÖLÇÜLDÜ (28.08.2026) — TAŞIMA ONARIMI DA ÇALIŞIYOR.** Buraya
+> kadar ölçülen hep **ad değişimi**ydi; taşımanın yazdığı **göreli yol**
+> (`..\3\Parça1.SLDPRT` gibi) ölçülmemişti ve pakette *"bunu deneyin"* diye
+> duruyordu. Erkan uygulamanın kendisinde denedi: parça alt klasöre taşındı,
+> teknik resim **açıldı ve parçayı buldu**.
+>
+> → Yani üç yolun üçü de kabul ediliyor: **aynı uzunlukta ad · dolgulu ad ·
+> göreli yol**. Yazma tarafında ölçülmemiş bir yol kalmadı.
 
 ### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
 
@@ -757,6 +766,23 @@ menünün kendisi.
 > çağıran bir **kısayol** da alır.* Kısayol hem kullanıcıya yarar hem de
 > özelliği ölçülebilir kılar; menüsüz kalan bir özellik burada **kör noktadır**.
 
+### Wine + ASCII yerel ayar TÜRKÇE DOSYA ADINI BOZUYOR — ölçüldü (28.08.2026)
+
+Kapsayıcının varsayılanı `LC_CTYPE=POSIX`. Wine dosya adlarını o kod sayfasına
+çevirmeye çalışıyor ve **`Parça1.SLDPRT` uygulamaya `ParC'a1.SLDPRT` olarak
+geliyor** (indeks dosyasından `od -c` ile okundu).
+
+Belirti sinsi ve **yanıltıcı**: dosya ağaçta görünüyor, açılıyor, her şey
+normal — ama dosyanın **içinde** yazan `Parça1.SLDPRT` ile eşleşmiyor ve
+referans **`BULUNAMADI`** çıkıyor. Yani kapı, uygulamada **olmayan** bir hatayı
+ölçmüş olur; §9'un "yanlış alarm veren kapı, kapı olmaktan çıkar" maddesinin
+tam örneği. Gerçek Windows'ta adlar UTF-16, böyle bir çevrim yok.
+
+İlk görülüşü: elle bağlama penceresi ölçülürken liste iki satırı da
+`BULUNAMADI` gösterdi; `LANG=C.UTF-8` konunca **`yol BAYAT`** oldu — yani kod
+doğruydu, **ölçüm ortamı** yanlıştı. Çalıştırma kapısı artık `LANG`/`LC_ALL`
+ayarlıyor.
+
 ### Wine'ın ÖLÇMEDİĞİ
 
 - **Segoe UI kurulu değil** → yazı ölçüleri ve hizalamalar Windows'takinden farklı.
@@ -826,6 +852,7 @@ dosyasında** duruyor:
 | bir dosya satırının görünüşü (simge, metin, renk, ipucu) | `Arayuz/Gorunum/Agac/DosyaSatiri.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
+| kabuk kutuları (çalışma klasörünü koruma) | `Arayuz/Gorunum/KabukKutusu.cs` |
 | yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/YolCubugu.cs` |
 | kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ayarlar.cs` |
 | Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
@@ -834,6 +861,8 @@ dosyasında** duruyor:
 | MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
 | **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
 | **ad değişince / taşınınca ebeveynleri onarma** | `Cekirdek/ReferansOnarimi.cs` |
+| **bayat yolu gerçek dosyaya bağlama** (toplu + elle) | `Cekirdek/YolBaglama.cs` |
+| **referansı elle bağlama** (hangi yol, hangi dosya) | `Arayuz/Gorunum/Islemler/ElleBaglaIslemi.cs` |
 | **işlem öncesi/sonrası referans taraması** | `Arayuz/Gorunum/Islemler/ReferansTazeleme.cs` |
 | dosyaya yazılacak yolun şekli (uzunluk, göreli) | `Cekirdek/YazilacakYol.cs` |
 | onarım onay kutusu | `Arayuz/Gorunum/Islemler/OnarimKutusu.cs` |

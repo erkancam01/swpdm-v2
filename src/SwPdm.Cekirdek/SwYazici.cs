@@ -375,6 +375,16 @@ public static class SwYazici
         }
 
         string? beklenen = WindowsYolu.Cozumle(null, yeniTamYol);
+
+        // ARANAN AD, YAZILAN ADIN KENDISI - eski ad DEGIL.
+        //
+        // OLCULDU (28.08.2026): burasi once yalnizca eskiAd'i ariyordu ve
+        // tasimada bu dogruydu (dosya adi degismiyor, yalniz klasor degisiyor).
+        // ELLE BAGLAMA'da ad da degisebiliyor; yamadan sonra dosyada eski ad
+        // hic gecmedigi icin dogrulama HICBIR SEY bulamiyor ve tutmus bir yama
+        // "tutmadi" diye reddediliyordu. Belirti yaniltici: yazma dogru,
+        // olcum yanlis.
+        string yeniAdi = WindowsYolu.DosyaAdi(yeniTamYol);
         bool bulundu = false;
         var kalanlar = new List<string>();
 
@@ -389,9 +399,17 @@ public static class SwYazici
             bool sapan = false;
             MfcDize.Tara(acik, bulgu =>
             {
-                if (!string.Equals(
-                        WindowsYolu.DosyaAdi(bulgu.Deger), eskiAd, StringComparison.OrdinalIgnoreCase))
+                string ad = WindowsYolu.DosyaAdi(bulgu.Deger);
+
+                // ESKI AD GERIDE KALDIYSA BU BIR KUSURDUR: SOLIDWORKS o adi
+                // aramaya devam eder ve onarim yarim kalir (CLAUDE.md 5).
+                if (!string.Equals(ad, yeniAdi, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (string.Equals(ad, eskiAd, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sapan = true;
+                    }
+
                     return;
                 }
 

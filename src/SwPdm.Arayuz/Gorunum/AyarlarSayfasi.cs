@@ -137,36 +137,27 @@ internal sealed class AyarlarSayfasi : Panel
 
     private void Degistir()
     {
-        // CLAUDE.md 4 - OLCULMUS TUZAK: kabuk iletisim kutusu surecin CALISMA
-        // KLASORUNU kaydiriyor ve o klasor bir daha silinemiyor.
-        string oncekiCalismaKlasoru = Directory.GetCurrentDirectory();
-
-        try
+        // Kutu KabukKutusu'ndan geciyor: calisma klasorunu o geri koyuyor
+        // (CLAUDE.md 4'te olculen tuzak, tek kopya).
+        using var kutu = new FolderBrowserDialog
         {
-            using var kutu = new FolderBrowserDialog
-            {
-                Description = "Çöp kutusunun konacağı klasörü seçin",
-                UseDescriptionForTitle = true,
-                ShowNewFolderButton = true,
-            };
+            Description = "Çöp kutusunun konacağı klasörü seçin",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true,
+        };
 
-            if (kutu.ShowDialog(this) != DialogResult.OK)
-            {
-                return;
-            }
-
-            if (!Uyar(kutu.SelectedPath))
-            {
-                return;
-            }
-
-            _ayarlar.CopUstKlasoru = kutu.SelectedPath;
-            Kaydet();
-        }
-        finally
+        if (KabukKutusu.Goster(kutu, this) != DialogResult.OK)
         {
-            GeriKoy(oncekiCalismaKlasoru);
+            return;
         }
+
+        if (!Uyar(kutu.SelectedPath))
+        {
+            return;
+        }
+
+        _ayarlar.CopUstKlasoru = kutu.SelectedPath;
+        Kaydet();
     }
 
     /// <summary>
@@ -223,16 +214,4 @@ internal sealed class AyarlarSayfasi : Panel
         Degisti?.Invoke(this, EventArgs.Empty);
     }
 
-    private static void GeriKoy(string klasor)
-    {
-        try
-        {
-            Directory.SetCurrentDirectory(klasor);
-        }
-        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException
-                                         or DirectoryNotFoundException)
-        {
-            // Eski klasor artik yoksa yapacak bir sey yok.
-        }
-    }
 }

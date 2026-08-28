@@ -410,6 +410,35 @@ public static class DosyaIslemleri
         return hedef.StartsWith(kaynak, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Yarim kalmis gecici dosyayi SESSIZCE siler. Silinememesi isi bozmaz -
+    /// dosya diskte kalir ve kullanici onu gorur; sessizce yutulan sey burada
+    /// yalnizca SILME hatasi, islemin kendi sonucu degil (CLAUDE.md 3).
+    /// </summary>
+    public static void GeciciyiSil(string yol)
+    {
+        try
+        {
+            if (File.Exists(yol))
+            {
+                File.Delete(yol);
+            }
+        }
+        catch (Exception hata) when (DiskHatasi(hata))
+        {
+            // silinemeyen gecici dosya isi bozmaz
+        }
+    }
+
+    /// <summary>
+    /// Istisna DISK kaynakli mi - "catch when" suzgeci icin. TEK KOPYA:
+    /// yamalama ve onarim da bunu kullaniyor, yoksa listeler ayrisir ve
+    /// biri gunun birinde bir istisnayi yutar (CLAUDE.md 8).
+    /// </summary>
+    public static bool DiskHatasi(Exception hata)
+        => hata is IOException or UnauthorizedAccessException
+            or NotSupportedException or ArgumentException;
+
     private static string SonuAyiriciyaGetir(string yol)
         => yol.Length > 0 && WindowsYolu.AyiriciMi(yol[^1])
             ? yol
