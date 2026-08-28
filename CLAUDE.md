@@ -75,6 +75,18 @@ Bundan çıkan üç kural:
 > **sessizdir** — yanlış simge çizilir, hiçbir şey patlamaz. İkinci listeyi
 > birinciden üret; o zaman kayacak bir şey kalmaz.
 
+### 1d — KISA YAZ, madde madde
+
+Erkan, 28.08.2026: *"uzun uzun açıklıyorsun okumuyorum, kısa kısa maddeler
+hâlinde açıkla ve bunu hep yap."*
+
+**Bu da kabul edilmiş varsayılan.** Sohbetteki her cevap madde madde ve kısa.
+Uzun gerekçe **koda ve commit mesajına** yazılır, sohbete değil — orada
+kalıcıdır ve arandığında bulunur; sohbette okunmuyor.
+
+Not: bu §3'ü (dürüstlük) **kaldırmaz**. Çalışmayan bir şey yine söylenir —
+ama bir satırda.
+
 ### 1c — Takılınca BİR kez dene, sonra GEÇ ve söyle
 
 Erkan, 27.08.2026: *"takıldığın yeri düzeltmek için birden fazla deneme yapma,
