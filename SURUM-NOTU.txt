@@ -1,4 +1,34 @@
-BU SURUMDE YENI - REFERANSI ELLE BAGLA (Ctrl+Shift+L)
+BU SURUMDE YENI - DOSYAYI KENDI AGACIMIZDAN SECIYORSUN
+
+  Sen: "windows dosya yoneticisiyle bir isimiz olsun istemiyorum".
+  Kalkti. "Referansi elle bagla" artik KENDI agacimizi aciyor: ayni klasor
+  agaci, ayni simgeler, ayni siralama.
+
+  SINIR VE SEBEBI ACIK YAZIYOR
+    Secim ACIK KOKUN icinden yapilir - agacimiz orayi gosteriyor. Dosya
+    baska bir surucudeyse once o klasoru acmak gerekiyor; kutuda yaziyor,
+    sessizce "bulunamadi" demiyor.
+    Klasor secilemez: "Seç" dugmesi klasordeyken gri kaliyor.
+
+  BIR HATA DAHA CIKTI VE DUZELDI - AYNI ADLI BASKA REFERANS
+    Olculdu (Wine, uctan uca): Montaj1 hem Parça1'i hem Parça2'yi
+    kullaniyor. Parça2 referansini "Parça1.SLDPRT" adli bir dosyaya
+    baglamak REDDEDILDI - cunku dogrulama, yeni adi tasiyan HER dizenin
+    hedefi gostermesini bekliyordu ve montajin KENDI Parça1 referansi
+    baska yeri gosteriyordu. Baskasinin referansi bizim kusurumuz degil.
+    Artik yalnizca DEGISTIRDIGIMIZ ad geride kalirsa kusur sayiliyor -
+    bu onemli, cunku ayni yol montajda dort ayri akista yazili ve birini
+    atlamak eskisini geride birakirdi.
+
+  UCTAN UCA OLCULDU (Wine, 28.08.2026)
+    Montaj koke, kullandigi iki parca alt klasore kondu (ikisi de BAYAT).
+    Ctrl+Shift+L -> "Hangi referans baglanacak?" -> KENDI agacimizdan
+    dosya secildi -> onay -> yama YAZILDI. Dosyanin icinde artik
+    ".\alt\...\Parça1.SLDPRT" yaziyor ve eski Parça2 yolu YOK.
+    Windows dosya kutusu hicbir adimda acilmadi.
+    272 test (267 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ.
+
+AYNI TURDA - REFERANSI ELLE BAGLA (Ctrl+Shift+L)
 
   Senin sorun: "dosyaların referansını kendim seçerek düzeltebiliyor muyum".
   Artik EVET.

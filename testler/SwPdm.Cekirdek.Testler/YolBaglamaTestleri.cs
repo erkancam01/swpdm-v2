@@ -131,6 +131,41 @@ public sealed class YolBaglamaTestleri : IDisposable
     }
 
     [Fact]
+    public void BELGENIN_BASKA_REFERANSI_AYNI_ADI_TASISA_DA_BAGLANIYOR()
+    {
+        // OLCULDU (28.08.2026, Wine): Montaj1 hem Parça1'i hem Parça2'yi
+        // kullaniyor. Kullanici Parça2 referansini "Parça1.SLDPRT" adli bir
+        // dosyaya baglamak istedi ve islem REDDEDILDI - cunku dogrulama,
+        // yeni adi tasiyan HER dizenin hedefi gostermesini bekliyordu ve
+        // montajin KENDI Parça1 referansi baska yeri gosteriyordu.
+        // Baskasinin referansi bizim kusurumuz degil.
+        string montaj = Yol("alt", "Montaj1.SLDASM");
+        Directory.CreateDirectory(Yol("alt"));
+        File.Move(Yol("Montaj1.SLDASM"), montaj);
+
+        string hedef = Yol("Parça1.SLDPRT");
+        Assert.True(File.Exists(hedef));
+
+        string? sebep = YolBaglama.Bagla(montaj, "Parça2.SLDPRT", hedef);
+        Assert.True(sebep is null, sebep);
+
+        string[] yazili = [.. SwReferans.Oku(montaj).Dogrudan];
+
+        // Parça2 yolu ARTIK YOK; yerine hedefi cozen bir yol var.
+        Assert.DoesNotContain(
+            yazili,
+            y => string.Equals(
+                WindowsYolu.DosyaAdi(y), "Parça2.SLDPRT", StringComparison.OrdinalIgnoreCase));
+
+        Assert.Contains(
+            yazili,
+            y => string.Equals(
+                WindowsYolu.Cozumle(WindowsYolu.Klasor(montaj), y),
+                WindowsYolu.Cozumle(null, hedef),
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void KILIT_YANINDAYSA_ACIK_SAYILIYOR()
     {
         string resim = Yol("Parça1.SLDDRW");

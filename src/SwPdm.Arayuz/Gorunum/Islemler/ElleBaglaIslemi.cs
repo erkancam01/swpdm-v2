@@ -113,7 +113,7 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
         }
 
         string yazilanAd = WindowsYolu.DosyaAdi(secilenYazilan);
-        string? hedef = HedefiSor(baglam.Sahip, ebeveyn, yazilanAd);
+        string? hedef = HedefiSor(baglam.Sahip, baglam.Secim.Kok, yazilanAd);
         if (hedef is null)
         {
             return;
@@ -232,24 +232,103 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
             : "BULUNAMADI";
     }
 
-    /// <summary>Gercek dosyayi kullaniciya sectirir; vazgecerse null.</summary>
-    private static string? HedefiSor(IWin32Window sahip, string ebeveyn, string yazilanAd)
+    /// <summary>
+    /// Gercek dosyayi KENDI AGACIMIZDAN sectirir; vazgecerse null.
+    ///
+    /// WINDOWS DOSYA KUTUSU KULLANILMIYOR (Erkan, 28.08.2026: "windows dosya
+    /// yoneticisiyle bir isimiz olsun istemiyorum"). Ayni agac, ayni simgeler,
+    /// ayni siralama - kullanici zaten bildigi yerde seciyor. Yan kazanc: kabuk
+    /// kutusunun CALISMA KLASORUNU kaydirma tuzagi (CLAUDE.md 4) bu yolda hic
+    /// dogmuyor.
+    ///
+    /// SINIR VE SEBEBI: secim ACIK KOKUN icinden yapilir; agacimiz orayi
+    /// gosteriyor. Dosya baska bir surucudeyse once o klasor acilmali - kutuda
+    /// yaziyor, sessizce "bulunamadi" denmiyor (CLAUDE.md 3).
+    /// </summary>
+    private static string? HedefiSor(IWin32Window sahip, string? kok, string yazilanAd)
     {
-        using var kutu = new OpenFileDialog
+        if (string.IsNullOrWhiteSpace(kok))
         {
-            Title = $"\"{yazilanAd}\" hangi dosya?",
-            CheckFileExists = true,
-            Multiselect = false,
-            InitialDirectory = WindowsYolu.Klasor(ebeveyn),
+            return null;
+        }
 
-            // SUZGEC GENIS: dosyanin adi da turu de degismis olabilir (bir
-            // parca yerine alt montaj konmus olabilir). Daraltmak, aranan
-            // dosyayi kutuda GORUNMEZ yapardi.
-            Filter = "SOLIDWORKS dosyaları|*.sldprt;*.sldasm;*.slddrw|Tüm dosyalar|*.*",
+        // CLAUDE.md 6: alanlar, BOYUT DEGISTIREN her seyden (Dock, ClientSize)
+        // once atanir - boyut degisimi OnResize'i o anda tetikliyor.
+        var simgeler = TurSimgeleri.Liste();
+        var agac = new SecimliAgac
+        {
+            ImageList = simgeler,
+            HideSelection = false,
+            BorderStyle = BorderStyle.FixedSingle,
+            ShowNodeToolTips = true,
         };
 
-        return KabukKutusu.Goster(kutu, sahip) == DialogResult.OK ? kutu.FileName : null;
+        var baslik = new Label
+        {
+            AutoSize = false,
+            Text = $"\"{yazilanAd}\" hangi dosya? — açık kök içinden seçin.",
+            ForeColor = Renkler.UstBilgiYazi,
+        };
+
+        var sec = new Button { Text = "Seç", DialogResult = DialogResult.OK, Width = 90, Enabled = false };
+        var vazgec = new Button { Text = "Vazgeç", DialogResult = DialogResult.Cancel, Width = 90 };
+
+        using var pencere = new Form
+        {
+            Text = "Dosyayı seç",
+            FormBorderStyle = FormBorderStyle.SizableToolWindow,
+            StartPosition = FormStartPosition.CenterParent,
+            MinimizeBox = false,
+            MaximizeBox = false,
+            ShowInTaskbar = false,
+            ClientSize = new Size(520, 460),
+            Font = new Font("Segoe UI", 9f),
+        };
+
+        baslik.SetBounds(12, 10, 496, 18);
+        agac.SetBounds(12, 32, 496, 380);
+        sec.SetBounds(306, 422, 90, 28);
+        vazgec.SetBounds(406, 422, 90, 28);
+        baslik.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        agac.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+        sec.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+        vazgec.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+        pencere.Controls.Add(baslik);
+        pencere.Controls.Add(agac);
+        pencere.Controls.Add(sec);
+        pencere.Controls.Add(vazgec);
+        pencere.AcceptButton = sec;
+        pencere.CancelButton = vazgec;
+
+        // KLASOR SECILEMEZ: bir referans dosyaya baglanir. Dugme sebebiyle
+        // gri kaliyor, tiklanip sessizce hicbir sey yapmiyor degil.
+        agac.AfterSelect += (_, _) => sec.Enabled = Secilen(agac) is not null;
+        agac.NodeMouseDoubleClick += (_, e) =>
+        {
+            if (SecimliAgac.Yolu(e.Node) is not null
+                && AgacDoldurucu.Etiket(e.Node) is DosyaOgesi)
+            {
+                pencere.DialogResult = DialogResult.OK;
+            }
+        };
+
+        var doldurucu = new AgacDoldurucu(agac);
+        doldurucu.KokuAc(kok);
+
+        try
+        {
+            return pencere.ShowDialog(sahip) == DialogResult.OK ? Secilen(agac) : null;
+        }
+        finally
+        {
+            simgeler.Dispose();   // ImageList pencereyle birlikte atilmiyor
+        }
     }
+
+    /// <summary>Agacta secili olan DOSYANIN yolu; klasor ya da bos ise null.</summary>
+    private static string? Secilen(SecimliAgac agac)
+        => AgacDoldurucu.Etiket(agac.SelectedNode) is DosyaOgesi dosya ? dosya.Yol : null;
 
     /// <summary>
     /// ONAY - dosyanin ICINE yaziyoruz ve bu GERI ALINAMAZ.

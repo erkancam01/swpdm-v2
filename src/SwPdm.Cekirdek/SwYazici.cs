@@ -400,16 +400,11 @@ public static class SwYazici
             MfcDize.Tara(acik, bulgu =>
             {
                 string ad = WindowsYolu.DosyaAdi(bulgu.Deger);
+                bool eski = string.Equals(ad, eskiAd, StringComparison.OrdinalIgnoreCase);
+                bool yeni = string.Equals(ad, yeniAdi, StringComparison.OrdinalIgnoreCase);
 
-                // ESKI AD GERIDE KALDIYSA BU BIR KUSURDUR: SOLIDWORKS o adi
-                // aramaya devam eder ve onarim yarim kalir (CLAUDE.md 5).
-                if (!string.Equals(ad, yeniAdi, StringComparison.OrdinalIgnoreCase))
+                if (!eski && !yeni)
                 {
-                    if (string.Equals(ad, eskiAd, StringComparison.OrdinalIgnoreCase))
-                    {
-                        sapan = true;
-                    }
-
                     return;
                 }
 
@@ -417,8 +412,24 @@ public static class SwYazici
                 if (string.Equals(cozulen, beklenen, StringComparison.OrdinalIgnoreCase))
                 {
                     bulundu = true;
+                    return;
                 }
-                else
+
+                // Hedefi GOSTERMIYOR. Iki ayri durum, ikisi ayni sey degil:
+                //
+                //   ESKI ad  -> BIZIM degistirmemiz gereken bir dizeydi ve
+                //               geride kalmis. Kusur: SOLIDWORKS o adi
+                //               aramaya devam eder (CLAUDE.md 5'te olculdu -
+                //               ayni yol montajda DORT akista yazili).
+                //
+                //   YENI ad  -> belgenin BASKA bir referansi ayni adi
+                //               tasiyor olabilir (iki klasorde ayni adli iki
+                //               dosya). O bizim isimiz degil; kusur saymak
+                //               MESRU bir baglamayi reddettirirdi - olculdu
+                //               (28.08.2026, Wine): Montaj1'in Parça2
+                //               referansi elle baglanirken, montajin kendi
+                //               Parça1 referansi yuzunden reddedildi.
+                if (eski)
                 {
                     sapan = true;
                 }
