@@ -402,8 +402,14 @@ Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek
 > kısalırsa araya `.\`, uzarsa soldan klasör atılıp yol göreli yapılıyor.
 > Bu meşru, çünkü §5'te ölçüldü: SOLIDWORKS önce ebeveynin yanına bakıyor.
 >
-> **ÖLÇÜLMEDİ:** dolgulu/göreli yolun kabul edilip edilmediği — ikinci tur
-> deney (`4-kisa-ad-dolgulu`, `5-uzun-ad-goreli`) bunu soruyor.
+> **İKİNCİ TUR ÖLÇÜLDÜ (28.08.2026) — DOLGULU VE GÖRELİ YOL DA KABUL
+> EDİLİYOR.** `4-kisa-ad-dolgulu` ve `5-uzun-ad-goreli` **ikisi de açıldı**;
+> ayrıca Erkan uygulamanın kendisinde uzun bir adla deneyip **çalıştığını**
+> gördü. Yani uzunluk sınırı **kalktı**: `UzunlukKorunanYol` farkı klasör
+> kısmından karşıladığı sürece ad kısalabilir de uzayabilir de.
+>
+> Kalan tek sınır: adın kendisi eski **yolun tamamından** uzunsa dolgu
+> yapılamaz — o zaman onarım **reddedilir ve sebebi yazılır**.
 
 ### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
 

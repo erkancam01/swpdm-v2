@@ -8,19 +8,12 @@ namespace SwPdm.Cekirdek;
 /// <param name="EskiYol">Adi degisecek dosya.</param>
 /// <param name="YeniAd">Yeni dosya adi.</param>
 /// <param name="Ebeveynler">Bu dosyayi kullanan ve onarilmasi gereken dosyalar.</param>
-/// <param name="OlculmusGuvenli">
-/// Yeni ad eskisiyle AYNI HARF SAYISINDA mi. true ise onarim OLCULMUS bir
-/// yoldan gidiyor (Erkan, 28.08.2026: acildi, parcalar yerinde). false ise
-/// yol dolgu/goreli hale getirilerek uzunluk korunuyor ve BU HENUZ
-/// OLCULMEDI - cagiran kullaniciya sormadan uygulamamali.
-/// </param>
 /// <param name="Engeller">Onarimi imkansiz kilan sebepler; bos degilse UYGULANMAZ.</param>
 /// <param name="Guvenilir">Indeks tam mi - degilse ebeveyn listesi EKSIK olabilir.</param>
 public sealed record OnarimPlani(
     string EskiYol,
     string YeniAd,
     IReadOnlyList<string> Ebeveynler,
-    bool OlculmusGuvenli,
     IReadOnlyList<string> Engeller,
     bool Guvenilir);
 
@@ -44,9 +37,10 @@ public sealed record OnarimSonucu(
 /// kurtarmiyor. Tek cozum ebeveynin ICINE yazmak.
 ///
 /// OLCULDU (Erkan'in makinesi, 28.08.2026): yol yazan butun akislar
-/// degistirilip AYNI HARF SAYISINDA bir ad verilince SOLIDWORKS dosyayi
-/// ACIYOR ve parcalar yerinde geliyor. Daha uzun bir ad HATA veriyor.
-/// Bu yuzden plan <see cref="OnarimPlani.OlculmusGuvenli"/> tasiyor.
+/// degistirilince SOLIDWORKS dosyayi ACIYOR ve parcalar yerinde geliyor.
+/// Ilk turda daha uzun bir ad HATA vermisti; sebebi yazilan dizenin
+/// UZAMASIYDI. Ikinci turda fark klasor kismindan karsilandi
+/// (<see cref="SwYazici.UzunlukKorunanYol"/>) ve KISA da UZUN da ad CALISTI.
 ///
 /// ============ HEPSI YA DA HICBIRI ============
 ///
@@ -78,8 +72,7 @@ public static class ReferansOnarimi
         if (indeks is null)
         {
             return new OnarimPlani(
-                eskiYol, yeniAd, [], yeniAd.Length == WindowsYolu.DosyaAdi(eskiYol).Length,
-                ["Referans indeksi yok; kimin kullandığı bilinmiyor."], false);
+                eskiYol, yeniAd, [], ["Referans indeksi yok; kimin kullandığı bilinmiyor."], false);
         }
 
         KullanimSonucu kullanim = indeks.Kullananlar(eskiYol);
@@ -101,8 +94,6 @@ public static class ReferansOnarimi
     private static OnarimPlani Kur(
         string eskiYol, string yeniAd, IReadOnlyList<string> adaylar, bool guvenilir)
     {
-        string eskiAd = WindowsYolu.DosyaAdi(eskiYol);
-        bool olculmus = yeniAd.Length == eskiAd.Length;
         var engeller = new List<string>();
         var ebeveynler = new List<string>();
 
@@ -125,7 +116,7 @@ public static class ReferansOnarimi
                 WindowsYolu.DosyaAdi(acik) + " — SOLIDWORKS'te açık görünüyor; önce kapatın.");
         }
 
-        return new OnarimPlani(eskiYol, yeniAd, ebeveynler, olculmus, engeller, guvenilir);
+        return new OnarimPlani(eskiYol, yeniAd, ebeveynler, engeller, guvenilir);
     }
 
     /// <summary>

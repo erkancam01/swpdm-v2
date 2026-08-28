@@ -65,7 +65,6 @@ public sealed class ReferansOnarimiTestleri : IDisposable
     {
         OnarimPlani plan = ReferansOnarimi.Planla(Indeks(), Yol("Parça1.SLDPRT"), "Gövde1.SLDPRT");
 
-        Assert.True(plan.OlculmusGuvenli);       // "Parça1" ve "Gövde1" ayni harf sayisi
         Assert.Empty(plan.Engeller);
         Assert.Equal(2, plan.Ebeveynler.Count);
 
@@ -93,15 +92,19 @@ public sealed class ReferansOnarimiTestleri : IDisposable
         Assert.Empty(artik);
     }
 
-    [Fact]
-    public void FARKLI_UZUNLUKTAKI_ad_OLCULMEMIS_diye_isaretleniyor()
+    [Theory]
+    [InlineData("G1.SLDPRT")]                  // ad KISALDI
+    [InlineData("GövdeParçası1.SLDPRT")]       // ad UZADI
+    public void FARKLI_UZUNLUKTAKI_ad_da_onariliyor(string yeniAd)
     {
-        // Uzunluk degisince yol dolgu/goreli hale getiriliyor ve BU HENUZ
-        // OLCULMEDI. Plan bunu SOYLUYOR; kullaniciya sormadan uygulanmamali.
-        OnarimPlani plan = ReferansOnarimi.Planla(Indeks(), Yol("Parça1.SLDPRT"), "G1.SLDPRT");
+        // OLCULDU (Erkan, 28.08.2026, ikinci tur): uzunluk farki klasor
+        // kismindan karsilaninca SOLIDWORKS dosyayi ACIYOR - kisa da uzun da.
+        OnarimSonucu s = ReferansOnarimi.Uygula(
+            ReferansOnarimi.Planla(Indeks(), Yol("Parça1.SLDPRT"), yeniAd));
 
-        Assert.False(plan.OlculmusGuvenli);
-        Assert.Equal(2, plan.Ebeveynler.Count);
+        Assert.True(s.Oldu, s.Sebep);
+        Assert.Contains(yeniAd, Referanslari(Yol("Montaj1.SLDASM")));
+        Assert.Contains(yeniAd, Referanslari(Yol("Parça1.SLDDRW")));
     }
 
     [Fact]

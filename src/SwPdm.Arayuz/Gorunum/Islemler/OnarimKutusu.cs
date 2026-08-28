@@ -24,9 +24,8 @@ internal enum OnarimKarari
 ///
 /// Bu kutu bir "emin misiniz?" degil. Uc ayri gercegi birden soyluyor:
 ///   1. KIM etkileniyor - sayiyla degil ADLARIYLA
-///   2. Onarim OLCULMUS bir yoldan mi gidiyor
-///   3. Cevap GUVENILIR mi (indeks tam mi)
-/// Ucunu de soylemek sart: kullanici bu ekrana bakip dosya adi degistiriyor
+///   2. Cevap GUVENILIR mi (indeks tam mi)
+/// Ikisini de soylemek sart: kullanici bu ekrana bakip dosya adi degistiriyor
 /// ve yanlis karar montaji bozar (CLAUDE.md 3).
 /// </summary>
 internal static class OnarimKutusu
@@ -61,11 +60,9 @@ internal static class OnarimKutusu
         }
 
         DialogResult cevap = MessageBox.Show(
-            sahip, Metin(plan, eskiAd),
-            plan.OlculmusGuvenli ? "Kullanan dosyalar onarılsın mı?" : "Bu ad farklı uzunlukta",
-            MessageBoxButtons.YesNoCancel,
-            plan.OlculmusGuvenli ? MessageBoxIcon.Question : MessageBoxIcon.Warning,
-            plan.OlculmusGuvenli ? MessageBoxDefaultButton.Button1 : MessageBoxDefaultButton.Button3);
+            sahip, Metin(plan, eskiAd), "Kullanan dosyalar onarılsın mı?",
+            MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question,
+            MessageBoxDefaultButton.Button1);
 
         return cevap switch
         {
@@ -118,30 +115,9 @@ internal static class OnarimKutusu
         Adlari(metin, plan.Ebeveynler);
         metin.AppendLine();
 
-        if (plan.OlculmusGuvenli)
-        {
-            metin.AppendLine("EVET  — adı değiştir VE bu dosyaları onar (önerilen)");
-            metin.AppendLine("HAYIR — yalnızca adı değiştir; yukarıdakiler parçayı");
-            metin.AppendLine("        bulamayacak");
-        }
-        else
-        {
-            // OLCULEN SART: yazilan yolun karakter sayisi degismemeli. Yeni ad
-            // farkli uzunluktaysa fark klasor kismindan karsilaniyor ve BU
-            // HENUZ DOGRULANMADI - soylemeden uygulamak yalan olur.
-            metin.AppendLine($"DİKKAT: \"{plan.YeniAd}\" eski addan farklı sayıda harf içeriyor.");
-            metin.AppendLine();
-            metin.AppendLine("Onarımın ölçülmüş hâli, yazılan yolun karakter sayısının");
-            metin.AppendLine("değişmemesini gerektiriyor. Farklı uzunlukta bir ad için");
-            metin.AppendLine("yolu doldurarak aynı uzunlukta tutuyorum, ama bu yolun");
-            metin.AppendLine("SOLIDWORKS tarafından kabul edildiği HENÜZ DOĞRULANMADI.");
-            metin.AppendLine();
-            metin.AppendLine("En güvenlisi: eski adla AYNI SAYIDA HARF içeren bir ad seçin.");
-            metin.AppendLine();
-            metin.AppendLine("EVET  — yine de dene (doğrulanmamış)");
-            metin.AppendLine("HAYIR — yalnızca adı değiştir; onarma");
-        }
-
+        metin.AppendLine("EVET  — adı değiştir VE bu dosyaları onar (önerilen)");
+        metin.AppendLine("HAYIR — yalnızca adı değiştir; yukarıdakiler parçayı");
+        metin.AppendLine("        bulamayacak");
         metin.AppendLine("VAZGEÇ — hiçbir şey yapma");
 
         if (!plan.Guvenilir)

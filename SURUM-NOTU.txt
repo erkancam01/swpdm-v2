@@ -35,20 +35,19 @@ BU SURUMDE YENI - AD DEGISINCE REFERANSLAR ARTIK ONARILIYOR
   liste 'kimse kullanmiyor' demek DEGILDIR, once Ctrl+Shift+R" diyor.
   Sessizce "temiz" demiyor.
 
-  *** BIR SINIR VAR: AYNI SAYIDA HARF ***
+  UZUNLUK SINIRI KALKTI - HER AD CALISIYOR
 
-  Senin olcumun (dort deney, tesekkurler) sunu gosterdi:
-     ayni harf sayisinda ad -> SOLIDWORKS ACTI, parcalar yerinde
-     daha uzun ad           -> SOLIDWORKS HATA VERDI
+  Ilk turda "daha uzun ad" hata vermisti. Sebep yazilan yolun UZAMASIYDI.
+  Ikinci turda farki KLASOR kismindan karsiladim (ad kisalirsa araya
+  ".\", uzarsa soldan klasor atilip yol goreli yapiliyor) ve senin
+  olcumunle DOGRULANDI: kisa da uzun da ad calisiyor.
 
-  Yani "Parca1" -> "Govde1" calisiyor, "Parca1" -> "GovdeParcasi1"
-  calismiyor. Neden boyle oldugunu bulamadim; akislarin icinde ne toplam
-  boy ne de dize konumu yaziyor, arandi. Sebebi kovalamak yerine SARTI
-  sagliyorum.
+  Bu mesru cunku SOLIDWORKS bir dosyayi ararken once EBEVEYNIN YANINA
+  bakiyor - yazili klasor bir ipucu, belirleyici degil.
 
-  Farkli uzunlukta bir ad secersen uygulama bunu SOYLUYOR ve "yine de
-  dene (dogrulanmamis)" diyor - sessizce yapmiyor. Ikinci tur deney
-  paketi tam da bunu olcuyor; o klasorleri actiginda bu sinir kalkabilir.
+  Kalan tek sinir: yeni ad, eski YOLUN TAMAMINDAN uzunsa dolgu yapilamaz.
+  O zaman onarim yapilmaz ve sebebi yazilir - sessizce bozuk dosya
+  uretilmez.
 
   OLCULDU
     Iki ebeveynli gercek bir kumede (Montaj1 + teknik resim) ad
