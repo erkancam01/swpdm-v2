@@ -49,7 +49,7 @@ internal sealed class IlerlemeYuzeyi : IIlerlemeYuzeyi
         => ArayuzeGec(() => _durum.Ilerleme(yapilan, toplam, ad));
 
     /// <inheritdoc/>
-    public void Bitti(Action arayuzdeCalistir)
+    public bool Bitti(Action arayuzdeCalistir)
         => ArayuzeGec(() =>
         {
             _durum.IsBitti();

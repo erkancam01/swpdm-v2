@@ -396,6 +396,62 @@ public class ReferansIndeksiTestleri : IDisposable
         }
     }
 
+    // ---------------------------------------------------------------------
+    // TAZELEME MALIYETI - "her islemden once ve sonra tara" kuralinin bedeli.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void DEGISIKLIK_YOKSA_indeks_DEGISMIS_SAYILMAZ()
+    {
+        // NEDEN: indeks her taramadan sonra BASTAN yaziliyordu (5000 dosyada
+        // ~2,5 MB), hicbir sey degismese bile. Islem oncesi/sonrasi tarama
+        // gelince tek bir adlandirma dort yazim demeye basladi.
+        var indeks = new ReferansIndeksi(_kok);
+        IndeksTarama.Tara(indeks);
+        Assert.True(indeks.Degisti);          // ilk tarama: kayitlar geldi
+
+        indeks.YazildiIsaretle();
+        Assert.False(indeks.Degisti);
+
+        IndeksTarama.Tara(indeks);            // ikinci tarama: hicbir sey degismedi
+        Assert.False(indeks.Degisti);
+    }
+
+    [Fact]
+    public void DOSYA_DEGISINCE_indeks_DEGISTI_der()
+    {
+        var indeks = new ReferansIndeksi(_kok);
+        IndeksTarama.Tara(indeks);
+        indeks.YazildiIsaretle();
+
+        string yol = Path.Combine(_kok, "Parça1.SLDPRT");
+        File.SetLastWriteTime(yol, DateTime.Now.AddMinutes(5));
+
+        IndeksTarama.Tara(indeks);
+        Assert.True(indeks.Degisti);
+    }
+
+    [Fact]
+    public void OKUNAMAYAN_DOSYA_sebebi_YARIM_KALDI_DEMEZ()
+    {
+        // OLCULDU (28.08.2026): tarama BITTIGI halde panel "Tarama yarım
+        // kaldı" diyordu; okunamayan dosya ile iptal edilmis tarama ayni
+        // cumleye baglanmisti. Kullaniciya YANLIS sebep gosteriliyordu.
+        File.WriteAllText(Path.Combine(_kok, "Bozuk.SLDPRT"), "bu bir SOLIDWORKS dosyasi degil");
+
+        var indeks = new ReferansIndeksi(_kok);
+        TaramaSonucu sonuc = IndeksTarama.Tara(indeks);
+
+        Assert.False(sonuc.Iptal);
+        Assert.True(sonuc.Okunamayan > 0);
+
+        KullanimSonucu k = indeks.Kullananlar(Path.Combine(_kok, "Parça1.SLDPRT"));
+        Assert.False(k.Guvenilir);
+        Assert.NotNull(k.Sebep);
+        Assert.Contains("okunamadı", k.Sebep!, StringComparison.Ordinal);
+        Assert.DoesNotContain("yarım", k.Sebep!, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void RaporListesi_HEPSININ_ADI_VE_ACIKLAMASI_VAR()
     {

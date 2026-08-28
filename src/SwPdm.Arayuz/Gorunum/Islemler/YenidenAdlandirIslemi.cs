@@ -120,7 +120,10 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         baglam.Tazele(rapor.YeniYol);
         baglam.Bildir($"{eskiAd} → {yeniAd}");
-        ReferansTazeleme.Sonra(baglam);
+
+        // Dokunulan iki yol biliniyor; butun kok taranmiyor. Klasor
+        // adlandirildiysa Sonra kendisi tam taramaya duser.
+        ReferansTazeleme.Sonra(baglam, [yol, rapor.YeniYol ?? yol]);
     }
 
     /// <summary>
@@ -150,7 +153,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         baglam.Tazele(yeniYol);
         baglam.Bildir(
             $"{eskiAd} → {yeniAd} · onu kullanan {sonuc.Onarilanlar.Count} dosya onarıldı");
-        ReferansTazeleme.Sonra(baglam);
+        ReferansTazeleme.Sonra(baglam, [plan.EskiYol, yeniYol, .. sonuc.Onarilanlar]);
     }
 
     /// <summary>

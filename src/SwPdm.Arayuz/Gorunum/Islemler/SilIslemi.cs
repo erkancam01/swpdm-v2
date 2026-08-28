@@ -115,7 +115,9 @@ internal sealed class SilIslemi : IAgacIslemi
             ? $"{silinen.Count} öğe çöp kutusuna gönderildi."
             : $"{silinen.Count} silindi · {kalan.Count} silinemedi");
 
-        ReferansTazeleme.Sonra(baglam);
+        // Dokunulan yollar BILINIYOR: butun kok yeniden taranmiyor. Icinde
+        // klasor varsa Sonra kendisi tam taramaya duser.
+        ReferansTazeleme.Sonra(baglam, silinenYollar);
     }
 
     /// <summary>

@@ -54,6 +54,7 @@ public sealed class ReferansIndeksi
 
     private Dictionary<string, List<string>>? _adaGore;
     private Dictionary<string, List<string>>? _kullananlar;
+    private int? _okunamayan;
 
     /// <summary>Yeni, bos indeks.</summary>
     public ReferansIndeksi(string kok) => Kok = kok;
@@ -66,6 +67,18 @@ public sealed class ReferansIndeksi
 
     /// <summary>Son tarama SONUNA KADAR gitti mi (iptal/hata yok).</summary>
     public bool Tam { get; private set; }
+
+    /// <summary>
+    /// Son diske yazmadan bu yana indeks DEGISTI mi.
+    ///
+    /// NEDEN VAR: indeks her taramadan sonra BASTAN yaziliyordu (5000 dosyada
+    /// ~2,5 MB) - hicbir sey degismese bile. Islem oncesi/sonrasi tarama
+    /// geldiginde bu, tek bir adlandirma icin dort yazim demeye basladi.
+    /// </summary>
+    public bool Degisti { get; private set; } = true;
+
+    /// <summary>Diske yazildi: bir sonraki degisikliğe kadar yeniden yazilmaz.</summary>
+    public void YazildiIsaretle() => Degisti = false;
 
     /// <summary>Indeksteki dosya sayisi.</summary>
     public int DosyaSayisi => _kayitlar.Count;
@@ -82,6 +95,7 @@ public sealed class ReferansIndeksi
     {
         ArgumentNullException.ThrowIfNull(kayit);
         _kayitlar[kayit.Yol] = kayit;
+        Degisti = true;
         Bozuldu();
     }
 
@@ -91,6 +105,7 @@ public sealed class ReferansIndeksi
         bool vardi = _kayitlar.Remove(yol);
         if (vardi)
         {
+            Degisti = true;
             Bozuldu();
         }
 
@@ -100,6 +115,14 @@ public sealed class ReferansIndeksi
     /// <summary>Taramanin bittigini isaretler.</summary>
     public void TaramayiBitir(bool tam, DateTime zaman)
     {
+        // ILK TARAMA ve GUVENILIRLIK DEGISIMI diske yazilmali: ikisi de
+        // sonraki oturumun "taranmadi mi, eksik mi" cevabini belirliyor.
+        // Yalnizca zamanin ilerlemesi bir yazim sebebi DEGIL.
+        if (TaramaZamani is null || Tam != tam)
+        {
+            Degisti = true;
+        }
+
         Tam = tam;
         TaramaZamani = zaman;
     }
@@ -188,8 +211,10 @@ public sealed class ReferansIndeksi
             return new KullanimSonucu(bulunanlar, Guvenilir: false, "Bu kök henüz taranmadı.");
         }
 
-        if (!Tam)
+        if (!Tam && Okunamayanlar() == 0)
         {
+            // Tam degil ama okunamayan dosya da yok: tarama iptal edilmis ya
+            // da bir KLASOR okunamamis.
             return new KullanimSonucu(
                 bulunanlar, Guvenilir: false, "Tarama yarım kaldı; liste eksik olabilir.");
         }
@@ -202,14 +227,12 @@ public sealed class ReferansIndeksi
 
         // Okunamamis dosya varsa cevap TAM degildir: o dosyanin icinde bu
         // parcaya bir referans olabilirdi ve bilmiyoruz.
-        int okunamayan = 0;
-        foreach (IndeksKaydi k in _kayitlar.Values)
-        {
-            if (!k.Okundu)
-            {
-                okunamayan++;
-            }
-        }
+        //
+        // SEBEP DOGRU YAZILMALI - OLCULDU (28.08.2026): burasi okunamayan
+        // dosya varken de "Tarama yarım kaldı" diyordu, oysa tarama
+        // BITMISTI. Kullanici ekranda yanlis sebep goruyordu (CLAUDE.md 3:
+        // hata sebebi gosterilir - yanlis sebep gostermek daha kotusu).
+        int okunamayan = Okunamayanlar();
 
         return okunamayan == 0
             ? new KullanimSonucu(bulunanlar, Guvenilir: true, null)
@@ -297,6 +320,35 @@ public sealed class ReferansIndeksi
     {
         _adaGore = null;
         _kullananlar = null;
+        _okunamayan = null;
+    }
+
+    /// <summary>
+    /// Okunamamis kayit sayisi - ONBELLEKLI.
+    ///
+    /// NEDEN ONBELLEK: bu sayi her <see cref="Kullananlar"/> cagrisinda butun
+    /// kayitlar gezilerek bulunuyordu, yani agactaki her SECIM DEGISIMINDE
+    /// dosya sayisi kadar dongu. Ters dizinle ayni omre sahip; kayit
+    /// degisince ikisi birden dusuyor.
+    /// </summary>
+    private int Okunamayanlar()
+    {
+        if (_okunamayan is int hazir)
+        {
+            return hazir;
+        }
+
+        int sayi = 0;
+        foreach (IndeksKaydi k in _kayitlar.Values)
+        {
+            if (!k.Okundu)
+            {
+                sayi++;
+            }
+        }
+
+        _okunamayan = sayi;
+        return sayi;
     }
 
     private void AdDizinini_Kur()

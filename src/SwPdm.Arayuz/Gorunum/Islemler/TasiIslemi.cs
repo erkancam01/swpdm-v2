@@ -336,8 +336,22 @@ internal static class Aktar
             ? $"{olan.Count} öğe {is_}.{kuyruk}"
             : $"{olan.Count} {is_} · {olmayan.Count} olmadı{kuyruk}");
 
-        // ISLEMDEN SONRA da taranir; bekletmez.
-        ReferansTazeleme.Sonra(baglam);
+        // ISLEMDEN SONRA da taranir - ama dokunulan yollar BILINIYOR, o
+        // yuzden butun kok degil yalnizca onlar tazeleniyor. Ciftlerin ESKI
+        // yollari da veriliyor: tasinan dosya orada artik yok ve kaydinin
+        // DUSMESI gerekiyor. Icinde klasor varsa Sonra tam taramaya duser.
+        var dokunulan = new List<string>(olan);
+        foreach ((string eski, _) in ciftler)
+        {
+            dokunulan.Add(eski);
+        }
+
+        foreach (OnarimPlani plan in onarilanPlanlar)
+        {
+            dokunulan.AddRange(plan.Ebeveynler);
+        }
+
+        ReferansTazeleme.Sonra(baglam, dokunulan);
     }
 
     /// <summary>Tasinanlari eski klasorlerine geri gonderir.</summary>

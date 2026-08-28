@@ -62,7 +62,12 @@ internal sealed partial class AnaForm : Form
         // --- otomatik tazeleme
         _izleyici = new DiskIzleyici(this);
         _izleyici.Degisti += (_, sessiz) => DisaridanDegisti(sessiz);
-        _izleyici.Sorun += (_, cumle) => _durum.Bilgi(cumle);
+        _izleyici.Sorun += (_, cumle) =>
+        {
+            // Izleme koptu: indeks artik tam taramayi atlayamaz.
+            _referansSurucusu.IzlemeGuvenilir = false;
+            _durum.Bilgi(cumle);
+        };
 
         // --- dosya acma (cift tiklama)
         _agac.NodeMouseDoubleClick += (_, e) =>
@@ -253,6 +258,7 @@ internal sealed partial class AnaForm : Form
         _onizleme.Temizle();
         _durum.KokAcildi();
         _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
+        _referansSurucusu.IzlemeGuvenilir = _izleyici.Guvenilir;
         _referansSurucusu.KokuKur(_doldurucu.Kok);
 
         AgacaOdaklan();
@@ -313,6 +319,11 @@ internal sealed partial class AnaForm : Form
     /// </summary>
     private void DisaridanDegisti(bool sessiz)
     {
+        // AGAC VE INDEKS AYNI OLAYDAN BESLENIR. Once yalnizca agac
+        // tazeleniyordu; indeks bu degisikliklerden habersizdi ve guncel
+        // kalmasinin tek yolu butun kokun yeniden taranmasiydi.
+        _referansSurucusu.Kirlet(_izleyici.Kirlenenler());
+
         _doldurucu.Yenile();
         CopDugmesiniTazele();
 
@@ -450,6 +461,7 @@ internal sealed partial class AnaForm : Form
         {
             CopDugmesiniTazele();
             _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
+        _referansSurucusu.IzlemeGuvenilir = _izleyici.Guvenilir;
         };
         _ayarlarSayfasi = sayfa;
         return sayfa;

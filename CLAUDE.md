@@ -176,6 +176,15 @@ olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
 
 ### Diğerleri
 
+- **Linux'ta dizin girişi BOYUT ve TARİH taşımıyor; Windows'ta taşıyor.**
+  `DirectoryInfo.EnumerateFileSystemInfos()` ile gelen `FileInfo`'nun
+  `Length`/`LastWriteTime`'ını okumak Windows'ta **bedava** (veri
+  `WIN32_FIND_DATA` içinde zaten geliyor), Linux'ta **bedava değil** — .NET
+  her giriş için ayrıca `stat` çağırıyor. Ölçüldü (strace ile sayıldı, 2000
+  dosya): `GetFiles` + `new FileInfo(yol).Length` **4000** çağrı,
+  `EnumerateFileSystemInfos` **4080**. Yani buradaki bir "iyileştirme"
+  Linux'ta ölçülemez; Windows/ağ sürücüsündeki kazanç **tahmindir** ve
+  öyle yazılmalıdır.
 - **`Path.GetInvalidFileNameChars()` Linux'ta yalnızca `/` ve `\0` döndürür.**
   Windows'ta geçersiz bir adı testler kabul eder. Geçersiz karakter listeleri
   **elle** yazılır.

@@ -87,8 +87,15 @@ internal interface IIlerlemeYuzeyi
     /// <summary>Bir adim bitti.</summary>
     void Adim(int yapilan, int toplam, string ad);
 
-    /// <summary>Is bitti; verilen is ARAYUZ parcaciginda kosar.</summary>
-    void Bitti(Action arayuzdeCalistir);
+    /// <summary>
+    /// Is bitti; verilen is ARAYUZ parcaciginda kosar.
+    /// </summary>
+    /// <returns>
+    /// Is kuyruga girdiyse true. false donerse pencere kapanmistir ve
+    /// verilen is HIC CALISMAYACAKTIR - cagiran, o ise birakmis oldugu
+    /// temizligi (bayrak dusurme gibi) kendisi yapmali (CLAUDE.md 3).
+    /// </returns>
+    bool Bitti(Action arayuzdeCalistir);
 
     /// <summary>
     /// Verilen isi ARAYUZ parcaciginda kosturur (is bitirmeden). Arka

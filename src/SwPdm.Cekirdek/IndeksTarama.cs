@@ -74,6 +74,9 @@ public sealed record TaramaSonucu(
 /// </summary>
 public static class IndeksTarama
 {
+    /// <summary>Atlanan dosyalarda kac dosyada bir ilerleme bildirilecek.</summary>
+    private const int IlerlemeAdimi = 100;
+
     /// <summary>Kokteki SOLIDWORKS dosyalarini indekse isler.</summary>
     /// <param name="indeks">Guncellenecek indeks.</param>
     /// <param name="belirtec">Iptal.</param>
@@ -87,7 +90,7 @@ public static class IndeksTarama
 
         var kronometre = Stopwatch.StartNew();
         var okunamayanKlasorler = new List<string>();
-        List<string> dosyalar = Dosyalari_Topla(indeks.Kok, belirtec, okunamayanKlasorler);
+        List<Aday> dosyalar = Dosyalari_Topla(indeks.Kok, belirtec, okunamayanKlasorler);
 
         int okunan = 0, atlanan = 0, okunamayan = 0;
         var gorulen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -107,20 +110,13 @@ public static class IndeksTarama
                 break;
             }
 
-            string yol = dosyalar[i];
+            Aday aday = dosyalar[i];
+            string yol = aday.Yol;
             gorulen.Add(yol);
-            ilerleme?.Invoke(i, dosyalar.Count, WindowsYolu.DosyaAdi(yol));
 
-            long boyut;
-            DateTime degistirme;
-            try
+            if (!aday.BilgiOkundu)
             {
-                var bilgi = new FileInfo(yol);
-                boyut = bilgi.Length;
-                degistirme = bilgi.LastWriteTime;
-            }
-            catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
-            {
+                Bildir(ilerleme, i, dosyalar.Count, yol);
                 okunamayan++;
                 indeks.Koy(Okunamadi(yol));
                 continue;
@@ -128,7 +124,9 @@ public static class IndeksTarama
 
             // ARTIMLILIK: boyut ve tarih aynysa dosya ACILMAZ.
             IndeksKaydi? eski = indeks.Kayit(yol);
-            if (eski is not null && eski.Boyut == boyut && eski.Degistirme == degistirme)
+            if (eski is not null
+                && eski.Boyut == aday.Boyut
+                && eski.Degistirme == aday.Degistirme)
             {
                 atlanan++;
                 if (!eski.Okundu)
@@ -136,10 +134,20 @@ public static class IndeksTarama
                     okunamayan++;
                 }
 
+                // ILERLEME SEYREK: atlanan dosya icin her seferinde arayuze
+                // gecmek, taramanin kendisinden pahali olabiliyordu - her
+                // cagri bir BeginInvoke ve bir durum cubugu cizimi. Sayim
+                // yine dogru: ilerleme adimlari atlanir, sonuc atlanmaz.
+                if (i % IlerlemeAdimi == 0)
+                {
+                    Bildir(ilerleme, i, dosyalar.Count, yol);
+                }
+
                 continue;
             }
 
-            IndeksKaydi kayit = Kayit(yol, boyut, degistirme);
+            Bildir(ilerleme, i, dosyalar.Count, yol);
+            IndeksKaydi kayit = Kayit(yol, aday.Boyut, aday.Degistirme);
             okunan++;
             if (!kayit.Okundu)
             {
@@ -210,6 +218,11 @@ public static class IndeksTarama
         }
     }
 
+    /// <summary>Ilerleme bildirimi - tek kopya.</summary>
+    private static void Bildir(
+        Action<int, int, string>? ilerleme, int yapilan, int toplam, string yol)
+        => ilerleme?.Invoke(yapilan, toplam, WindowsYolu.DosyaAdi(yol));
+
     /// <summary>Bir dosyanin indeks kaydini uretir. TEK KOPYA (CLAUDE.md 8).</summary>
     private static IndeksKaydi Kayit(string yol, long boyut, DateTime degistirme)
     {
@@ -221,10 +234,39 @@ public static class IndeksTarama
     private static IndeksKaydi Okunamadi(string yol)
         => new(yol, 0, default, [], null, Okundu: false, "Dosya bilgisi okunamadı.");
 
-    private static List<string> Dosyalari_Topla(
+    /// <summary>
+    /// Agacta bulunan bir dosya ve DIZIN LISTESIYLE BIRLIKTE gelen bilgisi.
+    /// <paramref name="BilgiOkundu"/> false ise boyut/tarih alinamadi.
+    /// </summary>
+    private readonly record struct Aday(
+        string Yol, long Boyut, DateTime Degistirme, bool BilgiOkundu);
+
+    /// <summary>
+    /// Agactaki SOLIDWORKS dosyalarini BOYUT VE TARIHIYLE toplar. Yigin ile
+    /// geziliyor; ozyineleme derin agaclarda yigini tasirabilir.
+    ///
+    /// NEDEN "EnumerateFileSystemInfos" - VE OLCUMUN SOYLEDIGI (28.08.2026):
+    /// onceki hal "Directory.GetFiles" ile yalnizca ADLARI aliyor, sonra her
+    /// dosya icin AYRI bir "new FileInfo(yol).Length" cagiriyordu.
+    ///
+    /// BEKLENTI: dizin listesi boyutu ve tarihi zaten getirdigi icin dosya
+    /// basina ayri bir metadata cagrisi kalkacakti.
+    /// OLCULDU (Linux, 2000 dosya, strace ile SAYILDI): KALKMADI - eski hal
+    /// 4000, yeni hal 4080 metadata cagrisi. Sure de ayni (9-11 ms / 8-9 ms).
+    /// Sebep: Linux'ta dizin girisi boyut ve tarih TASIMIYOR, .NET her giris
+    /// icin yine stat cagiriyor.
+    ///
+    /// Windows'ta durum farkli: FindFirstFile/FindNextFile boyutu ve tarihi
+    /// WIN32_FIND_DATA icinde DONDURUYOR, "new FileInfo(...).Length" ise
+    /// ayrica GetFileAttributesEx cagiriyor. Yani kazanc orada beklenir -
+    /// AMA OLCULMEDI ve iddia EDILMIYOR (CLAUDE.md 2). Burada kalmasinin
+    /// sebebi olculmus bir kayip da olmamasi; asil kazanc alt taraftaki
+    /// "gereksiz taramayi hic kosma" kararinda (ReferansTazeleme).
+    /// </summary>
+    private static List<Aday> Dosyalari_Topla(
         string kok, CancellationToken belirtec, List<string> okunamayanlar)
     {
-        var bulunanlar = new List<string>();
+        var bulunanlar = new List<Aday>();
         var yigin = new Stack<string>();
         yigin.Push(kok);
 
@@ -238,25 +280,26 @@ public static class IndeksTarama
             string suan = yigin.Pop();
             try
             {
-                foreach (string dosya in Directory.GetFiles(suan))
+                foreach (FileSystemInfo giris in new DirectoryInfo(suan).EnumerateFileSystemInfos())
                 {
-                    if (SwReferans.TasiyabilirMi(dosya))
+                    if (giris is DirectoryInfo alt)
                     {
-                        bulunanlar.Add(dosya);
-                    }
-                }
+                        // Kendi cop klasorumuz taranmaz: silinmis dosyalarin
+                        // referanslari "bu parcayi biri kullaniyor" dedirtirdi.
+                        if (!string.Equals(alt.Name, Cop.KlasorAdi, StringComparison.Ordinal))
+                        {
+                            yigin.Push(alt.FullName);
+                        }
 
-                foreach (string alt in Directory.GetDirectories(suan))
-                {
-                    // Kendi cop klasorumuz taranmaz: silinmis dosyalarin
-                    // referanslari "bu parcayi biri kullaniyor" dedirtirdi.
-                    if (string.Equals(
-                            WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal))
+                        continue;
+                    }
+
+                    if (giris is not FileInfo dosya || !SwReferans.TasiyabilirMi(dosya.FullName))
                     {
                         continue;
                     }
 
-                    yigin.Push(alt);
+                    bulunanlar.Add(Bilgisiyle(dosya));
                 }
             }
             catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
@@ -266,5 +309,22 @@ public static class IndeksTarama
         }
 
         return bulunanlar;
+    }
+
+    /// <summary>
+    /// Numaralandirmadan gelen bilgiyi okur. Dosya tam o sirada silinirse
+    /// alanlar patlayabiliyor; o zaman "bilgi okunamadi" olarak isaretlenir
+    /// ve arama sessizce dogru sanilan bir kayit uretmez (CLAUDE.md 3).
+    /// </summary>
+    private static Aday Bilgisiyle(FileInfo dosya)
+    {
+        try
+        {
+            return new Aday(dosya.FullName, dosya.Length, dosya.LastWriteTime, BilgiOkundu: true);
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            return new Aday(dosya.FullName, 0, default, BilgiOkundu: false);
+        }
     }
 }

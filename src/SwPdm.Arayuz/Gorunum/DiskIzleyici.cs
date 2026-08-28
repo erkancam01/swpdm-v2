@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
@@ -50,6 +51,9 @@ internal sealed class DiskIzleyici : IDisposable
     private readonly System.Windows.Forms.Timer _gecikme = new() { Interval = GecikmeMs };
     private readonly System.Windows.Forms.Timer _susturmaSonu = new() { Interval = SusmaSuresiMs };
 
+    /// <summary>Son bildirimden bu yana degisen yollar (indeks icin).</summary>
+    private readonly HashSet<string> _kirlenenler = new(StringComparer.OrdinalIgnoreCase);
+
     private FileSystemWatcher? _izleyici;
     private bool _susturuldu;
     private bool _bekleyen;
@@ -99,6 +103,27 @@ internal sealed class DiskIzleyici : IDisposable
     /// <summary>Izleme acik mi.</summary>
     internal bool Acik { get; private set; } = true;
 
+    /// <summary>
+    /// Izleme SU AN saglam mi - yani "diskte olan biteni goruyorum" denebilir mi.
+    ///
+    /// NEDEN AYRI BIR BAYRAK: indeks tarafi buna bakip TAM taramayi
+    /// atlayabiliyor. Kapali izleme, kurulamamis izleyici ve tampon tasmasi
+    /// (bkz. <see cref="Hata"/>) ayni sonucu verir: disariyi GORMUYORUZ, o
+    /// halde atlamak yasak (CLAUDE.md 3).
+    /// </summary>
+    internal bool Guvenilir { get; private set; }
+
+    /// <summary>
+    /// Son cagridan bu yana degisen yollari verir ve listeyi bosaltir.
+    /// Indeks bunlari hedefli tazeliyor; butun kok taranmiyor.
+    /// </summary>
+    internal IReadOnlyList<string> Kirlenenler()
+    {
+        var liste = new List<string>(_kirlenenler);
+        _kirlenenler.Clear();
+        return liste;
+    }
+
     /// <summary>Izlenecek kok. null ise izleme durur.</summary>
     internal void Izle(string? kok)
     {
@@ -124,6 +149,7 @@ internal sealed class DiskIzleyici : IDisposable
             _izleyici.Changed += Olay;
             _izleyici.Error += Hata;
             _izleyici.EnableRaisingEvents = true;
+            Guvenilir = true;
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException
                                          or ArgumentException or PlatformNotSupportedException)
@@ -187,11 +213,23 @@ internal sealed class DiskIzleyici : IDisposable
             return;
         }
 
+        // DEGISEN YOL SAKLANIYOR: eskiden yalnizca "bir sey degisti" bilgisi
+        // tasiniyor, yolun kendisi ATILIYORDU. Oysa indeksi butun kok
+        // taranmadan tazelemek icin gereken tek sey bu.
+        _kirlenenler.Add(e.FullPath);
+        if (e is RenamedEventArgs yeniden)
+        {
+            _kirlenenler.Add(yeniden.OldFullPath);
+        }
+
         Zamanlayiciyi_Kur();
     }
 
     private void Hata(object gonderen, ErrorEventArgs e)
     {
+        // Tampon tastiysa KACIRDIGIMIZ olaylar var: artik "disariyi
+        // goruyorum" diyemeyiz.
+        Guvenilir = false;
         // OLCULMEMIS AMA BILINEN: tampon tasarsa izleyici olayları KACIRIR ve
         // sessizce yanlis bir agac gosterirdik. Sessiz kalmaktansa bir kez
         // tazeleyip sorunu SOYLUYORUZ.
@@ -250,6 +288,7 @@ internal sealed class DiskIzleyici : IDisposable
     private void Birak()
     {
         _gecikme.Stop();
+        Guvenilir = false;
 
         if (_izleyici is null)
         {

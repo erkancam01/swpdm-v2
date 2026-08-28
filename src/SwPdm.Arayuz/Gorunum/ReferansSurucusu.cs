@@ -46,7 +46,13 @@ internal sealed class ReferansSurucusu
     /// <summary>Referans tasimayan bir dosyada (PDF, resim...) yazilan.</summary>
     private const string Ilgisiz = "—";
 
+    /// <summary>Diskte degistigi BILINEN ama indekse islenmemis dosyalar.</summary>
+    private readonly HashSet<string> _kirli = new(StringComparer.OrdinalIgnoreCase);
+
     private ReferansIndeksi? _indeks;
+
+    /// <summary>Hedefli tazeleme YETMEZ; butun kok taranmali.</summary>
+    private bool _tamGerekli = true;
 
     /// <summary>Su anki kokun indeksi; kok acilmadiysa null.</summary>
     internal ReferansIndeksi? Indeks => _indeks;
@@ -54,10 +60,80 @@ internal sealed class ReferansSurucusu
     /// <summary>Indeks taranmis ve tam mi.</summary>
     internal bool Hazir => _indeks is { TaramaZamani: not null, Tam: true };
 
+    /// <summary>
+    /// Diski izleyen bir sey var ve saglam mi.
+    ///
+    /// NEDEN ONEMLI: islem oncesi TAM tarama ancak bu dogruysa atlanabilir -
+    /// yoksa disarida yapilan bir degisiklikten haberimiz olmaz ve onarim
+    /// bayat indeksle calisir. Tam olarak bu hata bir kez yasandi
+    /// (CLAUDE.md 11: "tasimada onarim sessizce atlaniyordu").
+    /// </summary>
+    internal bool IzlemeGuvenilir { get; set; }
+
+    /// <summary>Bekleyen kirli dosya sayisi.</summary>
+    internal int KirliSayisi => _kirli.Count;
+
+    /// <summary>Hedefli tazeleme yetmiyor; tam tarama gerekiyor.</summary>
+    internal bool TamGerekli => _tamGerekli;
+
+    /// <summary>Indeks diske yazilamadiysa sebebi; yazildiysa null.</summary>
+    internal string? SonYazmaHatasi { get; private set; }
+
     /// <summary>Kok degisti: o kokun indeksi diskten yuklenir.</summary>
     internal void KokuKur(string? kok)
     {
         _indeks = string.IsNullOrWhiteSpace(kok) ? null : IndeksDosyasi.Oku(kok);
+        _kirli.Clear();
+
+        // Yeni kokte disarida ne olup bittigini BILMIYORUZ.
+        _tamGerekli = true;
+        SonYazmaHatasi = null;
+    }
+
+    /// <summary>
+    /// Diskte degisen bir yolu isaretler (izleyiciden gelir).
+    ///
+    /// SW DOSYASI DEGILSE ya da KLASORSE hedefli tazeleme yetmez: bir klasor
+    /// adi degisince altindaki butun dosyalarin yolu degisir. O durumda
+    /// "tam tarama gerekli" deniyor - tahmin edip yarim tazelemek, indekse
+    /// yalan yazmak olurdu (CLAUDE.md 3).
+    /// </summary>
+    internal void Kirlet(IEnumerable<string>? yollar)
+    {
+        if (_indeks is null || yollar is null)
+        {
+            return;
+        }
+
+        foreach (string yol in yollar)
+        {
+            if (string.IsNullOrWhiteSpace(yol) || !SwReferans.TasiyabilirMi(yol))
+            {
+                _tamGerekli = true;
+                continue;
+            }
+
+            _kirli.Add(yol);
+        }
+    }
+
+    /// <summary>
+    /// Kirli dosyalari indekse isler - butun kok taranmadan. Cagiran once
+    /// <see cref="KirliSayisi"/>'na bakip bunun ucuz olduguna karar vermeli.
+    /// </summary>
+    internal void KirlileriIsle()
+    {
+        if (_indeks is null || _kirli.Count == 0)
+        {
+            return;
+        }
+
+        foreach (string yol in _kirli)
+        {
+            IndeksTarama.Tazele(_indeks, yol);
+        }
+
+        _kirli.Clear();
     }
 
     /// <summary>Taramayi kosturur (ARKA PLANDA cagrilmali) ve sonucu diske yazar.</summary>
@@ -70,7 +146,31 @@ internal sealed class ReferansSurucusu
         }
 
         TaramaSonucu sonuc = IndeksTarama.Tara(indeks, belirtec, ilerleme);
-        IndeksDosyasi.Yaz(indeks);
+
+        // Tam tarama kirli listeyi kapsar; iptal edilse bile gezilen agac
+        // buydu, kalan belirsizlik zaten "Tam degil" olarak tasiniyor.
+        _kirli.Clear();
+        _tamGerekli = sonuc.Iptal;
+
+        // DISKE YAZIM: yalnizca DEGISTIYSE. Onceki hal her taramada ~2,5 MB'lik
+        // dosyayi bastan yaziyordu - hicbir sey degismese bile.
+        if (indeks.Degisti)
+        {
+            if (IndeksDosyasi.Yaz(indeks))
+            {
+                indeks.YazildiIsaretle();
+                SonYazmaHatasi = null;
+            }
+            else
+            {
+                // CLAUDE.md 3: "Yaz" sebebini DONDURUYORDU ve cagiran onu
+                // ATIYORDU. Yazilamayan indeks sessizce kaybolur, sonraki
+                // acilista her sey yeniden taranir ve kullanici NEDEN
+                // oldugunu hicbir yerde goremezdi.
+                SonYazmaHatasi = "indeks diske yazılamadı";
+            }
+        }
+
         return sonuc;
     }
 

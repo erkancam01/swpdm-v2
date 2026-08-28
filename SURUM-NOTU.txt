@@ -1,4 +1,62 @@
-BU SURUMDE YENI - DOSYAYI KENDI AGACIMIZDAN SECIYORSUN
+BU SURUMDE YENI - TAZELEME ARTIK BEKLETMIYOR (ve iki SESSIZ hata gitti)
+
+  Sen sormustun: "verdigim komutlar daha iyi olabilecek seyleri kisitliyor
+  mu, mesela tazele mantigi". Cevap: KURAL degil, uygulamasi kisitliyordu.
+
+  ESKIDEN
+    Her islem = IKI TAM TARAMA + IKI TAM INDEKS YAZIMI. Hicbir dosya
+    degismese bile butun agac iki kez geziliyor, indeks dosyasi (5000
+    dosyada ~2,5 MB) iki kez bastan yaziliyordu.
+
+  SIMDI - kural ayni, bedeli degil
+    ISLEM ONCESI: diski izleyen saglam bir izleyici varsa ve degisen dosya
+      yoksa tarama HIC KOSMUYOR - islem aninda aciliyor. Degisen dosya
+      varsa YALNIZCA onlar tazeleniyor.
+    ISLEM SONRASI: dokunulan dosyalar zaten biliniyor; butun kok yerine
+      onlar tazeleniyor.
+    TAM TARAMA hala kosuyor - ama SART OLUNCA: hic taranmamis kok, kapali
+      ya da kopmus izleme, klasor tasima/adlandirma (altindaki her dosyanin
+      yolu degisir) ve 50'den fazla degisen dosya.
+    INDEKS diske yalnizca DEGISTIYSE yaziliyor.
+
+  AGAC VE INDEKS ARTIK AYNI OLAYDAN BESLENIYOR
+    Izleyici degisen yolu zaten biliyordu ama ATIYORDU; yalnizca agac
+    tazeleniyor, indeks habersiz kaliyordu. Artik yol indekse gidiyor.
+
+  IKI SESSIZ HATA DUZELDI
+    1. Ic bayrak takili kalabiliyordu: bir istisna ya da pencerenin
+       kapanmasi durumunda "tarama kosuyor" bayragi bir daha DUSMUYOR ve
+       o andan sonra butun islem oncesi taramalar SESSIZCE atlaniyordu.
+    2. Indeks diske yazilamazsa kimse duymuyordu ("yazilamazsa false
+       doner" diyen kod vardi, cagiran donusu atiyordu). Artik durum
+       cubugunda soyleniyor.
+
+  BIR DE YANLIS CUMLE DUZELDI
+    Referans panelinde "Tarama yarım kaldı; liste eksik olabilir" yaziyordu
+    - oysa tarama bitmis, sadece bazi dosyalar OKUNAMAMIS olabiliyordu.
+    Artik "N dosya okunamadı; liste eksik olabilir" diyor. Yanlis sebep
+    gostermek, sebep gostermemekten kotudur.
+
+  DURUSTCE - BIR HIPOTEZIM COKTU
+    "Dizin listesi boyutu ve tarihi zaten getiriyor, dosya basina ayri
+    sorgu kalkar" dedim. LINUX'TA OLCTUM (strace ile sayarak, 2000 dosya):
+    KALKMADI - eski 4000, yeni 4080 cagri; sure de ayni. Sebep: Linux'ta
+    dizin girisi bu alanlari tasimiyor. Windows'ta FindFirstFile onlari
+    zaten donduruyor, yani kazanc SENDE beklenir - ama OLCEMEDIM, iddia
+    da etmiyorum. Kod yine de kaldi: olculmus bir kaybi da yok.
+    Asil kazanc zaten baska yerde: gereksiz taramayi HIC kosmamak.
+
+  OLCULDU
+    275 test (270 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ.
+    Yeni testler: degisiklik yokken indeks "degismedi" sayiliyor ·
+    dosya degisince "degisti" diyor · okunamayan dosyanin sebebi dogru.
+
+  SENDEN BEKLENEN OLCUM
+    Ag surucusunde bir islem (ornegin F2) simdi ne kadar suruyor?
+    Onceki surumde her isten once bir tarama bekliyordun; simdi
+    beklememelisin. Beklersen soyle - sebebi durum cubugunda yaziyor.
+
+ONCEKI SURUMDE - DOSYAYI KENDI AGACIMIZDAN SECIYORSUN
 
   Sen: "windows dosya yoneticisiyle bir isimiz olsun istemiyorum".
   Kalkti. "Referansi elle bagla" artik KENDI agacimizi aciyor: ayni klasor
