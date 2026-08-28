@@ -182,6 +182,68 @@ public sealed class ReferansIndeksi
                 $"{okunamayan} dosya okunamadı; liste eksik olabilir.");
     }
 
+    /// <summary>
+    /// Verilen secimin KULLANDIGI ama secimde OLMAYAN dosyalar - zincirin
+    /// tamami (montaj -> alt montaj -> parca).
+    ///
+    /// Klasor secildiyse ALTINDAKILER de secimde sayilir.
+    /// Cozulememis referanslar EKLENMEZ: nereye gidecegi belirsizken bir
+    /// dosyayi listeye koymak uydurma olurdu (CLAUDE.md 3).
+    /// </summary>
+    public IReadOnlyList<string> ZincirdekiEksikler(IReadOnlyList<string>? yollar)
+    {
+        var eksik = new List<string>();
+        if (yollar is null || yollar.Count == 0)
+        {
+            return eksik;
+        }
+
+        var secili = new HashSet<string>(yollar, StringComparer.OrdinalIgnoreCase);
+        var gorulen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var sira = new Queue<string>(yollar);
+
+        while (sira.Count > 0)
+        {
+            string suan = sira.Dequeue();
+            if (!gorulen.Add(suan))
+            {
+                continue;
+            }
+
+            foreach ((_, Cozum cozum) in Kullandiklari(suan))
+            {
+                if (cozum.Durum != CozumDurumu.Bulundu || cozum.Yol is not string hedef)
+                {
+                    continue;
+                }
+
+                if (!secili.Contains(hedef) && !AltindaMi(secili, hedef)
+                    && !gorulen.Contains(hedef) && !Iceriyor(eksik, hedef))
+                {
+                    eksik.Add(hedef);
+                }
+
+                sira.Enqueue(hedef);
+            }
+        }
+
+        return eksik;
+    }
+
+    /// <summary>Secilen bir KLASORUN altinda mi.</summary>
+    private static bool AltindaMi(HashSet<string> secili, string yol)
+    {
+        foreach (string s in secili)
+        {
+            if (yol.StartsWith(s + WindowsYolu.Ayirici, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool Iceriyor(List<string> liste, string aranan)
     {
         foreach (string v in liste)

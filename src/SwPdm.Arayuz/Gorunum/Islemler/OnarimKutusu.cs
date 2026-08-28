@@ -15,7 +15,7 @@ internal enum OnarimKarari
     /// <summary>Adi degistir VE onu kullanan dosyalari onar.</summary>
     Onar,
 
-    /// <summary>Yalnizca adi degistir; referanslar kirilsin.</summary>
+    /// <summary>Onarilacak bir sey yok; yalnizca adi degistir.</summary>
     OnarmadanDegistir,
 }
 
@@ -37,7 +37,8 @@ internal static class OnarimKutusu
     /// Plani gosterir ve karari alir. Ebeveyni olmayan ve guvenilir bir
     /// planda HIC SORMAZ - sorulacak bir sey yoktur.
     /// </summary>
-    internal static OnarimKarari Sor(IWin32Window sahip, OnarimPlani plan, string eskiAd)
+    internal static OnarimKarari Sor(
+        IWin32Window sahip, OnarimPlani plan, string eskiAd, string? uzantiUyarisi)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -49,27 +50,17 @@ internal static class OnarimKutusu
             return OnarimKarari.Vazgec;
         }
 
-        if (plan.Ebeveynler.Count == 0)
+        // SORULACAK BIR SEY YOKSA KUTU CIKMAZ: guvenilir bir taramada
+        // "kullanan yok" demektir. Guvenilir DEGILSE bunu soylemek sart -
+        // bos liste "yok" demek degildir (CLAUDE.md 3).
+        if (plan.Ebeveynler.Count == 0 && uzantiUyarisi is null)
         {
-            // Guvenilir bir taramada "kullanan yok" demek; sormaya gerek yok.
-            // Guvenilir DEGILSE bunu soylemek sart - bos liste "yok" demek
-            // degildir ve sessizce gecmek kullaniciyi yaniltir.
-            return plan.Guvenilir
-                ? OnarimKarari.OnarmadanDegistir
-                : Bilinmiyor(sahip, eskiAd);
+            return plan.Guvenilir ? OnarimKarari.OnarmadanDegistir : Bilinmiyor(sahip, eskiAd);
         }
 
-        DialogResult cevap = MessageBox.Show(
-            sahip, Metin(plan, eskiAd), "Kullanan dosyalar onarılsın mı?",
-            MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question,
-            MessageBoxDefaultButton.Button1);
-
-        return cevap switch
-        {
-            DialogResult.Yes => OnarimKarari.Onar,
-            DialogResult.No => OnarimKarari.OnarmadanDegistir,
-            _ => OnarimKarari.Vazgec,
-        };
+        return OnayKutusu.Sor(sahip, "Adı değiştir", Metin(plan, eskiAd, uzantiUyarisi))
+            ? (plan.Ebeveynler.Count > 0 ? OnarimKarari.Onar : OnarimKarari.OnarmadanDegistir)
+            : OnarimKarari.Vazgec;
     }
 
     private static string Engeller(OnarimPlani plan)
@@ -93,40 +84,46 @@ internal static class OnarimKutusu
     /// soyluyor (CLAUDE.md 3'un en sert kurali).
     /// </summary>
     private static OnarimKarari Bilinmiyor(IWin32Window sahip, string eskiAd)
-        => MessageBox.Show(
-            sahip,
+        => OnayKutusu.Sor(
+            sahip, "Kimin kullandığı bilinmiyor",
             $"\"{eskiAd}\" dosyasını KİMİN kullandığını bilmiyoruz.\n\n"
-            + "Bu kök henüz taranmadı; boş bir liste \"kimse kullanmıyor\" demek "
-            + "DEĞİLDİR. Adı şimdi değiştirirseniz, onu kullanan bir montaj varsa "
-            + "parçayı bulamaz ve bunu onaramam.\n\n"
-            + "Önce Ctrl+Shift+R ile referansları taramanız önerilir.\n\n"
-            + "Yine de adı değiştirilsin mi?",
-            "Kimin kullandığı bilinmiyor",
-            MessageBoxButtons.OKCancel, MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) == DialogResult.OK
+            + "Bu kök henüz taranmadı; boş bir liste \"kimse kullanmıyor\" demek DEĞİLDİR.\n"
+            + "Adı şimdi değiştirirseniz onu kullanan bir montaj varsa parçayı\n"
+            + "bulamaz ve bunu onaramam.\n\n"
+            + "Önce Ctrl+Shift+R ile taramanız önerilir.",
+            tehlikeli: true)
             ? OnarimKarari.OnarmadanDegistir
             : OnarimKarari.Vazgec;
 
-    private static string Metin(OnarimPlani plan, string eskiAd)
+    private static string Metin(OnarimPlani plan, string eskiAd, string? uzantiUyarisi)
     {
         var metin = new StringBuilder();
-        metin.AppendLine($"\"{eskiAd}\" dosyasını {plan.Ebeveynler.Count} dosya kullanıyor:");
-        metin.AppendLine();
-        Adlari(metin, plan.Ebeveynler);
-        metin.AppendLine();
 
-        metin.AppendLine("EVET  — adı değiştir VE bu dosyaları onar (önerilen)");
-        metin.AppendLine("HAYIR — yalnızca adı değiştir; yukarıdakiler parçayı");
-        metin.AppendLine("        bulamayacak");
-        metin.AppendLine("VAZGEÇ — hiçbir şey yapma");
-
-        if (!plan.Guvenilir)
+        // UZANTI UYARISI AYRI KUTU DEGIL (28.08.2026): once uzanti kutusu,
+        // hemen ardindan onarim kutusu cikiyordu - ust uste iki kutu.
+        if (uzantiUyarisi is not null)
         {
+            metin.AppendLine(uzantiUyarisi);
             metin.AppendLine();
-            metin.AppendLine("NOT: tarama tam değil; bu liste EKSİK olabilir.");
         }
 
-        return metin.ToString();
+        if (plan.Ebeveynler.Count > 0)
+        {
+            metin.AppendLine(
+                $"\"{eskiAd}\" dosyasını {plan.Ebeveynler.Count} dosya kullanıyor:");
+            metin.AppendLine();
+            Adlari(metin, plan.Ebeveynler);
+            metin.AppendLine();
+            metin.AppendLine("Adı değiştirilecek ve bu dosyalar onarılacak.");
+
+            if (!plan.Guvenilir)
+            {
+                metin.AppendLine();
+                metin.AppendLine("NOT: tarama tam değil; bu liste EKSİK olabilir.");
+            }
+        }
+
+        return metin.ToString().TrimEnd();
     }
 
     private static void Adlari(StringBuilder metin, IReadOnlyList<string> yollar)

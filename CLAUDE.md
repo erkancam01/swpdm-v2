@@ -473,6 +473,31 @@ kullanıcıya yanlış dosyayı sildirir.
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
 
+### Mesaj kutusu ne zaman çıkar — Erkan'ın kuralı (28.08.2026)
+
+*"Tüm işlemler mükemmel, sadece gösterdiği mesaj kutuları gereksiz."*
+
+> **Kutu yalnızca iki şey için çıkar:**
+> 1. geri alması zor bir işlemin **ONAYI**
+> 2. kullanıcının görmeden geçemeyeceği bir **HATA**
+>
+> Bilgi (kaç dosya, kaç MB, ne kadar sürdü) **durum çubuğuna** yazılır.
+
+Onaylar tek yerden geçer: `Arayuz/Gorunum/Islemler/OnayKutusu.cs` — düğmeler
+**Evet / Vazgeç**. (`MessageBox`'ın düğme yazıları Windows'tan geliyor;
+`YesNo` "Evet/Hayır", `OKCancel` "Tamam/İptal" veriyor — istenen ikisinde de
+yok.)
+
+**Bu kural bir sadeleştirme değil, §3'ün devamı.** 28.08.2026'da taşıma
+kutusu hâlâ *"onları şu an ONARAMIYORUZ"* ve *"bu ölçüm HENÜZ YAPILMADI"*
+diyordu; ikisi de bir önceki sürümde geçersiz kalmıştı. **Bayat uyarı, fazla
+uyarıdan daha tehlikelidir** — kullanıcı ona bakıp karar veriyor. Kutu
+sayısını az tutmanın asıl faydası, kalan kutuların **doğru** kalması.
+
+Aynı turda kalkanlar: bağımlılık sorusu (onarım geldi, gereksizleşti) ·
+klasör boyutu sonucu (durum çubuğunda zaten var) · üst üste çıkan iki hata
+kutusu (birleşti) · ad değiştirmede ayrı uzantı uyarısı (tek kutuya girdi).
+
 ### Barındırılan süreçte (SOLIDWORKS'ün içinde) çalışılırsa
 
 Bunlar yalnızca kod **başka bir uygulamanın süreci içinde** koşuyorsa geçerli:

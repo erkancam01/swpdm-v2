@@ -48,19 +48,10 @@ internal static class Aktar
             return;
         }
 
-        // ONCE bagimliliklar sorulur, SONRA onay: onay kutusunda gorunen
-        // sayi gercekten aktarilacak sayi olsun (CLAUDE.md 3 - kullanici
-        // "3 oge" onaylayip 7 oge tasinmis bulmasin).
-        IReadOnlyList<string>? tam = BagimlilariEkle.Sor(baglam.Sahip, baglam.Referanslar, yollar);
-        if (tam is null)
-        {
-            baglam.Bildir(kip == AktarmaKipi.Tasi ? "Taşıma iptal edildi." : "Kopyalama iptal edildi.");
-            return;
-        }
-
-        yollar = tam;
-
-        if (!Onayla(baglam.Sahip, yollar, hedefKlasor, kip))
+        // BAGIMLILIK KUTUSU KALKTI (28.08.2026). Onarim geldigi icin
+        // parcalari birlikte goturmek referans acisindan SART DEGIL; onay
+        // kutusundaki tek satir onun yerini aliyor.
+        if (!Onayla(baglam.Sahip, baglam.Referanslar, yollar, hedefKlasor, kip))
         {
             baglam.Bildir(kip == AktarmaKipi.Tasi ? "Taşıma iptal edildi." : "Kopyalama iptal edildi.");
             return;
@@ -270,40 +261,40 @@ internal static class Aktar
         string is_ = kip == AktarmaKipi.Tasi ? "taşındı" : "kopyalandı";
         string olumsuz = kip == AktarmaKipi.Tasi ? "TAŞINMADI (yerinde duruyor)" : "KOPYALANMADI";
 
-        if (olmayan.Count > 0)
+        // IKI AYRI HATA KUTUSU BIRLESTI (28.08.2026): once "Bazi ogeler
+        // aktarilamadi" ve "Referans onarilamadi" ust uste iki kutu
+        // cikabiliyordu. Ikisi de ayni islemin sonucu; tek kutu yeter.
+        if (olmayan.Count > 0 || onarimHatalari.Count > 0)
         {
             var metin = new StringBuilder();
             metin.AppendLine($"{olan.Count} öğe {is_}.");
-            metin.AppendLine();
-            metin.AppendLine($"{olmayan.Count} öğe {olumsuz}:");
-            foreach (string satir in olmayan)
+
+            if (olmayan.Count > 0)
             {
-                metin.AppendLine("  • " + satir);
+                metin.AppendLine();
+                metin.AppendLine($"{olmayan.Count} öğe {olumsuz}:");
+                foreach (string satir in olmayan)
+                {
+                    metin.AppendLine("  • " + satir);
+                }
+            }
+
+            if (onarimHatalari.Count > 0)
+            {
+                metin.AppendLine();
+                metin.AppendLine($"{onarimHatalari.Count} dosyanın referansı onarılamadı:");
+                foreach (string satir in onarimHatalari)
+                {
+                    metin.AppendLine("  • " + satir);
+                }
+
+                metin.AppendLine();
+                metin.AppendLine("Bunları kullanan belgeler parçayı bulamayabilir.");
+                metin.AppendLine("Ctrl+Z ile geri alabilirsiniz.");
             }
 
             MessageBox.Show(
-                baglam.Sahip, metin.ToString(), "Bazı öğeler aktarılamadı",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-
-        // ONARIM TUTMADIYSA SESSIZ KALINMAZ: referans kirildi ve kullanici
-        // bunu bilmeli (CLAUDE.md 3).
-        if (onarimHatalari.Count > 0)
-        {
-            var metin = new StringBuilder();
-            metin.AppendLine($"{onarimHatalari.Count} dosyanın referansı onarılamadı:");
-            metin.AppendLine();
-            foreach (string satir in onarimHatalari)
-            {
-                metin.AppendLine("  • " + satir);
-            }
-
-            metin.AppendLine();
-            metin.AppendLine("Taşıma yapıldı; bu dosyaları kullanan belgeler");
-            metin.AppendLine("parçayı bulamayabilir. Ctrl+Z ile geri alabilirsiniz.");
-
-            MessageBox.Show(
-                baglam.Sahip, metin.ToString(), "Referans onarılamadı",
+                baglam.Sahip, metin.ToString(), "Bazı işlemler tamamlanmadı",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
@@ -404,8 +395,17 @@ internal static class Aktar
             });
     }
 
+    /// <summary>
+    /// Aktarma onayi. TEK KUTU ve KISA (Erkan, 28.08.2026).
+    ///
+    /// Eski metin ARTIK YANLISTI: "onlari su an ONARAMIYORUZ" ve "teknik
+    /// resim -> model bagi icin bu olcum HENUZ YAPILMADI" diyordu. Ikisi de
+    /// gecersiz - onariyoruz ve olcum yapildi. Bayat uyari, gurultuden once
+    /// bir DURUSTLUK sorunudur (CLAUDE.md 3).
+    /// </summary>
     private static bool Onayla(
         IWin32Window sahip,
+        ReferansSurucusu referanslar,
         IReadOnlyList<string> yollar,
         string hedef,
         AktarmaKipi kip)
@@ -418,27 +418,21 @@ internal static class Aktar
             : $"{yollar.Count} öğe {fiil}:");
         metin.AppendLine();
         metin.AppendLine(hedef);
-        metin.AppendLine();
 
-        if (kip == AktarmaKipi.Tasi)
+        // TEK SATIRLIK GERCEK BILGI - eski bagimlilik kutusunun yerine.
+        // Sayi yalnizca VARSA yaziliyor; "0 dosya" satiri gurultudur.
+        if (referanslar.Indeks is ReferansIndeksi indeks)
         {
-            // CLAUDE.md 5'te OLCULDU - oldugu gibi soyleniyor.
-            metin.AppendLine("Ölçüldü: bir klasör taşındığında içindeki montaj–parça");
-            metin.AppendLine("bağları YAŞIYOR. Kırılan, DIŞARIDAN bu dosyalara verilen");
-            metin.AppendLine("referanslardır; onları şu an ONARAMIYORUZ.");
-            metin.AppendLine();
-            metin.AppendLine("Teknik resim → model bağı için bu ölçüm HENÜZ YAPILMADI.");
-        }
-        else
-        {
-            metin.AppendLine("Kopyalar, kaynak dosyanın referanslarını AYNEN taşır;");
-            metin.AppendLine("yani kopya da özgün parçaları gösterir. Referans");
-            metin.AppendLine("düzenlemesi (Pack and Go gibi) HENÜZ YAPILMIYOR.");
+            int eksik = indeks.ZincirdekiEksikler(yollar).Count;
+            if (eksik > 0)
+            {
+                metin.AppendLine();
+                metin.AppendLine(kip == AktarmaKipi.Tasi
+                    ? $"Kullandığı {eksik} dosya taşınmıyor; referansları onarılacak."
+                    : $"Kopya, kullandığı {eksik} dosyanın özgün hâlini göstermeye devam eder.");
+            }
         }
 
-        return MessageBox.Show(
-            sahip, metin.ToString(), kip == AktarmaKipi.Tasi ? "Taşı" : "Kopyala",
-            MessageBoxButtons.OKCancel, MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) == DialogResult.OK;
+        return OnayKutusu.Sor(sahip, kip == AktarmaKipi.Tasi ? "Taşı" : "Kopyala", metin.ToString());
     }
 }

@@ -240,9 +240,9 @@ internal sealed class CopKutusuPenceresi : Form
     }
 
     /// <summary>Varsayilan dugme VAZGEC - geri alinamaz islemde dogrusu bu.</summary>
+    /// <summary>Onay - butun uygulamada tek yerden (CLAUDE.md 1b).</summary>
     private bool Onayla(string metin)
-        => MessageBox.Show(this, metin, "Onay", MessageBoxButtons.OKCancel,
-            MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.OK;
+        => OnayKutusu.Sor(this, "Onay", metin, tehlikeli: true);
 
     /// <summary>
     /// CLAUDE.md 3: kismi basarisizlikta NE OLDU NE OLMADI tek tek yazilir.

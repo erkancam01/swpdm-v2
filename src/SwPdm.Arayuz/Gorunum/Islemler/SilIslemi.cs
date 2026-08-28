@@ -173,16 +173,20 @@ internal sealed class SilIslemi : IAgacIslemi
         }
 
         metin.AppendLine();
-        metin.AppendLine("Çöp kutusuna gider; araç çubuğundaki \"Çöp kutusu\"");
-        metin.AppendLine("düğmesinden geri yüklenebilir.");
+        metin.AppendLine("Çöp kutusundan geri yüklenebilir.");
 
-        metin.AppendLine();
-        metin.Append(ReferansUyarisi(ogeler, referanslar));
+        // REFERANS UYARISI KALIYOR: silinen dosya ONARILAMAZ. Tasima ve ad
+        // degisiminde uyari kalkti cunku onlari onariyoruz; burada onarilacak
+        // bir hedef yok, yani risk gercek (CLAUDE.md 3).
+        string uyari = ReferansUyarisi(ogeler, referanslar);
+        if (uyari.Length > 0)
+        {
+            metin.AppendLine();
+            metin.Append(uyari);
+        }
 
-        return MessageBox.Show(
-            sahip, metin.ToString(), "Çöp kutusuna gönder",
-            MessageBoxButtons.OKCancel, MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) == DialogResult.OK;
+        return OnayKutusu.Sor(
+            sahip, "Çöp kutusuna gönder", metin.ToString().TrimEnd(), tehlikeli: true);
     }
 
     /// <summary>

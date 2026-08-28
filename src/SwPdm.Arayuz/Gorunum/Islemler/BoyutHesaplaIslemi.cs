@@ -139,10 +139,16 @@ internal sealed class BoyutHesaplaIslemi : IAgacIslemi
             metin.AppendLine("Bu sayı TAM DEĞİL — yukarıda sebebi yazıyor.");
         }
 
-        MessageBox.Show(
-            baglam.Sahip, metin.ToString(), "Klasör boyutu",
-            MessageBoxButtons.OK,
-            tam ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        // KUTU YALNIZCA SONUC EKSIKSE (28.08.2026). Tam sonuc zaten durum
+        // cubugunda yaziyor; ayrica kutu cikarmak bilgiyi iki kez gostermek
+        // olurdu. Eksik sonuc ise SESSIZ GECILEMEZ - yarim bir sayiyi tam
+        // sanmak yanlis karar verdirir (CLAUDE.md 3).
+        if (!tam)
+        {
+            MessageBox.Show(
+                baglam.Sahip, metin.ToString(), "Klasör boyutu — EKSİK",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
 
         baglam.Bildir(tam
             ? $"Boyut: {Boyut.Yaz(toplam)}"

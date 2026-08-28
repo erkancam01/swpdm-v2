@@ -55,23 +55,16 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             return;
         }
 
-        // Uzantiyi degistirmek dosyayi tanimsiz hale getirir; Gezgin de sorar.
-        if (oge is DosyaOgesi
+        // UZANTI UYARISI ARTIK AYRI KUTU DEGIL: onarim kutusunun icine
+        // bir satir olarak giriyor (28.08.2026). Iki kutu ust uste
+        // cikiyordu ve ikincisi birincinin uzerini ortuyordu.
+        string? uzantiUyarisi =
+            oge is DosyaOgesi
             && !string.Equals(WindowsYolu.Uzanti(eskiAd), WindowsYolu.Uzanti(yeniAd),
                 StringComparison.OrdinalIgnoreCase)
-            && MessageBox.Show(
-                baglam.Sahip,
-                "Dosya uzantısını değiştiriyorsunuz.\n\n"
-                + $"{WindowsYolu.Uzanti(eskiAd)}  →  {WindowsYolu.Uzanti(yeniAd)}\n\n"
-                + "Dosya kullanılamaz hale gelebilir. Devam edilsin mi?",
-                "Uzantı değişiyor",
-                MessageBoxButtons.OKCancel,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button2) != DialogResult.OK)
-        {
-            baglam.Bildir("Ad değiştirme iptal edildi.");
-            return;
-        }
+                ? $"DİKKAT: uzantı değişiyor ({WindowsYolu.Uzanti(eskiAd)} → "
+                  + $"{WindowsYolu.Uzanti(yeniAd)}). Dosya kullanılamaz hale gelebilir."
+                : null;
 
         // REFERANS ONARIMI. Bir SOLIDWORKS dosyasinin adi degisince onu
         // kullanan montaj/teknik resim ESKI ADI arar; komsuluk kurali da
@@ -80,7 +73,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         if (SwReferans.TasiyabilirMi(yol))
         {
             OnarimPlani plan = ReferansOnarimi.Planla(baglam.Referanslar.Indeks, yol, yeniAd);
-            switch (OnarimKutusu.Sor(baglam.Sahip, plan, eskiAd))
+            switch (OnarimKutusu.Sor(baglam.Sahip, plan, eskiAd, uzantiUyarisi))
             {
                 case OnarimKarari.Vazgec:
                     baglam.Bildir("Ad değiştirme iptal edildi.");
@@ -93,6 +86,15 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
                 default:
                     break;   // onarmadan devam
             }
+        }
+
+        // SOLIDWORKS dosyasi degilse onarim kutusu hic acilmaz; uzanti
+        // uyarisi yine de gosterilmeli.
+        if (!SwReferans.TasiyabilirMi(yol) && uzantiUyarisi is not null
+            && !OnayKutusu.Sor(baglam.Sahip, "Adı değiştir", uzantiUyarisi, tehlikeli: true))
+        {
+            baglam.Bildir("Ad değiştirme iptal edildi.");
+            return;
         }
 
         IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yol, yeniAd);

@@ -1,4 +1,47 @@
-BU SURUMDE YENI - TASIMADA DA ONARIM
+BU SURUMDE YENI - MESAJ KUTULARI AZALDI (21 -> 14)
+
+  Bildirdigin sey: "tum islemler mukemmel, sadece mesaj kutulari gereksiz."
+  Haklisin - ve bakinca daha kotu bir sey buldum: TASIMA KUTUSU YALAN
+  SOYLUYORDU.
+
+  Ekran goruntundeki kutuda "onlari su an ONARAMIYORUZ" ve "teknik resim ->
+  model bagi icin bu olcum HENUZ YAPILMADI" yaziyordu. Ikisi de bir onceki
+  surumde gecersiz kalmisti. Bayat uyari, fazla uyaridan daha tehlikeli -
+  sen ona bakip karar veriyorsun.
+
+  KONAN KURAL
+    Kutu yalnizca IKI sey icin cikar:
+      1. geri almasi zor bir islemin ONAYI
+      2. gormeden gecemeyecegin bir HATA
+    Bilgi (kac dosya, kac MB, ne kadar surdu) DURUM CUBUGUNA yazilir.
+    Onay dugmeleri artik EVET / VAZGEC.
+
+  KALKANLAR
+    - "Kullandigi dosyalari da goturayim mi" kutusu. Onarim geldigi icin
+      gereksizlesti; parcalari goturmesen de referans onariliyor. Yerine
+      tasima onayinda tek satir: "Kullandigi 3 dosya tasinmiyor;
+      referanslari onarilacak."
+    - Klasor boyutu sonuc kutusu. Sonuc zaten durum cubugunda. Kutu
+      yalnizca sonuc EKSIK/YARIM ise cikiyor.
+    - Tasimadaki IKI ayri hata kutusu ("bazi ogeler aktarilamadi" +
+      "referans onarilamadi") tek kutuda birlesti.
+    - Ad degistirmede ayri uzanti uyarisi. Ust uste iki kutu cikiyordu;
+      artik onarim kutusunun icinde bir satir.
+    - Ad degistirmede "HAYIR - yalnizca adi degistir" secenegi. Referansi
+      bilerek kirmak artik bir secenek degil.
+
+  KALANLAR (bilerek)
+    - Cakisma kutusu: gercek bir karar, dort secenekli.
+    - Kalici silme onayi: geri alinamaz.
+    - Silmedeki referans uyarisi: silinen dosya ONARILAMAZ, risk gercek.
+      (Tasima ve ad degisiminde uyari kalkti cunku onlari onariyoruz.)
+    - Hata kutulari: tek satirlik sebeplerle.
+
+  OLCULDU
+    256 test geciyor, dort kapi da TEMIZ
+    MessageBox cagrisi 21'den 14'e indi; kalanlarin hepsi hata ya da onay
+
+ONCEKI SURUMDE YENIYDI - TASIMADA DA ONARIM
 
   Ad degistirme onarimi bir onceki surumde geldi. Simdi TASIMA da onariyor.
 
