@@ -133,22 +133,36 @@ public static class ReferansOnarimi
     ///
     /// Ebeveyni olmayan dosya icin plan URETILMEZ; bos is yapilmaz.
     /// </summary>
-    public static IReadOnlyList<OnarimPlani> TasimaPlanlari(
+    /// <returns>
+    /// Planlar ve - onarim YAPILAMAYACAKSA - SEBEBI. Sebep null degilse
+    /// cagiran bunu SOYLEMEK zorunda: sessizce onarmadan gecmek, kullaniciya
+    /// referansi saglam sanip dosya actirir (CLAUDE.md 3). Bu delik gercekte
+    /// acildi ve Erkan'in dosyasini kirdi (28.08.2026).
+    /// </returns>
+    public static (IReadOnlyList<OnarimPlani> Planlar, string? Sebep) TasimaPlanlari(
         ReferansIndeksi? indeks,
         IReadOnlyList<(string Eski, string Yeni)>? ciftler,
         IReadOnlyList<string>? harictut)
     {
         var planlar = new List<OnarimPlani>();
-        if (indeks is null || ciftler is null)
+        if (indeks is null)
         {
-            return planlar;
+            return (planlar, "referans indeksi yok");
         }
+
+        if (ciftler is null)
+        {
+            return (planlar, null);
+        }
+
+        bool guvenilir = true;
 
         foreach ((string eski, string yeni) in ciftler)
         {
             foreach ((string e, string y) in Ac(eski, yeni))
             {
                 OnarimPlani plan = TasimaPlani(indeks, e, y, harictut);
+                guvenilir &= plan.Guvenilir;
                 if (plan.Ebeveynler.Count > 0)
                 {
                     planlar.Add(plan);
@@ -156,7 +170,7 @@ public static class ReferansOnarimi
             }
         }
 
-        return planlar;
+        return (planlar, guvenilir ? null : "tarama tam değil; kimin kullandığı eksik bilinebilir");
     }
 
     /// <summary>

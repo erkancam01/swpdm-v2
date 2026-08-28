@@ -48,6 +48,11 @@ internal static class Renkler
     internal static readonly Color ReferansAsagiYazi = Color.FromArgb(0x1B, 0x4F, 0x8A);
     internal static readonly Color ReferansYukariYazi = Color.FromArgb(0x1E, 0x63, 0x45);
 
+    // Dosya BULUNDU ama dosyanin ICINDEKI yol baska yeri gosteriyor - yani
+    // SOLIDWORKS onu acamaz. Kirmizi degil cunku dosya kayip degil; ayirt
+    // edici bir uyari rengi.
+    internal static readonly Color YolBayatYazi = Color.FromArgb(0xB0, 0x5A, 0x00);
+
     // Agacta kilit dosyasi durumu ("~$"). Hem yazi hem ZEMIN rengi var.
     //
     // ZEMIN NEDEN SART - OLCULDU (28.08.2026): yalnizca yazi rengiyle

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -240,5 +241,55 @@ public sealed class ReferansOnarimiTestleri : IDisposable
 
         Assert.True(geri.Oldu, geri.Sebep);
         Assert.Contains("Parça1.SLDPRT", Referanslari(Yol("Montaj1.SLDASM")));
+    }
+
+    // ---------------------------------------------------------------------
+    // ERKAN'IN DUZENI (28.08.2026) - ebeveyn ve parca AYRI klasorlerde.
+    //
+    // Bugune kadarki testlerde ikisi de ayni klasordeydi; bu duzen HIC
+    // OLCULMEDI ve tam da burada kirildi:
+    //   1\Parça1.SLDDRW  ->  kok\Parça1.SLDPRT
+    // parca 3\ klasorune tasindi; SOLIDWORKS hala kokte ariyordu.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void AYRI_KLASORDEKI_ebeveyn_onariliyor_ve_yol_YENI_YERI_cozuyor()
+    {
+        // 1\ ve 3\ klasorleri; teknik resim 1'de, parca kokte.
+        string bir = Path.Combine(_kok, "1");
+        string uc = Path.Combine(_kok, "3");
+        Directory.CreateDirectory(bir);
+        Directory.CreateDirectory(uc);
+
+        string resim = Path.Combine(bir, "Parça1.SLDDRW");
+        File.Move(Yol("Parça1.SLDDRW"), resim);
+
+        ReferansIndeksi indeks = Indeks();
+
+        // Parcayi 3\ klasorune tasi.
+        string yeni = Path.Combine(uc, "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), yeni);
+
+        (IReadOnlyList<OnarimPlani> planlar, string? sebep) = ReferansOnarimi.TasimaPlanlari(
+            indeks, [(Yol("Parça1.SLDPRT"), yeni)], harictut: null);
+
+        Assert.Null(sebep);
+        Assert.NotEmpty(planlar);
+        Assert.Contains(planlar, pl => pl.Ebeveynler.Contains(resim));
+
+        (int onarilan, IReadOnlyList<string> hatalar, _) = ReferansOnarimi.Onar(planlar);
+        Assert.Empty(hatalar);
+        Assert.True(onarilan > 0);
+
+        // ASIL OLCUM: teknik resmin ICINDEKI yol, TEKNIK RESMIN KLASORUNE
+        // gore cozuldugunde parcanin YENI yerini gostermeli.
+        string[] yazili = SwReferans.Oku(resim).Dogrudan.ToArray();
+        string? hedef = yazili.FirstOrDefault(
+            y => string.Equals(WindowsYolu.DosyaAdi(y), "Parça1.SLDPRT", StringComparison.OrdinalIgnoreCase));
+
+        Assert.NotNull(hedef);
+        Assert.Equal(
+            WindowsYolu.Cozumle(null, yeni),
+            WindowsYolu.Cozumle(bir, hedef));
     }
 }

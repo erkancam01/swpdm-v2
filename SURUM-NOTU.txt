@@ -1,4 +1,56 @@
-BU SURUMDE YENI - MESAJ KUTULARI AZALDI (21 -> 14)
+BU SURUMDE DUZELTILEN - "AGACTA GORUNUYOR AMA SOLIDWORKS BULAMIYOR"
+
+  Bildirdigin hata: panel "Parca1.SLDPRT - icinde" diyordu, SOLIDWORKS ise
+  dosyayi acamiyordu. Iki ayri kusur vardi, ikisi de kapandi.
+
+  KUSUR 1 - ONARIM SESSIZCE ATLANIYORDU
+    Tasima onarimi "kimin kullandigi" bilgisine dayaniyor. Tarama
+    yapilmamissa bu bilgi YOK, onarim yapilmiyor - ve HICBIR SEY
+    SOYLENMIYORDU. Dosya tasiniyor, referans kiriliyor, sen saglam
+    saniyorsun.
+
+    Artik: tasimadan once indeks hazir degilse uygulama KENDILIGINDEN
+    tariyor, sonra tasiyor. Tarama iptal edilirse TASIMA DA YAPILMIYOR -
+    yarim bilgiyle onarmaktansa hic dokunmamak dogru.
+
+    Ve onarim yine de yapilamazsa sebebi ekranda yaziyor:
+    "Referanslar ONARILAMADI - tarama tam degil."
+
+  KUSUR 2 - PANEL GERCEKTEN OLDUGUNDAN IYIMSERDI
+    Panel "icinde" diyordu cunku BIZ dosyayi ADA ve KOMSULUGA gore
+    buluyoruz. SOLIDWORKS ise dosya ebeveynin YANINDA DEGILSE dosyanin
+    icindeki YAZILI YOLA bakiyor - ve o yol bayatti. Panel bu farki
+    gostermiyordu, yani hata gorunmez kaliyordu.
+
+    Artik referans listesinde ayri bir durum var: "yol BAYAT" (turuncu).
+    Anlami: dosya duruyor, biz buluyoruz, ama SOLIDWORKS acamaz.
+    Bunu gorseydin sorunu aninda fark ederdin.
+
+  OLCULDU - VE OLCUM EKSIGIMI BULDU
+    Senin duzenin (teknik resim "1\" klasorunde, parca "3\" klasorune
+    tasiniyor) birebir kuruldu ve TEST GECTI: yazilan yol cozuldugunde
+    parcanin yeni yerini gosteriyor. Yani onarim KODU dogruydu; hata
+    onarimin HIC CALISMAMASIYDI.
+
+    Bugune kadarki testlerimde ebeveyn ve parca hep AYNI klasordeydi -
+    senin duzenin hic olculmemisti. Artik olculuyor.
+
+    257 test geciyor, dort kapi da TEMIZ.
+
+  SENDEKI BOZUK DOSYA KENDILIGINDEN DUZELMEZ
+    Bu surum yeni tasimalarda sorunu onluyor ama gecmiste kirilmis bir
+    bagi geri getirmiyor. Iki yol var:
+      - parcayi eski yerine koyup tasimayi yeniden yap
+      - ya da siradaki isi yapayim: TOPLU ONARIM ("34 kirik referans -
+        duzelt" dugmesi)
+
+  HALA OLCULMEDI
+    Tasima onariminin yazdigi GORELI yolu (".\..\3\Parca1.SLDPRT" gibi)
+    SOLIDWORKS kabul ediyor mu. Ad degisimini olctun, tasima yolunu
+    olcmedik. Bir kopya klasorde: parcayi alt klasore tasi, sonra teknik
+    resmi ac.
+
+ONCEKI SURUMDE - MESAJ KUTULARI AZALDI (21 -> 14)
 
   Bildirdigin sey: "tum islemler mukemmel, sadece mesaj kutulari gereksiz."
   Haklisin - ve bakinca daha kotu bir sey buldum: TASIMA KUTUSU YALAN

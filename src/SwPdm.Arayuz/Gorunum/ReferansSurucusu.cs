@@ -253,11 +253,15 @@ internal sealed class ReferansSurucusu
             return;
         }
 
+        string klasor = WindowsYolu.Klasor(yol);
         foreach ((string yazilan, Cozum cozum) in _indeks.Kullandiklari(yol))
         {
+            bool bayat = YolBayatMi(klasor, yazilan, cozum);
             liste.Ekle(
-                WindowsYolu.DosyaAdi(yazilan), AsagiRol(cozum), Simge(yazilan),
-                Renkler.ReferansAsagiYazi,
+                WindowsYolu.DosyaAdi(yazilan),
+                bayat ? "yol BAYAT" : AsagiRol(cozum),
+                Simge(yazilan),
+                bayat ? Renkler.YolBayatYazi : Renkler.ReferansAsagiYazi,
                 cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null);
         }
     }
@@ -298,6 +302,38 @@ internal sealed class ReferansSurucusu
     /// </summary>
     private static void Aciklama(ReferansListesi liste, string cumle, string rol, Color yazi)
         => liste.Ekle(cumle, rol, -1, yazi);
+
+    /// <summary>
+    /// DOSYAYI BIZ BULUYORUZ AMA SOLIDWORKS BULAMAZ MI.
+    ///
+    /// NEDEN VAR - GERCEK BIR HATA GORUNMEZ KALDI (Erkan, 28.08.2026):
+    /// panel "içinde" diyordu, SOLIDWORKS ise dosyayi acamiyordu. Sebep:
+    /// BIZ ada ve komsuluga gore cozuyoruz; SOLIDWORKS ise dosya ebeveynin
+    /// YANINDA DEGILSE yazili yola bakiyor - ve o yol bayatti.
+    ///
+    /// Kosul uc sarti birden istiyor:
+    ///   1. dosya bulundu (bulunamayan zaten BULUNAMADI diye yaziliyor)
+    ///   2. ebeveynin YANINDA DEGIL (yanindaysa komsuluk kurali kurtarir)
+    ///   3. yazili yol, cozuldugunde gercek dosyayi GOSTERMIYOR
+    /// </summary>
+    private static bool YolBayatMi(string ebeveynKlasoru, string yazilan, Cozum cozum)
+    {
+        if (cozum.Durum != CozumDurumu.Bulundu || cozum.Yol is not string gercek)
+        {
+            return false;
+        }
+
+        if (string.Equals(
+                WindowsYolu.Klasor(gercek), ebeveynKlasoru, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;   // yaninda: SOLIDWORKS zaten bulur (CLAUDE.md 5)
+        }
+
+        return !string.Equals(
+            WindowsYolu.Cozumle(ebeveynKlasoru, yazilan),
+            WindowsYolu.Cozumle(null, gercek),
+            StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Asagi yondeki satirin rol kelimesi. BELIRSIZ olan SAKLANMAZ: tek bir

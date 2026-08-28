@@ -83,6 +83,20 @@ internal static class Aktar
         AktarmaKipi kip,
         CancellationToken belirtec)
     {
+        // ONCE TARAMA (Erkan, 28.08.2026). Indeks hazir degilse kimin
+        // kullandigi bilinmez ve tasima sonrasi ONARIM YAPILAMAZ - bu delik
+        // gercekte acildi: dosya tasindi, uygulama sessizce onarmadi ve
+        // SOLIDWORKS parcayi bulamadi.
+        //
+        // IPTAL EDILIRSE TASIMA DA YAPILMAZ: yarim bilgiyle onarmaktansa
+        // hic dokunmamak dogru (CLAUDE.md 1a).
+        if (kip == AktarmaKipi.Tasi && !baglam.Referanslar.Hazir
+            && !Tara(baglam, belirtec))
+        {
+            baglam.Ilerleme.Bitti(() => baglam.Bildir("Taşıma iptal edildi — tarama yarım kaldı."));
+            return;
+        }
+
         var olan = new List<string>();
         var olmayan = new List<string>();
         var atlanan = new List<string>();
@@ -156,11 +170,17 @@ internal static class Aktar
         // BIRLIKTE TASINANLAR ELENIR: olculdu (CLAUDE.md 5) - SOLIDWORKS once
         // ebeveynin yanina bakiyor, yani birlikte giden aile kendiliginden
         // calisiyor. Calisani onarmak bos risktir (1a).
-        (int onarilan, IReadOnlyList<string> onarimHatalari, IReadOnlyList<OnarimPlani> tutan) =
-            kip == AktarmaKipi.Tasi
-                ? ReferansOnarimi.Onar(
-                    ReferansOnarimi.TasimaPlanlari(baglam.Referanslar.Indeks, ciftler, yollar))
-                : (0, [], []);
+        int onarilan = 0;
+        IReadOnlyList<string> onarimHatalari = [];
+        IReadOnlyList<OnarimPlani> tutan = [];
+        string? onarimSebebi = null;
+
+        if (kip == AktarmaKipi.Tasi)
+        {
+            (IReadOnlyList<OnarimPlani> planlar, onarimSebebi) =
+                ReferansOnarimi.TasimaPlanlari(baglam.Referanslar.Indeks, ciftler, yollar);
+            (onarilan, onarimHatalari, tutan) = ReferansOnarimi.Onar(planlar);
+        }
 
         if (onarilan > 0)
         {
@@ -171,7 +191,22 @@ internal static class Aktar
 
         baglam.Ilerleme.Bitti(() => Topla(
             baglam, ciftler, olan, olmayan, atlanan, kip, kesildi,
-            onarilan, onarimHatalari, tutan));
+            onarilan, onarimHatalari, tutan, onarimSebebi));
+    }
+
+    /// <summary>
+    /// Tasimadan once referans taramasi. Doner: devam edilebilir mi.
+    ///
+    /// CAGIRAN TEK YER BURASI ama TARAMANIN KENDISI ReferansSurucusu'nda -
+    /// ikinci bir tarama kopyasi yazilmiyor (CLAUDE.md 8).
+    /// </summary>
+    private static bool Tara(IslemBaglami baglam, CancellationToken belirtec)
+    {
+        baglam.Bildir("Referanslar taranıyor — taşımadan önce gerekli…");
+        TaramaSonucu? sonuc = baglam.Referanslar.Tara(
+            belirtec, (yapilan, toplam, ad) => baglam.Ilerleme.Adim(yapilan, toplam, ad));
+
+        return sonuc is not null && !sonuc.Iptal;
     }
 
     /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
@@ -243,7 +278,8 @@ internal static class Aktar
         bool kesildi,
         int onarilan,
         IReadOnlyList<string> onarimHatalari,
-        IReadOnlyList<OnarimPlani> onarilanPlanlar)
+        IReadOnlyList<OnarimPlani> onarilanPlanlar,
+        string? onarimSebebi)
     {
         Pano.Bosalt();
 
@@ -264,7 +300,7 @@ internal static class Aktar
         // IKI AYRI HATA KUTUSU BIRLESTI (28.08.2026): once "Bazi ogeler
         // aktarilamadi" ve "Referans onarilamadi" ust uste iki kutu
         // cikabiliyordu. Ikisi de ayni islemin sonucu; tek kutu yeter.
-        if (olmayan.Count > 0 || onarimHatalari.Count > 0)
+        if (olmayan.Count > 0 || onarimHatalari.Count > 0 || onarimSebebi is not null)
         {
             var metin = new StringBuilder();
             metin.AppendLine($"{olan.Count} öğe {is_}.");
@@ -277,6 +313,15 @@ internal static class Aktar
                 {
                     metin.AppendLine("  • " + satir);
                 }
+            }
+
+            // SESSIZ ATLAMA YOK (CLAUDE.md 3): onarim yapilamadiysa SEBEBI
+            // yazilir. Once bu delik acikti ve dosya sessizce kirildi.
+            if (onarimSebebi is not null)
+            {
+                metin.AppendLine();
+                metin.AppendLine("Referanslar ONARILAMADI — " + onarimSebebi + ".");
+                metin.AppendLine("Ctrl+Shift+R ile tarayıp taşımayı tekrar deneyin.");
             }
 
             if (onarimHatalari.Count > 0)
