@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -46,8 +47,7 @@ internal static class RaporPenceresi
 
         foreach (IRapor rapor in RaporListesi.Tumu)
         {
-            RaporSonucu sonuc = rapor.Uret(indeks);
-            sekmeler.TabPages.Add(Sekme(rapor, sonuc));
+            sekmeler.TabPages.Add(Sekme(pencere, rapor, indeks, bildir));
         }
 
         var kapat = new Button
@@ -66,8 +66,10 @@ internal static class RaporPenceresi
         pencere.ShowDialog(sahip);
     }
 
-    private static TabPage Sekme(IRapor rapor, RaporSonucu sonuc)
+    private static TabPage Sekme(
+        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir)
     {
+        RaporSonucu sonuc = rapor.Uret(indeks);
         // Sekme basliginda SAYI var ama yalnizca guvenilirse. Guvenilir
         // olmayan bir "0", "sorun yok" diye okunurdu.
         var sayfa = new TabPage(
@@ -105,7 +107,96 @@ internal static class RaporPenceresi
 
         sayfa.Controls.Add(liste);
         sayfa.Controls.Add(baslik);
+
+        // DUZELT DUGMESI YALNIZCA DUZELTILEBILIR RAPORDA. Karar raporun
+        // KENDISINDE (IRapor.Duzelt); pencere hangi raporun duzeltilebilir
+        // oldugunu BILMEZ - yoksa yeni bir duzeltilebilir rapor eklemek
+        // burayi da degistirtirdi (CLAUDE.md 1b).
+        if (sonuc.Satirlar.Count > 0 && Duzeltilebilir(rapor, indeks))
+        {
+            var duzelt = new Button
+            {
+                Text = $"Bulunanları düzelt ({sonuc.Satirlar.Count})",
+                Dock = DockStyle.Bottom,
+                Height = 34,
+            };
+
+            duzelt.Click += (_, _) => Duzelt(pencere, rapor, indeks, bildir, duzelt);
+            sayfa.Controls.Add(duzelt);
+        }
+
         return sayfa;
+    }
+
+    /// <summary>
+    /// Rapor duzeltmeyi DESTEKLIYOR mu. Sormanin bedeli yok: duzeltmeyen
+    /// raporlar null donuyor ve hicbir sey yapmiyor.
+    /// </summary>
+    private static bool Duzeltilebilir(IRapor rapor, ReferansIndeksi indeks)
+    {
+        // Sinif adina bakmiyoruz (CLAUDE.md 9: kapsam ADLARA baglanmaz).
+        // Bos bir indeks uzerinde soruluyor olsaydi is yapardi; o yuzden
+        // yalnizca "bu tur destekliyor mu" diye bakan ucuz bir yol lazim.
+        return rapor.Duzelt(BosIndeks) is not null;
+    }
+
+    /// <summary>Duzeltme destegini sormak icin BOS indeks - is yapmaz.</summary>
+    private static readonly ReferansIndeksi BosIndeks = new(string.Empty);
+
+    /// <summary>
+    /// Duzeltmeyi kosturur ve SONUCU SAYIYLA yazar. "Duzeltildi" demek
+    /// yetmez; kac tanesi ve tutmayanlarin sebebi de yazilir (CLAUDE.md 3).
+    /// </summary>
+    private static void Duzelt(
+        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir, Button dugme)
+    {
+        if (!OnayKutusu.Sor(
+                pencere, "Bulunanları düzelt",
+                rapor.Aciklama + "\n\n"
+                + "Bu dosyaların İÇİNE yazılacak: bayat yollar gerçek konuma\n"
+                + "çevrilecek. Özgün hâli doğrulanana kadar korunur; bir dosya\n"
+                + "onarılamazsa ona DOKUNULMAZ ve sebebi yazılır.\n\n"
+                + "SOLIDWORKS'te açık dosyalar atlanır."))
+        {
+            return;
+        }
+
+        dugme.Enabled = false;
+        OnarimOzeti? ozet = rapor.Duzelt(indeks);
+        if (ozet is null)
+        {
+            return;
+        }
+
+        foreach (string dosya in ozet.Dokunulan)
+        {
+            IndeksTarama.Tazele(indeks, dosya);
+        }
+
+        if (ozet.Hatalar.Count > 0)
+        {
+            var metin = new StringBuilder();
+            metin.AppendLine($"{ozet.Onarilan} yol düzeltildi.");
+            metin.AppendLine();
+            metin.AppendLine($"{ozet.Hatalar.Count} tanesi düzeltilemedi:");
+            foreach (string satir in ozet.Hatalar)
+            {
+                metin.AppendLine("  • " + satir);
+            }
+
+            MessageBox.Show(
+                pencere, metin.ToString(), "Bazıları düzeltilemedi",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        bildir($"{ozet.Onarilan} bayat yol düzeltildi"
+            + (ozet.Hatalar.Count > 0 ? $" · {ozet.Hatalar.Count} olmadı" : string.Empty));
+
+        // Pencere KAPANIR: listeler artik bayat. Yeniden acildiginda
+        // guncel hali gorunur - yarim guncellenmis bir pencere gostermek
+        // kullaniciyi yanlis sayiya baktirirdi.
+        pencere.DialogResult = DialogResult.OK;
+        pencere.Close();
     }
 
     /// <summary>

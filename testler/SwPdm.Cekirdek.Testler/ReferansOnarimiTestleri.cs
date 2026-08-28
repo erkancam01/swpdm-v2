@@ -292,4 +292,79 @@ public sealed class ReferansOnarimiTestleri : IDisposable
             WindowsYolu.Cozumle(null, yeni),
             WindowsYolu.Cozumle(bir, hedef));
     }
+
+    // ---------------------------------------------------------------------
+    // TOPLU ONARIM - gecmiste kirilmis baglari toparlar.
+    //
+    // Erkan'in durumu: dosya Gezgin'de (ya da onarim gelmeden onceki bir
+    // surumde) tasindi; dosya duruyor, biz onu buluyoruz ama SOLIDWORKS
+    // acamiyor cunku yazili yol eski yeri gosteriyor.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void BAYAT_YOL_raporda_gorunuyor_ve_DUZELTILIYOR()
+    {
+        string bir = Path.Combine(_kok, "1");
+        string uc = Path.Combine(_kok, "3");
+        Directory.CreateDirectory(bir);
+        Directory.CreateDirectory(uc);
+
+        string resim = Path.Combine(bir, "Parça1.SLDDRW");
+        File.Move(Yol("Parça1.SLDDRW"), resim);
+
+        // Parcayi UYGULAMA DISINDA tasi - yani onarim HIC calismadi.
+        string yeni = Path.Combine(uc, "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), yeni);
+
+        ReferansIndeksi indeks = Indeks();
+
+        // 1) Rapor bunu GORMELI.
+        IRapor rapor = RaporListesi.Tumu.First(r => r.Ad == "Bayat yollar");
+        RaporSonucu once = rapor.Uret(indeks);
+        Assert.Contains(once.Satirlar, r => r.Yol == resim);
+
+        // 2) DUZELT.
+        OnarimOzeti? ozet = rapor.Duzelt(indeks);
+        Assert.NotNull(ozet);
+        Assert.Empty(ozet!.Hatalar);
+        Assert.True(ozet.Onarilan > 0);
+
+        // 3) ASIL OLCUM: yazili yol artik gercek yeri gosteriyor.
+        string? hedef = SwReferans.Oku(resim).Dogrudan.FirstOrDefault(
+            y => string.Equals(WindowsYolu.DosyaAdi(y), "Parça1.SLDPRT", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(WindowsYolu.Cozumle(null, yeni), WindowsYolu.Cozumle(bir, hedef));
+
+        // 4) Indeks tazelenince rapor BOSALMALI.
+        foreach (string d in ozet.Dokunulan)
+        {
+            IndeksTarama.Tazele(indeks, d);
+        }
+
+        Assert.DoesNotContain(rapor.Uret(indeks).Satirlar, r => r.Yol == resim);
+    }
+
+    [Fact]
+    public void YANINDAKI_dosya_BAYAT_SAYILMAZ()
+    {
+        // Dosya ebeveynin yanindaysa SOLIDWORKS onu bulur (CLAUDE.md 5),
+        // yazili yol bayat olsa bile. Onu "kirik" saymak yanlis alarm olurdu.
+        ReferansIndeksi indeks = Indeks();
+        IRapor rapor = RaporListesi.Tumu.First(r => r.Ad == "Bayat yollar");
+
+        Assert.DoesNotContain(
+            rapor.Uret(indeks).Satirlar, r => r.Yol == Yol("Parça1.SLDDRW"));
+    }
+
+    [Fact]
+    public void DUZELTILEMEYEN_raporlar_null_donuyor()
+    {
+        ReferansIndeksi indeks = Indeks();
+        foreach (IRapor r in RaporListesi.Tumu)
+        {
+            if (r.Ad != "Bayat yollar")
+            {
+                Assert.Null(r.Duzelt(indeks));
+            }
+        }
+    }
 }

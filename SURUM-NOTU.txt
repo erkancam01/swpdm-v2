@@ -1,4 +1,40 @@
-BU SURUMDE YENI - TARAMA HER ISLEMIN ONCESINDE VE SONRASINDA
+BU SURUMDE YENI - TOPLU ONARIM: "BULUNANLARI DUZELT"
+
+  Raporlarda yeni bir sekme var: BAYAT YOLLAR. Ve onda bir dugme:
+  "Bulunanlari duzelt".
+
+  BU NE DEMEK - "KIRIK REFERANS"TAN FARKI
+    Kirik referans: dosya BULUNAMIYOR (silinmis ya da taranan agacin
+      disinda). Onarilacak bir hedef yok.
+    Bayat yol: dosya DURUYOR ama onu kullanan belgenin icindeki yol baska
+      yeri gosteriyor. Biz dosyayi ada ve komsuluga gore buluyoruz,
+      SOLIDWORKS ise yazili yola bakip bulamiyor. ISTE BU DUZELTILEBILIR.
+
+  Senin bildirdigin "agacta gorunuyor ama SOLIDWORKS bulamiyor" hatasi tam
+  olarak buydu. Elindeki bozuk dosyayi bu dugme duzeltir.
+
+  NE ZAMAN OLUSUR
+    Uygulamanin kendi tasimalarinda ARTIK OLUSMUYOR - tasima onariyor.
+    Bu rapor GECMISI toparlamak icin: bu surumden onceki tasimalar ve
+    Gezgin'de elle yapilan tasimalar.
+
+  NASIL CALISIR
+    Her dosya icin ayri ayri: KOPYALA -> YAMA -> DOGRULA -> DEGISTIR.
+    Biri tutmazsa otekiler DURMAZ; tutmayanin sebebi tek tek yazilir.
+    SOLIDWORKS'te acik dosyalar ATLANIR ve soylenir.
+    Sonuc sayiyla: "12 bayat yol duzeltildi · 1 olmadi".
+
+  YANINDAKI DOSYA BAYAT SAYILMAZ
+    Dosya ebeveynin yanindaysa SOLIDWORKS onu zaten bulur (olculdu), yazili
+    yol eski olsa bile. Onu listeye koymak YANLIS ALARM olurdu.
+
+  OLCULDU
+    Senin durumun birebir kuruldu: teknik resim "1\", parca "3\" - uygulama
+    disinda tasinmis. Rapor gordu, duzeltti, yazili yol artik gercek yeri
+    gosteriyor, ve duzeltmeden sonra rapor BOSALDI.
+    260 test geciyor, dort kapi TEMIZ.
+
+ONCEKI SURUMDE - TARAMA HER ISLEMIN ONCESINDE VE SONRASINDA
 
   Istedigin sey: "referans tarama islemi her gerekli islemden once ve sonra
   calissin - tasima, isimlendirme vs ne varsa."

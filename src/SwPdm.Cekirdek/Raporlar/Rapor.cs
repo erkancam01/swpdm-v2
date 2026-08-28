@@ -53,6 +53,16 @@ public interface IRapor
 
     /// <summary>Raporu uretir.</summary>
     RaporSonucu Uret(ReferansIndeksi indeks);
+
+    /// <summary>
+    /// Bulunanlari DUZELTIR. Duzeltilemeyen raporlar bunu EZMEZ ve null
+    /// doner; arayuz de o sekmede "Düzelt" dugmesi GOSTERMEZ.
+    ///
+    /// NEDEN VARSAYILAN GOVDE: cogu rapor duzeltilemez (yetim parca, teknik
+    /// resmi olmayan...). Her birine bos bir govde yazdirmak, listeye satir
+    /// eklemenin bedelini artirirdi (CLAUDE.md 1b).
+    /// </summary>
+    OnarimOzeti? Duzelt(ReferansIndeksi indeks) => null;
 }
 
 /// <summary>
@@ -71,6 +81,7 @@ public static class RaporListesi
     public static readonly IReadOnlyList<IRapor> Tumu =
     [
         new KirikReferanslar(),
+        new BayatYollar(),
         new Yetimler(),
         new TeknikResmiOlmayanlar(),
         new TasinmisDosyalar(),

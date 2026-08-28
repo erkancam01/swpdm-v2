@@ -119,6 +119,42 @@ public sealed class ReferansIndeksi
             yazilanYol, kaynak.Yol, AdaGoreAdaylar(WindowsYolu.DosyaAdi(yazilanYol)));
     }
 
+    /// <summary>
+    /// YAZILI YOL BAYAT MI - yani dosya duruyor ama SOLIDWORKS ACAMAZ.
+    ///
+    /// BIZ dosyayi ADA ve KOMSULUGA gore buluyoruz; SOLIDWORKS ise dosya
+    /// ebeveynin YANINDA DEGILSE dosyanin icindeki YAZILI YOLA bakiyor
+    /// (CLAUDE.md 5). Ikisi ayrisinca hata GORUNMEZ kaliyor - Erkan'in
+    /// dosyasi tam bu yuzden acilmadi (28.08.2026).
+    ///
+    /// Uc sart birden:
+    ///   1. dosya BULUNDU (bulunamayan zaten ayri bir sorun)
+    ///   2. ebeveynin YANINDA DEGIL (yanindaysa komsuluk kurali kurtarir)
+    ///   3. yazili yol, ebeveyne gore cozuldugunde gercek dosyayi GOSTERMIYOR
+    ///
+    /// TEK KOPYA (CLAUDE.md 8): hem referans paneli, hem "Bayat yollar"
+    /// raporu, hem toplu onarim buna soruyor.
+    /// </summary>
+    public static bool BayatMi(string ebeveynYolu, string yazilan, Cozum? cozum)
+    {
+        if (cozum is null || cozum.Durum != CozumDurumu.Bulundu || cozum.Yol is not string gercek)
+        {
+            return false;
+        }
+
+        string ebeveynKlasoru = WindowsYolu.Klasor(ebeveynYolu);
+        if (string.Equals(
+                WindowsYolu.Klasor(gercek), ebeveynKlasoru, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !string.Equals(
+            WindowsYolu.Cozumle(ebeveynKlasoru, yazilan),
+            WindowsYolu.Cozumle(null, gercek),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>Bu dosyanin KULLANDIKLARI: yazilan yol + cozumu.</summary>
     public IReadOnlyList<(string YazilanYol, Cozum Cozum)> Kullandiklari(string yol)
     {
