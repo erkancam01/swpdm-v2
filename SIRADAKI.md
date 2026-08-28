@@ -4,16 +4,18 @@
 > gerçekler; burası **bugünün açık işleri**. Bir iş bitince bu dosyadan
 > silinir; hepsi bitince dosya silinir.
 >
-> Son durum: dal `claude/v2-pdm-start-u058ey`, commit `0609632`.
-> 222 test · dört kapı TEMİZ (çalıştırma kapısı 13 ölçüm).
-> Erkan denedi ve *"her şey gayet düzgün"* dedi.
+> Son durum: dal `claude/v2-pdm-start-u058ey`, commit `e860c09`.
+> `main` de aynı yerde (ileri sarma, 28.08.2026).
+> 272 test · 267 geçti · 5 atlandı (Windows'a özel) · dört kapı TEMİZ
+> (çalıştırma kapısı 13 ölçüm).
+> Erkan denedi: *"her şey mükemmel."*
 
 ---
 
 ## Bitmiş olan (yeniden yapılmayacak)
 
 Dosya yöneticisi tarafı **ve** PDM tarafı çalışıyor: referans indeksi
-(kim kimi kullanıyor), beş rapor, SOLIDWORKS'süz önizleme, belge ve özel
+(kim kimi kullanıyor), altı rapor, SOLIDWORKS'süz önizleme, belge ve özel
 özellikler, silmeden önce uyarı, referansa çift tıklayıp gitme, taşırken
 bağımlıları da götürme.
 
@@ -21,33 +23,23 @@ SOLIDWORKS 2022 dosya biçimi **çözüldü ve CLAUDE.md §5'e yazıldı** —
 adlandırılmış deflate akışları, nibble takaslı adlar, MFC dizeleri,
 `Header2` = doğrudan referanslar. Bir daha araştırılmayacak.
 
+**REFERANS ONARIMI BİTTİ** — dosyanın içine **yerinde yama** yazılıyor
+(hiçbir bayt kaymıyor). Dört yol da çalışıyor ve dördü de Erkan'ın
+makinesinde SOLIDWORKS'le doğrulandı:
+
+- **ad değişimi** (F2) · **taşıma** (sürükle / Ctrl+X-V) → ebeveynler onarılır
+- **toplu onarım** — "Bayat yollar" raporu + *"Bulunanları düzelt"* düğmesi
+- **elle bağlama** (`Ctrl+Shift+L`) — hedefi kullanıcı seçer, seçim **kendi
+  ağacımızdan** yapılır (Windows dosya kutusu kullanılmıyor)
+
+Yazmadan önce sayılan üç bilinmeyenin **üçü de kapandı**: baştaki 4 bayt
+engel değil · yol yazan **bütün** akışlar değiştiriliyor · uzunluk farkı
+klasör kısmından karşılanıyor (kısa ad · dolgulu ad · göreli yol, üçü de
+kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
+
 ---
 
-## A — YAPILMAMIŞ TEK İŞ: referans onarımı (dosyaya yazma)
-
-Bugün uygulama hiçbir SOLIDWORKS dosyasına **yazmıyor**. Taşıma/adlandırma
-sonrası onarım gerekiyorsa söylüyor, yapmıyor.
-
-Yazmadan önce ölçülmesi gereken üç bilinmeyen:
-
-1. Dosya başındaki 4 bayt her dosyada farklı — **sağlama toplamı olabilir**.
-   Öyleyse yeniden hesaplamadan yazılan dosyayı SOLIDWORKS reddeder.
-2. Aynı yol **birden çok akışta** yazılı (`Header2` dışında
-   `Config-0-ModelHeader`, `DisplayLists`, `Definition`, `VBLists`,
-   `SwDocContentMgrInfo`). Yalnız birini değiştirmek eskisini geride bırakır.
-3. Dize boyu değişince **sonraki akışların yeri kayar**; içeride mutlak
-   konum tutan bir şey varsa kırılır.
-
-**Bu ortamda doğrulanamaz — SOLIDWORKS yok.** Kapı şöyle kurulur:
-kopya bir dosyada yol değiştirilir, Erkan'a gönderilir, **o** SOLIDWORKS'te
-açıp doğrular. Açılırsa yol açılır; açılmazsa kâğıt üzerinde kalır ve
-hiçbir şey kaybedilmez (§1a: KOPYALA → ONAR → DOĞRULA → SİL).
-
-> Not: çoğu durumda yazmaya gerek yok. §5'te ölçüldü — SOLIDWORKS önce
-> ebeveynin yanına bakıyor, o yüzden birlikte taşınan montaj+parça zaten
-> çalışıyor (`BagimlilariEkle.cs` bunu kullanıyor).
-
-## B — YAPILDI ama ÖLÇÜLEMEDİ (hepsi Erkan'ın makinesinde)
+## A — YAPILDI ama ÖLÇÜLEMEDİ (hepsi Erkan'ın makinesinde ölçülebilir)
 
 - **Ağ sürücüsünde ilk taramanın süresi.** Buradaki 0,1 sn yerel diskte
   7 dosya. Uygulama kendi hızını durum çubuğuna yazıyor; Erkan'dan o
@@ -58,15 +50,32 @@ hiçbir şey kaybedilmez (§1a: KOPYALA → ONAR → DOĞRULA → SİL).
   OLE — `BilesikDosya.cs` o yüzden duruyor.
 - **254 karakterden uzun yollar.** MFC kaçış biçimi görülmedi. Kod böyle
   bir yolu **atlıyor** ve sonucun eksik olduğunu **söylüyor**.
+- **Farklı ADLA elle bağlanan dosyayı SOLIDWORKS açıyor mu.** Aynı kod
+  yolu ad değiştirmede doğrulandı; bu senaryo ayrıca denenmedi.
 
-Bunlar kapanmadan A'ya girmek erken.
+## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 
-## C — Bekleyen fikir: özelliklere göre süzme
+- **Elle bağlamanın kapıda kalıcı ölçümü YOK.** Wine'da uçtan uca bir kez
+  ölçüldü (pencere açıldı · kendi ağacımızdan dosya seçildi · yama yazıldı),
+  ama kapıya girmedi: çalıştırma kapısının bazı ölçümleri örnek klasördeki
+  **mutlak satır numaralarına** bağlı ve yeni dosya eklemek onları kaydırıyor
+  (11. ölçüm "satır 13 = Parça1.SLDPRT" diyor). Eklenecekse önce o ölçümler
+  satır numarasından kurtarılmalı.
+- **`BaslikSeridi.Bagli` hiç atanmıyor** → başlıkta her zaman
+  *"SOLIDWORKS: kapalı"* yazıyor, gerçek durumdan bağımsız. §3 borcu,
+  küçük iş: ya doğru gösterilir ya da yazı kaldırılır.
 
-Özellikler (Malzeme, Ağırlık, Revizyon) şu an yalnızca **seçili dosyada**
-görünüyor. İndekse alınırsa *"Malzeme = Pirinç olanlar"*, *"Revizyonu boş
-olanlar"* gibi süzme ve arama olur. `SwBelgeBilgisi.Oku` hazır; iş
-indekse bir alan eklemek ve süzgeci kurmak.
+## C — Bekleyen fikirler (Erkan'a sunuldu, seçilmedi)
+
+- **Özelliklere göre süzme/arama.** Özellikler (Malzeme, Ağırlık, Revizyon)
+  şu an yalnızca **seçili dosyada** görünüyor. İndekse alınırsa
+  *"Malzeme = Pirinç olanlar"* gibi süzme olur. `SwBelgeBilgisi.Oku` hazır;
+  iş indekse bir alan eklemek ve süzgeci kurmak.
+- **Pack and Go.** Bir montajı kullandıklarıyla birlikte başka klasöre
+  kopyala, kopyadaki referanslar doğru olsun. Parçalar zaten var:
+  `ReferansIndeksi.ZincirdekiEksikler` + `YolBaglama.Bagla`.
+- **Toplu ad değiştirme.** Kural/şablonla çok dosya, referanslar korunarak.
+  `ReferansOnarimi` hazır; iş kuralı ve önizlemeli onayı yazmak.
 
 ---
 
@@ -78,6 +87,6 @@ indekse bir alan eklemek ve süzgeci kurmak.
    **neyin çalıştığı ve neyin bilerek çalışmadığı** yazılır (§1a, §3).
 
 Erkan'ın kalıcı kararları: §1b (bir özellik tek yerde yaşar), §1c
-(takılınca bir kez dene, geç, söyle — *bu kural bir turda bilerek
-kaldırıldı, varsayılan yine geçerli*), ve dosyaya yazma konusunda
+(takılınca bir kez dene, geç, söyle), §1d (kısa yaz, madde madde), mesaj
+kutusu kuralı (§6: yalnızca onay ve hata), ve dosyaya yazma konusunda
 "önce ölç, doğrulamayı bana bırak".
