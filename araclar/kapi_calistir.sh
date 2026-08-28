@@ -55,10 +55,14 @@ AGAC_TIK_X=105                                  # dugum metnine denk gelen x
 SUZGEC_Y=95                                     # suzgec seridinin y'si
 SUZGEC_PARCA_X=171                              # "Parca" dugmesinin x'i
 SUZGEC_TUMU_X=38                                # "Tumu" dugmesinin x'i
+# Agac alani. AGAC_ILK_SATIR'dan TURETILIYOR, ikinci kez yazilmiyor:
+# yerlesim degisince tek bir sayi degisiyor (CLAUDE.md 8).
+AGAC_KIRP="560x250+5+$(( AGAC_ILK_SATIR - 7 ))"
 # Alt panel: solda onizleme kutusu, sagda referans listesi.
 ONIZLEME_KIRP="250x280+15+458"                  # pencere ici: genislikxyukseklik+x+y
 REFERANS_KIRP="260x150+295+458"
 BOLUM_ZEMIN="#E4EAF1"                           # Renkler.ReferansBolumZemin
+ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -216,6 +220,10 @@ mkdir -p "$ORNEK"/{1,2,33,222,"alt klasor"}
 # Kokte de dosya olsun: ekran goruntusunde simgeler ve adlar gorunsun.
 : > "$ORNEK/Govde.SLDASM"
 : > "$ORNEK/Kapak.SLDPRT"
+# 13. OLCUM ICIN: kokte bir kilit cifti. Ozellik yokken bu satir agaca
+# BIR SATIR EKLERDI; ozellik varken hic eklemiyor - yani kokteki satir
+# sayisi degismiyor ve 5/6/8/9. olcumlerin tabanlari KAYMIYOR.
+: > "$ORNEK/~\$Kapak.SLDPRT"
 # Icinde GERCEK gomulu onizleme olan bilesik belge. Wine'da kabuk onizleme
 # saglayicisi yok; bu dosya yedek yolu (dosyanin icindeki onizleme) gorunur
 # kilar - yoksa kapi yalnizca bos bir kutu olcerdi.
@@ -233,7 +241,11 @@ cp "$KOK/araclar/ornek-veri/ornek.pdf" "$ORNEK/katalog.pdf"
 : > "$ORNEK/33/Parca2.SLDDRW"
 : > "$ORNEK/33/Parca2.SLDPRT"
 : > "$ORNEK/222/asaParcaa1.SLDPRT"
-: > "$ORNEK/222/~\$asaParcaa1.SLDPRT"     # SOLIDWORKS kilit dosyasi: GIZLENMEMELI
+# KILIT DOSYALARI - iki hal, iki ayri beklenti (bkz. Cekirdek/Kilit.cs):
+#   sahibi VAR  -> kilit satiri GIZLENIR, sahibi "acik" diye isaretlenir
+#   sahibi YOK  -> kilit GORUNUR kalir; klasor silmeyi engelleyen sey odur
+: > "$ORNEK/222/~\$asaParcaa1.SLDPRT"      # sahibi var -> gizlenir
+: > "$ORNEK/222/~\$kayipsahip.SLDPRT"      # sahibi YOK -> gorunur kalir
 : > "$ORNEK/alt klasor/olcum.pdf"
 : > "$ORNEK/alt klasor/notlar.txt"          # tanimadigimiz uzanti: GORUNMELI
 mkdir -p "$ORNEK/33/derin/daha-derin"
@@ -282,7 +294,9 @@ secili_satir_say() {
 # cizgileri ortuyordu. Yani sayi dogru degildi, sadece dogru gorunuyordu.
 # Metin satirlari ~9 piksel; noktalar 1 piksel - esik ikisini ayiriyor.
 agac_satir_say() {
-  convert "$1" -crop "560x250+$(( $2 + 5 ))+$(( $3 + AGAC_ILK_SATIR - 7 ))" +repage txt:- 2>/dev/null \
+  local boyut="${AGAC_KIRP%%+*}" kalan="${AGAC_KIRP#*+}"
+  local kx="${kalan%%+*}" ky="${kalan#*+}"
+  convert "$1" -crop "${boyut}+$(( $2 + kx ))+$(( $3 + ky ))" +repage txt:- 2>/dev/null \
     | grep -v '#FFFFFF' | grep -o '^[0-9]*,[0-9]*:' \
     | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
     | awk 'NR==1{bas=$1; onceki=$1; next}
@@ -344,28 +358,28 @@ SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/12] surec ayakta ............ EVET"
+  echo "   [1/13] surec ayakta ............ EVET"
 else
-  echo "   [1/12] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/13] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/12] hata akisi temiz ........ HAYIR"
+  echo "   [2/13] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/12] hata akisi temiz ........ EVET"
+  echo "   [2/13] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/12] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/13] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/12] cokme penceresi yok ..... EVET"
+  echo "   [3/13] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -387,9 +401,12 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/12] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/13] ana pencere dogdu ....... EVET ($ANA)"
+  # HICBIR SEY SECILI DEGILKEN bir goruntu: 13. olcum satir rengine bakiyor
+  # ve secim boyasi rengi ORTERDI. Sonraki olcumler tiklamaya basliyor.
+  import -window root "$CALISMA/ilk.png" > /dev/null 2>&1
 else
-  echo "   [4/12] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/13] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -414,13 +431,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/12] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/13] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/12] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/13] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/12] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/13] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -446,13 +463,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/12] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    echo "   [6/13] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/12] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    echo "   [6/13] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/12] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  echo "   [6/13] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -493,13 +510,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
-    echo "   [7/12] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+    echo "   [7/13] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
   else
-    echo "   [7/12] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    echo "   [7/13] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
     SORUN=1
   fi
 else
-  echo "   [7/12] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  echo "   [7/13] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -522,13 +539,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [8/12] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    echo "   [8/13] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [8/12] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    echo "   [8/13] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [8/12] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  echo "   [8/13] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -554,13 +571,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [9/12] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/13] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [9/12] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/13] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [9/12] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  echo "   [9/13] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -590,13 +607,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # ayirt etmedi (yazi kenar yumusatmayla 62 renk uretiyor). Ayiran tek sey
   # piksel sayisinin YIRMI KATLIK farki.
   if [ "${PIKSEL:-0}" -gt 3000 ]; then
-    echo "   [10/12] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
+    echo "   [10/13] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
   else
-    echo "   [10/12] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
+    echo "   [10/13] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
     SORUN=1
   fi
 else
-  echo "   [10/12] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
+  echo "   [10/13] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -624,13 +641,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA_L="$(beyaz_olmayan "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_ONCE" != "$IZ_SONRA" ] && [ "${SONRA_L:-0}" -gt 50 ]; then
-    echo "   [11/12] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
+    echo "   [11/13] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
   else
-    echo "   [11/12] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
+    echo "   [11/13] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
     SORUN=1
   fi
 else
-  echo "   [11/12] referans listesi ...... OLCULEMEDI (pencere yok)"
+  echo "   [11/13] referans listesi ...... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -652,13 +669,49 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BASLIK_BANT="$(renk_bant_say "$CALISMA/referans.png" "$REFERANS_KIRP" \
     "$PENCERE_X" "$PENCERE_Y" "$BOLUM_ZEMIN")"
   if [ "${BASLIK_BANT:-0}" -ge 2 ]; then
-    echo "   [12/12] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
+    echo "   [12/13] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
   else
-    echo "   [12/12] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
+    echo "   [12/13] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
     SORUN=1
   fi
 else
-  echo "   [12/12] yon ayrimi ............ OLCULEMEDI (pencere yok)"
+  echo "   [12/13] yon ayrimi ............ OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+
+# 13) KILIT DOSYALARI: "~$" gizlendi mi, sahibi isaretlendi mi
+#
+# NEDEN VAR: SOLIDWORKS her actigi belge icin klasore gizli bir "~$<ad>"
+# dosyasi yaziyor (CLAUDE.md 5) ve bunlar agacta gercek dosyalarla yan yana
+# duruyordu. Ama KORLEMESINE GIZLEMEK yanlis olurdu: Windows bir klasoru
+# sildirmiyorsa sebep cogu zaman tam da o gorunmeyen dosyadir (4). Kural
+# bu yuzden iki yanli - sahibi VARSA gizlenir ve sahibi "acik" isaretlenir,
+# sahibi YOKSA gorunur kalir.
+#
+# Olcum satir SAYISIYLA olmaz: ornek klasordeki kilit zaten gizli oldugu
+# icin sayi degismiyor (tabanlarin kaymamasi bilerek boyle). Ayirt eden sey
+# isaretli satirin ZEMIN RENGI (#FFE3C8 = Renkler.AcikDosyaZemin) - agacta
+# baska hicbir seyde yok. Bir bant bekleniyor: kokte tek bir kilit cifti var.
+#
+# NEDEN ZEMIN, YAZI RENGI DEGIL - OLCULDU: once yazi rengi (#A64B00)
+# arandi ve SIFIR bulundu, oysa yazi ekranda turuncuydu. Sebep ClearType:
+# alt-piksel cizimde metnin hicbir pikseli saf renge esit cikmiyor. Dolu
+# dikdortgen tam renk veriyor.
+#
+# GORUNTU "ilk.png": hicbir sey secili degilken alindi. Secim boyasi satirin
+# rengini orter ve olcum bos donerdi.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  KILIT_BANT="$(renk_bant_say "$CALISMA/ilk.png" "$AGAC_KIRP" \
+    "$PENCERE_X" "$PENCERE_Y" "$ACIK_DOSYA")"
+  if [ "${KILIT_BANT:-0}" -ge 1 ]; then
+    echo "   [13/13] kilit dosyalari ....... EVET (kilit gizlendi, sahibi isaretli)"
+  else
+    echo "   [13/13] kilit dosyalari ....... HAYIR ($KILIT_BANT isaret, 1 bekleniyordu)"
+    SORUN=1
+  fi
+else
+  echo "   [13/13] kilit dosyalari ....... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

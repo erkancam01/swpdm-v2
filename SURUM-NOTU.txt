@@ -1,4 +1,56 @@
-BU SURUMDE YENI - REFERANSLARDA YON AYRIMI (ASAGI / YUKARI)
+BU SURUMDE YENI - "~$" KILIT DOSYALARI ARTIK GURULTU DEGIL, BILGI
+
+  Ekran goruntunde agacta "~$y1-MASAS PERCINI.SLDDRW" duruyordu. Bu bir
+  belge degil: SOLIDWORKS her actigi belge icin ayni klasore gizli bir
+  "~$<ad>" dosyasi yaziyor. Gezgin onlari gostermiyor, biz gosteriyorduk.
+
+  KORLEMESINE GIZLEMEDIM - ve bunun sebebi onemli. Windows bir klasoru
+  "dizin bos degil" diye sildirmiyorsa, sebep cogu zaman TAM DA o gorunmeyen
+  dosyadir. Hepsini gizleseydim klasoru bos gorur, silmeye calisir ve
+  ekranda hicbir sebep bulamazdin.
+
+  Onun yerine KURAL IKI YANLI:
+
+    Sahibi AYNI KLASORDE varsa   -> kilit satiri GIZLENIR ve sahibi
+                                    turuncu zeminle "• açık" isaretlenir
+    Sahibi YOKSA                 -> kilit GORUNUR kalir ve mor zeminle
+                                    "• sahipsiz kilit" diye etiketlenir
+
+  Cunku "~$X.SLDPRT" aslinda X.SLDPRT'nin bir DURUMU: o belge su anda acik.
+  Ag surucusunde calisan bir PDM'de bu gurultu degil BILGI - biri o dosyayi
+  acmis olabilir. Fare ipucunda ne anlama geldigi yaziyor.
+
+  Sahipsiz olan ise kalintidir: SOLIDWORKS temiz kapanmamis. Gorunur
+  kaliyor cunku klasorun silinmesini engelleyen sey odur.
+
+  KLASORDEKI "(n)" SAYISI DEGISMEDI - diskteki dosya sayisidir. Kilitleri
+  saymasaydim, yalnizca kalinti kilit iceren bir klasor "(0)" gorunurdu -
+  yani "ici bos" - ve sonra silme "dizin bos degil" diye kirilirdi. Tam
+  olarak kacindigim tuzak. Bunun yerine durum cubugu soyluyor:
+  "5 klasor · 8 dosya · 1 kilit dosyasi gizlendi (acik belgeler isaretli)".
+
+  OLCULDU
+    Wine'da: kilit satiri gizlendi, sahibi turuncu zeminle isaretlendi
+    Kapiya 13. OLCUM eklendi. TEMIZ -> gizleme etkisiz birakilinca
+      YAKALADI -> geri konunca TEMIZ.
+    Ilk hali OLCEMEDI ve sebebi ogreticiydi: isaret yalnizca YAZI RENGIYDI
+      ve kapi o rengi hic bulamadi - ClearType alt-piksel cizdigi icin
+      metnin hicbir pikseli saf renge esit olmuyor. Isarete ZEMIN rengi
+      eklenince olculebildi; ekranda da daha okunur oldu.
+    9 yeni birim test (222 test, 213'tu)
+
+  BURADA OLCULEMEYEN
+    - UZUN ADLARDA kilit adinin kirpilip kirpilmadigi. Office uzun adlari
+      kirpiyor ("~$" + ad eksi iki harf); SOLIDWORKS'un ne yaptigini
+      GORMEDIM - elimdeki olcum kisa adlarla. Kirpiyorsa sahip bulunamaz ve
+      kilit GIZLENMEZ, gorunur kalir. Yani yanlis tarafa dusmuyor: bir sey
+      gizlenmiyorsa gorursun. Uzun adli bir montajda "~$..." satiri
+      goruyorsan bana soyle, kirpma bicimini olceyim.
+    - Silme/tasima/adlandirma onayina DOKUNMADIM. Acik bir dosyayi
+      tasimaya kalkarsan Windows engelleyebilir; uygulama zaten gercek
+      sebebi ayirt edip yaziyor ("baska program acik tutuyor").
+
+ONCEKI SURUMDE YENIYDI - REFERANSLARDA YON AYRIMI
 
   Bildirdiginiz sey: "parcanin kullanildigi yerleri ve kullandigi yerleri bir
   sekilde anlasam daha iyi olur." Haklisiniz - o listede iki AYRI soruya

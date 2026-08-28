@@ -723,6 +723,8 @@ dosyasında** duruyor:
 | klasör boyutu işlemi (`Ctrl+Shift+B`) | `Arayuz/Gorunum/Islemler/BoyutHesaplaIslemi.cs` |
 | otomatik tazeleme (izleme, gecikme) | `Arayuz/Gorunum/DiskIzleyici.cs` |
 | alttaki ilerleme çubuğu | `Arayuz/Gorunum/IlerlemeYuzeyi.cs` |
+| **`~$` kilit dosyaları** (gizle · işaretle · kalıntı) | `Cekirdek/Kilit.cs` |
+| bir dosya satırının görünüşü (simge, metin, renk, ipucu) | `Arayuz/Gorunum/Agac/DosyaSatiri.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
 | yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/YolCubugu.cs` |
@@ -793,12 +795,13 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on iki şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı on üç şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
 mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
 **önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu** ·
-**referanslarda yön ayrımı duruyor mu**.
+**referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
+sahibi işaretleniyor mu**.
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -856,6 +859,34 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > metindi (`▼ KULLANDIKLARI — 9 dosya`); dar pencerede tam da **sayı**
 > kırpılıyordu: `▼ KULLANDIKLARI …`. Ad sütunu solda, sayı sağ sütunda
 > durunca her genişlikte görünüyor.
+
+> **On üçüncüsü neden var (kilit dosyaları):** SOLIDWORKS her açtığı belge
+> için klasöre gizli bir `~$<ad>` dosyası yazıyor (§5) ve bunlar ağaçta
+> gerçek dosyalarla yan yana duruyordu. **Ama körlemesine gizlemek yanlış
+> olurdu ve bu bilinçli bir karardı** — Windows bir klasörü sildirmiyorsa
+> sebep çoğu zaman tam da o görünmeyen dosyadır (§4). Kural bu yüzden iki
+> yanlı: sahibi **varsa** kilit gizlenir ve sahibi *"açık"* işaretlenir,
+> sahibi **yoksa** görünür kalır. `Kilit.Coz` bunu klasör bazında yapıyor;
+> arama sonucu birden çok klasörü kapsadığı için yalnızca ada bakan bir
+> eşleşme yanlış dosyayı gizlerdi.
+>
+> **ÖLÇÜM SAYIYLA OLMUYOR:** kilit zaten gizli olduğu için satır sayısı
+> değişmiyor — bu bilerek böyle, örnek klasördeki çift kök seviyesine
+> konuldu ki 5/6/8/9. ölçümlerin tabanları kaymasın.
+>
+> **İLK HÂLİ ÖLÇEMEDİ ve sebebi ClearType.** İşaret önce yalnızca **yazı
+> rengiyle** (`#A64B00`) veriliyordu; kapı o rengi aradı ve **sıfır** buldu,
+> oysa yazı ekranda turuncuydu. Sebep alt-piksel çizim: metnin hiçbir
+> pikseli saf renge eşit çıkmıyor, kenarlar `#C3543C`, `#B66A79` gibi
+> kaymış tonlara dönüyor. **Dolu bir dikdörtgen tam renk veriyor** — o
+> yüzden işaretli satıra ayrıca bir **zemin rengi** (`#FFE3C8`) kondu;
+> referans bölüm başlıklarındaki tekniğin aynısı. Yan kazanç: ekranda da
+> daha okunur.
+>
+> Ölçüm **hiçbir şey seçili değilken** alınan görüntüden yapılıyor
+> (`ilk.png`): seçim boyası satırın zeminini örter ve ölçüm boş dönerdi.
+> §9 döngüsü: TEMİZ (1 bant) → `Kilit.Coz` etkisiz bırakılınca **YAKALADI**
+> (0 bant) → geri konunca TEMİZ.
 
 > **Yedincisi neden var (sıralama):** sıralamanın kendi menüsü Wine'da
 > **çökertiyor** (yukarıdaki `ContextMenuStrip` maddesi), yani menü yoluyla

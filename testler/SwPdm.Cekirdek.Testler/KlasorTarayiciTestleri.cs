@@ -79,6 +79,11 @@ public sealed class KlasorTarayiciTestleri : IDisposable
         // CLAUDE.md 4/5: "~$" kilit dosyalari gorunmez oldugu icin Windows
         // "dizin bos degil" diyor ve kullanici sebebini goremiyor. Gizlemek
         // tam olarak o karanligi uretirdi.
+        //
+        // DIKKAT - bu, agacta gorunenle ayni sey DEGIL. Disk okuyucusu her
+        // seyi dondurur; agacta neyin cizilecegine Kilit.Coz karar veriyor
+        // (sahibi bulunan kilit gizlenir, SAHIPSIZ olan gorunur kalir).
+        // Bu testin korudugu sey o karara giren VERININ tam olmasi.
         Dosya("Parca1.SLDPRT");
         Dosya("~$Parca1.SLDPRT");
 

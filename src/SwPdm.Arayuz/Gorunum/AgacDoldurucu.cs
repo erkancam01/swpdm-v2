@@ -190,7 +190,12 @@ internal sealed class AgacDoldurucu
         };
         _agac.Nodes.Add(kokDugum);
 
-        foreach (DosyaOgesi dosya in sonuc.Bulunanlar)
+        // Arama sonucu birden cok klasoru kapsiyor; Kilit.Coz eslesmeyi
+        // KLASOR BAZINDA yapiyor, yani A klasorundeki bir kilit B'deki bir
+        // dosyayi gizleyemez.
+        KilitDurumu kilit = Kilit.Coz(sonuc.Bulunanlar);
+
+        foreach (DosyaOgesi dosya in kilit.Gosterilecek)
         {
             if (!TureUyuyorMu(dosya.Tur))
             {
@@ -212,7 +217,7 @@ internal sealed class AgacDoldurucu
                 kokDugum.Nodes.Add(grup);
             }
 
-            grup.Nodes.Add(DosyaDugumu(dosya));
+            grup.Nodes.Add(DosyaSatiri.Dugum(dosya, kilit));
         }
 
         string kokAdi = Kok is null ? "Arama" : WindowsYolu.DosyaAdi(Kok);
@@ -379,13 +384,7 @@ internal sealed class AgacDoldurucu
                 }
             }
 
-            foreach (DosyaOgesi dosya in icerik.Dosyalar)
-            {
-                if (TureUyuyorMu(dosya.Tur))
-                {
-                    dal.Nodes.Add(DosyaDugumu(dosya));
-                }
-            }
+            DosyaSatiri.Ekle(dal, icerik.Dosyalar, TureUyuyorMu);
 
             if (acikti && dal.Nodes.Count > 0)
             {
@@ -457,13 +456,7 @@ internal sealed class AgacDoldurucu
             dal.Nodes.Add(KlasorDugumu(klasor));
         }
 
-        foreach (DosyaOgesi dosya in icerik.Dosyalar)
-        {
-            if (TureUyuyorMu(dosya.Tur))
-            {
-                dal.Nodes.Add(DosyaDugumu(dosya));
-            }
-        }
+        DosyaSatiri.Ekle(dal, icerik.Dosyalar, TureUyuyorMu);
     }
 
     private static TreeNode KlasorDugumu(KlasorOgesi klasor)
@@ -492,18 +485,6 @@ internal sealed class AgacDoldurucu
         }
 
         return dugum;
-    }
-
-    private static TreeNode DosyaDugumu(DosyaOgesi dosya)
-    {
-        int simge = TurSimgeleri.Sira(dosya.Tur);
-        return new TreeNode(dosya.Ad)
-        {
-            ImageIndex = simge,
-            SelectedImageIndex = simge,
-            Tag = dosya,
-            ToolTipText = dosya.Yol,
-        };
     }
 
     private bool TureUyuyorMu(DosyaTuru tur) => _turSuzgeci is null || _turSuzgeci == tur;
@@ -535,8 +516,10 @@ internal sealed class AgacDoldurucu
     /// </summary>
     private string Ozet(KlasorIcerigi icerik)
     {
+        KilitDurumu kilit = Kilit.Coz(icerik.Dosyalar);
+
         int gorunen = 0;
-        foreach (DosyaOgesi dosya in icerik.Dosyalar)
+        foreach (DosyaOgesi dosya in kilit.Gosterilecek)
         {
             if (TureUyuyorMu(dosya.Tur))
             {
@@ -544,11 +527,19 @@ internal sealed class AgacDoldurucu
             }
         }
 
-        string dosyaKismi = gorunen == icerik.Dosyalar.Count
+        // Suzgecin gizledigi ile KILIDIN gizledigi ayri ayri yaziliyor:
+        // ikisi ayni sey degil ve "neden 8 yerine 7 gorunuyor" sorusunun
+        // cevabi ekranda olmali (CLAUDE.md 3).
+        int suzgecinDisinda = kilit.Gosterilecek.Count - gorunen;
+        string dosyaKismi = suzgecinDisinda == 0
             ? $"{gorunen} dosya"
-            : $"{gorunen} / {icerik.Dosyalar.Count} dosya (süzgeç açık)";
+            : $"{gorunen} / {kilit.Gosterilecek.Count} dosya (süzgeç açık)";
 
-        return $"{icerik.Klasorler.Count} klasör · {dosyaKismi}";
+        string kilitKismi = kilit.GizlenenSayisi == 0
+            ? string.Empty
+            : $" · {kilit.GizlenenSayisi} kilit dosyası gizlendi (açık belgeler işaretli)";
+
+        return $"{icerik.Klasorler.Count} klasör · {dosyaKismi}{kilitKismi}";
     }
 
     private static string AramaOzeti(AramaSonucu sonuc, int gosterilen)

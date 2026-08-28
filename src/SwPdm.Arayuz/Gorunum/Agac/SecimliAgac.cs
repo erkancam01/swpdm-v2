@@ -155,10 +155,17 @@ internal sealed class SecimliAgac : TreeView
         Rectangle alan = e.Node.Bounds;
         alan.Inflate(1, 0);
 
+        // Dugumun KENDI zemini varsa o kullanilir - secim her zaman ustte
+        // kalir, cunku kullanicinin neyi sectigi her seyden onemli.
+        Color kendiZemini = e.Node.BackColor.IsEmpty ? BackColor : e.Node.BackColor;
         Color arka = secili
             ? (Focused ? Renkler.SecimArkaPlan : Renkler.SecimArkaPlanPasif)
-            : BackColor;
-        Color yazi = secili && Focused ? Renkler.SecimYazi : ForeColor;
+            : kendiZemini;
+        // Dugumun KENDI rengi varsa o kullanilir. Bu genel bir yetenek, belli
+        // bir ozelligin bilgisi degil: SecimliAgac neyin neden renkli
+        // oldugunu BILMEZ, yalnizca dugumun soyledigini cizer (CLAUDE.md 1b).
+        Color kendiRengi = e.Node.ForeColor.IsEmpty ? ForeColor : e.Node.ForeColor;
+        Color yazi = secili && Focused ? Renkler.SecimYazi : kendiRengi;
 
         using (var firca = new SolidBrush(arka))
         {

@@ -5,7 +5,7 @@
 > silinir; hepsi bitince dosya silinir.
 >
 > Son durum: dal `claude/v2-pdm-start-u058ey`, commit `0609632`.
-> 213 test · dört kapı TEMİZ (çalıştırma kapısı 12 ölçüm).
+> 222 test · dört kapı TEMİZ (çalıştırma kapısı 13 ölçüm).
 > Erkan denedi ve *"her şey gayet düzgün"* dedi.
 
 ---

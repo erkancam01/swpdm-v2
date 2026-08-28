@@ -47,4 +47,17 @@ internal static class Renkler
     internal static readonly Color ReferansBolumZemin = Color.FromArgb(0xE4, 0xEA, 0xF1);
     internal static readonly Color ReferansAsagiYazi = Color.FromArgb(0x1B, 0x4F, 0x8A);
     internal static readonly Color ReferansYukariYazi = Color.FromArgb(0x1E, 0x63, 0x45);
+
+    // Agacta kilit dosyasi durumu ("~$"). Hem yazi hem ZEMIN rengi var.
+    //
+    // ZEMIN NEDEN SART - OLCULDU (28.08.2026): yalnizca yazi rengiyle
+    // isaretlemek Wine'da OLCULEMIYOR. ClearType alt-piksel cizim yaptigi
+    // icin metnin hicbir pikseli saf renge esit cikmiyor; kirpmada
+    // "#A64B00" ARANDI ve SIFIR bulundu, oysa yazi ekranda turuncuydu.
+    // Dolu bir dikdortgen tam renk veriyor - referans bolum basliklarindaki
+    // teknigin aynisi.
+    internal static readonly Color AcikDosyaYazi = Color.FromArgb(0xA6, 0x4B, 0x00);
+    internal static readonly Color AcikDosyaZemin = Color.FromArgb(0xFF, 0xE3, 0xC8);
+    internal static readonly Color SahipsizKilitYazi = Color.FromArgb(0x8A, 0x1F, 0x5C);
+    internal static readonly Color SahipsizKilitZemin = Color.FromArgb(0xF7, 0xDC, 0xEC);
 }
