@@ -58,6 +58,7 @@ SUZGEC_TUMU_X=38                                # "Tumu" dugmesinin x'i
 # Alt panel: solda onizleme kutusu, sagda referans listesi.
 ONIZLEME_KIRP="250x280+15+458"                  # pencere ici: genislikxyukseklik+x+y
 REFERANS_KIRP="260x150+295+458"
+BOLUM_ZEMIN="#E4EAF1"                           # Renkler.ReferansBolumZemin
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -326,32 +327,45 @@ kirpma_izi() {
     -depth 8 rgb:- 2>/dev/null | md5sum | cut -d' ' -f1
 }
 
+# BELLI BIR RENGIN KAC AYRI YATAY BANT olusturdugu. Coklu secim olcumundeki
+# teknigin aynisi; piksel SAYISI ise yaramaz cunku satir genisligi metne
+# gore degisiyor, BANT SAYISI degismiyor.
+renk_bant_say() {
+  local goruntu="$1" olcu="$2" px="$3" py="$4" renk="$5"
+  local boyut="${olcu%%+*}" kalan="${olcu#*+}"
+  local x="${kalan%%+*}" y="${kalan#*+}"
+  convert "$goruntu" -crop "${boyut}+$(( px + x ))+$(( py + y ))" +repage txt:- 2>/dev/null \
+    | grep -o "^[0-9]*,[0-9]*:.*${renk}" \
+    | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
+    | awk 'NR==1{bant=1; onceki=$1; next} {if ($1-onceki>1) bant++; onceki=$1} END{print bant+0}'
+}
+
 SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/11] surec ayakta ............ EVET"
+  echo "   [1/12] surec ayakta ............ EVET"
 else
-  echo "   [1/11] surec ayakta ............ HAYIR (uygulama oldu)"
+  echo "   [1/12] surec ayakta ............ HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/11] hata akisi temiz ........ HAYIR"
+  echo "   [2/12] hata akisi temiz ........ HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/11] hata akisi temiz ........ EVET"
+  echo "   [2/12] hata akisi temiz ........ EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/11] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  echo "   [3/12] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/11] cokme penceresi yok ..... EVET"
+  echo "   [3/12] cokme penceresi yok ..... EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -373,9 +387,9 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/11] ana pencere dogdu ....... EVET ($ANA)"
+  echo "   [4/12] ana pencere dogdu ....... EVET ($ANA)"
 else
-  echo "   [4/11] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  echo "   [4/12] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -400,13 +414,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/11] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    echo "   [5/12] coklu secim ............. EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/11] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    echo "   [5/12] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/11] coklu secim ............. OLCULEMEDI (pencere yok)"
+  echo "   [5/12] coklu secim ............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -432,13 +446,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/11] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    echo "   [6/12] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/11] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    echo "   [6/12] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/11] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  echo "   [6/12] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -479,13 +493,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
-    echo "   [7/11] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+    echo "   [7/12] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
   else
-    echo "   [7/11] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    echo "   [7/12] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
     SORUN=1
   fi
 else
-  echo "   [7/11] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  echo "   [7/12] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -508,13 +522,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [8/11] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    echo "   [8/12] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [8/11] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    echo "   [8/12] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [8/11] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  echo "   [8/12] tur suzgeci .............. OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -540,13 +554,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [9/11] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/12] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [9/11] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    echo "   [9/12] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [9/11] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  echo "   [9/12] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -576,13 +590,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # ayirt etmedi (yazi kenar yumusatmayla 62 renk uretiyor). Ayiran tek sey
   # piksel sayisinin YIRMI KATLIK farki.
   if [ "${PIKSEL:-0}" -gt 3000 ]; then
-    echo "   [10/11] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
+    echo "   [10/12] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
   else
-    echo "   [10/11] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
+    echo "   [10/12] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
     SORUN=1
   fi
 else
-  echo "   [10/11] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
+  echo "   [10/12] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -610,13 +624,41 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA_L="$(beyaz_olmayan "$CALISMA/referans.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_ONCE" != "$IZ_SONRA" ] && [ "${SONRA_L:-0}" -gt 50 ]; then
-    echo "   [11/11] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
+    echo "   [11/12] referans listesi ...... EVET (tarama sonrasi icerik degisti, $SONRA_L piksel)"
   else
-    echo "   [11/11] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
+    echo "   [11/12] referans listesi ...... HAYIR (iz ${IZ_ONCE:0:8} -> ${IZ_SONRA:0:8}, $SONRA_L piksel)"
     SORUN=1
   fi
 else
-  echo "   [11/11] referans listesi ...... OLCULEMEDI (pencere yok)"
+  echo "   [11/12] referans listesi ...... OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+
+# 12) YON AYRIMI: referans listesinde IKI BOLUM BASLIGI var mi
+#
+# NEDEN VAR: liste hem "bu dosyanin kullandiklari" hem "bu dosyayi
+# kullananlar" satirlarini tasiyor. Once ikisini ayiran tek sey rol
+# sutunundaki BIR OK ISARETIYDI ve okunmuyordu; ayni ad iki bolumde birden
+# cikabiliyor (montaj baglaminda yapilmis parca) ve hangi yonun hangisi
+# oldugu anlasilmiyordu. Yon karistirmak bu uygulamada tehlikeli: "beni
+# kimse kullanmiyor" diye okunan bir satir dosya sildirir (CLAUDE.md 3).
+#
+# Olcum SAYIYLA olmaz - bolum eklemek satir sayisini da parmak izini de
+# zaten degistirir, yani 11. olcum bunu YAKALAMAZ. Ayirt eden sey basligin
+# ZEMIN RENGI (#E4EAF1 = Renkler.ReferansBolumZemin): o panelde baska
+# hicbir sey bu rengi kullanmiyor. Iki AYRI bant olmali.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  BASLIK_BANT="$(renk_bant_say "$CALISMA/referans.png" "$REFERANS_KIRP" \
+    "$PENCERE_X" "$PENCERE_Y" "$BOLUM_ZEMIN")"
+  if [ "${BASLIK_BANT:-0}" -ge 2 ]; then
+    echo "   [12/12] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
+  else
+    echo "   [12/12] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
+    SORUN=1
+  fi
+else
+  echo "   [12/12] yon ayrimi ............ OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

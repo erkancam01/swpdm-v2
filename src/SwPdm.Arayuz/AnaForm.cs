@@ -482,7 +482,7 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(secililer.Count == 1 ? secililer[0] : null))
         {
             case DosyaOgesi dosya:
-                _onizleme.Goster(dosya, _referansSurucusu.KullananMetni(dosya.Yol));
+                _onizleme.Goster(dosya, _referansSurucusu.Ozet(dosya.Yol));
                 _referansSurucusu.Doldur(_referanslar, dosya.Yol);
                 _durum.Secildi(dosya);
                 _yol.Goster(WindowsYolu.Klasor(dosya.Yol));

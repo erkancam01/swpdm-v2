@@ -16,6 +16,7 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
     private readonly Label _tur;
     private readonly Label _boyut;
     private readonly Label _degistirme;
+    private readonly Label _kullandigi;
     private readonly Label _kullanan;
     private readonly Label _ozellikler;
 
@@ -53,9 +54,11 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         _tur = BilgiEtiketi();
         _boyut = BilgiEtiketi();
         _degistirme = BilgiEtiketi();
+        _kullandigi = BilgiEtiketi();
         _kullanan = BilgiEtiketi();
         _ozellikler = BilgiEtiketi();
-        bilgi.Controls.AddRange([_ad, _tur, _boyut, _degistirme, _kullanan, _ozellikler]);
+        bilgi.Controls.AddRange(
+            [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan, _ozellikler]);
 
         Controls.Add(_resim, 0, 0);
         Controls.Add(bilgi, 0, 1);
@@ -111,16 +114,25 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
     /// <summary>
     /// Ust bilgi satirlarini yazar.
     ///
-    /// DIKKAT - CLAUDE.md 3: <paramref name="kullanan"/> bilerek METIN, sayi degil.
-    /// Tarama yapilmadiysa buraya "0" YAZILMAZ; "taranmadı" yazilir. Bos liste
+    /// IKI REFERANS SATIRI, IKI AYRI SORU:
+    ///   Kullandığı: bu dosyanin ICINDEKILER (asagi yon)
+    ///   Kullanan:   bu dosyayi KIM KULLANIYOR (yukari yon)
+    /// Tek satir olduklarinda kullanicinin gordugu tek sayi ters yondekiydi
+    /// ve asagi yon hic gorunmuyordu.
+    ///
+    /// DIKKAT - CLAUDE.md 3: ikisi de bilerek METIN, sayi degil. Tarama
+    /// yapilmadiysa buraya "0" YAZILMAZ; "taranmadı" yazilir. Bos liste
     /// "yok" demek degildir ve v1'de bu ayrim saglam dosya sildirebiliyordu.
     /// </summary>
-    internal void UstBilgiyiYaz(string ad, string tur, string boyut, string degistirme, string kullanan)
+    internal void UstBilgiyiYaz(
+        string ad, string tur, string boyut, string degistirme,
+        string kullandigi, string kullanan)
     {
         _ad.Text = ad;
         _tur.Text = "Tür: " + tur;
         _boyut.Text = "Boyut: " + boyut;
         _degistirme.Text = "Değiştirme: " + degistirme;
+        _kullandigi.Text = "Kullandığı: " + kullandigi;
         _kullanan.Text = "Kullanan: " + kullanan;
         _ozellikler.Text = string.Empty;
     }
@@ -143,6 +155,7 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         _tur.Text = string.Empty;
         _boyut.Text = string.Empty;
         _degistirme.Text = string.Empty;
+        _kullandigi.Text = string.Empty;
         _kullanan.Text = string.Empty;
         _ozellikler.Text = string.Empty;
     }

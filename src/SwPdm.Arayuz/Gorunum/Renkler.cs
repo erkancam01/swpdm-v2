@@ -41,6 +41,10 @@ internal static class Renkler
     internal static readonly Color BolumBasligiYazi = Color.FromArgb(0x3D, 0x3D, 0x3D);
     internal static readonly Color OnizlemeArkaPlan = Color.FromArgb(0xFF, 0xFF, 0xFF);
 
-    // Referans listesindeki rol yazisi (sagda)
-    internal static readonly Color RolYazi = Color.FromArgb(0x44, 0x44, 0x44);
+    // Referans listesindeki YON ayrimi. Uc isaret birden kullaniliyor
+    // (baslik + kelime + renk) cunku liste kayinca baslik gorunmez olur;
+    // o an satirin yonunu anlatan tek sey rengi ve kelimesi kalir.
+    internal static readonly Color ReferansBolumZemin = Color.FromArgb(0xE4, 0xEA, 0xF1);
+    internal static readonly Color ReferansAsagiYazi = Color.FromArgb(0x1B, 0x4F, 0x8A);
+    internal static readonly Color ReferansYukariYazi = Color.FromArgb(0x1E, 0x63, 0x45);
 }

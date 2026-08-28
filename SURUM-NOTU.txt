@@ -1,4 +1,69 @@
-BU SURUMDE YENI - PDM'IN ASIL ISI: REFERANSLAR
+BU SURUMDE YENI - REFERANSLARDA YON AYRIMI (ASAGI / YUKARI)
+
+  Bildirdiginiz sey: "parcanin kullanildigi yerleri ve kullandigi yerleri bir
+  sekilde anlasam daha iyi olur." Haklisiniz - o listede iki AYRI soruya
+  birden cevap veriliyordu ve ikisini ayiran tek sey rol sutunundaki BIR OK
+  ISARETIYDI ("kullaniyor ->" ile "kullaniyor"). Okunmuyordu.
+
+  Artik liste IKI BOLUM:
+
+     KULLANDIKLARI            9 dosya      <- ASAGI: bu dosyanin icindekiler
+       YMB.00905...SLDPRT       icinde
+       countersunk...sldprt     BULUNAMADI
+     KULLANANLAR              5 dosya      <- YUKARI: bu dosyayi kim kullaniyor
+       TUM URUNLER...SLDASM     kullanan
+
+  Bolum basliklarinin onunde asagi/yukari oku, zemininde ayri bir renk var;
+  satirlar da bolumune gore renkli. UC ISARET BIRDEN, cunku liste kayinca
+  baslik gorunmez olur - o an satirin yonunu anlatan tek sey rengi ve
+  sagdaki kelimesi ("icinde" / "kullanan") kalir.
+
+  AYNI AD IKI BOLUMDE BIRDEN CIKABILIR - VE BU HATA DEGIL.
+  Ekran goruntunuzde YMB.00900 ve YMB.00924 hem yukarida hem asagida
+  gorunuyordu. Sebep: montaj BAGLAMINDA (in-context) yapilmis bir parca
+  montaji referans verir, montaj da o parcayi kullanir. Iliski gercekten
+  cift yonlu. Duz listede bu okunamiyordu; simdi hangi yonun hangisi
+  oldugu goruluyor.
+
+  ONIZLEME PANELINDE ARTIK IKI SATIR VAR:
+    Kullandigi: 9 dosya
+    Kullanan:   5 dosya (liste eksik olabilir)
+  Onceden yalnizca "Kullanan:" yaziyordu - gordugunuz tek sayi TERS
+  yondekiydi, asagi yon hic gorunmuyordu.
+
+  HER BOLUM KENDI BOSLUGUNU KENDI ANLATIYOR. "Kullandigi yok" ile "kullanani
+  yok" ayni cumleyle anlatilamaz; onceden ikisi de tek bir "Referansi yok"
+  satirina dusuyordu. Simdi her bolum ayri ayri sunlardan birini yaziyor:
+    taranmadi  - bilmiyoruz (Ctrl+Shift+R)
+    okunamadi  - denedik, dosya acilamadi (sebebiyle)
+    yok        - gercekten yok
+    n dosya    - sayisiyla
+  Ve YUKARI bolumunde liste DOLU olsa bile guvenilir degilse sebebi ayrica
+  yaziliyor ("Tarama yarim kaldi; liste eksik olabilir"). "5 dosya" gorup
+  listeyi eksiksiz sanmak, eksik uyarmanin ta kendisidir.
+
+  Uzun adlar ve uzun sebep cumleleri dar pencerede kirpilirsa tam metin
+  fare ipucunda duruyor.
+
+  OLCULDU
+    Wine'da gercek klavye/fareyle: iki bolum basligi da ciziliyor, sayilar
+      sag sutunda, satirlar bolumune gore renkli
+    Kapiya 12. OLCUM eklendi: baslik zemininin kac ayri bant olusturdugu.
+      Once TEMIZ (2 bant) -> iki baslik cagrisi bilerek silindi, kapi
+      YAKALADI (0 bant) -> geri konunca yine TEMIZ.
+    ONEMLI: ayni denemede 11. olcum (referans listesi) "EVET" demeye devam
+      etti. Yani var olan kapi bu bozulmayi GORMUYORDU; 12. olcum gereksiz
+      degil.
+    213 test geciyor, dort kapi da TEMIZ
+
+  BURADA OLCULEMEYEN
+    - Segoe UI kurulu olmadigi icin yazi genislikleri sizinkinden farkli.
+      Sizin pencereniz burada olculenden genis; adlarin ve sebep
+      cumlelerinin kirpilip kirpilmadigini ancak siz gorursunuz. Kirpilan
+      cok sey varsa soyleyin, sag sutunu daha da daraltirim.
+    - Fare ipucu (tam metin) Wine'da olculemedi.
+
+ONCEKI SURUMDE YENIYDI - PDM'IN ASIL ISI: REFERANSLAR
 
   Bu surumde uygulama artik SOLIDWORKS dosyalarinin ICINE bakiyor.
   SOLIDWORKS'un kurulu olmasina GEREK YOK, API'ye de gerek yok.
@@ -8,7 +73,8 @@ BU SURUMDE YENI - PDM'IN ASIL ISI: REFERANSLAR
      sonra her dosyaya tikladiginizda sag altta gorursunuz:
        - bu dosyanin KULLANDIKLARI (montajin parcalari, teknik resmin modeli)
        - bu dosyayi KULLANANLAR (onu iceren montajlar, teknik resimler)
-     Onizleme panelinde de "Kullanan: 2 dosya" yaziyor.
+     Onizleme panelinde de "Kullanan: 2 dosya" yaziyordu (bu surumde iki
+     satir oldu, en ustteki bolume bakin).
 
      TARAMA ARTIMLIDIR. Ilk tarama bir kez pahalidir; sonrasinda boyutu ve
      tarihi degismeyen dosya BIR DAHA ACILMAZ. Gunluk kullanimda yalnizca

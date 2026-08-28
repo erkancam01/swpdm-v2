@@ -93,10 +93,10 @@ internal sealed class Onizleme : IDisposable
     /// <summary>
     /// Bir dosyanin ust bilgisini yazar ve onizlemesini ister.
     ///
-    /// <paramref name="kullanan"/> DISARIDAN geliyor cunku cevabi referans
+    /// <paramref name="referans"/> DISARIDAN geliyor cunku cevabi referans
     /// indeksi biliyor; onizleme onu uretmez, yalnizca yazar.
     /// </summary>
-    internal void Goster(DosyaOgesi dosya, string kullanan)
+    internal void Goster(DosyaOgesi dosya, ReferansOzeti referans)
     {
         _beklenenYol = dosya.Yol;
 
@@ -109,8 +109,10 @@ internal sealed class Onizleme : IDisposable
             // CLAUDE.md 3'un EN SERT kurali burada: "0" yazmak "bu parcayi
             // kimse kullanmiyor" demektir ve v1'de tam bu SAGLAM DOSYA
             // SILDIRIYORDU. Indeks taranmamissa buraya sayi degil "taranmadı"
-            // geliyor - ayrimi ReferansSurucusu yapiyor.
-            kullanan: kullanan);
+            // geliyor - ayrimi ReferansSurucusu yapiyor. Iki yon iki ayri
+            // satir: "Kullandığı" asagi, "Kullanan" yukari.
+            kullandigi: referans.Kullandigi,
+            kullanan: referans.Kullanan);
 
         // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
         // de soyluyoruz ki kullanici bekledigini bilsin.
@@ -142,6 +144,7 @@ internal sealed class Onizleme : IDisposable
 
             // Klasorun "kullanani" olmaz; "taranmadı" yazmak taranınca bir
             // sey cikacagini ima ederdi.
+            kullandigi: "—",
             kullanan: "—");
     }
 
@@ -158,6 +161,7 @@ internal sealed class Onizleme : IDisposable
             tur: "Çoklu seçim",
             boyut: ozet.DosyaSayisi > 0 && ozet.BoyutTam ? Boyut.Yaz(ozet.ToplamBoyut) : "—",
             degistirme: "—",
+            kullandigi: "—",
             kullanan: "—");
     }
 

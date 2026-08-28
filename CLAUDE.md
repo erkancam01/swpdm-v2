@@ -793,11 +793,12 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on bir şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı on iki şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
 mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
-**önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu**.
+**önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu** ·
+**referanslarda yön ayrımı duruyor mu**.
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -832,6 +833,29 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > Uygulama indeksi `%APPDATA%`'ya yazıyor; önceki koşudan kalan indeks
 > yüzünden ikinci koşu daha baştan "taranmış" hâlde açılıyor ve ölçüm aynı
 > şeyi iki kez ölçüyordu. Kapı artık başlarken o klasörü siliyor.
+
+> **On ikincisi neden var (yön ayrımı):** referans listesi iki ayrı soruya
+> birden cevap veriyor — *bu dosya neyi kullanıyor* (aşağı) ve *bu dosyayı kim
+> kullanıyor* (yukarı). 28.08.2026'ya kadar ikisini ayıran tek şey rol
+> sütunundaki **bir ok işaretiydi** (`kullanıyor →` ile `kullanıyor`) ve Erkan
+> gerçek veride okuyamadı. Aynı ad **iki bölümde birden** çıkabiliyor ve bu
+> hata değil: montaj bağlamında (in-context) yapılmış bir parça montajı
+> referans verir, montaj da o parçayı — ilişki gerçekten çift yönlü. Yönü
+> karıştırmak bu üründe tehlikeli: yanlış yönü okuyan kullanıcı *"bunu kimse
+> kullanmıyor"* sanıp **sağlam dosya siler** (§3).
+>
+> **ÖLÇÜLDÜ — 11. ölçüm bunu YAKALAMIYOR.** §9 döngüsünde iki
+> `liste.Baslik(...)` çağrısı bilerek silindi: kapı *"[11/12] referans listesi
+> …… EVET"* dedi, çünkü onun ölçtüğü şey içeriğin **değişmesi** ve başlıklar
+> gitse de içerik yine değişiyor. Ayırt eden tek şey başlığın **zemin rengi**
+> (`#E4EAF1`, o panelde başka hiçbir şeyde yok): o renkten kaç ayrı **bant**
+> çıktığı sayılıyor — çoklu seçim ölçümündeki tekniğin aynısı. TEMİZ (2 bant)
+> → başlıklar silinince **YAKALADI** (0 bant) → geri konunca TEMİZ.
+>
+> **Başlıktaki sayı sağ sütuna alındı — bu da ölçülerek.** Önce başlık tek
+> metindi (`▼ KULLANDIKLARI — 9 dosya`); dar pencerede tam da **sayı**
+> kırpılıyordu: `▼ KULLANDIKLARI …`. Ad sütunu solda, sayı sağ sütunda
+> durunca her genişlikte görünüyor.
 
 > **Yedincisi neden var (sıralama):** sıralamanın kendi menüsü Wine'da
 > **çökertiyor** (yukarıdaki `ContextMenuStrip` maddesi), yani menü yoluyla
