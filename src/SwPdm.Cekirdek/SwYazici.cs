@@ -81,27 +81,53 @@ public static class SwYazici
     /// </param>
     public static YamaSonucu AdiDegistir(
         string kaynak, string hedef, string eskiAd, string yeniAd, bool yalnizDogrudan = false)
+        => Degistir(kaynak, hedef, eskiAd, yeniAd, null, null, yalnizDogrudan);
+
+    /// <summary>
+    /// Dosya TASINDIGINDA yazili yolu yeni konuma cevirir.
+    ///
+    /// AD DEGISIMINDEN FARKI: orada dosya ebeveynin YANINDA kaliyordu ve
+    /// yazili klasor bir ipucuydu. Burada dosya BASKA KLASORE gitti; artik
+    /// yazili yolun gercekten dogru yeri gostermesi gerekiyor - komsuluk
+    /// kurali kurtarmaz.
+    ///
+    /// Once EBEVEYNE GORELI yol denenir (kisa oldugu icin uzunluga daha sik
+    /// sigar ve agac topluca tasinsa bile gecerli kalir), sigmazsa MUTLAK yol.
+    /// Ikisi de sigmazsa yazilmaz ve sebebi soylenir.
+    /// </summary>
+    public static YamaSonucu YoluDegistir(
+        string kaynak, string hedef, string eskiAd, string yeniTamYol, string ebeveynKlasoru,
+        bool yalnizDogrudan = false)
+        => Degistir(kaynak, hedef, eskiAd, null, yeniTamYol, ebeveynKlasoru, yalnizDogrudan);
+
+    private static YamaSonucu Degistir(
+        string kaynak, string hedef, string eskiAd, string? yeniAd,
+        string? yeniTamYol, string? ebeveynKlasoru, bool yalnizDogrudan)
     {
         if (string.IsNullOrWhiteSpace(kaynak) || string.IsNullOrWhiteSpace(hedef))
         {
             return YamaSonucu.Olmadi("Kaynak ya da hedef yolu boş.");
         }
 
-        if (string.IsNullOrWhiteSpace(eskiAd) || string.IsNullOrWhiteSpace(yeniAd))
+        string yeniAdi = yeniAd ?? WindowsYolu.DosyaAdi(yeniTamYol);
+        if (string.IsNullOrWhiteSpace(eskiAd) || string.IsNullOrWhiteSpace(yeniAdi))
         {
             return YamaSonucu.Olmadi("Eski ya da yeni ad boş.");
         }
 
-        if (string.Equals(eskiAd, yeniAd, StringComparison.OrdinalIgnoreCase))
+        if (yeniAd is not null
+            && string.Equals(eskiAd, yeniAd, StringComparison.OrdinalIgnoreCase))
         {
             return YamaSonucu.Olmadi("Eski ve yeni ad aynı.");
         }
 
         return Isle(
             kaynak, hedef, yalnizDogrudan,
-            acik => DizeleriDegistir(acik, eskiAd, yeniAd),
+            acik => DizeleriDegistir(acik, eskiAd, yeniAd, yeniTamYol, ebeveynKlasoru),
             $"\"{eskiAd}\" bu dosyada yazılı değil; değiştirilecek bir şey yok.",
-            hedefYol => Dogrula(hedefYol, eskiAd, yeniAd));
+            hedefYol => yeniAd is not null
+                ? Dogrula(hedefYol, eskiAd, yeniAd)
+                : YoluDogrula(hedefYol, eskiAd, yeniTamYol!, ebeveynKlasoru));
     }
 
     /// <summary>
@@ -128,102 +154,6 @@ public static class SwYazici
             acik => Iceriyor(acik, yalnizIceren) ? (acik, 0, null) : (null, 0, null),
             "Yeniden sıkıştırılacak akış bulunamadı.",
             _ => (null, []));
-
-    /// <summary>
-    /// Yeni adi tasiyan, ama KARAKTER SAYISI eskisiyle AYNI olan bir yol uretir.
-    /// Uretemezse null.
-    ///
-    /// NEDEN GEREKLI - OLCULDU (28.08.2026, Erkan'in makinesinde):
-    ///   ayni uzunluktaki ad degisimi  -> dosya ACILDI, parcalar yerinde
-    ///   daha uzun ad                  -> SOLIDWORKS HATA VERDI, acmadi
-    /// Akisin icinde ne toplam boy ne de dize ofseti yaziyor (arandi, 0
-    /// eslesme), yani kirilmanin sebebi bulunamadi. Sebebi kovalamak yerine
-    /// SARTI SAGLIYORUZ: dizenin uzunlugu hic degismesin.
-    ///
-    /// FARK KLASOR KISMINDAN KARSILANIYOR. Bu mesru: CLAUDE.md 5'te olculdu -
-    /// SOLIDWORKS once EBEVEYNIN YANINA bakiyor ve bu, yazili mutlak yolun
-    /// onune geciyor. Yani yazili klasor bir ipucu; belirleyici olan dosya
-    /// adi ve ebeveyne gore konum.
-    ///
-    ///   ad KISALDIYSA  -> araya ".\" eklenir (yol ayni yeri gosterir)
-    ///   ad UZADIYSA    -> soldan klasor atilir (yol GORELI hale gelir),
-    ///                     sonra gerekirse ".\" ile tam uzunluga doldurulur
-    ///
-    /// BURADA OLCULEMEZ: SOLIDWORKS dolgulu/goreli yolu kabul ediyor mu.
-    /// araclar/DeneyUretici'nin ikinci turu bunu soruyor.
-    /// </summary>
-    public static string? UzunlukKorunanYol(string? eskiYol, string? yeniAd)
-    {
-        if (string.IsNullOrEmpty(eskiYol) || string.IsNullOrEmpty(yeniAd))
-        {
-            return null;
-        }
-
-        int hedef = eskiYol.Length;
-        string klasor = WindowsYolu.Klasor(eskiYol);
-
-        // 1) Once oldugu gibi dene.
-        string aday = klasor.Length == 0 ? yeniAd : WindowsYolu.Birlestir(klasor, yeniAd);
-        if (aday.Length == hedef)
-        {
-            return aday;
-        }
-
-        // 2) UZADIYSA: soldan klasor at, yol goreli olur.
-        while (aday.Length > hedef && klasor.Length > 0)
-        {
-            klasor = SoldanBirParcaAt(klasor);
-            aday = klasor.Length == 0 ? yeniAd : WindowsYolu.Birlestir(klasor, yeniAd);
-        }
-
-        if (aday.Length > hedef)
-        {
-            return null;   // ad tek basina bile uzun; uzunluk korunamaz
-        }
-
-        // 3) KISALDIYSA (ya da 2'den sonra kisa kaldiysa): adin onune dolgu.
-        return Doldur(klasor, yeniAd, hedef - aday.Length);
-    }
-
-    /// <summary>Yolun EN SOLDAKI parcasini atar; kalmadiysa bos doner.</summary>
-    private static string SoldanBirParcaAt(string klasor)
-    {
-        int i = klasor.IndexOf(WindowsYolu.Ayirici);
-        return i < 0 ? string.Empty : klasor[(i + 1)..];
-    }
-
-    /// <summary>
-    /// Dosya adinin onune, yolu ayni yeri gosterecek sekilde
-    /// <paramref name="eksik"/> karakter ekler.
-    ///
-    /// ".\" iki karakter; TEK karakter gerekiyorsa ayirici cift yazilir
-    /// ("a\\b"), Windows bunu tek ayirici sayar.
-    /// </summary>
-    private static string? Doldur(string klasor, string yeniAd, int eksik)
-    {
-        if (eksik < 0)
-        {
-            return null;
-        }
-
-        var dolgu = new System.Text.StringBuilder();
-        if (eksik % 2 == 1)
-        {
-            dolgu.Append(WindowsYolu.Ayirici);
-            eksik--;
-        }
-
-        for (int i = 0; i < eksik / 2; i++)
-        {
-            dolgu.Append('.').Append(WindowsYolu.Ayirici);
-        }
-
-        string taban = klasor.Length == 0
-            ? string.Empty
-            : klasor + WindowsYolu.Ayirici;
-
-        return taban + dolgu + yeniAd;
-    }
 
     /// <summary>Tamponda bu dosya adini yazan bir yol var mi.</summary>
     private static bool Iceriyor(byte[] acik, string? dosyaAdi)
@@ -376,7 +306,7 @@ public static class SwYazici
     /// Degisen yoksa null doner (o akisa dokunulmaz).
     /// </summary>
     private static (byte[]? Yeni, int Sayi, string? Sebep) DizeleriDegistir(
-        byte[] acik, string eskiAd, string yeniAd)
+        byte[] acik, string eskiAd, string? yeniAd, string? yeniTamYol, string? ebeveynKlasoru)
     {
         int sayi = 0;
         var bulgular = new List<MfcBulgu>();
@@ -400,11 +330,14 @@ public static class SwYazici
         {
             // UZUNLUK KORUNUYOR - olculdu: dize uzayinca SOLIDWORKS dosyayi
             // acmiyor (Erkan, 28.08.2026). Fark klasor kismindan karsilaniyor.
-            string? yeniDeger = UzunlukKorunanYol(b.Deger, yeniAd);
+            string? yeniDeger = yeniAd is not null
+                ? YazilacakYol.AdDegisimi(b.Deger, yeniAd)
+                : YazilacakYol.Tasima(b.Deger, yeniTamYol!, ebeveynKlasoru);
+
             if (yeniDeger is null)
             {
                 return (null, 0,
-                    $"\"{yeniAd}\" için yazılı yolun uzunluğu korunamıyor "
+                    $"\"{yeniAd ?? yeniTamYol}\" için yazılı yolun uzunluğu korunamıyor "
                     + $"(eski yol {b.Deger.Length} karakter). Dosyaya dokunulmadı.");
             }
 
@@ -425,6 +358,63 @@ public static class SwYazici
 
         cikti.Write(acik, imlec, acik.Length - imlec);
         return (cikti.ToArray(), sayi, null);
+    }
+
+    /// <summary>
+    /// TASIMA dogrulamasi. Ad DEGISMEDIGI icin ada bakmak ise yaramaz;
+    /// yazilan yol COZULUP gercek hedefe esit mi diye bakiliyor.
+    /// Bir tanesi bile eski yeri gosteriyorsa dosya degistirilmez.
+    /// </summary>
+    private static (string? Kusur, IReadOnlyList<string> Kalan) YoluDogrula(
+        string hedef, string eskiAd, string yeniTamYol, string? ebeveynKlasoru)
+    {
+        using SwPaket? paket = SwPaket.Ac(hedef);
+        if (paket is null)
+        {
+            return ("yazıldıktan sonra dosya paket olarak okunamıyor", []);
+        }
+
+        string? beklenen = WindowsYolu.Cozumle(null, yeniTamYol);
+        bool bulundu = false;
+        var kalanlar = new List<string>();
+
+        foreach (SwAkis a in paket.Akislar)
+        {
+            byte[]? acik = paket.AkisiOku(a.Ad);
+            if (acik is null)
+            {
+                continue;
+            }
+
+            bool sapan = false;
+            MfcDize.Tara(acik, bulgu =>
+            {
+                if (!string.Equals(
+                        WindowsYolu.DosyaAdi(bulgu.Deger), eskiAd, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                string? cozulen = WindowsYolu.Cozumle(ebeveynKlasoru, bulgu.Deger);
+                if (string.Equals(cozulen, beklenen, StringComparison.OrdinalIgnoreCase))
+                {
+                    bulundu = true;
+                }
+                else
+                {
+                    sapan = true;
+                }
+            });
+
+            if (sapan)
+            {
+                kalanlar.Add(a.Ad);
+            }
+        }
+
+        return bulundu && kalanlar.Count == 0
+            ? (null, kalanlar)
+            : ($"yazılan yol \"{yeniTamYol}\" hedefini göstermiyor", kalanlar);
     }
 
     private static byte[] Sikistir(byte[] veri)

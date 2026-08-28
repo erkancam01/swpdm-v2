@@ -161,7 +161,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             {
                 var olmayan = new List<string>();
                 OnarimSonucu geri = ReferansOnarimi.Uygula(
-                    ReferansOnarimi.PlanlaBilinenlerle(ebeveynler, yeniYol, eskiAd));
+                    ReferansOnarimi.PlanlaBilinenlerle(ebeveynler, yeniYol, eskiYol));
 
                 if (!geri.Oldu)
                 {

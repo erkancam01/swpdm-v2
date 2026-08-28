@@ -170,4 +170,75 @@ public sealed class ReferansOnarimiTestleri : IDisposable
         Assert.True(s.Oldu, s.Sebep);
         Assert.True(File.Exists(Yol("Montaj9.SLDASM")));
     }
+
+    // ---------------------------------------------------------------------
+    // TASIMA ONARIMI
+    //
+    // Ad degisiminden farki: dosya ebeveynin YANINDAN AYRILIYOR, yani
+    // komsuluk kurali artik kurtarmiyor ve yazili yolun gercekten dogru
+    // yeri gostermesi gerekiyor.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void TASINAN_dosyanin_DISARIDA_KALAN_ebeveyni_onariliyor()
+    {
+        // INDEKS TASIMADAN ONCE kurulur - gercek akis da boyle: uygulama
+        // taranmis bir indeksle calisiyor, sonra tasima oluyor.
+        ReferansIndeksi indeks = Indeks();
+
+        // Parça1'i alt klasore tasi; Montaj1 ve teknik resim kokte kaliyor.
+        string yeni = Yol("Yeni klasör", "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), yeni);
+
+        OnarimPlani plan = ReferansOnarimi.TasimaPlani(
+            indeks, Yol("Parça1.SLDPRT"), yeni, harictut: null);
+
+        Assert.False(plan.CocuguTasi);
+        Assert.True(plan.KlasorDegisti);
+        Assert.Equal(2, plan.Ebeveynler.Count);
+
+        OnarimSonucu s = ReferansOnarimi.Uygula(plan);
+        Assert.True(s.Oldu, s.Sebep + " | engeller: " + string.Join(";", plan.Engeller));
+
+        // Yazili yol artik YENI klasoru gosteriyor.
+        string[] yazili = SwReferans.Oku(Yol("Montaj1.SLDASM")).Dogrudan.ToArray();
+        Assert.Contains(yazili, y => y.Contains("Yeni klasör", StringComparison.OrdinalIgnoreCase)
+                                  && WindowsYolu.DosyaAdi(y) == "Parça1.SLDPRT");
+    }
+
+    [Fact]
+    public void BIRLIKTE_TASINAN_ebeveyne_DOKUNULMUYOR()
+    {
+        // Olculdu (CLAUDE.md 5): birlikte tasinan aile kendiliginden calisiyor.
+        // Calisani onarmak bos risktir (1a).
+        byte[] once = File.ReadAllBytes(Yol("Montaj1.SLDASM"));
+
+        OnarimPlani plan = ReferansOnarimi.TasimaPlani(
+            Indeks(), Yol("Parça1.SLDPRT"), Yol("Yeni klasör", "Parça1.SLDPRT"),
+            harictut: [Yol("Montaj1.SLDASM")]);
+
+        Assert.Single(plan.Ebeveynler);          // yalnizca teknik resim kaldi
+        Assert.Equal(once, File.ReadAllBytes(Yol("Montaj1.SLDASM")));
+    }
+
+    [Fact]
+    public void TASIMA_onarimi_GERI_ALINABILIYOR()
+    {
+        ReferansIndeksi indeks = Indeks();
+        string yeni = Yol("Yeni klasör", "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), yeni);
+
+        OnarimPlani ileri = ReferansOnarimi.TasimaPlani(
+            indeks, Yol("Parça1.SLDPRT"), yeni, harictut: null);
+        Assert.True(ReferansOnarimi.Uygula(ileri).Oldu);
+
+        // Geri: dosya eski yerine dondu, ebeveynler de geri onarilmali.
+        File.Move(yeni, Yol("Parça1.SLDPRT"));
+        OnarimSonucu geri = ReferansOnarimi.Uygula(
+            ReferansOnarimi.PlanlaBilinenlerle(
+                ileri.Ebeveynler, yeni, Yol("Parça1.SLDPRT"), cocuguTasi: false));
+
+        Assert.True(geri.Oldu, geri.Sebep);
+        Assert.Contains("Parça1.SLDPRT", Referanslari(Yol("Montaj1.SLDASM")));
+    }
 }

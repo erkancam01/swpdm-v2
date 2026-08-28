@@ -199,6 +199,119 @@ public static class WindowsYolu
     /// Ad Windows'ta gecerli bir dosya adi mi. Degilse <paramref name="sebep"/>
     /// EKRANDA gosterilebilecek bir cumle doner (CLAUDE.md 3: sebep gizlenmez).
     /// </summary>
+    /// <summary>
+    /// <paramref name="hedef"/>'i <paramref name="temel"/> klasorune GORE
+    /// yazar. Ayni surucude degillerse ya da hesaplanamiyorsa null.
+    ///
+    /// NEDEN VAR: referans onariminda ebeveynin icine yazilacak yol.
+    /// Goreli yol iki sebeple tercih ediliyor:
+    ///   1. KISA - yazilan dizenin uzunlugu korunmak zorunda (CLAUDE.md 5),
+    ///      kisa yol daha sik siginiyor
+    ///   2. SOLIDWORKS'un kendi davranisiyla ayni yonde - once ebeveynin
+    ///      yanina bakiyor; goreli yol bunun dogal uzantisi
+    ///
+    /// Windows'un kendi Path.GetRelativePath'i KULLANILMIYOR: Linux'ta
+    /// ters bolu ayirici sayilmiyor ve yanlis sonuc veriyor (CLAUDE.md 4).
+    /// </summary>
+    public static string? Goreli(string? temel, string? hedef)
+    {
+        if (string.IsNullOrWhiteSpace(temel) || string.IsNullOrWhiteSpace(hedef))
+        {
+            return null;
+        }
+
+        string[] t = Parcala(temel);
+        string[] h = Parcala(hedef);
+        if (t.Length == 0 || h.Length == 0)
+        {
+            return null;
+        }
+
+        // Ayni kok (surucu ya da sunucu) degilse goreli yol YAZILAMAZ.
+        if (!string.Equals(t[0], h[0], StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        int ortak = 0;
+        while (ortak < t.Length && ortak < h.Length - 1
+               && string.Equals(t[ortak], h[ortak], StringComparison.OrdinalIgnoreCase))
+        {
+            ortak++;
+        }
+
+        var parcalar = new List<string>();
+        for (int i = ortak; i < t.Length; i++)
+        {
+            parcalar.Add("..");
+        }
+
+        for (int i = ortak; i < h.Length; i++)
+        {
+            parcalar.Add(h[i]);
+        }
+
+        // Ayni klasordeyse ".\ad" seklinde yaziliyor: cikplak bir ad da
+        // gecerli ama nokta onu ACIKCA goreli yapiyor.
+        return parcalar.Count == h.Length - ortak
+            ? "." + Ayirici + string.Join(Ayirici, parcalar)
+            : string.Join(Ayirici, parcalar);
+    }
+
+    /// <summary>
+    /// Goreli bir yolu <paramref name="temel"/> klasorune gore COZER ve
+    /// "." / ".." parcalarini duzlestirir. Yol zaten mutlaksa yalnizca
+    /// duzlestirilir. Cozulemezse null.
+    ///
+    /// <see cref="Goreli"/>'nin tersi. Onarimin DOGRULAMASI icin gerekli:
+    /// dosyanin icine yazdigimiz deger goreli olabiliyor, "dogru yeri
+    /// gosteriyor mu" sorusu ancak cozulunce cevaplanir.
+    /// </summary>
+    public static string? Cozumle(string? temel, string? yol)
+    {
+        if (string.IsNullOrWhiteSpace(yol))
+        {
+            return null;
+        }
+
+        bool mutlak = (yol.Length > 1 && yol[1] == ':')
+                   || (yol.Length > 1 && AyiriciMi(yol[0]) && AyiriciMi(yol[1]));
+
+        string tam = mutlak ? yol : (string.IsNullOrWhiteSpace(temel) ? yol : temel + Ayirici + yol);
+        string[] parcalar = Parcala(tam);
+
+        var yigin = new List<string>();
+        foreach (string parca in parcalar)
+        {
+            if (parca == ".")
+            {
+                continue;
+            }
+
+            if (parca == ".." && yigin.Count > 1)
+            {
+                yigin.RemoveAt(yigin.Count - 1);
+                continue;
+            }
+
+            yigin.Add(parca);
+        }
+
+        if (yigin.Count == 0)
+        {
+            return null;
+        }
+
+        string sonuc = string.Join(Ayirici, yigin);
+        return mutlak && yol.Length > 1 && AyiriciMi(yol[0]) && AyiriciMi(yol[1])
+            ? Ayirici.ToString() + Ayirici + sonuc
+            : sonuc;
+    }
+
+    /// <summary>Yolu ayiricilardan bolup bos parcalari atar.</summary>
+    private static string[] Parcala(string yol)
+        => yol.Split(new[] { Ayirici, EgikAyirici }, StringSplitOptions.RemoveEmptyEntries);
+
     public static bool AdGecerliMi(string? ad, out string sebep)
     {
         if (string.IsNullOrWhiteSpace(ad))

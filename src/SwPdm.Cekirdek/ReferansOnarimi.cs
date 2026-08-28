@@ -6,16 +6,29 @@ namespace SwPdm.Cekirdek;
 
 /// <summary>Bir ad degisiminin referanslara etkisi - HICBIR SEY DEGISTIRMEDEN.</summary>
 /// <param name="EskiYol">Adi degisecek dosya.</param>
-/// <param name="YeniAd">Yeni dosya adi.</param>
+/// <param name="YeniYol">Dosyanin yeni TAM yolu (ad ve/veya klasor degismis).</param>
+/// <param name="CocuguTasi">
+/// true: dosyayi bu sinif tasiyacak (ad degistirme). false: dosya ZATEN
+/// tasindi (Kes/Yapistir, suruklemek) ve yalnizca ebeveynler onarilacak.
+/// </param>
 /// <param name="Ebeveynler">Bu dosyayi kullanan ve onarilmasi gereken dosyalar.</param>
 /// <param name="Engeller">Onarimi imkansiz kilan sebepler; bos degilse UYGULANMAZ.</param>
 /// <param name="Guvenilir">Indeks tam mi - degilse ebeveyn listesi EKSIK olabilir.</param>
 public sealed record OnarimPlani(
     string EskiYol,
-    string YeniAd,
+    string YeniYol,
+    bool CocuguTasi,
     IReadOnlyList<string> Ebeveynler,
     IReadOnlyList<string> Engeller,
-    bool Guvenilir);
+    bool Guvenilir)
+{
+    /// <summary>Dosyanin yeni adi.</summary>
+    public string YeniAd => WindowsYolu.DosyaAdi(YeniYol);
+
+    /// <summary>Klasor degisti mi - yani bu bir TASIMA mi.</summary>
+    public bool KlasorDegisti => !string.Equals(
+        WindowsYolu.Klasor(EskiYol), WindowsYolu.Klasor(YeniYol), StringComparison.OrdinalIgnoreCase);
+}
 
 /// <summary>Onarimin sonucu.</summary>
 /// <param name="Oldu">Ad degisti VE butun ebeveynler onarildi mi.</param>
@@ -69,14 +82,171 @@ public static class ReferansOnarimi
     /// </summary>
     public static OnarimPlani Planla(ReferansIndeksi? indeks, string eskiYol, string yeniAd)
     {
+        string yeniYol = WindowsYolu.Birlestir(WindowsYolu.Klasor(eskiYol), yeniAd);
+        return Planla(indeks, eskiYol, yeniYol, cocuguTasi: true, harictut: null);
+    }
+
+    /// <summary>
+    /// TASIMA icin: dosya ZATEN yeni yerinde. Yalnizca DISARIDA KALAN
+    /// ebeveynler onarilir.
+    ///
+    /// BIRLIKTE TASINANLARA DOKUNULMAZ (<paramref name="harictut"/>): olculdu
+    /// (CLAUDE.md 5) - SOLIDWORKS once ebeveynin yanina bakiyor, yani birlikte
+    /// tasinan aile kendiliginden calisiyor. Calisani onarmak bos risktir (1a).
+    /// </summary>
+    public static OnarimPlani TasimaPlani(
+        ReferansIndeksi? indeks, string eskiYol, string yeniYol, IReadOnlyList<string>? harictut)
+        => Planla(indeks, eskiYol, yeniYol, cocuguTasi: false, harictut);
+
+    private static OnarimPlani Planla(
+        ReferansIndeksi? indeks, string eskiYol, string yeniYol, bool cocuguTasi,
+        IReadOnlyList<string>? harictut)
+    {
         if (indeks is null)
         {
             return new OnarimPlani(
-                eskiYol, yeniAd, [], ["Referans indeksi yok; kimin kullandığı bilinmiyor."], false);
+                eskiYol, yeniYol, cocuguTasi, [],
+                ["Referans indeksi yok; kimin kullandığı bilinmiyor."], false);
         }
 
         KullanimSonucu kullanim = indeks.Kullananlar(eskiYol);
-        return Kur(eskiYol, yeniAd, kullanim.Kullananlar, kullanim.Guvenilir);
+        var adaylar = new List<string>();
+        foreach (string k in kullanim.Kullananlar)
+        {
+            if (harictut is null || !Icinde(harictut, k))
+            {
+                adaylar.Add(k);
+            }
+        }
+
+        return Kur(eskiYol, yeniYol, cocuguTasi, adaylar, kullanim.Guvenilir);
+    }
+
+    /// <summary>
+    /// Bir TASIMA islemi icin butun onarim planlari. KLASORLERI ACAR:
+    /// bir klasor tasindiginda icindeki her SOLIDWORKS dosyasi tasinmistir
+    /// ve disaridan ona isaret eden ebeveynler kirilir.
+    ///
+    /// Olculdu (CLAUDE.md 5): klasor tasininca ICERIDEKI referanslar yasiyor.
+    /// O yuzden yalnizca DISARIDA kalan ebeveynler planlanir - tasinan her
+    /// sey <paramref name="harictut"/> ile eleniyor.
+    ///
+    /// Ebeveyni olmayan dosya icin plan URETILMEZ; bos is yapilmaz.
+    /// </summary>
+    public static IReadOnlyList<OnarimPlani> TasimaPlanlari(
+        ReferansIndeksi? indeks,
+        IReadOnlyList<(string Eski, string Yeni)>? ciftler,
+        IReadOnlyList<string>? harictut)
+    {
+        var planlar = new List<OnarimPlani>();
+        if (indeks is null || ciftler is null)
+        {
+            return planlar;
+        }
+
+        foreach ((string eski, string yeni) in ciftler)
+        {
+            foreach ((string e, string y) in Ac(eski, yeni))
+            {
+                OnarimPlani plan = TasimaPlani(indeks, e, y, harictut);
+                if (plan.Ebeveynler.Count > 0)
+                {
+                    planlar.Add(plan);
+                }
+            }
+        }
+
+        return planlar;
+    }
+
+    /// <summary>
+    /// Klasor ciftini ICINDEKI dosya ciftlerine acar; dosyaysa kendisini verir.
+    /// Yalnizca referans TASIYABILEN turler (parca/montaj/teknik resim).
+    /// </summary>
+    private static IEnumerable<(string Eski, string Yeni)> Ac(string eski, string yeni)
+    {
+        if (!Directory.Exists(yeni))
+        {
+            if (SwReferans.TasiyabilirMi(eski))
+            {
+                yield return (eski, yeni);
+            }
+
+            yield break;
+        }
+
+        foreach (string y in Directory.EnumerateFiles(yeni, "*", SearchOption.AllDirectories))
+        {
+            if (!SwReferans.TasiyabilirMi(y))
+            {
+                continue;
+            }
+
+            string kuyruk = y[yeni.Length..].TrimStart(WindowsYolu.Ayirici, WindowsYolu.EgikAyirici);
+            yield return (WindowsYolu.Birlestir(eski, kuyruk), y);
+        }
+    }
+
+    /// <summary>
+    /// Planlari uygular. Doner: onarilan DOSYA sayisi ve tutmayanlarin sebebi.
+    /// Biri tutmazsa otekiler DURMAZ - her plan kendi icinde hepsi-ya-hicbiri.
+    /// </summary>
+    /// <param name="planlar">Uygulanacak planlar.</param>
+    /// <returns>
+    /// Onarilan dosya sayisi, tutmayanlarin sebebi, ve TUTAN PLANLAR.
+    /// Sonuncusu GERI ALMA icin sart: geri alirken indekse sormak yanlis
+    /// olur (indeks yeni yollari bilmez), ebeveyn listesi tasinmali.
+    /// </returns>
+    public static (int Onarilan, IReadOnlyList<string> Hatalar, IReadOnlyList<OnarimPlani> Tutanlar)
+        Onar(IReadOnlyList<OnarimPlani>? planlar)
+    {
+        int onarilan = 0;
+        var hatalar = new List<string>();
+        var tutanlar = new List<OnarimPlani>();
+
+        foreach (OnarimPlani plan in planlar ?? [])
+        {
+            OnarimSonucu s = Uygula(plan);
+            if (s.Oldu)
+            {
+                onarilan += s.Onarilanlar.Count;
+                tutanlar.Add(plan);
+            }
+            else
+            {
+                hatalar.Add(WindowsYolu.DosyaAdi(plan.EskiYol) + " — " + (s.Sebep ?? "bilinmeyen"));
+            }
+        }
+
+        return (onarilan, hatalar, tutanlar);
+    }
+
+    /// <summary>
+    /// Uygulanmis onarimlari GERI ALIR: yazili yollar eski hedefe doner.
+    /// Dosyalarin kendisini geri tasimak cagiranin isi.
+    /// </summary>
+    public static void GeriOnar(IReadOnlyList<OnarimPlani>? tutanlar)
+    {
+        foreach (OnarimPlani plan in tutanlar ?? [])
+        {
+            Uygula(PlanlaBilinenlerle(
+                plan.Ebeveynler, plan.YeniYol, plan.EskiYol, cocuguTasi: false));
+        }
+    }
+
+    /// <summary>Yol, listedeki bir dosya ya da KLASORUN ALTINDA mi.</summary>
+    private static bool Icinde(IReadOnlyList<string> kume, string yol)
+    {
+        foreach (string k in kume)
+        {
+            if (string.Equals(k, yol, StringComparison.OrdinalIgnoreCase)
+                || yol.StartsWith(k + WindowsYolu.Ayirici, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -88,11 +258,12 @@ public static class ReferansOnarimi
     /// birakirdi - yani geri alma referansi KIRARDI.
     /// </summary>
     public static OnarimPlani PlanlaBilinenlerle(
-        IReadOnlyList<string> ebeveynler, string eskiYol, string yeniAd)
-        => Kur(eskiYol, yeniAd, ebeveynler, guvenilir: true);
+        IReadOnlyList<string> ebeveynler, string eskiYol, string yeniYol, bool cocuguTasi = true)
+        => Kur(eskiYol, yeniYol, cocuguTasi, ebeveynler, guvenilir: true);
 
     private static OnarimPlani Kur(
-        string eskiYol, string yeniAd, IReadOnlyList<string> adaylar, bool guvenilir)
+        string eskiYol, string yeniYol, bool cocuguTasi,
+        IReadOnlyList<string> adaylar, bool guvenilir)
     {
         var engeller = new List<string>();
         var ebeveynler = new List<string>();
@@ -116,7 +287,7 @@ public static class ReferansOnarimi
                 WindowsYolu.DosyaAdi(acik) + " — SOLIDWORKS'te açık görünüyor; önce kapatın.");
         }
 
-        return new OnarimPlani(eskiYol, yeniAd, ebeveynler, engeller, guvenilir);
+        return new OnarimPlani(eskiYol, yeniYol, cocuguTasi, ebeveynler, engeller, guvenilir);
     }
 
     /// <summary>
@@ -136,9 +307,9 @@ public static class ReferansOnarimi
         }
 
         string eskiAd = WindowsYolu.DosyaAdi(plan.EskiYol);
-        string yeniYol = WindowsYolu.Birlestir(WindowsYolu.Klasor(plan.EskiYol), plan.YeniAd);
+        string yeniYol = plan.YeniYol;
 
-        if (File.Exists(yeniYol) || Directory.Exists(yeniYol))
+        if (plan.CocuguTasi && (File.Exists(yeniYol) || Directory.Exists(yeniYol)))
         {
             return OnarimSonucu.Olmadi($"\"{plan.YeniAd}\" bu klasörde zaten var.");
         }
@@ -148,7 +319,13 @@ public static class ReferansOnarimi
         foreach (string ebeveyn in plan.Ebeveynler)
         {
             string yeni = ebeveyn + YeniUzanti;
-            YamaSonucu s = SwYazici.AdiDegistir(ebeveyn, yeni, eskiAd, plan.YeniAd);
+
+            // KLASOR DEGISTIYSE tam yol yazilir (komsuluk kurali kurtarmaz);
+            // yalnizca ad degistiyse yazili klasor korunur - o hal OLCULDU.
+            YamaSonucu s = plan.KlasorDegisti
+                ? SwYazici.YoluDegistir(
+                    ebeveyn, yeni, eskiAd, yeniYol, WindowsYolu.Klasor(ebeveyn))
+                : SwYazici.AdiDegistir(ebeveyn, yeni, eskiAd, plan.YeniAd);
             if (!s.Oldu)
             {
                 Temizle(yamalar);
@@ -161,15 +338,19 @@ public static class ReferansOnarimi
             yamalar.Add((ebeveyn, yeni));
         }
 
-        // ---- 2) Cocugun adi degisir.
-        try
+        // ---- 2) Cocugun adi degisir. TASIMADA bu adim YOK: dosya zaten
+        //         yeni yerinde, tasima motoru goturdu.
+        if (plan.CocuguTasi)
         {
-            File.Move(plan.EskiYol, yeniYol);
-        }
-        catch (Exception hata) when (Dosya(hata))
-        {
-            Temizle(yamalar);
-            return OnarimSonucu.Olmadi("Adı değiştirilemedi: " + hata.Message);
+            try
+            {
+                File.Move(plan.EskiYol, yeniYol);
+            }
+            catch (Exception hata) when (Dosya(hata))
+            {
+                Temizle(yamalar);
+                return OnarimSonucu.Olmadi("Adı değiştirilemedi: " + hata.Message);
+            }
         }
 
         // ---- 3) Yamalar yerine gecer; ortada tutmazsa HEPSI geri alinir.
@@ -185,7 +366,7 @@ public static class ReferansOnarimi
             }
             catch (Exception hata) when (Dosya(hata))
             {
-                GeriAl(degisenler, yeniYol, plan.EskiYol);
+                GeriAl(degisenler, plan.CocuguTasi ? yeniYol : null, plan.EskiYol);
                 Temizle(yamalar);
                 return OnarimSonucu.Olmadi(
                     $"{WindowsYolu.DosyaAdi(ebeveyn)} değiştirilemedi: {hata.Message} "
@@ -231,7 +412,7 @@ public static class ReferansOnarimi
     /// onlari gorebilsin diye (sessizce silmek kanit yok eder).
     /// </summary>
     private static void GeriAl(
-        List<(string Ebeveyn, string Yedek)> degisenler, string yeniYol, string eskiYol)
+        List<(string Ebeveyn, string Yedek)> degisenler, string? yeniYol, string eskiYol)
     {
         foreach ((string ebeveyn, string yedek) in degisenler)
         {
@@ -248,7 +429,7 @@ public static class ReferansOnarimi
 
         try
         {
-            if (File.Exists(yeniYol))
+            if (yeniYol is not null && File.Exists(yeniYol))
             {
                 File.Move(yeniYol, eskiYol);
             }

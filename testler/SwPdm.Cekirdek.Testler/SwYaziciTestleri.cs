@@ -210,9 +210,9 @@ public sealed class SwYaziciTestleri : IDisposable
     [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "P1.SLDPRT")]   // kisaldi
     [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "GövdeParçası1.SLDPRT")]  // uzadi
     [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "Ab.SLDPRT")]   // tek karakter fark
-    public void UzunlukKorunanYol_UZUNLUGU_AYNEN_KORUYOR(string eski, string yeniAd)
+    public void AdDegisimi_UZUNLUGU_AYNEN_KORUYOR(string eski, string yeniAd)
     {
-        string? yeni = SwYazici.UzunlukKorunanYol(eski, yeniAd);
+        string? yeni = YazilacakYol.AdDegisimi(eski, yeniAd);
 
         Assert.NotNull(yeni);
         Assert.Equal(eski.Length, yeni!.Length);
@@ -220,10 +220,10 @@ public sealed class SwYaziciTestleri : IDisposable
     }
 
     [Fact]
-    public void UzunlukKorunanYol_ad_tek_basina_uzunsa_NULL_doner()
+    public void AdDegisimi_ad_tek_basina_uzunsa_NULL_doner()
     {
         // Uydurma bir yol yazmaktansa "yapamadim" demek dogru (CLAUDE.md 3).
-        Assert.Null(SwYazici.UzunlukKorunanYol(@"C:\a\b.SLDPRT", new string('u', 40) + ".SLDPRT"));
+        Assert.Null(YazilacakYol.AdDegisimi(@"C:\a\b.SLDPRT", new string('u', 40) + ".SLDPRT"));
     }
 
     [Fact]

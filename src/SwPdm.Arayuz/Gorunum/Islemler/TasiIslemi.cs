@@ -95,6 +95,7 @@ internal static class Aktar
         var olan = new List<string>();
         var olmayan = new List<string>();
         var atlanan = new List<string>();
+        var ciftler = new List<(string Eski, string Yeni)>();
         bool kesildi = false;
 
         // "Hepsine uygula" isaretlenirse kalan cakismalar sorulmadan bu
@@ -138,7 +139,9 @@ internal static class Aktar
 
             if (rapor.Oldu)
             {
-                olan.Add(rapor.YeniYol ?? WindowsYolu.Birlestir(hedefKlasor, ad));
+                string yeniYol = rapor.YeniYol ?? WindowsYolu.Birlestir(hedefKlasor, ad);
+                olan.Add(yeniYol);
+                ciftler.Add((yol, yeniYol));
             }
             else if (rapor.Sonuc == IslemSonucu.Atlandi)
             {
@@ -151,7 +154,33 @@ internal static class Aktar
         }
 
         baglam.Ilerleme.Adim(yollar.Count, yollar.Count, string.Empty);
-        baglam.Ilerleme.Bitti(() => Topla(baglam, yollar, olan, olmayan, atlanan, kip, kesildi));
+
+        // REFERANS ONARIMI - yalnizca TASIMADA.
+        //
+        // Kopyalamada gerekmez: ozgun dosyalar yerinde kaliyor, yani onlarin
+        // ebeveynleri etkilenmiyor. (Kopyanin ozgun parcalari kullanmasi ayri
+        // bir konu - Pack and Go - ve bu surumde YAPILMIYOR, onay kutusunda
+        // yaziyor.)
+        //
+        // BIRLIKTE TASINANLAR ELENIR: olculdu (CLAUDE.md 5) - SOLIDWORKS once
+        // ebeveynin yanina bakiyor, yani birlikte giden aile kendiliginden
+        // calisiyor. Calisani onarmak bos risktir (1a).
+        (int onarilan, IReadOnlyList<string> onarimHatalari, IReadOnlyList<OnarimPlani> tutan) =
+            kip == AktarmaKipi.Tasi
+                ? ReferansOnarimi.Onar(
+                    ReferansOnarimi.TasimaPlanlari(baglam.Referanslar.Indeks, ciftler, yollar))
+                : (0, [], []);
+
+        if (onarilan > 0)
+        {
+            // Indeks tazelenmezse referans paneli eski yolu gostermeye devam
+            // eder (CLAUDE.md 3).
+            baglam.Referanslar.Tazele(olan);
+        }
+
+        baglam.Ilerleme.Bitti(() => Topla(
+            baglam, ciftler, olan, olmayan, atlanan, kip, kesildi,
+            onarilan, onarimHatalari, tutan));
     }
 
     /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
@@ -215,12 +244,15 @@ internal static class Aktar
 
     private static void Topla(
         IslemBaglami baglam,
-        List<string> kaynaklar,
+        List<(string Eski, string Yeni)> ciftler,
         List<string> olan,
         List<string> olmayan,
         List<string> atlanan,
         AktarmaKipi kip,
-        bool kesildi)
+        bool kesildi,
+        int onarilan,
+        IReadOnlyList<string> onarimHatalari,
+        IReadOnlyList<OnarimPlani> onarilanPlanlar)
     {
         Pano.Bosalt();
 
@@ -229,7 +261,7 @@ internal static class Aktar
             // Her ozellik KENDI geri almasini yaziyor (CLAUDE.md 1b): defter
             // hicbir islemi adiyla bilmez.
             GeriAlDefteri.Kaydet(kip == AktarmaKipi.Tasi
-                ? TasimayiGeriAl(kaynaklar, olan)
+                ? TasimayiGeriAl(ciftler, onarilanPlanlar)
                 : KopyalamayiGeriAl(olan));
         }
 
@@ -254,7 +286,32 @@ internal static class Aktar
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
+        // ONARIM TUTMADIYSA SESSIZ KALINMAZ: referans kirildi ve kullanici
+        // bunu bilmeli (CLAUDE.md 3).
+        if (onarimHatalari.Count > 0)
+        {
+            var metin = new StringBuilder();
+            metin.AppendLine($"{onarimHatalari.Count} dosyanın referansı onarılamadı:");
+            metin.AppendLine();
+            foreach (string satir in onarimHatalari)
+            {
+                metin.AppendLine("  • " + satir);
+            }
+
+            metin.AppendLine();
+            metin.AppendLine("Taşıma yapıldı; bu dosyaları kullanan belgeler");
+            metin.AppendLine("parçayı bulamayabilir. Ctrl+Z ile geri alabilirsiniz.");
+
+            MessageBox.Show(
+                baglam.Sahip, metin.ToString(), "Referans onarılamadı",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
         string kuyruk = kesildi ? " · iptal edildi" : string.Empty;
+        if (onarilan > 0)
+        {
+            kuyruk = $" · {onarilan} dosya onarıldı" + kuyruk;
+        }
         if (atlanan.Count > 0)
         {
             kuyruk = $" · {atlanan.Count} atlandı" + kuyruk;
@@ -266,34 +323,51 @@ internal static class Aktar
     }
 
     /// <summary>Tasinanlari eski klasorlerine geri gonderir.</summary>
+    /// <summary>
+    /// Tasimayi geri alir - VE onarimi da.
+    ///
+    /// CIFTLER TASINIYOR, iki ayri liste degil: onceden "kaynaklar" ve
+    /// "olan" listeleri ayni indisle eslestiriliyordu ve bir oge
+    /// tasinamayinca hizalama KAYIYORDU - yani geri alma dosyayi YANLIS
+    /// klasore gonderebilirdi. Cift tutmak bunu imkansiz kiliyor.
+    ///
+    /// ONARIM DA GERI ALINIR: yalnizca dosyalar geri tasinsaydi, ebeveynler
+    /// yeni yola bakar halde kalir ve GERI ALMA referansi KIRARDI.
+    /// </summary>
     private static GeriAlinabilir TasimayiGeriAl(
-        IReadOnlyList<string> eskiYollar, IReadOnlyList<string> yeniYollar)
+        IReadOnlyList<(string Eski, string Yeni)> ciftler,
+        IReadOnlyList<OnarimPlani> onarilanPlanlar)
     {
-        // Eski KLASORLER yakalanip tutuluyor; geri alirken dosya adindan
-        // degil, geldigi yerden gidiyoruz.
-        var eskiKlasorler = new List<string>(yeniYollar.Count);
-        for (int i = 0; i < yeniYollar.Count && i < eskiYollar.Count; i++)
-        {
-            eskiKlasorler.Add(WindowsYolu.Klasor(eskiYollar[i]));
-        }
-
-        var yollar = new List<string>(yeniYollar);
+        var kopya = new List<(string Eski, string Yeni)>(ciftler);
+        var planlar = new List<OnarimPlani>(onarilanPlanlar);
 
         return new GeriAlinabilir(
-            $"{yollar.Count} öğenin taşınması",
+            $"{kopya.Count} öğenin taşınması",
             baglam =>
             {
                 var olmayan = new List<string>();
-                for (int i = 0; i < yollar.Count; i++)
+
+                // ONCE onarim geri alinir: dosyalar hala yeni yerindeyken
+                // yamalar okunabiliyor ve yazilabiliyor.
+                ReferansOnarimi.GeriOnar(planlar);
+
+                foreach ((string eski, string yeni) in kopya)
                 {
-                    IslemRaporu rapor = DosyaIslemleri.Tasi(yollar[i], eskiKlasorler[i]);
+                    IslemRaporu rapor = DosyaIslemleri.Tasi(yeni, WindowsYolu.Klasor(eski));
                     if (!rapor.Oldu)
                     {
-                        olmayan.Add(WindowsYolu.DosyaAdi(yollar[i])
+                        olmayan.Add(WindowsYolu.DosyaAdi(yeni)
                             + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
                     }
                 }
 
+                var dokunulan = new List<string>();
+                foreach ((string eski, _) in kopya)
+                {
+                    dokunulan.Add(eski);
+                }
+
+                baglam.Referanslar.Tazele(dokunulan);
                 return olmayan;
             });
     }

@@ -177,8 +177,12 @@ internal sealed class CopKutusuPenceresi : Form
         }
 
         Doldur();
+        // ADI DEGISENIN REFERANSI KIRILIR: onu kullanan montaj eski adi
+        // arar ve artik baska bir dosya o adi tasiyor. Sessiz kalmak
+        // kullaniciya YANLIS dosyayi actirir (CLAUDE.md 3).
         Rapor("Geri yükleme", olan, olmayan, adiDegisen,
-            "Aynı adda dosya olduğu için adı değiştirilenler:");
+            "Aynı adda dosya olduğu için adı değiştirilenler "
+            + "(bunları kullanan belgeler parçayı bulamaz):");
     }
 
     private void KaliciSil()

@@ -175,4 +175,25 @@ public class WindowsYoluTestleri
         Assert.False(WindowsYolu.AdGecerliMi(ad, out string sebep));
         Assert.Contains("ayrılmış", sebep);
     }
+
+    // ---------------------------------------------------------------------
+    // GORELI YOL - referans onariminda ebeveynin icine yazilan deger.
+    // ---------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(@"C:\a\b", @"C:\a\b\p.SLDPRT", @".\p.SLDPRT")]
+    [InlineData(@"C:\a\b", @"C:\a\b\alt\p.SLDPRT", @".\alt\p.SLDPRT")]
+    [InlineData(@"C:\a\b", @"C:\a\c\p.SLDPRT", @"..\c\p.SLDPRT")]
+    [InlineData(@"C:\a\b\c", @"C:\a\p.SLDPRT", @"..\..\p.SLDPRT")]
+    public void Goreli_YOLU_EBEVEYNE_GORE_yaziyor(string temel, string hedef, string beklenen)
+        => Assert.Equal(beklenen, WindowsYolu.Goreli(temel, hedef));
+
+    [Fact]
+    public void Goreli_BASKA_SURUCUDE_null_doner()
+    {
+        // Farkli kokte goreli yol YAZILAMAZ; uydurmak yanlis dosyaya
+        // isaret ederdi (CLAUDE.md 3).
+        Assert.Null(WindowsYolu.Goreli(@"C:\a", @"D:\a\p.SLDPRT"));
+        Assert.Null(WindowsYolu.Goreli(null, @"C:\a\p.SLDPRT"));
+    }
 }

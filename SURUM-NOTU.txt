@@ -1,4 +1,70 @@
-BU SURUMDE YENI - AD DEGISINCE REFERANSLAR ARTIK ONARILIYOR
+BU SURUMDE YENI - TASIMADA DA ONARIM
+
+  Ad degistirme onarimi bir onceki surumde geldi. Simdi TASIMA da onariyor.
+
+  NE OLUYOR
+    Bir parcayi baska klasore tasidiginda, onu kullanan ve TASINMAYAN
+    dosyalar otomatik onarilir. Durum cubugunda yazar:
+      "12 oge tasindi · 3 dosya onarildi"
+    Sormaz - sen "bozulma yasansin istemiyorum" dedin.
+
+  KLASOR TASIMA DA KAPSAM ICINDE
+    Bir klasoru tasidiginda icindeki her SOLIDWORKS dosyasi icin ayni sey
+    yapilir: disaridan ona isaret eden belgeler onarilir.
+
+  BIRLIKTE TASINANA DOKUNULMAZ
+    Montaj ve parcalari BIRLIKTE tasinirsa hicbir sey yazilmaz - o hal
+    zaten calisiyor (SOLIDWORKS once ebeveynin yanina bakiyor, olculdu).
+    Calisani onarmak bos risk olurdu.
+
+  NE YAZILIYOR
+    Ebeveynin icine, once EBEVEYNE GORELI yol (".\alt\Parca1.SLDPRT")
+    yaziliyor. Sebebi iki tane: kisa oldugu icin uzunluk sartina daha sik
+    siginiyor, ve agaci topluca baska yere tasisan bile gecerli kaliyor.
+    Sigmazsa mutlak yol yaziliyor. Ikisi de sigmazsa YAZILMIYOR ve sebebi
+    ekranda soyleniyor.
+
+  DOGRULAMA DEGISTI
+    Ad degisiminde "yeni ad yazildi mi" diye bakiliyordu. Tasimada ad
+    degismiyor, klasor degisiyor - o yuzden yazilan yol COZULUP gercek
+    hedefe esit mi diye bakiliyor. Bir tanesi bile eski yeri gosteriyorsa
+    dosya degistirilmiyor.
+
+  CTRL+Z DE GERI ONARIYOR
+    Tasimayi geri alinca once yamalar geri alinir, sonra dosyalar eski
+    yerine doner. Yoksa geri alma referansi KIRARDI.
+
+  YOLDA BULUNAN BIR HATA DUZELTILDI
+    Tasimayi geri alma, eski ve yeni yollari ayni indisle esletiriyordu.
+    Bir oge tasinamayinca hizalama KAYIYOR ve geri alma dosyayi YANLIS
+    klasore gonderebiliyordu. Artik cift tutuluyor; kayma imkansiz.
+
+  COPTEN GERI YUKLEME
+    Eski adda baska bir dosya varsa geri gelen dosya "(2)" ekiyle donuyor.
+    Bu zaten soyleniyordu; simdi sonucu da yaziyor: "bunlari kullanan
+    belgeler parcayi bulamaz".
+
+  *** HALA YAPILMAYAN: KOPYALAMA ***
+    Bir montaji KOPYALADIGINDA kopya hala OZGUN parcalari kullanir
+    (Pack and Go gibi degil). Kopyalamada hicbir sey onarilmiyor - ve
+    onarilmamali, cunku ozgun dosyalar yerinde duruyor. Onay kutusunda
+    bu yaziyor. Kopyanin kendi parcalarini kullanmasi ayri bir is.
+
+  OLCULDU
+    Parca alt klasore tasindi -> kokte kalan montaj ve teknik resim
+      onarildi, yazili yol yeni klasoru gosteriyor
+    Birlikte tasinan ebeveyne DOKUNULMADI (bayt bayt ayni kaldi)
+    Tasima onarimi geri alinabiliyor
+    Goreli yol hesabi dort ayri durumda dogru
+    256 test geciyor (248'di), dort kapi da TEMIZ
+
+  BURADA OLCULEMEYEN
+    - Tasima onarimindan sonra SOLIDWORKS'un dosyayi actigi. Ad degisimi
+      senin olcumunle dogrulandi ama TASIMA yolu (goreli yol yazmak)
+      henuz senin makinende denenmedi. Bir KOPYA klasorde dene:
+      bir parcayi alt klasore tasi, sonra montaji ac.
+
+ONCEKI SURUMDE YENIYDI - AD DEGISINCE ONARIM
 
   Bu, uygulamanin varlik sebebi olan is. Bir parcanin adini degistirince
   onu kullanan montaj ve teknik resim ESKI ADI arar ve bulamaz. Tasimada
