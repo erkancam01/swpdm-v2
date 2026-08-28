@@ -129,6 +129,102 @@ public static class SwYazici
             "Yeniden sıkıştırılacak akış bulunamadı.",
             _ => (null, []));
 
+    /// <summary>
+    /// Yeni adi tasiyan, ama KARAKTER SAYISI eskisiyle AYNI olan bir yol uretir.
+    /// Uretemezse null.
+    ///
+    /// NEDEN GEREKLI - OLCULDU (28.08.2026, Erkan'in makinesinde):
+    ///   ayni uzunluktaki ad degisimi  -> dosya ACILDI, parcalar yerinde
+    ///   daha uzun ad                  -> SOLIDWORKS HATA VERDI, acmadi
+    /// Akisin icinde ne toplam boy ne de dize ofseti yaziyor (arandi, 0
+    /// eslesme), yani kirilmanin sebebi bulunamadi. Sebebi kovalamak yerine
+    /// SARTI SAGLIYORUZ: dizenin uzunlugu hic degismesin.
+    ///
+    /// FARK KLASOR KISMINDAN KARSILANIYOR. Bu mesru: CLAUDE.md 5'te olculdu -
+    /// SOLIDWORKS once EBEVEYNIN YANINA bakiyor ve bu, yazili mutlak yolun
+    /// onune geciyor. Yani yazili klasor bir ipucu; belirleyici olan dosya
+    /// adi ve ebeveyne gore konum.
+    ///
+    ///   ad KISALDIYSA  -> araya ".\" eklenir (yol ayni yeri gosterir)
+    ///   ad UZADIYSA    -> soldan klasor atilir (yol GORELI hale gelir),
+    ///                     sonra gerekirse ".\" ile tam uzunluga doldurulur
+    ///
+    /// BURADA OLCULEMEZ: SOLIDWORKS dolgulu/goreli yolu kabul ediyor mu.
+    /// araclar/DeneyUretici'nin ikinci turu bunu soruyor.
+    /// </summary>
+    public static string? UzunlukKorunanYol(string? eskiYol, string? yeniAd)
+    {
+        if (string.IsNullOrEmpty(eskiYol) || string.IsNullOrEmpty(yeniAd))
+        {
+            return null;
+        }
+
+        int hedef = eskiYol.Length;
+        string klasor = WindowsYolu.Klasor(eskiYol);
+
+        // 1) Once oldugu gibi dene.
+        string aday = klasor.Length == 0 ? yeniAd : WindowsYolu.Birlestir(klasor, yeniAd);
+        if (aday.Length == hedef)
+        {
+            return aday;
+        }
+
+        // 2) UZADIYSA: soldan klasor at, yol goreli olur.
+        while (aday.Length > hedef && klasor.Length > 0)
+        {
+            klasor = SoldanBirParcaAt(klasor);
+            aday = klasor.Length == 0 ? yeniAd : WindowsYolu.Birlestir(klasor, yeniAd);
+        }
+
+        if (aday.Length > hedef)
+        {
+            return null;   // ad tek basina bile uzun; uzunluk korunamaz
+        }
+
+        // 3) KISALDIYSA (ya da 2'den sonra kisa kaldiysa): adin onune dolgu.
+        return Doldur(klasor, yeniAd, hedef - aday.Length);
+    }
+
+    /// <summary>Yolun EN SOLDAKI parcasini atar; kalmadiysa bos doner.</summary>
+    private static string SoldanBirParcaAt(string klasor)
+    {
+        int i = klasor.IndexOf(WindowsYolu.Ayirici);
+        return i < 0 ? string.Empty : klasor[(i + 1)..];
+    }
+
+    /// <summary>
+    /// Dosya adinin onune, yolu ayni yeri gosterecek sekilde
+    /// <paramref name="eksik"/> karakter ekler.
+    ///
+    /// ".\" iki karakter; TEK karakter gerekiyorsa ayirici cift yazilir
+    /// ("a\\b"), Windows bunu tek ayirici sayar.
+    /// </summary>
+    private static string? Doldur(string klasor, string yeniAd, int eksik)
+    {
+        if (eksik < 0)
+        {
+            return null;
+        }
+
+        var dolgu = new System.Text.StringBuilder();
+        if (eksik % 2 == 1)
+        {
+            dolgu.Append(WindowsYolu.Ayirici);
+            eksik--;
+        }
+
+        for (int i = 0; i < eksik / 2; i++)
+        {
+            dolgu.Append('.').Append(WindowsYolu.Ayirici);
+        }
+
+        string taban = klasor.Length == 0
+            ? string.Empty
+            : klasor + WindowsYolu.Ayirici;
+
+        return taban + dolgu + yeniAd;
+    }
+
     /// <summary>Tamponda bu dosya adini yazan bir yol var mi.</summary>
     private static bool Iceriyor(byte[] acik, string? dosyaAdi)
     {
@@ -302,8 +398,15 @@ public static class SwYazici
 
         foreach (MfcBulgu b in bulgular)
         {
-            string klasor = WindowsYolu.Klasor(b.Deger);
-            string yeniDeger = klasor.Length == 0 ? yeniAd : WindowsYolu.Birlestir(klasor, yeniAd);
+            // UZUNLUK KORUNUYOR - olculdu: dize uzayinca SOLIDWORKS dosyayi
+            // acmiyor (Erkan, 28.08.2026). Fark klasor kismindan karsilaniyor.
+            string? yeniDeger = UzunlukKorunanYol(b.Deger, yeniAd);
+            if (yeniDeger is null)
+            {
+                return (null, 0,
+                    $"\"{yeniAd}\" için yazılı yolun uzunluğu korunamıyor "
+                    + $"(eski yol {b.Deger.Length} karakter). Dosyaya dokunulmadı.");
+            }
 
             byte[]? dize = MfcDize.Yaz(yeniDeger);
             if (dize is null)

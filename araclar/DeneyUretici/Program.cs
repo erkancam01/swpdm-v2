@@ -50,13 +50,16 @@ internal static class Program
             Directory.Delete(cikti, recursive: true);
         }
 
+        // IKINCI TUR. Birinci turun sonucu (Erkan, 28.08.2026):
+        //   0 yeniden sikistirma -> ACILDI    (yazma mekanizmasi kabul ediliyor)
+        //   1 yalniz Header2     -> acildi ama ICI BOS (bir akis yetmiyor)
+        //   2 butun akislar      -> ACILDI, parcalar yerinde (ASIL YOL BU)
+        //   3 uzun ad            -> HATA (dize uzayinca kiriliyor)
+        // Bu turda uzunluk KLASOR KISMINDAN karsilaniyor; iki yon de sinaniyor.
         bool tamam = true;
-        tamam &= Deney0(kaynak, Path.Combine(cikti, "0-yeniden-sikistirma"));
-        tamam &= Deney(kaynak, Path.Combine(cikti, "1-yalniz-header2"),
-            "Parca1.SLDPRT", yalnizDogrudan: true);
-        tamam &= Deney(kaynak, Path.Combine(cikti, "2-butun-akislar"),
-            "Parca1.SLDPRT", yalnizDogrudan: false);
-        tamam &= Deney(kaynak, Path.Combine(cikti, "3-uzun-ad"),
+        tamam &= Deney(kaynak, Path.Combine(cikti, "4-kisa-ad-dolgulu"),
+            "P1.SLDPRT", yalnizDogrudan: false);
+        tamam &= Deney(kaynak, Path.Combine(cikti, "5-uzun-ad-goreli"),
             "GövdeParçası1.SLDPRT", yalnizDogrudan: false);
 
         Talimat(cikti);
@@ -75,46 +78,39 @@ internal static class Program
     {
         string[] satirlar =
         [
-            "SOLIDWORKS DOSYASINA YAZMA DENEYI",
-            "=================================",
+            "SOLIDWORKS YAZMA DENEYI - IKINCI TUR",
+            "====================================",
             "",
-            "Bir parcanin adi degisince onu kullanan montaj ve teknik resim",
-            "ESKI ADI arar ve bulamaz. Tek cozum, dosyanin ICINDEKI yaziyi",
-            "degistirmek. Yazdigim dosyayi SOLIDWORKS'un kabul edip etmedigini",
-            "BURADA olcemiyorum - SOLIDWORKS yok. Bu paket onun icin.",
+            "BIRINCI TURDA OGRENDIKLERIMIZ (senin olcumun):",
+            "   0 yeniden sikistirma -> ACILDI. Yazma mekanizmasi kabul ediliyor.",
+            "   1 yalniz bir akis    -> acildi ama ici bos. Bir akis yetmiyor.",
+            "   2 butun akislar      -> ACILDI, parcalar yerinde. ASIL YOL BU.",
+            "   3 uzun ad            -> HATA. Yazilan yol UZAYINCA kiriliyor.",
             "",
-            "YAPILACAK: dort klasorun her birinde Montaj1.SLDASM ve",
-            "Parca1.SLDDRW dosyalarini SOLIDWORKS'te AC. Her biri icin",
-            "sunlardan hangisi oldugunu yaz:",
+            "Demek ki sart su: dosyanin icine yazilan yolun KARAKTER SAYISI",
+            "degismemeli. Bu turda farki KLASOR kismindan karsiliyorum -",
+            "SOLIDWORKS zaten once ebeveynin yanina bakiyor, yazili klasor",
+            "bir ipucu.",
             "",
-            "   a) sorunsuz acildi, parca yerinde",
-            "   b) acildi ama 'dosya bulunamadi' diye sordu",
-            "   c) hic acilmadi / hata verdi  (hatanin metnini de yaz)",
+            "YAPILACAK: iki klasorde de Montaj1.SLDASM ve Parca1.SLDDRW ac.",
+            "Her biri icin: acildi mi, parcalar yerinde mi?",
             "",
-            "KLASORLER",
+            "  4-kisa-ad-dolgulu",
+            "     Parca1.SLDPRT -> P1.SLDPRT  (ad KISALDI)",
+            "     Yolun icine \".\\\" eklenerek uzunluk sabit tutuldu; yol hala",
+            "     ayni yeri gosteriyor.",
             "",
-            "  0-yeniden-sikistirma",
-            "     Hicbir yazi degismedi. Dosyanin icindeki veri yalnizca",
-            "     yeniden sikistirilip ayni yere yazildi.",
-            "     BU EN ONEMLISI: acilirsa, dosyaya yazma yolunun acik oldugunu",
-            "     ogreniriz. Acilmazsa sebep metin degil, yazmanin kendisidir.",
+            "  5-uzun-ad-goreli",
+            "     Parca1.SLDPRT -> GovdeParcasi1.SLDPRT  (ad UZADI)",
+            "     Uzunluk sabit kalsin diye yolun soldaki klasorleri atildi;",
+            "     yol GORELI hale geldi.",
             "",
-            "  1-yalniz-header2",
-            "     Parca1.SLDPRT -> Parca1.SLDPRT (c yerine c), yalnizca bir",
-            "     akista degistirildi. Eski ad bilerek baska akislarda BIRAKILDI.",
-            "     Acilirsa: tek yeri degistirmek yetiyor.",
+            "Ikisi de acilirsa: ad degistirme onarimi HER AD icin calisiyor",
+            "demektir ve is biter. Yalniz 4 acilirsa: kisaltmak serbest,",
+            "uzatmak degil. Ikisi de acilmazsa: yalnizca ayni uzunluktaki",
+            "adlar onarilabilir - o da az sey degil.",
             "",
-            "  2-butun-akislar",
-            "     Ayni ad degisikligi, yolu yazan BUTUN akislarda.",
-            "     Asil kullanacagimiz yol bu.",
-            "",
-            "  3-uzun-ad",
-            "     Parca1.SLDPRT -> GovdeParcasi1.SLDPRT. Ad daha UZUN.",
-            "     Acilirsa: ad uzunlugu bir engel degil.",
-            "",
-            "NOT: bunlarin hepsi KOPYA. Senin asil dosyalarina dokunulmadi ve",
-            "bu paketteki hicbir sey senin arsivini etkilemez. Acilmayan bir",
-            "dosya olursa kaybedilen bir sey yok - ogrendigimiz sey var.",
+            "NOT: hepsi KOPYA. Asil dosyalarina dokunulmadi.",
         ];
 
         File.WriteAllText(

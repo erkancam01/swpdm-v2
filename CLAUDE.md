@@ -369,11 +369,29 @@ Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek
   `Contents/VBLists`). Yalnız birini değiştirmek **eskisini geride bırakır**;
   `SwYazici` bunu `KalanAkislar` ile **söylüyor**, sessiz kalmıyor.
 
-> **ÖLÇÜLEMEZ — SOLIDWORKS yamalı dosyayı AÇIYOR MU.** Burada ölçülebilen
-> tek şey: dosya hâlâ kendi okuyucumuzla ayrıştırılıyor, akış sayısı ve
-> ofsetleri birebir aynı, yeni ad okunuyor, eski ad kalmıyor, önizleme ve
-> özellikler bozulmuyor. Gerçek cevap `araclar/DeneyUretici` paketiyle
-> Erkan'ın makinesinden gelir.
+> **ÖLÇÜLDÜ — SOLIDWORKS YAMALI DOSYAYI AÇIYOR (28.08.2026, Erkan'ın
+> makinesi).** Dört deney, değişkenler tek tek ayrılarak:
+>
+> | deney | sonuç |
+> |---|---|
+> | metin aynı, yalnızca yeniden sıkıştırma + dolgu | **açıldı** |
+> | yalnız `Header2` değişti | açıldı ama **içi boş** — bir akış yetmiyor |
+> | yol yazan **bütün** akışlar, **aynı uzunlukta** ad | **açıldı, parçalar yerinde** |
+> | daha **uzun** ad | **HATA, açılmadı** |
+>
+> Yani: baştaki 4 bayt engel değil, yeniden sıkıştırma ve sıfır dolgu kabul
+> ediliyor, **ad değiştirme onarımı çalışıyor** — tek şartla: yazılan dizenin
+> **karakter sayısı değişmemeli**.
+>
+> **UZUNLUK NEDEN ÖNEMLİ — BULUNAMADI.** Akışın içinde ne toplam boy ne de
+> dize ofseti yazıyor (`Header2`, `DisplayLists`, `SwDocContentMgrInfo`
+> tarandı: 0 eşleşme). Sebep kovalanmadı (§1c); yerine **şart sağlanıyor**:
+> `SwYazici.UzunlukKorunanYol` farkı klasör kısmından karşılıyor — ad
+> kısalırsa araya `.\`, uzarsa soldan klasör atılıp yol göreli yapılıyor.
+> Bu meşru, çünkü §5'te ölçüldü: SOLIDWORKS önce ebeveynin yanına bakıyor.
+>
+> **ÖLÇÜLMEDİ:** dolgulu/göreli yolun kabul edilip edilmediği — ikinci tur
+> deney (`4-kisa-ad-dolgulu`, `5-uzun-ad-goreli`) bunu soruyor.
 
 ### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
 

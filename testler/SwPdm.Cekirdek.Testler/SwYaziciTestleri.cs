@@ -133,16 +133,24 @@ public sealed class SwYaziciTestleri : IDisposable
     }
 
     [Fact]
-    public void COK_UZUN_AD_REDDEDILIYOR_bicimi_olculmedi()
+    public void SIGMAYAN_AD_REDDEDILIYOR_ve_SEBEBI_yaziliyor()
     {
-        // MFC'nin 254 karakterden uzun dize bicimi GORULMEDI; tahminle
-        // yazmak dosya bozardi (CLAUDE.md 2).
+        // Yazili yolun uzunlugu korunamiyorsa yazmiyoruz. Uydurma bir yol
+        // yazmaktansa "yapamadim" demek dogru (CLAUDE.md 3).
         string uzun = new string('u', 250) + ".SLDPRT";
         YamaSonucu s = SwYazici.AdiDegistir(
             Kaynak("Montaj1.SLDASM"), Hedef("u.SLDASM"), "Parça1.SLDPRT", uzun);
 
         Assert.False(s.Oldu);
-        Assert.Contains("254", s.Sebep);
+        Assert.Contains("uzunluğu korunamıyor", s.Sebep);
+    }
+
+    [Fact]
+    public void MFC_254_karakter_sinirini_asan_dize_YAZILMIYOR()
+    {
+        // Kacis bicimi GORULMEDI; tahminle yazmak dosya bozardi (CLAUDE.md 2).
+        Assert.Null(MfcDize.Yaz(new string('u', 255)));
+        Assert.NotNull(MfcDize.Yaz(new string('u', 254)));
     }
 
     [Fact]
@@ -187,5 +195,54 @@ public sealed class SwYaziciTestleri : IDisposable
 
         Assert.NotNull(SwOnizleme.Oku(hedef));
         Assert.True(SwBelgeBilgisi.Oku(hedef).Okundu);
+    }
+
+    // ---------------------------------------------------------------------
+    // UZUNLUK KORUNAN YOL
+    //
+    // OLCULDU (Erkan, 28.08.2026): ayni uzunluktaki ad degisimi ACILIYOR,
+    // daha uzun ad HATA VERIYOR. O yuzden yazilan dizenin karakter sayisi
+    // hic degismemeli; fark klasor kismindan karsilaniyor.
+    // ---------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(@"C:\a\Parça1.SLDPRT", "Parca1.SLDPRT")]           // ayni uzunluk
+    [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "P1.SLDPRT")]   // kisaldi
+    [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "GövdeParçası1.SLDPRT")]  // uzadi
+    [InlineData(@"C:\Users\PC\Desktop\t\Parça1.SLDPRT", "Ab.SLDPRT")]   // tek karakter fark
+    public void UzunlukKorunanYol_UZUNLUGU_AYNEN_KORUYOR(string eski, string yeniAd)
+    {
+        string? yeni = SwYazici.UzunlukKorunanYol(eski, yeniAd);
+
+        Assert.NotNull(yeni);
+        Assert.Equal(eski.Length, yeni!.Length);
+        Assert.Equal(yeniAd, WindowsYolu.DosyaAdi(yeni));
+    }
+
+    [Fact]
+    public void UzunlukKorunanYol_ad_tek_basina_uzunsa_NULL_doner()
+    {
+        // Uydurma bir yol yazmaktansa "yapamadim" demek dogru (CLAUDE.md 3).
+        Assert.Null(SwYazici.UzunlukKorunanYol(@"C:\a\b.SLDPRT", new string('u', 40) + ".SLDPRT"));
+    }
+
+    [Fact]
+    public void Uzun_ad_icin_yama_ARTIK_YAPILABILIYOR()
+    {
+        string hedef = Hedef("Montaj1.SLDASM");
+        YamaSonucu s = SwYazici.AdiDegistir(
+            Kaynak("Montaj1.SLDASM"), hedef, "Parça1.SLDPRT", "GövdeParçası1.SLDPRT");
+
+        Assert.True(s.Oldu, s.Sebep);
+        Assert.Contains(
+            "GövdeParçası1.SLDPRT",
+            SwReferans.Oku(hedef).Dogrudan.Select(WindowsYolu.DosyaAdi));
+
+        // ASIL SART: yazilan dizenin uzunlugu degismemis olmali.
+        using SwPaket? once = SwPaket.Ac(Kaynak("Montaj1.SLDASM"));
+        using SwPaket? sonra = SwPaket.Ac(hedef);
+        Assert.Equal(
+            once!.Akislar.Select(a => a.AcilmisBoyut).ToList(),
+            sonra!.Akislar.Select(a => a.AcilmisBoyut).ToList());
     }
 }
