@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DENEY URETICI - Erkan'in SOLIDWORKS'te acacagi olcum paketini uretir.
+
+    NEDEN AYRI BIR PROJE: dosyanin icine yazmanin kabul edilip edilmedigi
+    BURADA OLCULEMEZ (SOLIDWORKS yok). Tek olcum yolu, gercek dosyalarin
+    yamalanmis kopyalarini uretip Erkan'a gondermek. Bu arac o paketi
+    URETIR - ve ayni yazici kodunu kullanir, ikinci bir kopya yoktur
+    (CLAUDE.md 8).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SwPdm.Cekirdek\SwPdm.Cekirdek.csproj" />
+  </ItemGroup>
+
+</Project>

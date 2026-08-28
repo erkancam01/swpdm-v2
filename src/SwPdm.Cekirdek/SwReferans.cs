@@ -67,12 +67,6 @@ public static class SwReferans
     /// <summary>Belgenin kendi yolunun durdugu akis.</summary>
     private const string GecmisAkis = "_MO_VERSION_15000/Biography";
 
-    /// <summary>MFC Unicode CString isareti.</summary>
-    private static readonly byte[] DizeIsareti = [0xFF, 0xFE, 0xFF];
-
-    /// <summary>Uzunluk oneki bu ise MFC kacis kullanmistir; bicimi olculmedi.</summary>
-    private const byte KacisOneki = 0xFF;
-
     /// <summary>Bu uzantilardan biriyle biten dizeler yol sayilir.</summary>
     private static readonly string[] Uzantilar = [".SLDPRT", ".SLDASM", ".SLDDRW"];
 
@@ -195,65 +189,13 @@ public static class SwReferans
     /// Tampondaki MFC Unicode dizelerini tek tek verir.
     /// Doner deger: olculmemis KACIS bicimi goruldu mu (o dizeler atlandi).
     /// </summary>
+    /// <summary>
+    /// Tampondaki dizeleri gezer. TARAMA <see cref="MfcDize"/>'DE, burada
+    /// degil: ayni bicimi yazan bir kod da var (<see cref="SwYazici"/>) ve
+    /// iki kopya gunun birinde ayrisirdi (CLAUDE.md 8).
+    /// </summary>
     private static bool Dizeler(byte[] tampon, Action<string> her)
-    {
-        bool kacis = false;
-
-        for (int i = 0; i + 4 < tampon.Length; i++)
-        {
-            if (tampon[i] != DizeIsareti[0]
-                || tampon[i + 1] != DizeIsareti[1]
-                || tampon[i + 2] != DizeIsareti[2])
-            {
-                continue;
-            }
-
-            byte uzunluk = tampon[i + 3];
-            if (uzunluk == KacisOneki)
-            {
-                // MFC burada WORD/DWORD uzunluga geciyor. BICIM OLCULMEDI:
-                // tahminle cozmek yanlis yol uretebilir, o yuzden atlaniyor
-                // ve cagirana "eksik" oldugu SOYLENIYOR.
-                kacis = true;
-                continue;
-            }
-
-            if (uzunluk == 0)
-            {
-                continue;
-            }
-
-            int bas = i + 4;
-            int bayt = uzunluk * 2;
-            if (bas + bayt > tampon.Length)
-            {
-                continue;
-            }
-
-            string dize = Encoding.Unicode.GetString(tampon, bas, bayt);
-            if (YazdirilabilirMi(dize))
-            {
-                her(dize);
-            }
-
-            i = bas + bayt - 1;
-        }
-
-        return kacis;
-    }
-
-    private static bool YazdirilabilirMi(string dize)
-    {
-        foreach (char c in dize)
-        {
-            if (c < ' ' && c != '\t')
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+        => MfcDize.Tara(tampon, bulgu => her(bulgu.Deger));
 
     private static bool YolMu(string dize)
     {

@@ -337,6 +337,44 @@ zaten hepsini yazıyor.
 > SOLIDWORKS sürümlerinin biçimi (2015 öncesi büyük ihtimalle OLE, o yüzden
 > `BilesikDosya` duruyor); 254 karakterden uzun yolların MFC kaçış biçimi.
 
+### DOSYAYA YAZMA — ölçüldü (28.08.2026), yeniden kurma DEĞİL YERİNDE yama
+
+Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek
+çözüm ebeveynin içindeki yazıyı değiştirmek. Ölçülenler:
+
+- **Akış zinciri dosyanın TAMAMINI kapsamıyor — %86–94.** Sekiz dosyada:
+  başta ~300–850, akışlar arasında ~1200–2200, sonda ~3000–4300 bayt
+  **bilmediğimiz veri** var. → Dosyayı **yeniden kurmak yasak**: o baytları
+  doğru yerine koyduğumuzu asla kanıtlayamayız.
+- **Ama içeride mutlak ofset tutan bir dizin GÖRÜNMÜYOR.** Kuyruktaki 4211
+  bayt ve aralardaki 1747 bayt bilinen akış ofsetlerine karşı tarandı:
+  **0 eşleşme** (kuyrukta 1 rastlantı).
+- **Yeniden sıkıştırılan veri ESKİ YUVAYA SIĞIYOR.** `Montaj1.SLDASM`'ın
+  `Header2`'si 923 baytlık yuvada; ad değişiminden sonra seviye 9'da **880**.
+  → **YERİNDE YAMA mümkün:** `sıkışıkBoyut` aynı kalır, artan yer sıfırlanır,
+  **dosyada tek bayt kaymaz**, boyut bile değişmez, bilinmeyen %13'e hiç
+  dokunulmaz.
+- **AMA HER AKIŞ SIĞMIYOR:** `PreviewPNG` zaten sıkıştırılmış bir PNG;
+  yeniden deflate edilince **büyüyor** (13085 > 13081). Sığmayan akış
+  **yazılmaz**, işlem reddedilir.
+- **İlk 4 bayt her kayıtta değişiyor** (aynı parçanın iki sürümü farklı) ama
+  **standart bir sağlama toplamı DEĞİL**: CRC32/Adler32/bayt toplamı, üç
+  ayrı başlangıçla, sekiz dosyada **0/8**. Ne olduğu **BİLİNMİYOR**.
+  4–7. baytlar dört dosyada da sabit: `00 00 00 04`.
+- **Aynı yol BİRDEN ÇOK AKIŞTA yazılı.** `Header2` ile
+  `Contents/Config-0-ModelHeader` **birebir aynı** (ikisi de 2558 bayt
+  açılmış, aynı ofsetlerde aynı dizeler). Montajda yol **4**, teknik resimde
+  **3** akışta geçiyor (`Contents/DisplayLists`,
+  `SwDocContentMgr/SwDocContentMgrInfo`, `Contents/Definition`,
+  `Contents/VBLists`). Yalnız birini değiştirmek **eskisini geride bırakır**;
+  `SwYazici` bunu `KalanAkislar` ile **söylüyor**, sessiz kalmıyor.
+
+> **ÖLÇÜLEMEZ — SOLIDWORKS yamalı dosyayı AÇIYOR MU.** Burada ölçülebilen
+> tek şey: dosya hâlâ kendi okuyucumuzla ayrıştırılıyor, akış sayısı ve
+> ofsetleri birebir aynı, yeni ad okunuyor, eski ad kalmıyor, önizleme ve
+> özellikler bozulmuyor. Gerçek cevap `araclar/DeneyUretici` paketiyle
+> Erkan'ın makinesinden gelir.
+
 ### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
 
 Ölçüldü: `C:\Users\PC\Desktop\tertemiz\Parça1.SLDPRT`. Aynı dosyalar başka
@@ -732,6 +770,9 @@ dosyasında** duruyor:
 | Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
 | **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwPaket.cs` |
+| MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
+| **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
+| yazma deneyi paketi | `araclar/DeneyUretici/` |
 | belgenin **doğrudan referansları** | `Cekirdek/SwReferans.cs` |
 | belgenin içindeki önizleme | `Cekirdek/SwOnizleme.cs` |
 | belge özellikleri (Malzeme, Kaydeden…) | `Cekirdek/SwBelgeBilgisi.cs` |
