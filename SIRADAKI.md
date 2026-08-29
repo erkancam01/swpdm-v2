@@ -6,9 +6,11 @@
 >
 > Son durum: dal `claude/v2-pdm-start-u058ey` (bu dosyayı taşıyan commit'in
 > kendisi); `main` de aynı yerde (ileri sarma, 29.08.2026).
-> 278 test · 273 geçti · 5 atlandı (Windows'a özel) · dört kapı TEMİZ
-> (çalıştırma kapısı 14 ölçüm).
-> Erkan denedi: *"her şey mükemmel."*
+> 312 test · 307 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> (harita + boyut + derleme + test + çalıştırma 14 ölçüm).
+> Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
+> Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
+> doğrulandı.
 >
 > **Kullanım kılavuzu artık var:** `OZELLIKLER.md` (pakete `OZELLIKLER.txt`
 > olarak giriyor). Bir düğme/kısayol değişirse orası da değişmeli.
