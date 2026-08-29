@@ -144,25 +144,6 @@ internal static class Simgeler
         return bmp;
     }
 
-    internal static Bitmap Cop()
-    {
-        var bmp = Tuval(out Graphics g);
-        using (g)
-        {
-            using var kalem = new Pen(Color.FromArgb(0x55, 0x55, 0x55));
-            using var dolgu = new SolidBrush(Color.FromArgb(0xC9, 0xCF, 0xD6));
-            g.DrawLine(kalem, 2, 4, 14, 4);
-            g.DrawRectangle(kalem, 6, 2, 4, 2);
-            Point[] govde = [new(4, 5), new(12, 5), new(11, 14), new(5, 14)];
-            g.FillPolygon(dolgu, govde);
-            g.DrawPolygon(kalem, govde);
-            g.DrawLine(kalem, 6, 7, 6, 12);
-            g.DrawLine(kalem, 8, 7, 8, 12);
-            g.DrawLine(kalem, 10, 7, 10, 12);
-        }
-        return bmp;
-    }
-
     internal static Bitmap GeriAl()
     {
         var bmp = Tuval(out Graphics g);

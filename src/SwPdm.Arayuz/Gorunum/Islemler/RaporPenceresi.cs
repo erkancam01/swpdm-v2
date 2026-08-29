@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -214,18 +213,10 @@ internal static class RaporPenceresi
 
         if (ozet.Hatalar.Count > 0)
         {
-            var metin = new StringBuilder();
-            metin.AppendLine($"{ozet.Onarilan} yol düzeltildi.");
-            metin.AppendLine();
-            metin.AppendLine($"{ozet.Hatalar.Count} tanesi düzeltilemedi:");
-            foreach (string satir in ozet.Hatalar)
-            {
-                metin.AppendLine("  • " + satir);
-            }
-
-            MessageBox.Show(
-                pencere, metin.ToString(), "Bazıları düzeltilemedi",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MaddeKutusu.Goster(
+                pencere, "Bazıları düzeltilemedi",
+                $"{ozet.Onarilan} yol düzeltildi.\n\n{ozet.Hatalar.Count} tanesi düzeltilemedi:",
+                ozet.Hatalar);
         }
 
         bildir($"{ozet.Onarilan} bayat yol düzeltildi"

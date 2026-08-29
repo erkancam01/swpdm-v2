@@ -295,7 +295,7 @@ public static class DosyaIslemleri
         => eskisiCopeAlindi
             ? rapor with
             {
-                Sebep = (rapor.Sebep ?? "Bilinmeyen sebep.")
+                Sebep = (rapor.Sebebi)
                     + $" Hedefteki eski \"{ad}\" çöp kutusuna alınmıştı; "
                     + "oradan geri yükleyebilirsiniz.",
             }

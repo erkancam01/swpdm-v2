@@ -30,9 +30,6 @@ internal enum OnarimKarari
 /// </summary>
 internal static class OnarimKutusu
 {
-    /// <summary>Kutuda en fazla kac ebeveyn adi sayilir.</summary>
-    private const int EnFazlaAd = 12;
-
     /// <summary>
     /// Plani gosterir ve karari alir. Ebeveyni olmayan ve guvenilir bir
     /// planda HIC SORMAZ - sorulacak bir sey yoktur.
@@ -64,20 +61,8 @@ internal static class OnarimKutusu
     }
 
     private static string Engeller(OnarimPlani plan)
-    {
-        var metin = new StringBuilder();
-        metin.AppendLine("Bu ad değişikliği şu an yapılamaz:");
-        metin.AppendLine();
-
-        foreach (string e in plan.Engeller)
-        {
-            metin.AppendLine("  • " + e);
-        }
-
-        metin.AppendLine();
-        metin.AppendLine("Hiçbir şeye dokunulmadı.");
-        return metin.ToString();
-    }
+        => MaddeKutusu.Metin("Bu ad değişikliği şu an yapılamaz:\n", plan.Engeller)
+            + "\n\nHiçbir şeye dokunulmadı.";
 
     /// <summary>
     /// Tarama yapilmamisken sorulan soru. "Kullanan yok" DEMIYOR - bilmedigini
@@ -109,10 +94,15 @@ internal static class OnarimKutusu
 
         if (plan.Ebeveynler.Count > 0)
         {
-            metin.AppendLine(
-                $"\"{eskiAd}\" dosyasını {plan.Ebeveynler.Count} dosya kullanıyor:");
-            metin.AppendLine();
-            Adlari(metin, plan.Ebeveynler);
+            var adlar = new List<string>(plan.Ebeveynler.Count);
+            foreach (string y in plan.Ebeveynler)
+            {
+                adlar.Add(WindowsYolu.DosyaAdi(y));
+            }
+
+            // Madde listesi ve kirpma TEK yerden (MaddeKutusu, CLAUDE.md 8).
+            metin.AppendLine(MaddeKutusu.Metin(
+                $"\"{eskiAd}\" dosyasını {plan.Ebeveynler.Count} dosya kullanıyor:\n", adlar));
             metin.AppendLine();
             metin.AppendLine("Adı değiştirilecek ve bu dosyalar onarılacak.");
 
@@ -126,19 +116,4 @@ internal static class OnarimKutusu
         return metin.ToString().TrimEnd();
     }
 
-    private static void Adlari(StringBuilder metin, IReadOnlyList<string> yollar)
-    {
-        int yazilan = 0;
-        foreach (string y in yollar)
-        {
-            if (yazilan == EnFazlaAd)
-            {
-                metin.AppendLine($"  … ve {yollar.Count - EnFazlaAd} tane daha");
-                return;
-            }
-
-            metin.AppendLine("  • " + WindowsYolu.DosyaAdi(y));
-            yazilan++;
-        }
-    }
 }

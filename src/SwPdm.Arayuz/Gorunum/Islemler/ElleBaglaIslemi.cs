@@ -359,7 +359,7 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
             MessageBox.Show(
                 baglam.Sahip,
                 "Referans bağlanamadı — dosya DEĞİŞMEDİ.\n\n" + hata,
-                "Referansı elle bağla",
+                "Referans bağlanamadı",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
 

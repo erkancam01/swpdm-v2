@@ -281,7 +281,7 @@ internal sealed class CopKutusuPenceresi : Form
 
             if (!rapor.Oldu)
             {
-                olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                olmayan.Add(oge.Ad + " — " + rapor.Sebebi);
                 continue;
             }
 
@@ -328,7 +328,7 @@ internal sealed class CopKutusuPenceresi : Form
             Ilerle("Kalıcı siliniyor", ++sira, secililer.Count);
             IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
-                rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                rapor.Oldu ? oge.Ad : oge.Ad + " — " + rapor.Sebebi);
         }
 
         Doldur();
@@ -370,7 +370,7 @@ internal sealed class CopKutusuPenceresi : Form
             Ilerle("Boşaltılıyor", ++sira, hepsi.Count);
             IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
-                rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                rapor.Oldu ? oge.Ad : oge.Ad + " — " + rapor.Sebebi);
         }
 
         Doldur();
@@ -405,24 +405,17 @@ internal sealed class CopKutusuPenceresi : Form
         var metin = new StringBuilder();
         metin.AppendLine($"{olan.Count} öğe tamam.");
 
+        // Madde listeleri TEK yerden (MaddeKutusu, CLAUDE.md 8).
         if (notlar.Count > 0)
         {
             metin.AppendLine();
-            metin.AppendLine(notBasligi);
-            foreach (string satir in notlar)
-            {
-                metin.AppendLine("  • " + satir);
-            }
+            metin.AppendLine(MaddeKutusu.Metin(notBasligi, notlar));
         }
 
         if (olmayan.Count > 0)
         {
             metin.AppendLine();
-            metin.AppendLine($"{olmayan.Count} öğe OLMADI:");
-            foreach (string satir in olmayan)
-            {
-                metin.AppendLine("  • " + satir);
-            }
+            metin.AppendLine(MaddeKutusu.Metin($"{olmayan.Count} öğe OLMADI:", olmayan));
         }
 
         MessageBox.Show(this, metin.ToString(), baslik,

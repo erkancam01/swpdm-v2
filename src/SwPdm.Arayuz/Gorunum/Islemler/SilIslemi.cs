@@ -82,7 +82,7 @@ internal sealed class SilIslemi : IAgacIslemi
             }
             else
             {
-                kalan.Add(SecimBaglami.Adi(oge) + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                kalan.Add(SecimBaglami.Adi(oge) + " — " + rapor.Sebebi);
             }
         }
 
@@ -96,19 +96,10 @@ internal sealed class SilIslemi : IAgacIslemi
         if (kalan.Count > 0)
         {
             // CLAUDE.md 3: kismi basarisizlikta NE OLDU NE OLMADI tek tek yazilir.
-            // "Bazilari silinemedi" demek kullaniciyi ikinci kez denemeye iter.
-            var metin = new StringBuilder();
-            metin.AppendLine($"{silinen.Count} öğe çöp kutusuna gitti.");
-            metin.AppendLine();
-            metin.AppendLine($"{kalan.Count} öğe SİLİNMEDİ:");
-            foreach (string satir in kalan)
-            {
-                metin.AppendLine("  • " + satir);
-            }
-
-            MessageBox.Show(
-                baglam.Sahip, metin.ToString(), "Bazı öğeler silinemedi",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MaddeKutusu.Goster(
+                baglam.Sahip, "Bazı öğeler silinemedi",
+                $"{silinen.Count} öğe çöp kutusuna gitti.\n\n{kalan.Count} öğe SİLİNMEDİ:",
+                kalan);
         }
 
         baglam.Bildir(kalan.Count == 0
@@ -156,7 +147,7 @@ internal sealed class SilIslemi : IAgacIslemi
                     IslemRaporu rapor = Cop.GeriYukle(cop, oge);
                     if (!rapor.Oldu)
                     {
-                        olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                        olmayan.Add(oge.Ad + " — " + rapor.Sebebi);
                         continue;
                     }
 
@@ -188,7 +179,7 @@ internal sealed class SilIslemi : IAgacIslemi
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(WindowsYolu.DosyaAdi(yol)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                            + " — " + rapor.Sebebi);
                     }
                 }
 
@@ -203,19 +194,14 @@ internal sealed class SilIslemi : IAgacIslemi
             ? $"\"{SecimBaglami.Adi(ogeler[0])}\" çöp kutusuna gönderilecek."
             : $"{ogeler.Count} öğe çöp kutusuna gönderilecek.");
 
-        // En fazla on ad; gerisi sayiyla. Uzun liste kutuyu tasiriyor.
-        int yazilan = 0;
+        // Madde listesi ve kirpma TEK yerden (MaddeKutusu, CLAUDE.md 8).
+        var adlar = new List<string>(ogeler.Count);
         foreach (object oge in ogeler)
         {
-            if (yazilan == 10)
-            {
-                metin.AppendLine($"  … ve {ogeler.Count - 10} tane daha");
-                break;
-            }
-
-            metin.AppendLine("  • " + SecimBaglami.Adi(oge));
-            yazilan++;
+            adlar.Add(SecimBaglami.Adi(oge));
         }
+
+        metin.AppendLine(MaddeKutusu.Metin(null, adlar));
 
         metin.AppendLine();
         metin.AppendLine("Çöp kutusundan geri yüklenebilir.");
@@ -297,20 +283,10 @@ internal sealed class SilIslemi : IAgacIslemi
         }
 
         var yazi = new StringBuilder();
-        yazi.AppendLine($"DİKKAT: bunları {kullananlar.Count} dosya KULLANIYOR:");
-        int yazilan = 0;
-        foreach (string ad in kullananlar)
-        {
-            if (yazilan == 8)
-            {
-                yazi.AppendLine($"  … ve {kullananlar.Count - 8} tane daha");
-                break;
-            }
-
-            yazi.AppendLine("  ! " + ad);
-            yazilan++;
-        }
-
+        // Madde imi "!" BILEREK: bu satirlar uyari, sayim degil. Im secimi
+        // MaddeKutusu'nun parametresi - kalip yine tek yerde.
+        yazi.AppendLine(MaddeKutusu.Metin(
+            $"DİKKAT: bunları {kullananlar.Count} dosya KULLANIYOR:", kullananlar, im: "!"));
         yazi.AppendLine("Silerseniz o dosyalar bu parçayı bulamaz.");
         return yazi.ToString();
     }

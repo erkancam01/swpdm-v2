@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -58,25 +57,11 @@ internal static class OnayKutusu
             return string.Empty;
         }
 
-        var metin = new StringBuilder();
-        metin.AppendLine($"DİKKAT: {acikOlanlar.Count} öğe SOLIDWORKS'te AÇIK görünüyor "
-            + "(yanında \"~$\" kilit dosyası var):");
-
-        int yazilan = 0;
-        foreach (string ad in acikOlanlar)
-        {
-            if (yazilan == 8)
-            {
-                metin.AppendLine($"  … ve {acikOlanlar.Count - 8} tane daha");
-                break;
-            }
-
-            metin.AppendLine("  • " + ad);
-            yazilan++;
-        }
-
-        metin.Append($"Açıkken {fiil} Windows tarafından engellenebilir.");
-        return metin.ToString();
+        // Madde listesi ve kirpma TEK yerden (MaddeKutusu, CLAUDE.md 8).
+        return MaddeKutusu.Metin(
+                $"DİKKAT: {acikOlanlar.Count} öğe SOLIDWORKS'te AÇIK görünüyor "
+                + "(yanında \"~$\" kilit dosyası var):", acikOlanlar)
+            + $"\nAçıkken {fiil} Windows tarafından engellenebilir.";
     }
 
     /// <summary>

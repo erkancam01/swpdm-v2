@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SwPdm.Arayuz.Gorunum;
@@ -296,18 +295,11 @@ internal static class Adimi
         }
 
         string is_ = geriMi ? "geri alınamadı" : "ileri alınamadı";
-        var metin = new StringBuilder();
-        metin.AppendLine($"{adim.Aciklama} tam {is_}.");
-        metin.AppendLine();
-        foreach (string satir in olmayan)
-        {
-            metin.AppendLine("  • " + satir);
-        }
-
-        MessageBox.Show(
-            baglam.Sahip, metin.ToString(),
+        MaddeKutusu.Goster(
+            baglam.Sahip,
             geriMi ? "Geri alma yarım kaldı" : "İleri alma yarım kaldı",
-            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            $"{adim.Aciklama} tam {is_}.\n",
+            olmayan);
 
         baglam.Bildir((geriMi ? "Geri alma" : "İleri alma") + " yarım kaldı — " + adim.Aciklama);
         return olmayan;

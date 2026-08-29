@@ -48,6 +48,13 @@ public sealed record IslemRaporu(IslemSonucu Sonuc, string? YeniYol, string? Seb
 
     /// <summary>Basarili rapor.</summary>
     public static IslemRaporu Basarili(string yeniYol) => new(IslemSonucu.Tamam, yeniYol, null);
+
+    /// <summary>
+    /// Sebep, yoksa "bilinmeyen sebep". TEK KOPYA: bu ?? kalibi on bes
+    /// yerde elle yazilmisti ve metni coktan ayrismisti (buyuk/kucuk harf,
+    /// noktali/noktasiz). Kutu kuran herkes buradan okur (CLAUDE.md 8).
+    /// </summary>
+    public string Sebebi => Sebep ?? "bilinmeyen sebep";
 }
 
 /// <summary>

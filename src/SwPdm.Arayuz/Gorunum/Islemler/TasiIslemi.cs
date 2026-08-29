@@ -179,7 +179,7 @@ internal static class Aktar
             }
             else
             {
-                olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                olmayan.Add(ad + " — " + rapor.Sebebi);
             }
         }
 
@@ -338,11 +338,7 @@ internal static class Aktar
             if (olmayan.Count > 0)
             {
                 metin.AppendLine();
-                metin.AppendLine($"{olmayan.Count} öğe {olumsuz}:");
-                foreach (string satir in olmayan)
-                {
-                    metin.AppendLine("  • " + satir);
-                }
+                metin.AppendLine(MaddeKutusu.Metin($"{olmayan.Count} öğe {olumsuz}:", olmayan));
             }
 
             // SESSIZ ATLAMA YOK (CLAUDE.md 3): onarim yapilamadiysa SEBEBI
@@ -357,12 +353,8 @@ internal static class Aktar
             if (onarimHatalari.Count > 0)
             {
                 metin.AppendLine();
-                metin.AppendLine($"{onarimHatalari.Count} dosyanın referansı onarılamadı:");
-                foreach (string satir in onarimHatalari)
-                {
-                    metin.AppendLine("  • " + satir);
-                }
-
+                metin.AppendLine(MaddeKutusu.Metin(
+                    $"{onarimHatalari.Count} dosyanın referansı onarılamadı:", onarimHatalari));
                 metin.AppendLine();
                 metin.AppendLine("Bunları kullanan belgeler parçayı bulamayabilir.");
                 metin.AppendLine("Ctrl+Z ile geri alabilirsiniz.");

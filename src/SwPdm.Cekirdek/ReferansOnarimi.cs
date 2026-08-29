@@ -46,6 +46,9 @@ public sealed record OnarimSonucu(
 {
     /// <summary>Hicbir sey degismedi.</summary>
     public static OnarimSonucu Olmadi(string sebep) => new(false, [], sebep);
+
+    /// <summary>Sebep, yoksa "bilinmeyen sebep" - IslemRaporu.Sebebi'nin esi.</summary>
+    public string Sebebi => Sebep ?? "bilinmeyen sebep";
 }
 
 /// <summary>
@@ -235,7 +238,7 @@ public static class ReferansOnarimi
             }
             else
             {
-                hatalar.Add(WindowsYolu.DosyaAdi(plan.EskiYol) + " — " + (s.Sebep ?? "bilinmeyen"));
+                hatalar.Add(WindowsYolu.DosyaAdi(plan.EskiYol) + " — " + s.Sebebi);
             }
         }
 

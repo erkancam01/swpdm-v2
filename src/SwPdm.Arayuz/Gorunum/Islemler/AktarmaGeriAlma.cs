@@ -64,7 +64,7 @@ internal static class AktarmaGeriAlma
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(WindowsYolu.DosyaAdi(yeni)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                            + " — " + rapor.Sebebi);
                     }
                 }
 
@@ -114,7 +114,7 @@ internal static class AktarmaGeriAlma
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(WindowsYolu.DosyaAdi(eski)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                            + " — " + rapor.Sebebi);
                     }
                 }
 
@@ -213,7 +213,7 @@ internal static class AktarmaGeriAlma
             if (!rapor.Oldu)
             {
                 olmayan.Add(WindowsYolu.DosyaAdi(yol) + " — üzerine yazılan eski dosya geri "
-                    + "yüklenemedi: " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    + "yüklenemedi: " + rapor.Sebebi);
             }
             else if (!string.Equals(rapor.YeniYol, yol, StringComparison.OrdinalIgnoreCase))
             {
@@ -254,7 +254,7 @@ internal static class AktarmaGeriAlma
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(WindowsYolu.DosyaAdi(yol)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                            + " — " + rapor.Sebebi);
                     }
                 }
 

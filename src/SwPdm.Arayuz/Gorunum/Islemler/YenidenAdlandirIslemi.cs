@@ -113,7 +113,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         if (!rapor.Oldu)
         {
             MessageBox.Show(
-                baglam.Sahip, rapor.Sebep ?? "Bilinmeyen sebep.",
+                baglam.Sahip, rapor.Sebebi,
                 "Adı değiştirilemedi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             baglam.Bildir("Adı değiştirilemedi — " + eskiAd);
             return;
@@ -142,7 +142,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         if (!sonuc.Oldu)
         {
             MessageBox.Show(
-                baglam.Sahip, sonuc.Sebep ?? "Bilinmeyen sebep.",
+                baglam.Sahip, sonuc.Sebebi,
                 "Onarılamadı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             baglam.Bildir("Onarılamadı — " + eskiAd);
             return;
@@ -187,7 +187,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
                 if (!geri.Oldu)
                 {
-                    olmayan.Add(yeniAd + " — " + (geri.Sebep ?? "bilinmeyen sebep"));
+                    olmayan.Add(yeniAd + " — " + geri.Sebebi);
                     return olmayan;
                 }
 
@@ -214,7 +214,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
                 IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yol, hedefAd);
                 if (!rapor.Oldu)
                 {
-                    olmayan.Add(hedefAd + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    olmayan.Add(hedefAd + " — " + rapor.Sebebi);
                 }
 
                 return olmayan;

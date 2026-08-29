@@ -74,7 +74,7 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
             // CLAUDE.md 3: sebep EKRANDA, yalnizca gunlukte degil.
             MessageBox.Show(
                 baglam.Sahip,
-                rapor.Sebep ?? "Bilinmeyen sebep.",
+                rapor.Sebebi,
                 "Klasör açılamadı",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
@@ -109,7 +109,7 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
                 IslemRaporu rapor = DosyaIslemleri.BosKlasoruSil(yol);
                 if (!rapor.Oldu)
                 {
-                    olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    olmayan.Add(ad + " — " + rapor.Sebebi);
                 }
 
                 return olmayan;
@@ -131,7 +131,7 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
 
                 if (!rapor.Oldu)
                 {
-                    olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    olmayan.Add(ad + " — " + rapor.Sebebi);
                 }
 
                 return olmayan;

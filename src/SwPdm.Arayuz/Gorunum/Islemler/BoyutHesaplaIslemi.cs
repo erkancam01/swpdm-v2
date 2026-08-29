@@ -146,7 +146,7 @@ internal sealed class BoyutHesaplaIslemi : IAgacIslemi
         if (!tam)
         {
             MessageBox.Show(
-                baglam.Sahip, metin.ToString(), "Klasör boyutu — EKSİK",
+                baglam.Sahip, metin.ToString(), "Klasör boyutu eksik hesaplandı",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
