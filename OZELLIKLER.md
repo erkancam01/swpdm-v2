@@ -297,7 +297,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | `Ctrl+Shift+D` | Referans raporları |
 | `Ctrl+C` (referans panelinde) | Satırın yolunu panoya kopyala |
 
-> İşlem kısayolları yalnızca **ağaç** ya da **referans paneli** odaktayken çalışır. `Ctrl+O`, `Ctrl+Shift+S` ve `Esc` her yerde çalışır.
+> İşlem kısayolları yalnızca **ağaç** ya da **referans paneli** odaktayken çalışır. `Ctrl+O`, `Ctrl+Shift+S`, `Ctrl+Shift+F` ve `Esc` her yerde çalışır.
 
 ---
 

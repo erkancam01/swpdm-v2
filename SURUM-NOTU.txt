@@ -1,4 +1,82 @@
-BU SURUMDE YENI - KULLANIM KILAVUZU (OZELLIKLER.txt)
+BU SURUMDE YENI - 26 KUCUK BOSLUK KAPANDI
+
+  Sen iki tane gosterdin: "yeni klasor adi sormuyor" ve "uzantilari da
+  degistirmeye izin veriyor, bu cok tehlikeli". Ikisi de duzeldi - ve
+  benzerlerini aradim: uc tarama kosuldu, 26 bosluk bulundu, hepsi
+  kapatildi.
+
+  SENIN GOSTERDIGIN IKISI
+    - Yeni klasor artik ADI SORUYOR. Kutu cakismayan bir adla dolu
+      geliyor, yani Enter'a basmak eski davranisin aynisi.
+    - Uzanti artik AYRI KUTUDA VE KILITLI. Kazayla degismesi imkansiz;
+      degistirmek icin "Uzantıyı da değiştir" isaretlenmeli, isaretlenince
+      kirmizi uyari aninda cikiyor.
+
+  VERI KAYBETTIREBILECEK ALTI TANE (hepsi kodda dogrulandi)
+    - Cope tasima olup KAYIT yazilamazsa dosya kayboluyordu: cop
+      klasorunun icinde duruyor, listede gorunmuyor, ekranda "SILINEMEDI"
+      yaziyordu. Artik dosya YERINE geri konuyor.
+    - "Degistir" secilip islem patlarsa ekran "yerinde duruyor" diyordu -
+      oysa hedefteki eski dosya cope alinmisti. Artik soyleniyor.
+    - Tasimayi geri almak o dosyayi geri getirmiyordu; artik getiriyor.
+    - Cop kutusu OKUNAMAYINCA "bos" diyordu. Artik sebebini yaziyor ve
+      okunamayan kutu bosaltilmiyor.
+    - Ad uzunlugu hic denetlenmiyordu (255 / 259 sinirlari kondu).
+    - Cok nadir bir halde var olan bir klasor icerigiyle silinebiliyordu.
+
+  SURUKLEME
+    - Ctrl basili surukleme artik KOPYALIYOR. Onceden her zaman TASIMAYDI
+      ve Gezgin aliskanligiyla Ctrl'e basan kullanici kopyaladigini
+      sanarken dosyayi tasiyordu.
+    - Hedef klasor sari zeminle isaretleniyor; kapali bir klasorun
+      uzerinde ~1 saniye beklemek dali aciyor.
+
+  SORULMAYANLAR ARTIK SORULUYOR
+    - Copten geri yuklerken ayni adda bir sey varsa cakisma kutusu cikiyor.
+    - Silme ve tasima onaylarinda "N oge SOLIDWORKS'te ACIK gorunuyor"
+      satiri var (uyarir, ENGELLEMEZ).
+    - Cop yeri degisirken eskisinde oge varsa soyleniyor (tasinmiyor -
+      baska diske kopyalamaya doner; karar senin).
+
+  KUCUK RAHATSIZLIKLAR
+    - Adin sagina tiklamak artik secimi silmiyor (satirin tamami tiklanir).
+    - Tur suzgecinin klavye karsiligi geldi: Ctrl+Shift+F.
+    - Rapor satirina cift tik: pencere kapanir, dosya agacta secilir.
+    - Cop listesi: cift tik geri yukler, Delete kalici siler, sutun
+      basligi siralar.
+    - Yol cubugu arama kipinde artik sebebini yaziyor.
+    - Referans paneli klasorde/coklu secimde sebepsiz bosalmiyor.
+    - Mesgulken Ctrl+V sessiz kalmiyor.
+    - "Kopyala, sonra iki ayri klasore yapistir" artik calisiyor.
+
+  KAPI BIR COKMEYI YAKALADI
+    Bu turda uygulama bir ara HIC ACILMIYORDU (derleme temiz, 0 uyari).
+    Sebep: kurucudan cagrilan bir metoda alan METOT GRUBU olarak
+    geciliyordu ve alan o an atanmamisti. Yalnizca Wine'da uygulamayi
+    gercekten acan kapi gordu. Duzeltildi ve ders yazildi.
+
+  OLCULDU
+    295 test (290 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ
+    (calistirma kapisi 14 olcum).
+
+  BURADA OLCULEMEYENLER - SENDE BAKMAN IYI OLUR
+    - Ctrl ile surukleyip KOPYALAMA: Wine'da fare surukleme olculmuyor.
+    - Ad kutusundaki "Uzantıyı da değiştir" kutusu: kutu aciliyor ve
+      Enter ile kapaniyor (olculdu), ama isaret kutusu tiklanarak
+      denenmedi.
+    - Cop kutusu penceresindeki yeni tuslar (cift tik, Delete, sutun
+      siralamasi).
+    - Surukleme sirasindaki sari vurgu.
+
+  BILEREK YAPILMAYANLAR (sebebiyle)
+    - Dikdortgenle secim hala YOK.
+    - Cop kutusunda toplu is IPTAL EDILEMIYOR: pencere modal, is arayuz
+      is parcaciginda. Tiklanamayacak bir Iptal dugmesi koymaktansa
+      koymadim; ilerleme yaziliyor.
+    - Ctrl+Z uzun surerse pencere donar (ileri yon arka planda, geri yon
+      degil).
+
+ONCEKI SURUMDE - KULLANIM KILAVUZU (OZELLIKLER.txt)
 
   Sen: "uygulamadaki tum ozellikleri madde madde aciklamani istiyorum -
   tum buton, sag tik, sol tik, cift tiklama, ayarlar vs her sey."
