@@ -127,6 +127,19 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         };
         d.FlatAppearance.BorderSize = 0;
 
+        // ================== BURAYA ToolTip KONMAZ - OLCULDU ==================
+        // 29.08.2026: kisayolu gostermek icin dugmelere ToolTip eklendi ve
+        // calistirma kapisi ANINDA yakaladi: 8. olcum "once 14, sonra 14 -
+        // suzulmedi" dedi, 9. olcumde de taban 9 yerine 14 cikti. Yani
+        // ipucu penceresi TIKLAMAYI YIYOR ve tik bir sonraki etkilesime
+        // kadar bekliyor. Kullanicinin gozunde bu "dugmeye basiyorum,
+        // bazen calisiyor" demek - CLAUDE.md 8'deki silinmis Click
+        // baglantisinin sinsi kardesi.
+        //
+        // Kisayol yine EKRANDA: secim degisince durum cubuguna yaziliyor
+        // (asagidaki Sec). Tiklamayi bozmayan bir yer.
+        // ======================================================================
+
         // ================== BU SATIR BIR KEZ SILINDI ==================
         // Bu baglanti olmadan dugmeler CIZILIYOR, odagi aliyor, uzerine
         // gelince renk degistiriyor - ama TIKLAMA HICBIR SEY YAPMIYOR.

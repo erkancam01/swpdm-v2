@@ -1,4 +1,68 @@
-BU SURUMDE YENI - 26 KUCUK BOSLUK KAPANDI
+BU SURUMDE YENI - ILERI ALMA (Ctrl+Y) VE YEDI KUCUK EKSIK
+
+  Sen sordun: "kendi alaninda eksik bir ozellik kaldi mi?" Sekiz tane
+  vardi, sekizi de kapandi.
+
+  1) ILERI ALMA (Ctrl+Y) - EN BUYUGU
+     Ctrl+Z vardi, DONUSU YOKTU. Yanlislikla geri alaninin tek caresi
+     islemi elle tekrar yapmakti - ve bir tasimayi elle tekrarlamak tam da
+     bu uygulamanin onlemeye calistigi sey.
+     Simdi: yeni klasor, ad degistirme (onarimli ve onarimsiz), silme,
+     tasima ve kopyalama ileri alinabiliyor. Menude de var, adi yaziyor.
+     ILERI ALMA TAHMIN DEGIL: her islem kendi TERSINI kendi dosyasinda
+     yaziyor. Tersi olmayan tek hal soyleniyor (asagida).
+     Ayrica: geri almanin 20 ADIM sinirli oldugu artik yaziyor.
+
+  2) Ctrl+A bos klasorde ve kok yokken SESSIZDI - artik sebebini yaziyor.
+     (Secimi bozmamasi dogruydu, susmasi degil.)
+
+  3) Siralama ve suzgec KISAYOLLARI EKRANDA HIC YAZMIYORDU. Artik secim
+     degisince durum cubuguna yaziliyor: "Süzgeç: Parça · Ctrl+Shift+F ile
+     ilerlet".
+
+  4) Yol cubugundaki "…" OLU BIR ETIKETTI - "Yol kısaltıldı" diyor ama
+     tiklaninca hicbir sey olmuyordu. Artik bir ust klasore goturuyor; her
+     tik bir kademe yukari.
+
+  5) Onizlemede "ozelligi yok" ile "OKUNAMADI" ayni goruntuydu (ikisi de
+     bos satir). Artik sebep yaziliyor.
+
+  6) Otomatik tazeleme kutusu SESSIZDI - isaretleyip kaldirinca hicbir sey
+     yazilmiyordu. Artik ne oldugunu soyluyor.
+
+  7) "--klasor" ile acilinca SON ACILANLAR listesi yuklenmiyordu; menude
+     yalnizca o kok goruluyordu.
+
+  8) IPTAL YALNIZCA FAREYLEYDI. Is surerken agac kilitli oldugu icin
+     klavyeyle ulasilacak hicbir hedef kalmiyordu. Esc artik once SUREN ISI
+     iptal ediyor, is yoksa aramadan cikiyor.
+
+  KAPI YINE BIR HATA YAKALADI - ve bu ilginc olani
+     Kisayollari gostermek icin dugmelere ipucu (ToolTip) eklemistim. Kapi
+     aninda "tur suzgeci ... HAYIR (once 14, sonra 14 - suzulmedi)" dedi:
+     ipucu penceresi TIKLAMAYI YIYOR. Yani "dugmeye basiyorum, bazen
+     calisiyor" hatasini kendi elimle ekliyordum. Ipuclari kaldirildi,
+     kisayol durum cubuguna yazildi. (Wine'a ozgu olabilir, gercek
+     Windows'ta olcemedim - ama bedeli belli, getirisi sustu.)
+
+  OLCULDU
+    295 test (290 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ
+    (calistirma kapisi 14 olcum).
+
+  BURADA OLCULEMEYENLER - SENDE BAKMAN IYI OLUR
+    - Ctrl+Y'nin kendisi: arayuz katmani oldugu icin birim testi yok,
+      kapiya da girmedi.
+    - Esc ile is iptali (uzun bir is uretip Esc'e basmak).
+    - Yol cubugundaki "…" tiklamasi (dar pencere gerekiyor).
+
+  ILERI ALMANIN TEK BOSLUGU (bilerek)
+    Bir tasima/kopyalamada "Değiştir — eskisi çöpe gider" secildiyse ve
+    sonra Ctrl+Z yapildiysa, Ctrl+Y CALISMAZ ve sebebini soyler. Sebep:
+    uzerine yazilan dosya geri alma sirasinda copten geri geldi; ileri
+    alirken onu yeniden cope gondermek gerekirdi ve o dosya bu arada
+    degismis olabilir. Tahmin etmektense yapmiyoruz.
+
+ONCEKI SURUMDE - 26 KUCUK BOSLUK KAPANDI
 
   Sen iki tane gosterdin: "yeni klasor adi sormuyor" ve "uzantilari da
   degistirmeye izin veriyor, bu cok tehlikeli". Ikisi de duzeldi - ve

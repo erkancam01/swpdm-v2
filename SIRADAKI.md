@@ -61,6 +61,14 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
 - **Ad kutusundaki uzantı kilidi.** Wine'da kutu açılıyor ve Enter ile
   kapanıyor (kapı 9. ölçüm), ama "Uzantıyı da değiştir" kutusunun kendisi
   tıklanarak ölçülmedi.
+- **`Ctrl+Y` (ileri alma).** Birim testi yazılamıyor (arayüz katmanı);
+  kapıya da girmedi — çalıştırma kapısının 9. ölçümü `Ctrl+Z`'yi ölçüyor,
+  `Ctrl+Y` eklenirse aynı ölçüm 8 → 9 → 8 → 9 olmalı.
+- **`Esc` ile iş iptali.** Wine'da uzun bir iş üretip Esc'e basmak
+  ölçülmedi; kod yolu düğmenin `PerformClick`'i, yani düğme çalışıyorsa
+  bu da çalışır.
+- **Yol çubuğundaki `…` tıklaması.** Dar pencerede kırpma oluşması gerekiyor;
+  kapıdaki pencere boyutunda kırpma çıkmıyor.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 
@@ -69,6 +77,10 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   satırın tamamı tıklanabilir yapıldı. Dikdörtgen seçim yazılırsa
   `MetneVuranDugum` yeniden ayrılmalı. Wine'da `DrawReversibleFrame`
   çalışıyor (CLAUDE.md §11), yani ölçülebilir.
+- **İleri alma "Değiştir" sonrası YOK.** Üzerine yazılan dosya geri alma
+  sırasında çöpten geri geldi; ileri alırken onu yeniden çöpe göndermek
+  gerekirdi ve o dosya bu arada değişmiş olabilir. `Ctrl+Y` sebebini
+  söylüyor. Çözüm: çöpteki öğenin kimliğini (`CopOgesi.No`) adımda taşımak.
 - **Çöp kutusu penceresinde toplu iş İPTAL EDİLEMİYOR.** Pencere modal ve iş
   arayüz iş parçacığında koşuyor; ilerleme yazılıyor ama tıklanamayacak bir
   İptal düğmesi konmadı (§3: çalışmayan düğme koymaktansa yok). Doğru çözüm

@@ -41,7 +41,16 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{kopya.Count} öğenin taşınması",
-            baglam =>
+            // ILERI ALMA yalnizca "Degistir" KULLANILMADIYSA verilir.
+            // Sebebi somut: uzerine yazilan dosya geri alma sirasinda
+            // copten geri geldi; ileri alirken onu YENIDEN cope gondermek
+            // gerekirdi ve o dosya bu arada degismis olabilir. Tahmin
+            // etmektense ileri almayi HIC teklif etmiyoruz (CLAUDE.md 1a);
+            // Ctrl+Y sebebini soyluyor.
+            Ters: kurtarilanlar.Count > 0
+                ? null
+                : () => TasimayiYineYap(kopya, planlar, cop),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
 
@@ -69,6 +78,53 @@ internal static class AktarmaGeriAlma
                 foreach ((string eski, _) in kopya)
                 {
                     dokunulan.Add(eski);
+                }
+
+                baglam.Referanslar.Tazele(dokunulan);
+                return olmayan;
+            });
+    }
+
+    /// <summary>
+    /// ILERI ALMA: tasimayi yeniden yapar - dosyalari yeni yerine gonderir
+    /// ve onarimi yeniden uygular.
+    ///
+    /// GERI ALMANIN AYNASI: orada once onarim geri alinip sonra dosyalar
+    /// tasiniyordu; burada once dosyalar tasinir, SONRA onarim uygulanir -
+    /// cunku yama her iki halde de dosya HEDEFTEYKEN yazilmali.
+    /// </summary>
+    private static GeriAlinabilir TasimayiYineYap(
+        IReadOnlyList<(string Eski, string Yeni)> ciftler,
+        IReadOnlyList<OnarimPlani> planlar,
+        string? cop)
+    {
+        var kopya = new List<(string Eski, string Yeni)>(ciftler);
+        var kopyaPlanlar = new List<OnarimPlani>(planlar);
+
+        return new GeriAlinabilir(
+            $"{kopya.Count} öğenin taşınması",
+            Ters: () => TasimayiGeriAl(kopya, kopyaPlanlar, [], cop),
+            Uygula: baglam =>
+            {
+                var olmayan = new List<string>();
+
+                foreach ((string eski, string yeni) in kopya)
+                {
+                    IslemRaporu rapor = DosyaIslemleri.Tasi(eski, WindowsYolu.Klasor(yeni));
+                    if (!rapor.Oldu)
+                    {
+                        olmayan.Add(WindowsYolu.DosyaAdi(eski)
+                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    }
+                }
+
+                // Dosyalar yeni yerinde: yamalar yeniden yazilabilir.
+                ReferansOnarimi.YenidenOnar(kopyaPlanlar);
+
+                var dokunulan = new List<string>();
+                foreach ((_, string yeni) in kopya)
+                {
+                    dokunulan.Add(yeni);
                 }
 
                 baglam.Referanslar.Tazele(dokunulan);
@@ -176,7 +232,12 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{yollar.Count} öğenin kopyalanması",
-            baglam =>
+            // "Degistir" kullanildiysa ileri alma yok - tasimadaki ayni
+            // gerekce.
+            Ters: kurtarilanlar.Count > 0
+                ? null
+                : () => KopyalariGeriGetir(yollar, copKlasoru),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
                 if (baglam.Secim.CopKlasoru is not string cop)
@@ -200,6 +261,28 @@ internal static class AktarmaGeriAlma
                 // Kopyalamada da "Degistir" secilmis olabilir; uzerine yazilan
                 // eski dosya, kopyalar kalktiktan SONRA kendi adiyla geri gelir.
                 CoptenGeriAl(copKlasoru, kurtarilanlar, olmayan);
+                return olmayan;
+            });
+    }
+
+    /// <summary>
+    /// ILERI ALMA: geri alma sirasinda cope gonderilen KOPYALARI eski
+    /// yerlerine dondurur. Yeniden kopyalamaktan daha dogru: kaynak dosya
+    /// bu arada degismis olabilir, kullanicinin geri aldigi ise o ANKI
+    /// kopyaydi.
+    /// </summary>
+    private static GeriAlinabilir KopyalariGeriGetir(
+        IReadOnlyList<string> yollar, string? copKlasoru)
+    {
+        var kopya = new List<string>(yollar);
+
+        return new GeriAlinabilir(
+            $"{kopya.Count} öğenin kopyalanması",
+            Ters: () => KopyalamayiGeriAl(kopya, [], copKlasoru),
+            Uygula: baglam =>
+            {
+                var olmayan = new List<string>();
+                CoptenGeriAl(baglam.Secim.CopKlasoru ?? copKlasoru, kopya, olmayan);
                 return olmayan;
             });
     }

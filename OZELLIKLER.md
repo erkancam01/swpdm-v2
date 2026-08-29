@@ -11,7 +11,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Pencere** → iki sekme: **Dosyalar** ve **Ayarlar**.
 - **Kök klasör** → uygulamanın çalıştığı ağacın tepesi; her şey (arama, tarama, çöp kutusu, raporlar) bu kökün içinde geçer.
 - **Açılış** → en son kullanılan kök kendiliğinden açılır; klasör artık yoksa sebebi yazılır ve o kök geçmişten düşer.
-- **Komut satırı** → `SwPdm.exe --klasor <yol>` ile doğrudan o kökle açılır.
+- **Komut satırı** → `SwPdm.exe --klasor <yol>` ile doğrudan o kökle açılır; "son açılanlar" listesi yine yüklenir.
 - **Beklenmedik hata** → kırmızı ikonlu bir kutuda sebebiyle gösterilir, sessizce kapanmaz.
 
 ---
@@ -45,11 +45,12 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Enter (klasör)** → dalı açar/kapatır.
 - **Enter (seçim yok)** → "Önce bir dosya seçin." yazar.
 - **Backspace** → bir üst klasöre çıkar; köktesen "Zaten en üst klasördesiniz." der.
-- **Esc** → aramadan çıkar (arama kutusu odaktayken de çalışır).
+- **Esc** → önce **süren işi iptal eder**; iş yoksa aramadan çıkar (arama kutusu odaktayken de çalışır).
+- **Ctrl+A (boş klasörde / kök yokken)** → seçim bozulmaz ve **sebebi yazılır**.
 
 ---
 
-## 4. Sağ tık menüsü — 13 işlem
+## 4. Sağ tık menüsü — 14 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
@@ -59,7 +60,8 @@ olmayan hiçbir şey buraya yazılmadı.
 | **Kes** | `Ctrl+X` | Seçilenleri panoya "taşınacak" olarak koyar | Seçim yokken |
 | **Kopyala** | `Ctrl+C` | Seçilenleri panoya "kopyalanacak" olarak koyar | Seçim yokken |
 | **Yapıştır** | `Ctrl+V` | Panodakileri etkin klasöre taşır/kopyalar; menüde kaç öğe ve hangi iş olduğu yazar | Pano boşken · arama sonucundayken · hedef yokken · **kesilenler zaten o klasördeyken** |
-| **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar); "Değiştir" ile çöpe giden dosyayı da geri yükler, ad değiştiyse söyler | Geri alınacak iş yokken |
+| **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar); "Değiştir" ile çöpe giden dosyayı da geri yükler, ad değiştiyse söyler. **En fazla 20 adım** tutulur | Geri alınacak iş yokken |
+| **İleri al** | `Ctrl+Y` | Geri alınan işlemi **yeniden yapar** (menüde adı yazar) | İleri alınacak iş yokken · adımın tersi yoksa |
 | **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
 | **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
 | **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
@@ -96,6 +98,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Tümü** → süzgeci kaldırır, her şey görünür.
 - **Montaj / Parça / Teknik resim / PDF** → ağaçta yalnız o türü bırakır.
 - **Sıralama düğmesi** (şeridin sağında, üstünde "Ad ↑" gibi yazar) → ölçüt menüsünü açar: **Ad · Tür · Boyut · Tarih**.
+- **Süzgeç ya da sıralama değişince** → durum çubuğuna ne seçildiği **ve kısayolu** yazılır (`Ctrl+Shift+F` · `Ctrl+Shift+S`). Bu şeritteki düğmelerde ipucu **yok**: ipucu penceresi tıklamayı yiyor (ölçüldü).
 - **Aynı ölçüte tekrar basmak** → yönü çevirir (artan ↔ azalan).
 - **`Ctrl+Shift+S`** → sekiz hâl (4 ölçüt × 2 yön) arasında sırayla ilerler.
 - **`Ctrl+Shift+F`** → tür süzgecini ilerletir (Tümü → Montaj → Parça → Teknik resim → PDF → Tümü); süzgeç düğmeleri fare istemesin diye.
@@ -110,6 +113,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Arama sonucundayken tık** → çalışmaz ve **sebebi yazılır** ("önce aramayı temizleyin"); ağaçta o an yalnızca eşleşmeler var.
 - **Kökün üstündeki parçalar** → soluk ve tıklanamaz; oraya gitmek için "Klasör aç".
 - **Yol sığmazsa** → soldan kırpılır, başına `…` konur; tam yol ipucunda.
+- **`…`'ya tık** → bir üst klasöre gider; her tık bir kademe yukarı, yani gizlenen parçaların hepsine ulaşılır.
 
 ---
 
@@ -143,6 +147,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Kullandığı** → bu dosyanın içinden referans verdiği dosya sayısı; `taranmadı` / `okunamadı` / `yok` / `N dosya`.
 - **Kullanan** → bu dosyayı kullanan dosya sayısı; taranmadıysa sayı yerine `taranmadı`, eksikse "(liste eksik olabilir)".
 - **Özellikler** → belgenin içinden: Kaydeden, Yapılandırma ve en fazla 3 özel özellik; gerçek bir şey yoksa satır hiç görünmez.
+- **Özellikler okunamazsa** → "Özellikler okunamadı: <sebep>" yazar; "özelliği yok" ile karıştırılmaz.
 
 ---
 
@@ -219,7 +224,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Değiştir…** → çöp kutusunun konacağı üst klasörü seçtirir; başka diskse uyarır (silme kopyalamaya döner).
 - **Varsayılana dön** → çöp yine kökün içine alınır; zaten öyleyse bunu söyler.
 - **Çöp yeri değişirken eskisinde öğe varsa** → uyarı çıkar ve eski yol yazılır. **Taşınmaz** (başka diske kopyalamaya döner, dakikalar sürebilir); geri yüklemek için eski klasörü tekrar seçmek gerekir.
-- **"Diskte bir şey değişince ağacı kendiliğinden tazele"** → disk izleyicisini açar/kapatır (varsayılan açık).
+- **"Diskte bir şey değişince ağacı kendiliğinden tazele"** → disk izleyicisini açar/kapatır (varsayılan açık); açıp kapattığında **durum çubuğuna ne olduğunu yazar**.
 - **Ayarlar: <yol>** → ayar dosyasının yerini gösterir (`%APPDATA%\SwPdm\ayarlar.txt`).
 - **Ayar yazılamazsa** → "Ayar bu oturumda geçerli ama diske YAZILAMADI" uyarısı çıkar.
 
@@ -281,14 +286,15 @@ olmayan hiçbir şey buraya yazılmadı.
 | `F2` | Yeniden adlandır |
 | `Delete` | Sil (çöp kutusuna) |
 | `Ctrl+X` / `Ctrl+C` / `Ctrl+V` | Kes / Kopyala / Yapıştır |
-| `Ctrl+Z` | Geri al |
+| `Ctrl+Z` | Geri al (en fazla 20 adım) |
+| `Ctrl+Y` | İleri al |
 | `Ctrl+A` | İçinde bulunulan klasörü seç |
 | `Shift+ok`, `Shift+Home/End` | Aralık seç |
 | `Enter` | Dosyayı aç / klasörü aç-kapat |
 | `Enter` (referans panelinde) | Seçili referansın dosyasına git |
 | `Enter` (arama kutusunda) | Beklemeden hemen ara |
 | `Backspace` | Üst klasör |
-| `Esc` | Aramadan çık |
+| `Esc` | Süren işi iptal et; iş yoksa aramadan çık |
 | `Ctrl+Shift+S` | Sıralamayı ilerlet |
 | `Ctrl+Shift+F` | Tür süzgecini ilerlet (Tümü → Montaj → … → Tümü) |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
@@ -307,6 +313,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
 - **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
 - **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.
+- **İleri alma her işlemde yok** → "Değiştir — eskisi çöpe gider" seçilmiş bir taşıma/kopyalama geri alındıysa `Ctrl+Y` çalışmaz ve **sebebini söyler**: üzerine yazılan dosya bu arada değişmiş olabilir, tahmin edilmez.
 - **`Ctrl+Z` uzun sürerse pencere donar** → geri alma arayüz iş parçacığında koşuyor; ileri yön (taşıma/kopyalama) arka planda ve iptal edilebilir, geri yön değil.
 - **Çöp kutusunda iptal yok** → toplu geri yükleme/silme başlayınca pencere iş bitene kadar cevap vermez; ilerleme yazılır.
 - **Kök değişince pano ve geri alma listesi boşalır** → eski kökün yolları yeni ağaçta yanlış yere dokunurdu.

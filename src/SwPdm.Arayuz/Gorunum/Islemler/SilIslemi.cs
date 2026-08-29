@@ -128,7 +128,10 @@ internal sealed class SilIslemi : IAgacIslemi
     private static GeriAlinabilir GeriAlmasi(string cop, IReadOnlyList<string> yollar)
         => new(
             $"{yollar.Count} öğenin silinmesi",
-            baglam =>
+            // ILERI ALMA: yeniden cope gonderir - kalici silmez, yani
+            // Ctrl+Y'nin bedeli yine geri alinabilir (CLAUDE.md 1a).
+            Ters: () => YenidenSilmesi(cop, yollar),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
 
@@ -171,6 +174,28 @@ internal sealed class SilIslemi : IAgacIslemi
                     {
                         olmayan.Add($"{oge.Ad} — aynı adda bir şey olduğu için "
                             + $"\"{yeniAd}\" olarak geri geldi.");
+                    }
+                }
+
+                return olmayan;
+            });
+
+    /// <summary>ILERI ALMA: ayni ogeleri yeniden cope gonderir.</summary>
+    private static GeriAlinabilir YenidenSilmesi(string cop, IReadOnlyList<string> yollar)
+        => new(
+            $"{yollar.Count} öğenin silinmesi",
+            Ters: () => GeriAlmasi(cop, yollar),
+            Uygula: baglam =>
+            {
+                var olmayan = new List<string>();
+
+                foreach (string yol in yollar)
+                {
+                    IslemRaporu rapor = Cop.Sil(cop, yol);
+                    if (!rapor.Oldu)
+                    {
+                        olmayan.Add(WindowsYolu.DosyaAdi(yol)
+                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
                     }
                 }
 

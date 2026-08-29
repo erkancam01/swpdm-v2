@@ -46,6 +46,12 @@ internal sealed partial class SecimliAgac : TreeView
     /// <summary>Secim degistiginde tetiklenir.</summary>
     internal event EventHandler? SecimDegisti;
 
+    /// <summary>
+    /// Durum cubuguna yazilacak cumleler. Agac NE YAZILACAGINI bilir, NEREYE
+    /// yazilacagini bilmez (CLAUDE.md 1b).
+    /// </summary>
+    internal event EventHandler<string>? Durum;
+
     /// <summary>Dugumun diskteki yolu; yoksa null.</summary>
     internal static string? Yolu(TreeNode? dugum) => dugum?.Tag switch
     {
@@ -400,6 +406,9 @@ internal sealed partial class SecimliAgac : TreeView
         TreeNode? kapsayan = Kapsayan();
         if (kapsayan is null)
         {
+            // SESSIZ DEGIL: Ctrl+A'ya basip hicbir sey olmamasi, kisayolun
+            // BOZUK oldugunu dusundurur (CLAUDE.md 3).
+            Durum?.Invoke(this, "Seçilecek bir klasör yok — önce bir klasör açın.");
             return;
         }
 
@@ -420,10 +429,11 @@ internal sealed partial class SecimliAgac : TreeView
             }
         }
 
-        // Bos klasorde HICBIR SEY YAPILMAZ. Secimi sessizce bosaltmak,
-        // kullanicinin elindekini kaybettirir.
+        // Bos klasorde SECIM BOZULMAZ - kullanicinin elindekini kaybettirmek
+        // yanlis olurdu. Ama SUSULMAZ da: sebep yaziliyor.
         if (icindekiler.Count == 0)
         {
+            Durum?.Invoke(this, $"\"{kapsayan.Text}\" boş — seçilecek bir şey yok.");
             return;
         }
 

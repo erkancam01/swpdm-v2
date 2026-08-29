@@ -497,6 +497,19 @@ kullanıcıya yanlış dosyayı sildirir.
   → Denetimin kendi `SelectedNode`'u **odak** olarak yaşatılır ve her zaman
   kümenin içinde tutulur; böylece ona bakan her şey (önizleme, durum çubuğu,
   arama, süzgeç) hiçbir şey bilmeden çalışmaya devam eder.
+- **`ToolTip` TIKLAMAYI YUTUYOR — ölçüldü (29.08.2026, kapı yakaladı).**
+  Süzgeç düğmelerine kısayolu göstersin diye `ToolTip` eklendi; çalıştırma
+  kapısı anında *"süzgeç süzülmedi (14 → 14)"* dedi ve bir sonraki ölçümün
+  tabanı da kaydı — yani tık **kayboluyor**, bir sonraki etkileşime kadar
+  bekliyor. Belirti sinsi: düğme çiziliyor, üstüne gelince ipucu çıkıyor,
+  tıklama **bazen** çalışıyor. §8'deki silinmiş `Click` bağlantısının
+  kardeşi.
+  → Sık tıklanan küçük düğmelere `ToolTip` konmaz; söylenecek şey **durum
+  çubuğuna** yazılır. (Wine'a özgü olabilir, gerçek Windows'ta ölçülmedi —
+  ama bedeli belli, getirisi süs.)
+- **`ToolStripItem.Visible`'ın OKUMASI ile YAZMASI aynı şey değil.** Setter
+  `Available`'ı yazıyor, getter ise `Available && ebeveyn görünür` döndürüyor.
+  Bir öğenin "şu an basılabilir mi" sorusuna `Available` cevap verir.
 - **`ToolStrip` `Escape`'i YUTUYOR — `Form.KeyDown` görmüyor.** Odak bir
   `ToolStripTextBox`'tayken (arama kutusu) `Escape` ne `KeyPreview` açık
   formun `KeyDown`'ına ne de kutunun kendi `KeyDown`'ına geliyor; ToolStrip

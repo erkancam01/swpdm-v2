@@ -94,6 +94,13 @@ internal sealed class AyarlarSayfasi : Panel
         {
             _ayarlar.OtomatikTazele = _otomatikTazele.Checked;
             Kaydet();
+
+            // SESSIZ DEGIL: kutuyu isaretleyip kaldirmak gorunur hicbir sey
+            // yapmiyordu; ayni sayfadaki "Varsayılana dön" konusuyor, bu
+            // konusmuyordu (CLAUDE.md 3).
+            _bildir(_otomatikTazele.Checked
+                ? "Otomatik tazeleme açık — diskteki değişiklikler ağaca yansıyacak."
+                : "Otomatik tazeleme kapalı — ağacı F5 ile yenileyin.");
         };
 
         var tazeleAciklama = new Label

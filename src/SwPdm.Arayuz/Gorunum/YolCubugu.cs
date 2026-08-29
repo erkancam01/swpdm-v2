@@ -77,7 +77,18 @@ internal sealed class YolCubugu : FlowLayoutPanel
 
         if (ilk > 0)
         {
-            Controls.Add(Etiket(Kirpma, null, "Yol kısaltıldı"));
+            // "…" ARTIK OLU DEGIL (29.08.2026): ipucu "Yol kısaltıldı"
+            // diyordu ama tiklaninca hicbir sey olmuyordu. Simdi ilk gorunen
+            // parcanin BIR USTUNE gidiyor - her tik bir kademe yukari, yani
+            // gizlenen parcalarin hepsine ulasilabiliyor. Acilir menu
+            // KULLANILMADI: Wine'da her ToolStripDropDown uygulamayi
+            // cokertiyor (CLAUDE.md 11) ve o zaman burasi olculemezdi.
+            string? ustYol = parcalar[ilk - 1].Yol;
+            Controls.Add(Etiket(
+                Kirpma, ustYol,
+                ustYol is null
+                    ? "Yol kısaltıldı — üstü kök klasörün dışında"
+                    : "Yol kısaltıldı — bir üst klasöre gitmek için tıklayın"));
             Controls.Add(Ayirac());
         }
 
@@ -199,8 +210,9 @@ internal sealed class YolCubugu : FlowLayoutPanel
             Cursor = yol is null ? Cursors.Default : Cursors.Hand,
         };
 
-        var ipucuKutusu = new ToolTip();
-        ipucuKutusu.SetToolTip(etiket, ipucu);
+        // TEK ToolTip - her cizimde yenisini uretmek onlari birikirdi
+        // (Goster her secim degisiminde ve her OnResize'da kosuyor).
+        _ipucu.SetToolTip(etiket, ipucu);
 
         if (yol is not null)
         {
@@ -211,6 +223,9 @@ internal sealed class YolCubugu : FlowLayoutPanel
 
         return etiket;
     }
+
+    /// <summary>Butun etiketlerin paylastigi tek ipucu kutusu.</summary>
+    private readonly ToolTip _ipucu = new();
 
     private static Control Ayirac() => new Label
     {

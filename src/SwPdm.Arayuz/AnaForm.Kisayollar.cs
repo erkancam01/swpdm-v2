@@ -36,6 +36,17 @@ internal sealed partial class AnaForm
     /// </summary>
     protected override bool ProcessCmdKey(ref Message m, Keys tus)
     {
+        // ESC ONCE ISI IPTAL EDER, sonra aramayi kapatir.
+        //
+        // SIRA BOYLE, cunku bir is surerken kullanicinin acil istegi odur;
+        // ayrica is surerken agac Enabled=false ve iptal dugmesi sekme
+        // sirasinda degil - yani iptalin baska KLAVYE yolu yok.
+        if (tus == Keys.Escape && _durum.IptalEdilebilir)
+        {
+            _durum.IptaliIste();
+            return true;
+        }
+
         if (tus == Keys.Escape && _arama.Kapat())
         {
             AgacaOdaklan();

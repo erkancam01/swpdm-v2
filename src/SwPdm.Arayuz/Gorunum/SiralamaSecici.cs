@@ -38,6 +38,10 @@ internal sealed class SiralamaSecici : Button
         TextAlign = ContentAlignment.MiddleLeft;
         Padding = new Padding(6, 0, 0, 0);
         TabStop = false;
+
+        // ToolTip KONMADI - suzgec dugmelerinde olculdu: ipucu penceresi
+        // Wine'da tiklamayi yiyor (SuzgecSeridi'ndeki nota bakin). Kisayol
+        // secim degisince DURUM CUBUGUNA yaziliyor.
         FlatAppearance.BorderSize = 1;
         FlatAppearance.BorderColor = Renkler.AyracCizgi;
 

@@ -231,7 +231,11 @@ internal sealed class Onizleme : IDisposable
         SwBelgeBilgileri bilgi = SwBelgeBilgisi.Oku(yol);
         if (!bilgi.Okundu)
         {
-            return string.Empty;
+            // "OZELLIGI YOK" ILE "OKUNAMADI" AYRI SEY - ve cekirdek bu ayrimi
+            // zaten yapiyor (SwBelgeBilgileri.Sebep). Burasi ikisini de bos
+            // metne cevirip sebebi yutuyordu; referans paneli ayni ayrimi
+            // titizlikle yapiyor, onizleme geride kalmisti (CLAUDE.md 3).
+            return "Özellikler okunamadı: " + (bilgi.Sebep ?? "sebep bilinmiyor");
         }
 
         var parcalar = new System.Collections.Generic.List<string>();

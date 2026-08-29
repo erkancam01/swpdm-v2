@@ -76,6 +76,27 @@ internal sealed class DurumCubugu : StatusStrip
         remove => _iptal.Click -= value;
     }
 
+    /// <summary>
+    /// Iptal dugmesi su an BASILABILIR mi. Esc'in iptale baglanmasi icin:
+    /// is yokken Esc'in aramayi kapatmasi gerekiyor, is varken iptal
+    /// etmesi.
+    /// </summary>
+    /// AVAILABLE, VISIBLE DEGIL: ToolStripItem'in Visible GETTER'i ebeveyn
+    /// gorunur degilse false doner (setter ise Available'i yaziyor) - yani
+    /// ayni ozelligin okumasi ile yazmasi ayni sey degil (CLAUDE.md 6'daki
+    /// ToolStrip tuzaklarinin bir baskasi).
+    internal bool IptalEdilebilir => _iptal.Available && _iptal.Enabled;
+
+    /// <summary>
+    /// Iptali TUSLA istemek.
+    ///
+    /// NEDEN GEREKLI (29.08.2026): iptal yalnizca FAREYLE mumkundu - dugme
+    /// bir ToolStripButton, sekme sirasinda degil; ustelik is surerken agac
+    /// Enabled=false oldugu icin klavyeyle ulasilacak hicbir hedef
+    /// kalmiyordu. Uzun bir taramayi durdurmanin klavye yolu yoktu.
+    /// </summary>
+    internal void IptaliIste() => _iptal.PerformClick();
+
     /// <summary>Henuz klasor secilmemis acilis hali.</summary>
     internal void Bekliyor()
     {

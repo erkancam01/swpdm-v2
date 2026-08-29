@@ -247,11 +247,30 @@ public static class ReferansOnarimi
     /// Dosyalarin kendisini geri tasimak cagiranin isi.
     /// </summary>
     public static void GeriOnar(IReadOnlyList<OnarimPlani>? tutanlar)
+        => Yonlendir(tutanlar, geriye: true);
+
+    /// <summary>
+    /// Geri alinmis onarimlari YENIDEN uygular - "ileri alma" (Ctrl+Y) icin.
+    /// <see cref="GeriOnar"/>'in aynasi; dosyalarin kendisini yeni yerine
+    /// tasimak yine cagiranin isi.
+    /// </summary>
+    public static void YenidenOnar(IReadOnlyList<OnarimPlani>? tutanlar)
+        => Yonlendir(tutanlar, geriye: false);
+
+    /// <summary>
+    /// Iki yonun TEK govdesi: fark yalnizca hangi yolun kaynak sayildigi.
+    /// Ayri iki dongu yazmak, birinin zamanla otekinden ayrilmasi demekti
+    /// (CLAUDE.md 8).
+    /// </summary>
+    private static void Yonlendir(IReadOnlyList<OnarimPlani>? tutanlar, bool geriye)
     {
         foreach (OnarimPlani plan in tutanlar ?? [])
         {
             Uygula(PlanlaBilinenlerle(
-                plan.Ebeveynler, plan.YeniYol, plan.EskiYol, cocuguTasi: false));
+                plan.Ebeveynler,
+                geriye ? plan.YeniYol : plan.EskiYol,
+                geriye ? plan.EskiYol : plan.YeniYol,
+                cocuguTasi: false));
         }
     }
 

@@ -47,7 +47,17 @@ internal sealed partial class AnaForm : Form
         _doldurucu = new AgacDoldurucu(_agac);
         _doldurucu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _agac.SecimDegisti += (_, _) => SecimiGoster();
-        _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
+        _agac.Durum += (_, cumle) => _durum.Bilgi(cumle);
+        _suzgecler.SecimDegisti += (_, tur) =>
+        {
+            _doldurucu.TurSuzgeci = tur;
+
+            // KISAYOL EKRANDA: dugmelere ipucu konamiyor (Wine'da tiklamayi
+            // yiyor, kapi olctu), o yuzden kisayol buradan duyuruluyor.
+            _durum.Bilgi(
+                (tur is DosyaTuru t ? "Süzgeç: " + DosyaTurleri.Adi(t) : "Süzgeç kalktı")
+                + "  ·  Ctrl+Shift+F ile ilerlet");
+        };
 
         // --- siralama: secim KALICI
         _suzgecler.SiralamaSecici.Kur(_ayarlar.Siralama);
@@ -57,6 +67,7 @@ internal sealed partial class AnaForm : Form
             _doldurucu.Siralama = sira;
             _ayarlar.Siralama = sira;
             _ayarlar.Yaz();
+            _durum.Bilgi($"Sıralama: {sira.Adi}  ·  Ctrl+Shift+S ile ilerlet");
         };
 
         // --- otomatik tazeleme
@@ -184,17 +195,21 @@ internal sealed partial class AnaForm : Form
         // gercek boyutu olustuktan sonra ayarlanabilir - orasi da orada.
         Yerlesim.Uygula(this, _dikeyBolen, _altBolen, _suzgecler, _ayarlar);
 
+        // GECMIS HER HALUKARDA YUKLENIR - once, ki kok acilamasa bile
+        // kullanici listeden secebilsin.
+        //
+        // ONCE KOMUT SATIRI DALI BUNU ATLIYORDU: "--klasor" ile acildiginda
+        // "son acilanlar" menusunde YALNIZCA o kok goruluyordu, oncekiler
+        // hic gorunmuyordu (CLAUDE.md 3: eksik liste, "yok" gibi okunur).
+        foreach (string eski in _ayarlar.SonKokler)
+        {
+            _kokSecici.GecmiseEkle(eski);
+        }
+
         if (!string.IsNullOrWhiteSpace(_acilistaAcilacakKok))
         {
             KokuAc(_acilistaAcilacakKok);
             return;
-        }
-
-        // Gecmisi ac dugmesinin listesine koy - once, ki kok acilamasa bile
-        // kullanici listeden secebilsin.
-        foreach (string eski in _ayarlar.SonKokler)
-        {
-            _kokSecici.GecmiseEkle(eski);
         }
 
         SonKokuAc();

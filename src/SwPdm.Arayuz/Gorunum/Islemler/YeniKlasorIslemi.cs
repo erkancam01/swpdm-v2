@@ -100,7 +100,8 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
     private static GeriAlinabilir GeriAlmasi(string yol, string ad)
         => new(
             $"\"{ad}\" klasörünün açılması",
-            baglam =>
+            Ters: () => YenidenAcmasi(yol, ad),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
 
@@ -122,6 +123,28 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
                 catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
                 {
                     olmayan.Add(ad + " — " + hata.Message);
+                }
+
+                return olmayan;
+            });
+
+    /// <summary>
+    /// ILERI ALMA: silinen klasoru yeniden acar. Tersi yine silme, yani
+    /// kullanici Ctrl+Z ve Ctrl+Y arasinda istedigi kadar gidip gelebilir.
+    /// </summary>
+    private static GeriAlinabilir YenidenAcmasi(string yol, string ad)
+        => new(
+            $"\"{ad}\" klasörünün açılması",
+            Ters: () => GeriAlmasi(yol, ad),
+            Uygula: baglam =>
+            {
+                var olmayan = new List<string>();
+                IslemRaporu rapor = DosyaIslemleri.KlasorOlustur(
+                    WindowsYolu.Klasor(yol), ad);
+
+                if (!rapor.Oldu)
+                {
+                    olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
                 }
 
                 return olmayan;

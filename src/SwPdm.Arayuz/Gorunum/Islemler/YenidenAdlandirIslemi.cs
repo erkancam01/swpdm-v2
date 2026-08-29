@@ -121,7 +121,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         if (rapor.YeniYol is string yeniYol)
         {
-            GeriAlDefteri.Kaydet(GeriAlmasi(yeniYol, eskiAd, yeniAd));
+            GeriAlDefteri.Kaydet(GeriAlmasi(yeniYol, eskiAd, eskiAd, yeniAd));
         }
 
         baglam.Tazele(rapor.YeniYol);
@@ -175,7 +175,11 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         IReadOnlyList<string> ebeveynler)
         => new(
             $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması ve {ebeveynler.Count} onarım",
-            baglam =>
+            // ILERI ALMA: ayni sey ters yone. Onarim planinin kendisi
+            // simetrik (PlanlaBilinenlerle iki yolu da aliyor), o yuzden
+            // yalnizca yollar takas ediliyor.
+            Ters: () => OnarimiGeriAl(eskiYol, yeniYol, eskiAd, yeniAd, ebeveynler),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
                 OnarimSonucu geri = ReferansOnarimi.Uygula(
@@ -191,17 +195,26 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
                 return olmayan;
             });
 
-    /// <summary>Geri alma: eski adi geri koyar.</summary>
-    private static GeriAlinabilir GeriAlmasi(string yeniYol, string eskiAd, string yeniAd)
+    /// <summary>
+    /// Geri alma: adi <paramref name="hedefAd"/>'a dondurur.
+    ///
+    /// TERSI AYNI FONKSIYON, ARGUMANLARI TAKAS EDILMIS: adlandirma kendi
+    /// tersini tasiyan bir islem. Bu yuzden ileri alma (Ctrl+Y) burada
+    /// ayri bir kod istemiyor - ve ayrismasi da imkansiz (CLAUDE.md 8).
+    /// </summary>
+    private static GeriAlinabilir GeriAlmasi(string yol, string hedefAd, string eskiAd, string yeniAd)
         => new(
             $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması",
-            baglam =>
+            Ters: () => GeriAlmasi(
+                WindowsYolu.Birlestir(WindowsYolu.Klasor(yol), hedefAd),
+                WindowsYolu.DosyaAdi(yol), eskiAd, yeniAd),
+            Uygula: baglam =>
             {
                 var olmayan = new List<string>();
-                IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yeniYol, eskiAd);
+                IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(yol, hedefAd);
                 if (!rapor.Oldu)
                 {
-                    olmayan.Add(yeniAd + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                    olmayan.Add(hedefAd + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
                 }
 
                 return olmayan;
