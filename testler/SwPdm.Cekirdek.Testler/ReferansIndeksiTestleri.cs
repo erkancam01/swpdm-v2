@@ -452,6 +452,41 @@ public class ReferansIndeksiTestleri : IDisposable
         Assert.DoesNotContain("yarım", k.Sebep!, StringComparison.Ordinal);
     }
 
+    // ---------------------------------------------------------------------
+    // PANELDE NE GORUNUR: bulunamayanlar GIZLENIR ama SAYILIR.
+    // Erkan (29.08.2026): "gereksiz bulunamadı satırını kaldıralım".
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void BULUNAMAYAN_referans_GIZLENIR_ve_SAYILIR()
+    {
+        // Parca disariya tasiniyor: teknik resmin referansi taranan kokte
+        // artik YOK. (Gercek hayatta bu, dosyanin acik kokun DISINDA
+        // olmasidir - kayip olmasi degil.)
+        var indeks = new ReferansIndeksi(_kok);
+        IndeksTarama.Tara(indeks);
+
+        string resim = Path.Combine(_kok, "Parça1.SLDDRW");
+        Assert.Empty(indeks.KullandiklariGorunur(resim).Gosterilecekler
+            .Where(x => x.Cozum.Durum == CozumDurumu.Bulunamadi));
+
+        int oncekiGorunen = indeks.KullandiklariGorunur(resim).Gosterilecekler.Count;
+        Assert.True(oncekiGorunen > 0);
+        Assert.Equal(0, indeks.KullandiklariGorunur(resim).Gizlenen);
+
+        // Parcayi indeksten dusur: artik cozulemez.
+        Assert.True(indeks.Sil(Path.Combine(_kok, "Parça1.SLDPRT")));
+
+        PanelSatirlari sonra = indeks.KullandiklariGorunur(resim);
+        Assert.Equal(oncekiGorunen - 1, sonra.Gosterilecekler.Count);
+        Assert.Equal(1, sonra.Gizlenen);
+
+        // SAYI KAYBOLMAZ: "kac referansi var" sorusunun cevabi ayni kaliyor.
+        Assert.Equal(
+            indeks.Kullandiklari(resim).Count,
+            sonra.Gosterilecekler.Count + sonra.Gizlenen);
+    }
+
     [Fact]
     public void RaporListesi_HEPSININ_ADI_VE_ACIKLAMASI_VAR()
     {

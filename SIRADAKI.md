@@ -67,6 +67,13 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
 
 ## C — Bekleyen fikirler (Erkan'a sunuldu, seçilmedi)
 
+- **"Kök dışında" ayrımı (öncelikli).** Bugün çözücü yalnızca açık kökün
+  indeksine bakıyor; dosya diskte dursa bile kök dışındaysa "bulunamadı"
+  sayılıyor ve panelde gizleniyor. Yazılı yol mutlak ve kullanıcının kendi
+  makinesinde geçerliyse `File.Exists` ile ölçülüp *"kök dışında"* denebilir
+  — o zaman gizlenen satırların çoğu aslında **sağlam** çıkar.
+  Ölçülmesi gereken: kaç tanesi gerçekten diskte var (Erkan'ın verisinde).
+
 - **Özelliklere göre süzme/arama.** Özellikler (Malzeme, Ağırlık, Revizyon)
   şu an yalnızca **seçili dosyada** görünüyor. İndekse alınırsa
   *"Malzeme = Pirinç olanlar"* gibi süzme olur. `SwBelgeBilgisi.Oku` hazır;

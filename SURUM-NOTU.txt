@@ -1,4 +1,40 @@
-BU SURUMDE YENI - PANEL, KLAVYE VE HATIRLANAN YERLESIM
+BU SURUMDE YENI - "BULUNAMADI" SATIRLARI ARTIK GIZLENIYOR
+
+  Sen: "bu bulunamadı nedir, gereksiz bulunamadı satırını kaldıralım".
+  Kaldirildi.
+
+  NE OLDU
+    Referans panelinde cozulemeyen satirlar artik GORUNMUYOR. Yerlerine tek
+    bir satir geliyor:
+      "20 referans taranan klasörde yok — gizlendi"   Ctrl+Shift+D
+    Ctrl+Shift+D raporlari aciyor; "Kırık referanslar" sekmesinde hepsi
+    tek tek duruyor.
+
+  NEDEN TEK SATIR BIRAKTIM (kaldirmadim)
+    Liste sessizce kisalirsa "bu montaj bunlari kullanmiyor" diye okunur.
+    Bu uygulamada o yanlis, saglam dosya sildirir. Bir satir, sayiyi ve
+    nereden gorulecegini soyluyor - gerisi temiz.
+
+  ASIL SEBEBI OLCTUM - VE BU BIR SONRAKI ISIN KONUSU
+    Cozucu YALNIZCA acik kokun indeksine bakiyor. Dosya diskte DURSA BILE
+    acik kokun disindaysa "bulunamadi" sayiliyor. Senin ekranindaki
+    satirlarin cogu muhtemelen kayip degil, sadece BASKA KLASORDE
+    (ust klasor, kutuphane, Toolbox).
+    Yani gercek cozum su: yazili yol diskte varsa "kök dışında" demek.
+    Bunu SIRADAKI.md'ye yazdim; istersen sonraki turda yapariz.
+
+  BIR SEY DEGISMEDI
+    "Referansı elle bağla" (Ctrl+Shift+L) kutusu bulunamayanlari GOSTERMEYE
+    devam ediyor - o kutunun varlik sebebi tam olarak onlari duzeltmek.
+    Bolum basligindaki sayi da ayni: "43 dosya" yaziyor, cunku dosyanin
+    gercekten 43 referansi var.
+
+  OLCULDU
+    278 test (273 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ.
+    Yeni test: bulunamayan gizleniyor, sayiliyor ve
+    gosterilen + gizlenen = toplam referans.
+
+ONCEKI SURUMDE - PANEL, KLAVYE VE HATIRLANAN YERLESIM
 
   REFERANS PANELI
     Satirin IPUCU artik TAM YOL: bulunmus dosyada gercek yeri, bulunamamis

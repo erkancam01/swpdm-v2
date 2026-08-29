@@ -353,7 +353,12 @@ internal sealed class ReferansSurucusu
             return;
         }
 
-        foreach ((string yazilan, Cozum cozum) in _indeks.Kullandiklari(yol))
+        // BULUNAMAYANLAR GIZLENIYOR (Erkan, 29.08.2026). Gercek veride 43
+        // referansin neredeyse tamami "BULUNAMADI" cikiyor ve ekran
+        // okunamaz oluyordu. Karar cekirdekte, sayimla birlikte.
+        PanelSatirlari satirlar = _indeks.KullandiklariGorunur(yol);
+
+        foreach ((string yazilan, Cozum cozum) in satirlar.Gosterilecekler)
         {
             bool bayat = ReferansIndeksi.BayatMi(yol, yazilan, cozum);
 
@@ -367,6 +372,19 @@ internal sealed class ReferansSurucusu
                 bayat ? Renkler.YolBayatYazi : Renkler.ReferansAsagiYazi,
                 cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null,
                 cozum.Yol ?? yazilan);
+        }
+
+        // GIZLEME SESSIZ OLAMAZ. Kisalmis bir liste "bu dosya bunlari
+        // kullanmiyor" diye okunur ve o yanlis, bu uygulamada saglam dosya
+        // sildirir (CLAUDE.md 3). Bir satir, kac tanesinin gizlendigini ve
+        // nereden gorulecegini soyluyor.
+        if (satirlar.Gizlenen > 0)
+        {
+            Aciklama(
+                liste,
+                $"{satirlar.Gizlenen} referans taranan klasörde yok — gizlendi",
+                "Ctrl+Shift+D",
+                Renkler.YolBayatYazi);
         }
     }
 

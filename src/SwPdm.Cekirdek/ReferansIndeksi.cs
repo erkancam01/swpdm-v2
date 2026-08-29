@@ -20,6 +20,12 @@ public sealed record IndeksKaydi(
     bool Okundu,
     string? Sebep);
 
+/// <summary>Panelde gosterilecek referans satirlari ve gizlenenlerin sayisi.</summary>
+/// <param name="Gosterilecekler">Cozulmus ya da belirsiz satirlar.</param>
+/// <param name="Gizlenen">Taranan agacta bulunamadigi icin gizlenen satir sayisi.</param>
+public sealed record PanelSatirlari(
+    IReadOnlyList<(string YazilanYol, Cozum Cozum)> Gosterilecekler, int Gizlenen);
+
 /// <summary>"Bu dosyayi kim kullaniyor" sorusunun cevabi.</summary>
 /// <param name="Kullananlar">Bu dosyaya referans veren dosyalarin yollari.</param>
 /// <param name="Guvenilir">
@@ -176,6 +182,46 @@ public sealed class ReferansIndeksi
             WindowsYolu.Cozumle(ebeveynKlasoru, yazilan),
             WindowsYolu.Cozumle(null, gercek),
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Panelde GOSTERILECEK satirlar ve GIZLENEN sayisi.
+    ///
+    /// NEDEN GIZLIYORUZ (Erkan, 29.08.2026 - gercek veriyle): 43 referansli
+    /// bir montajda satirlarin neredeyse tamami "BULUNAMADI" cikiyordu ve
+    /// panel okunamaz hale geliyordu.
+    ///
+    /// NEDEN BU KADAR COK "BULUNAMADI" VAR - OLCULDU: cozucu YALNIZCA
+    /// taranan kokun indeksine bakiyor (<see cref="ReferansCozucu"/>: aday
+    /// yoksa "Yok"). Dosya diskte dursa bile ACIK KOKUN DISINDAYSA
+    /// bulunamadi sayiliyor. Yani o satirlarin cogu "kayip dosya" DEGIL,
+    /// "taranmamis yerdeki dosya" - ama panel ikisini ayni kelimeyle
+    /// anlatiyordu.
+    ///
+    /// GIZLEMEK SESSIZ DEGIL: sayi cagirana DONUYOR ve ekranda yaziliyor.
+    /// Kisalmis bir liste "bu dosya bunlari kullanmiyor" diye okunursa
+    /// saglam dosya sildirir (CLAUDE.md 3).
+    ///
+    /// BELIRSIZ SATIRLAR GIZLENMEZ: orada gercek bir karar var (n aday) ve
+    /// karari kullanici verecek.
+    /// </summary>
+    public PanelSatirlari KullandiklariGorunur(string yol)
+    {
+        var gosterilecek = new List<(string, Cozum)>();
+        int gizlenen = 0;
+
+        foreach ((string yazilan, Cozum cozum) in Kullandiklari(yol))
+        {
+            if (cozum.Durum == CozumDurumu.Bulunamadi)
+            {
+                gizlenen++;
+                continue;
+            }
+
+            gosterilecek.Add((yazilan, cozum));
+        }
+
+        return new PanelSatirlari(gosterilecek, gizlenen);
     }
 
     /// <summary>Bu dosyanin KULLANDIKLARI: yazilan yol + cozumu.</summary>
