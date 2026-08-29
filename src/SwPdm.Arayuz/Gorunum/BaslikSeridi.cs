@@ -58,6 +58,26 @@ internal sealed class BaslikSeridi : Control
     /// <summary>Raptiye dugmesi. Davranisi disarida baglanir.</summary>
     internal Button RaptiyeDugmesi => _raptiye;
 
+    /// <summary>
+    /// RAPTIYE = pencereyi ustte tut. Kararin TAMAMI burada (CLAUDE.md 1b):
+    /// once bu mantik AnaForm'da yasiyordu ve raptiye, kendi dosyasi olmayan
+    /// TEK ozellikti - §11 tablosunda karsiligi yoktu.
+    /// </summary>
+    internal void RaptiyeyiBagla(Form pencere, Action<string> bildir)
+    {
+        ArgumentNullException.ThrowIfNull(pencere);
+        ArgumentNullException.ThrowIfNull(bildir);
+
+        _raptiye.Click += (_, _) =>
+        {
+            pencere.TopMost = !pencere.TopMost;
+            _raptiye.BackColor = pencere.TopMost
+                ? Renkler.BaslikDugmeVurgu
+                : Renkler.BaslikArkaPlan;
+            bildir(pencere.TopMost ? "Pencere üstte tutuluyor." : "Pencere üstte tutulmuyor.");
+        };
+    }
+
     /// <summary>Ayar dugmesi. Davranisi disarida baglanir.</summary>
     internal Button AyarDugmesi => _ayarlar;
 

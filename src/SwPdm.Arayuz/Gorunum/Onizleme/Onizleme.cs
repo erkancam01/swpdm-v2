@@ -96,7 +96,7 @@ internal sealed class Onizleme : IDisposable
     /// <paramref name="referans"/> DISARIDAN geliyor cunku cevabi referans
     /// indeksi biliyor; onizleme onu uretmez, yalnizca yazar.
     /// </summary>
-    internal void Goster(DosyaOgesi dosya, ReferansOzeti referans)
+    internal void Goster(DosyaOgesi dosya, string kullandigi, string kullanan)
     {
         _beklenenYol = dosya.Yol;
 
@@ -111,8 +111,13 @@ internal sealed class Onizleme : IDisposable
             // SILDIRIYORDU. Indeks taranmamissa buraya sayi degil "taranmadı"
             // geliyor - ayrimi ReferansSurucusu yapiyor. Iki yon iki ayri
             // satir: "Kullandığı" asagi, "Kullanan" yukari.
-            kullandigi: referans.Kullandigi,
-            kullanan: referans.Kullanan);
+            //
+            // DUZ METIN ALINIYOR, ReferansOzeti tipi DEGIL (29.08.2026):
+            // once o tip buradan geciyordu ve iki OZELLIK birbirine
+            // kilitleniyordu - referans panelini kaldirmak onizlemeyi de
+            // degistirtirdi (CLAUDE.md 1b).
+            kullandigi: kullandigi,
+            kullanan: kullanan);
 
         // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
         // de soyluyoruz ki kullanici bekledigini bilsin.

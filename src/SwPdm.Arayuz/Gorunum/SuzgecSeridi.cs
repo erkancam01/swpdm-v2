@@ -51,6 +51,14 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
     /// <summary>Secim degistiginde tetiklenir. null = butun turler.</summary>
     internal event EventHandler<DosyaTuru?>? SecimDegisti;
 
+    /// <summary>
+    /// Durum cubuguna yazilacak cumle. CUMLEYI BU DOSYA KURAR (CLAUDE.md 1b):
+    /// once AnaForm kuruyordu, yani suzgec ozelliginin bir karari baska
+    /// dosyada yasiyordu. Kisayol ipucuyla gosterilemiyor - ToolTip Wine'da
+    /// tiklamayi yiyor (CLAUDE.md 6) - o yuzden cumleyle duyuruluyor.
+    /// </summary>
+    internal event EventHandler<string>? Durum;
+
     /// <summary>Su an secili tur. null = butun turler.</summary>
     internal DosyaTuru? SeciliTur => _secili?.Tag as DosyaTuru?;
 
@@ -171,5 +179,9 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         d.FlatAppearance.BorderColor = Renkler.SuzgecSeciliKenar;
 
         SecimDegisti?.Invoke(this, d.Tag as DosyaTuru?);
+        Durum?.Invoke(
+            this,
+            (d.Tag is DosyaTuru tur ? "Süzgeç: " + DosyaTurleri.Adi(tur) : "Süzgeç kalktı")
+            + "  ·  Ctrl+Shift+F ile ilerlet");
     }
 }

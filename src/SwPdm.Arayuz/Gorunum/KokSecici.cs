@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Windows.Forms;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
@@ -51,6 +52,47 @@ internal sealed class KokSecici
         {
             Secildi?.Invoke(this, kutu.SelectedPath);
         }
+    }
+
+    /// <summary>
+    /// ACILISTA HANGI KOK ACILIR - kararin tamami burada (CLAUDE.md 1b):
+    /// once AnaForm.OnLoad'da yasiyordu. Kurallar:
+    /// 1. Gecmis HER halde yuklenir (komut satiri dali once bunu atliyordu
+    ///    ve "son acilanlar" menusu bos kaliyordu).
+    /// 2. Komut satirindan kok verildiyse o acilir.
+    /// 3. Yoksa son kok acilir; klasor artik yoksa GECMISTEN DUSURULUR ve
+    ///    sebebi soylenir - bir daha ayni cikmaza girilmez.
+    /// </summary>
+    internal void AcilistaAc(Ayarlar ayarlar, string? komutSatiriKoku, Action<string> bildir)
+    {
+        ArgumentNullException.ThrowIfNull(ayarlar);
+        ArgumentNullException.ThrowIfNull(bildir);
+
+        foreach (string eski in ayarlar.SonKokler)
+        {
+            GecmiseEkle(eski);
+        }
+
+        if (!string.IsNullOrWhiteSpace(komutSatiriKoku))
+        {
+            Secildi?.Invoke(this, komutSatiriKoku);
+            return;
+        }
+
+        if (ayarlar.SonKok is not string kok)
+        {
+            return;
+        }
+
+        if (!Directory.Exists(kok))
+        {
+            ayarlar.KokCikar(kok);
+            ayarlar.Yaz();
+            bildir("Son açılan klasör bulunamadı: " + kok);
+            return;
+        }
+
+        Secildi?.Invoke(this, kok);
     }
 
     /// <summary>

@@ -66,6 +66,25 @@ internal sealed class SiralamaSecici : Button
     /// <summary>Sira degisti.</summary>
     internal event EventHandler<Siralama>? Degisti;
 
+    /// <summary>
+    /// KALICILIK VE DUYURU - siralamanin butun karari bu dosyada
+    /// (CLAUDE.md 1b): once secim AnaForm'da ayara yaziliyor ve cumle
+    /// orada kuruluyordu. Kisayol ipucuyla gosterilemiyor (ToolTip Wine'da
+    /// tiklamayi yiyor, CLAUDE.md 6); cumleyle duyuruluyor.
+    /// </summary>
+    internal void KaliciligiBagla(Ayarlar ayarlar, Action<string> bildir)
+    {
+        ArgumentNullException.ThrowIfNull(ayarlar);
+        ArgumentNullException.ThrowIfNull(bildir);
+
+        Degisti += (_, sira) =>
+        {
+            ayarlar.Siralama = sira;
+            ayarlar.Yaz();
+            bildir($"Sıralama: {sira.Adi}  ·  Ctrl+Shift+S ile ilerlet");
+        };
+    }
+
     /// <summary>Su anki sira.</summary>
     internal Siralama Secili => _secili;
 

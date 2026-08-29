@@ -29,6 +29,34 @@ internal sealed record SecimBaglami(
     string? Kok,
     string? CopKlasoru)
 {
+    /// <summary>
+    /// Baglami KURALIYLA kurar. "Etkin klasor" kurali BURADA yasar
+    /// (CLAUDE.md 1b) - once AnaForm'daydi ve tipin kendi kurali baska
+    /// dosyada duruyordu: secili klasor kazanir; klasor yoksa secili
+    /// dosyanin klasoru; o da yoksa kok.
+    /// </summary>
+    internal static SecimBaglami Kur(
+        IReadOnlyList<object> ogeler, string? kok, bool aramaKipinde, string? copKlasoru)
+    {
+        string? etkin = null;
+        foreach (object oge in ogeler)
+        {
+            etkin = oge switch
+            {
+                KlasorOgesi klasor => klasor.Yol,
+                DosyaOgesi dosya => WindowsYolu.Klasor(dosya.Yol),
+                _ => etkin,
+            };
+
+            if (oge is KlasorOgesi)
+            {
+                break;   // klasor secimi dosyanin klasorune tercih edilir
+            }
+        }
+
+        return new SecimBaglami(ogeler, etkin ?? kok, aramaKipinde, kok, copKlasoru);
+    }
+
     /// <summary>Secili tek oge; birden fazlaysa null.</summary>
     internal object? TekOge => Ogeler.Count == 1 ? Ogeler[0] : null;
 

@@ -48,27 +48,14 @@ internal sealed partial class AnaForm : Form
         _doldurucu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _agac.SecimDegisti += (_, _) => SecimiGoster();
         _agac.Durum += (_, cumle) => _durum.Bilgi(cumle);
-        _suzgecler.SecimDegisti += (_, tur) =>
-        {
-            _doldurucu.TurSuzgeci = tur;
+        _suzgecler.SecimDegisti += (_, tur) => _doldurucu.TurSuzgeci = tur;
+        _suzgecler.Durum += (_, cumle) => _durum.Bilgi(cumle);
 
-            // KISAYOL EKRANDA: dugmelere ipucu konamiyor (Wine'da tiklamayi
-            // yiyor, kapi olctu), o yuzden kisayol buradan duyuruluyor.
-            _durum.Bilgi(
-                (tur is DosyaTuru t ? "Süzgeç: " + DosyaTurleri.Adi(t) : "Süzgeç kalktı")
-                + "  ·  Ctrl+Shift+F ile ilerlet");
-        };
-
-        // --- siralama: secim KALICI
+        // --- siralama: kalicilik ve duyuru kararlari secicinin kendi dosyasinda
         _suzgecler.SiralamaSecici.Kur(_ayarlar.Siralama);
         _doldurucu.Siralama = _ayarlar.Siralama;
-        _suzgecler.SiralamaSecici.Degisti += (_, sira) =>
-        {
-            _doldurucu.Siralama = sira;
-            _ayarlar.Siralama = sira;
-            _ayarlar.Yaz();
-            _durum.Bilgi($"Sıralama: {sira.Adi}  ·  Ctrl+Shift+S ile ilerlet");
-        };
+        _suzgecler.SiralamaSecici.Degisti += (_, sira) => _doldurucu.Siralama = sira;
+        _suzgecler.SiralamaSecici.KaliciligiBagla(_ayarlar, cumle => _durum.Bilgi(cumle));
 
         // --- otomatik tazeleme
         _izleyici = new DiskIzleyici(this);
@@ -80,19 +67,8 @@ internal sealed partial class AnaForm : Form
             _durum.Bilgi(cumle);
         };
 
-        // --- baslik seridindeki iki dugme
-        //
-        // BUNLAR OLU DUGMELERDI: ciziliyor, ustune gelince renk degistiriyor
-        // ama TIKLANINCA HICBIR SEY YAPMIYORLARDI (CLAUDE.md 3'un "sessiz
-        // basari"sinin kardesi: sessiz HICLIK). Ya bagla ya kaldir; baglandi.
-        _baslik.RaptiyeDugmesi.Click += (_, _) =>
-        {
-            TopMost = !TopMost;
-            _baslik.RaptiyeDugmesi.BackColor =
-                TopMost ? Renkler.BaslikDugmeVurgu : Renkler.BaslikArkaPlan;
-            _durum.Bilgi(TopMost ? "Pencere üstte tutuluyor." : "Pencere üstte tutulmuyor.");
-        };
-
+        // --- baslik seridi: raptiyenin karari kendi dosyasinda (CLAUDE.md 1b)
+        _baslik.RaptiyeyiBagla(this, cumle => _durum.Bilgi(cumle));
         _baslik.AyarDugmesi.Click += (_, _) => _sekmeler.SelectedTab = _ayarlarSekmesi;
 
         // --- dosya acma (cift tiklama)
@@ -195,24 +171,9 @@ internal sealed partial class AnaForm : Form
         // gercek boyutu olustuktan sonra ayarlanabilir - orasi da orada.
         Yerlesim.Uygula(this, _dikeyBolen, _altBolen, _suzgecler, _ayarlar);
 
-        // GECMIS HER HALUKARDA YUKLENIR - once, ki kok acilamasa bile
-        // kullanici listeden secebilsin.
-        //
-        // ONCE KOMUT SATIRI DALI BUNU ATLIYORDU: "--klasor" ile acildiginda
-        // "son acilanlar" menusunde YALNIZCA o kok goruluyordu, oncekiler
-        // hic gorunmuyordu (CLAUDE.md 3: eksik liste, "yok" gibi okunur).
-        foreach (string eski in _ayarlar.SonKokler)
-        {
-            _kokSecici.GecmiseEkle(eski);
-        }
-
-        if (!string.IsNullOrWhiteSpace(_acilistaAcilacakKok))
-        {
-            KokuAc(_acilistaAcilacakKok);
-            return;
-        }
-
-        SonKokuAc();
+        // Acilista hangi kok acilir - kararin tamami KokSecici'de
+        // (CLAUDE.md 1b); Secildi olayi zaten KokuAc'a bagli.
+        _kokSecici.AcilistaAc(_ayarlar, _acilistaAcilacakKok, cumle => _durum.Bilgi(cumle));
     }
 
     /// <summary>
@@ -298,8 +259,9 @@ internal sealed partial class AnaForm : Form
     }
 
     /// <summary>
-    /// Islemlere verilecek secim. "Etkin klasor" = secili klasor, yoksa secili
-    /// dosyanin klasoru, o da yoksa kok.
+    /// Islemlere verilecek secim. Agactan ogeleri TOPLAMAK baglama isi
+    /// (agaci yalniz bu sinif bilir); "etkin klasor" KURALI ise tipin kendi
+    /// dosyasinda (SecimBaglami.Kur, CLAUDE.md 1b).
     /// </summary>
     private SecimBaglami SecimBaglamiKur()
     {
@@ -312,25 +274,8 @@ internal sealed partial class AnaForm : Form
             }
         }
 
-        string? etkin = null;
-        foreach (object oge in ogeler)
-        {
-            etkin = oge switch
-            {
-                KlasorOgesi klasor => klasor.Yol,
-                DosyaOgesi dosya => WindowsYolu.Klasor(dosya.Yol),
-                _ => etkin,
-            };
-
-            if (oge is KlasorOgesi)
-            {
-                break;   // klasor secimi dosyanin klasorune tercih edilir
-            }
-        }
-
-        return new SecimBaglami(
-            ogeler, etkin ?? _doldurucu.Kok, _doldurucu.AramaKipinde,
-            _doldurucu.Kok, CopKlasoru());
+        return SecimBaglami.Kur(
+            ogeler, _doldurucu.Kok, _doldurucu.AramaKipinde, CopKlasoru());
     }
 
     /// <summary>
@@ -425,75 +370,13 @@ internal sealed partial class AnaForm : Form
         AgaciTazele(null);
     }
 
-    /// <summary>Cop dugmesinin yazisini ve durumunu tazeler.</summary>
+    /// <summary>Kurallar AracDugmeleri'nde; burasi yalnizca baglar.</summary>
     private void CopDugmesiniTazele()
-    {
-        if (_doldurucu.Kok is not string kok)
-        {
-            _copDugmesi.Enabled = false;
-            _copDugmesi.Text = "Çöp";
-            _copDugmesi.ToolTipText = "Çöp kutusu — önce bir klasör açın";
-            return;
-        }
+        => AracDugmeleri.CopuTazele(_copDugmesi, _doldurucu.Kok, _ayarlar);
 
-        CopDurumu durum = Cop.Oku(Cop.Yolu(kok, _ayarlar.CopUstKlasoru));
-        _copDugmesi.Enabled = true;
+    private void GeriAlDugmesiniTazele() => AracDugmeleri.GeriAliTazele(_geriAlDugmesi);
 
-        // KAYIT OKUNAMADIYSA SAYI YAZILMAZ. "Çöp kutusu" yazip gecmek,
-        // okunamayan bir kutuyu BOS gibi gosterirdi (CLAUDE.md 3).
-        if (!durum.Guvenilir)
-        {
-            _copDugmesi.Text = "Çöp kutusu (?)";
-            _copDugmesi.ToolTipText = durum.Okunamadi;
-            return;
-        }
 
-        int adet = durum.Ogeler.Count;
-        _copDugmesi.Text = adet == 0 ? "Çöp kutusu" : $"Çöp kutusu ({adet})";
-        _copDugmesi.ToolTipText = "Silinenleri gör ve geri yükle";
-    }
-
-    /// <summary>
-    /// Geri al dugmesini tazeler. Ipucu NEYIN geri alinacagini yazar -
-    /// kullanici neye bastigini bilmeli (CLAUDE.md 3).
-    /// </summary>
-    private void GeriAlDugmesiniTazele()
-    {
-        _geriAlDugmesi.Enabled = GeriAlDefteri.Var;
-        _geriAlDugmesi.ToolTipText = GeriAlDefteri.Sonraki is string ad
-            ? $"Geri al: {ad}  (Ctrl+Z)"
-            : "Geri al — geri alınacak bir işlem yok";
-    }
-
-    /// <summary>
-    /// En son acilan koku kendiliginden acar.
-    ///
-    /// Klasor artik yoksa (ag surucusu kapali, disk cikarilmis) SESSIZCE
-    /// gecilmez: sebep yazilir ve o kok gecmisten dusurulur, yoksa her
-    /// aciliste ayni hatayi verirdi (CLAUDE.md 3).
-    /// </summary>
-    private void SonKokuAc()
-    {
-        if (_ayarlar.SonKok is not string kok)
-        {
-            return;
-        }
-
-        if (!Directory.Exists(kok))
-        {
-            _ayarlar.KokCikar(kok);
-            _ayarlar.Yaz();
-            _durum.Bilgi("Son açılan klasör bulunamadı: " + kok);
-            return;
-        }
-
-        KokuAc(kok);
-    }
-
-    /// <summary>
-    /// Silinenlerin gidecegi klasor. Kullanici ayarlardan degistirmediyse
-    /// kokun kendi ici - ayni diskte oldugu icin silme ANLIK.
-    /// </summary>
     /// <summary>Ayarlar sekmesinin icerigi. Tasarim tarafindan cagriliyor.</summary>
     private Control AyarlarSayfasiKur()
     {
@@ -510,12 +393,16 @@ internal sealed partial class AnaForm : Form
         {
             CopDugmesiniTazele();
             _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
-        _referansSurucusu.IzlemeGuvenilir = _izleyici.Guvenilir;
+            _referansSurucusu.IzlemeGuvenilir = _izleyici.Guvenilir;
         };
         _ayarlarSayfasi = sayfa;
         return sayfa;
     }
 
+    /// <summary>
+    /// Silinenlerin gidecegi klasor. Kullanici ayarlardan degistirmediyse
+    /// kokun kendi ici - ayni diskte oldugu icin silme ANLIK.
+    /// </summary>
     private string? CopKlasoru()
         => _doldurucu.Kok is string kok ? Cop.Yolu(kok, _ayarlar.CopUstKlasoru) : null;
 
@@ -543,7 +430,8 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(secililer.Count == 1 ? secililer[0] : null))
         {
             case DosyaOgesi dosya:
-                _onizleme.Goster(dosya, _referansSurucusu.Ozet(dosya.Yol));
+                ReferansOzeti ozet = _referansSurucusu.Ozet(dosya.Yol);
+                _onizleme.Goster(dosya, ozet.Kullandigi, ozet.Kullanan);
                 _referansSurucusu.Doldur(_referanslar, dosya.Yol);
                 _durum.Secildi(dosya);
                 _yol.Goster(WindowsYolu.Klasor(dosya.Yol));
@@ -563,8 +451,4 @@ internal sealed partial class AnaForm : Form
         }
     }
 
-    /// <summary>
-    /// SplitterDistance araligin disinda kalirsa istisna atar. Sinira kirpiyoruz:
-    /// pencere kucukken acilmak, acilmamaktan iyidir.
-    /// </summary>
 }

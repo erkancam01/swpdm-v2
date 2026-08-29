@@ -935,7 +935,11 @@ dosyasında** duruyor:
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
 `AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı
-bilmez. Ölçüldü: bu ayrımdan sonra `AnaForm.cs` **493 → 160 satır**.
+bilmez. Ölçüldü (29.08.2026): `AnaForm.cs` **454 satır** ve her metodu ya
+bağlama ya da ağaçtan öğe toplama. Buradaki sayı bir kez bayatladı — "160"
+yazıyordu, gerçek 570'ti ve içinde beş karar taşıyan metot birikmişti
+(raptiye, düğme durumları, kök geçmişi, etkin klasör, süzgeç mesajı).
+Hepsi sahiplerine taşındı; sayı artık ölçümle güncellenir, tahminle değil.
 
 > **Tür kaydı ÖLÇÜLDÜ (27.08.2026).** Önce yeni bir tür **4 dosyada 5 yere**
 > satır ekletiyordu (enum · simge sırası sabiti · simge listesi · süzgeç
