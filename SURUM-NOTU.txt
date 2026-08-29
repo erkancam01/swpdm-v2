@@ -1,4 +1,45 @@
-BU SURUMDE YENI - "BULUNAMADI" SATIRLARI ARTIK GIZLENIYOR
+BU SURUMDE YENI - KULLANIM KILAVUZU (OZELLIKLER.txt)
+
+  Sen: "uygulamadaki tum ozellikleri madde madde aciklamani istiyorum -
+  tum buton, sag tik, sol tik, cift tiklama, ayarlar vs her sey."
+
+  Bu zip'in icinde: OZELLIKLER.txt
+
+  NE VAR ICINDE
+    20 bolum, madde basina TEK SATIR ("ne yapilir -> ne olur"):
+      agac faresi · agac klavyesi · 13 islemin tamami · arac cubugu ·
+      baslik seridi · suzgec ve siralama · yol cubugu · arama ·
+      onizleme · referans paneli · referans onarimi · alti rapor ·
+      cop kutusu · ayarlar · kutular · durum cubugu · otomatik tazeleme ·
+      kisayol tablosu · bilinen sinirlar.
+    Sondaki kisayol tablosu tek bakista hepsini gosteriyor.
+
+  NASIL YAZILDI
+    Her madde KODDAN cikarildi; sayilar da koddan sayildi (menude 13 islem,
+    alti rapor). Karsiligi kodda olmayan hicbir sey yazilmadi - ornegin
+    "dikdortgenle secim" YOK ve kilavuz bunu acikca soyluyor. Var gibi
+    yazsam denerdin ve bozuk sanirdin.
+
+  YANINDA IKI BAYAT YER DUZELDI
+    Cop dugmesinin ipucu hala "henüz yapılmadı" diyordu; cop kutusu
+    coktan calisiyor. Bir de proje belgesi silinmis bir dosyayi
+    gosteriyordu.
+
+  UYGULAMANIN KENDISINDE DAVRANIS DEGISIKLIGI YOK
+    Bu tur bir BELGE turu. Kod tarafinda yalnizca yukaridaki ipucu yazisi
+    degisti.
+
+  OLCULDU
+    278 test (273 gecti, 5 Windows'a ozel atlandi), dort kapi TEMIZ
+    (calistirma kapisi 14 olcum).
+
+  HALA BILINMEYEN (kilavuzda da yaziyor)
+    - Kok DISINDAKI referanslar "bulunamadi" sayiliyor; "kök dışında"
+      ayrimi henuz yok.
+    - 254 karakterden uzun yollar atlaniyor.
+    - 2022 disindaki SOLIDWORKS surumleri denenmedi.
+
+ONCEKI SURUMDE - "BULUNAMADI" SATIRLARI ARTIK GIZLENIYOR
 
   Sen: "bu bulunamadı nedir, gereksiz bulunamadı satırını kaldıralım".
   Kaldirildi.
