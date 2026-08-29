@@ -35,6 +35,20 @@
 
 set -uo pipefail
 
+# ---- olcum numaralama -------------------------------------------------------
+# NEDEN SAYAC (29.08.2026 denetimi): "[N/14]" etiketi 38 yerde ELLE yaziliydi.
+# Bir olcum eklemek/cikarmak hepsini kaydiriyordu - ve gecmiste tam boyle
+# oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
+# numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
+# kalmadi, kaymasi imkansiz.
+OLCUM_TOPLAM=14
+OLCUM_NO=0
+olcum() {
+  # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
+  OLCUM_NO=$((OLCUM_NO + 1))
+  echo "   [$OLCUM_NO/$OLCUM_TOPLAM] $1 $2"
+}
+
 KOK="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CALISMA="$KOK/.kapi"
 EKRAN_NO="${KAPI_EKRAN:-99}"
@@ -369,28 +383,28 @@ SORUN=0
 
 # 1) surec ayakta mi
 if kill -0 "$UYG_PID" > /dev/null 2>&1; then
-  echo "   [1/14] surec ayakta ............ EVET"
+  olcum "surec ayakta ............" "EVET"
 else
-  echo "   [1/14] surec ayakta ............ HAYIR (uygulama oldu)"
+  olcum "surec ayakta ............" "HAYIR (uygulama oldu)"
   SORUN=1
 fi
 
 # 2) hata akisa dustu mu (Program.cs hem kutuya hem akisa yaziyor)
 if grep -qaE "Unhandled exception|Exception:" "$UYGULAMA_LOG" 2>/dev/null; then
-  echo "   [2/14] hata akisi temiz ........ HAYIR"
+  olcum "hata akisi temiz ........" "HAYIR"
   grep -aE "Unhandled exception|Exception:" "$UYGULAMA_LOG" | head -3 | sed 's/^/           /'
   SORUN=1
 else
-  echo "   [2/14] hata akisi temiz ........ EVET"
+  olcum "hata akisi temiz ........" "EVET"
 fi
 
 # 3) Wine'in cokme penceresi acildi mi
 PENCERELER="$(xwininfo -root -children 2>/dev/null)"
 if echo "$PENCERELER" | grep -qi "winedbg"; then
-  echo "   [3/14] cokme penceresi yok ..... HAYIR (winedbg acilmis)"
+  olcum "cokme penceresi yok ....." "HAYIR (winedbg acilmis)"
   SORUN=1
 else
-  echo "   [3/14] cokme penceresi yok ..... EVET"
+  olcum "cokme penceresi yok ....." "EVET"
 fi
 
 # 4) ana pencere dogdu mu: uygulamaya ait, 400x400'den buyuk bir ust pencere
@@ -412,12 +426,12 @@ if [ -n "$ANA_KAYIT" ]; then
   PENCERE_Y="$4"
 fi
 if [ -n "$ANA" ]; then
-  echo "   [4/14] ana pencere dogdu ....... EVET ($ANA)"
+  olcum "ana pencere dogdu ......." "EVET ($ANA)"
   # HICBIR SEY SECILI DEGILKEN bir goruntu: 13. olcum satir rengine bakiyor
   # ve secim boyasi rengi ORTERDI. Sonraki olcumler tiklamaya basliyor.
   import -window root "$CALISMA/ilk.png" > /dev/null 2>&1
 else
-  echo "   [4/14] ana pencere dogdu ....... HAYIR (400x400'den buyuk pencere yok)"
+  olcum "ana pencere dogdu ......." "HAYIR (400x400'den buyuk pencere yok)"
   echo "$PENCERELER" | grep -i "${AD,,}.exe" | head -5 | sed 's/^/           /'
   SORUN=1
 fi
@@ -442,13 +456,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/secim.png" > /dev/null 2>&1
   SECILI="$(secili_satir_say "$CALISMA/secim.png" "$PENCERE_X" "$PENCERE_Y")"
   if [ "${SECILI:-0}" -eq 2 ]; then
-    echo "   [5/14] coklu secim ............. EVET (Ctrl ile 2 satir)"
+    olcum "coklu secim ............." "EVET (Ctrl ile 2 satir)"
   else
-    echo "   [5/14] coklu secim ............. HAYIR (2 bekleniyordu, $SECILI secili)"
+    olcum "coklu secim ............." "HAYIR (2 bekleniyordu, $SECILI secili)"
     SORUN=1
   fi
 else
-  echo "   [5/14] coklu secim ............. OLCULEMEDI (pencere yok)"
+  olcum "coklu secim ............." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -474,13 +488,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BEKLENEN=$(( GORUNEN - 1 ))
 
   if [ "${GORUNEN:-0}" -gt 1 ] && [ "${ICERDEKI:-0}" -eq "$BEKLENEN" ]; then
-    echo "   [6/14] Ctrl+A kapsami .......... EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
+    olcum "Ctrl+A kapsami .........." "EVET ($ICERDEKI/$GORUNEN - kok secili degil)"
   else
-    echo "   [6/14] Ctrl+A kapsami .......... HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
+    olcum "Ctrl+A kapsami .........." "HAYIR ($BEKLENEN bekleniyordu, $ICERDEKI secili)"
     SORUN=1
   fi
 else
-  echo "   [6/14] Ctrl+A kapsami .......... OLCULEMEDI (pencere yok)"
+  olcum "Ctrl+A kapsami .........." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -521,13 +535,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_DONUS="$(agac_izi "$CALISMA/sira8.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_BAS" != "$IZ_TERS" ] && [ "$IZ_BAS" = "$IZ_DONUS" ]; then
-    echo "   [7/14] siralama (Ctrl+Shift+S) . EVET (ters cevirdi, sekiz halde basa dondu)"
+    olcum "siralama (Ctrl+Shift+S) ." "EVET (ters cevirdi, sekiz halde basa dondu)"
   else
-    echo "   [7/14] siralama (Ctrl+Shift+S) . HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
+    olcum "siralama (Ctrl+Shift+S) ." "HAYIR (bas=${IZ_BAS:0:8} ters=${IZ_TERS:0:8} donus=${IZ_DONUS:0:8})"
     SORUN=1
   fi
 else
-  echo "   [7/14] siralama (Ctrl+Shift+S) . OLCULEMEDI (pencere yok)"
+  olcum "siralama (Ctrl+Shift+S) ." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -550,13 +564,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   SONRA="$(agac_satir_say "$CALISMA/suzgec.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${SONRA:-0}" -gt 0 ] && [ "${SONRA:-0}" -lt "${ONCE:-0}" ]; then
-    echo "   [8/14] tur suzgeci .............. EVET ($ONCE -> $SONRA satir)"
+    olcum "tur suzgeci .............." "EVET ($ONCE -> $SONRA satir)"
   else
-    echo "   [8/14] tur suzgeci .............. HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
+    olcum "tur suzgeci .............." "HAYIR (once $ONCE, sonra $SONRA - suzulmedi)"
     SORUN=1
   fi
 else
-  echo "   [8/14] tur suzgeci .............. OLCULEMEDI (pencere yok)"
+  olcum "tur suzgeci .............." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -588,13 +602,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   GERIALINDI="$(agac_satir_say "$CALISMA/gerial.png" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "${EKLENDI:-0}" -gt "${ONCEKI:-0}" ] && [ "${GERIALINDI:-0}" -eq "${ONCEKI:-0}" ]; then
-    echo "   [9/14] geri al (Ctrl+Z) ........ EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    olcum "geri al (Ctrl+Z) ........" "EVET ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
   else
-    echo "   [9/14] geri al (Ctrl+Z) ........ HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
+    olcum "geri al (Ctrl+Z) ........" "HAYIR ($ONCEKI -> $EKLENDI -> $GERIALINDI)"
     SORUN=1
   fi
 else
-  echo "   [9/14] geri al (Ctrl+Z) ........ OLCULEMEDI (pencere yok)"
+  olcum "geri al (Ctrl+Z) ........" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -624,13 +638,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # ayirt etmedi (yazi kenar yumusatmayla 62 renk uretiyor). Ayiran tek sey
   # piksel sayisinin YIRMI KATLIK farki.
   if [ "${PIKSEL:-0}" -gt 3000 ]; then
-    echo "   [10/14] onizleme (dosyadan) ... EVET ($PIKSEL piksel)"
+    olcum "onizleme (dosyadan) ..." "EVET ($PIKSEL piksel)"
   else
-    echo "   [10/14] onizleme (dosyadan) ... HAYIR ($PIKSEL piksel - kutu bos)"
+    olcum "onizleme (dosyadan) ..." "HAYIR ($PIKSEL piksel - kutu bos)"
     SORUN=1
   fi
 else
-  echo "   [10/14] onizleme (dosyadan) ... OLCULEMEDI (pencere yok)"
+  olcum "onizleme (dosyadan) ..." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -667,16 +681,16 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   IZ_TXT="$(kirpma_izi "$CALISMA/referans-txt.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
   if [ "$IZ_SW" != "$IZ_TXT" ] && [ "${SW_L:-0}" -gt 50 ]; then
-    echo "   [11/14] referans listesi ...... EVET (referansli/referanssiz ayrisiyor, $SW_L piksel)"
+    olcum "referans listesi ......" "EVET (referansli/referanssiz ayrisiyor, $SW_L piksel)"
   else
-    echo "   [11/14] referans listesi ...... HAYIR (iz ${IZ_SW:0:8} / ${IZ_TXT:0:8}, $SW_L piksel)"
+    olcum "referans listesi ......" "HAYIR (iz ${IZ_SW:0:8} / ${IZ_TXT:0:8}, $SW_L piksel)"
     SORUN=1
   fi
 
   # 12. olcum bu goruntuye bakiyor: SOLIDWORKS dosyasi secili olan.
   cp "$CALISMA/referans.png" "$CALISMA/referans-son.png" 2>/dev/null
 else
-  echo "   [11/14] referans listesi ...... OLCULEMEDI (pencere yok)"
+  olcum "referans listesi ......" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -697,13 +711,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   BASLIK_BANT="$(renk_bant_say "$CALISMA/referans.png" "$REFERANS_KIRP" \
     "$PENCERE_X" "$PENCERE_Y" "$BOLUM_ZEMIN")"
   if [ "${BASLIK_BANT:-0}" -ge 2 ]; then
-    echo "   [12/14] yon ayrimi ............ EVET ($BASLIK_BANT bolum basligi)"
+    olcum "yon ayrimi ............" "EVET ($BASLIK_BANT bolum basligi)"
   else
-    echo "   [12/14] yon ayrimi ............ HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
+    olcum "yon ayrimi ............" "HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
     SORUN=1
   fi
 else
-  echo "   [12/14] yon ayrimi ............ OLCULEMEDI (pencere yok)"
+  olcum "yon ayrimi ............" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -733,13 +747,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   KILIT_BANT="$(renk_bant_say "$CALISMA/ilk.png" "$AGAC_KIRP" \
     "$PENCERE_X" "$PENCERE_Y" "$ACIK_DOSYA")"
   if [ "${KILIT_BANT:-0}" -ge 1 ]; then
-    echo "   [13/14] kilit dosyalari ....... EVET (kilit gizlendi, sahibi isaretli)"
+    olcum "kilit dosyalari ......." "EVET (kilit gizlendi, sahibi isaretli)"
   else
-    echo "   [13/14] kilit dosyalari ....... HAYIR ($KILIT_BANT isaret, 1 bekleniyordu)"
+    olcum "kilit dosyalari ......." "HAYIR ($KILIT_BANT isaret, 1 bekleniyordu)"
     SORUN=1
   fi
 else
-  echo "   [13/14] kilit dosyalari ....... OLCULEMEDI (pencere yok)"
+  olcum "kilit dosyalari ......." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -773,13 +787,13 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
 
   if [ "${ESC_ARAMA:-0}" -ne "${ESC_TABAN:-0}" ] \
      && [ "${ESC_SONRA:-0}" -eq "${ESC_TABAN:-0}" ]; then
-    echo "   [14/14] Esc ile aramadan cikis  EVET ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
+    olcum "Esc ile aramadan cikis" "EVET ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
   else
-    echo "   [14/14] Esc ile aramadan cikis  HAYIR ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
+    olcum "Esc ile aramadan cikis" "HAYIR ($ESC_TABAN -> $ESC_ARAMA -> $ESC_SONRA)"
     SORUN=1
   fi
 else
-  echo "   [14/14] Esc ile aramadan cikis  OLCULEMEDI (pencere yok)"
+  olcum "Esc ile aramadan cikis" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

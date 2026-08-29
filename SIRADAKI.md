@@ -99,6 +99,16 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   (11. ölçüm "satır 13 = Parça1.SLDPRT" diyor). Eklenecekse önce o ölçümler
   satır numarasından kurtarılmalı.
 
+## B2 — §1b denetiminden kalan bilinçli borçlar (29.08.2026)
+
+- **`Ayarlar.cs`'te yeni ayar = aynı dosyada 3 nokta** (özellik + Oku + Yaz);
+  anahtar adı iki yerde elle, kayarsa hata sessiz. Tek dosyada olduğu için
+  tolere edildi; sözlük tabanlı türetme yazılırsa kapanır.
+- **`TasinmisDosyalar` raporunun adıyla testi yok** — yalnızca RaporListesi
+  döngüsünden geçiyor; asıl karşılaştırma satırı ölçülmüyor.
+- **`AyarlarSayfasi`'nın ~%70'i çöp kutusu ayarı** — bölünmedi (tek dosya,
+  davranış doğru); çöp ayarları büyürse kendi sayfa dosyasına çıkar.
+
 ## C — Bekleyen fikirler (Erkan'a sunuldu, seçilmedi)
 
 - **"Kök dışında" ayrımı (öncelikli).** Bugün çözücü yalnızca açık kökün

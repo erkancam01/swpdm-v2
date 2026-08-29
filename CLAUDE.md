@@ -869,8 +869,11 @@ dosyasında** duruyor:
 
 | konuya müdahale | dokunulacak TEK dosya |
 |---|---|
-| önizleme (kaynak, sıra, mesaj, iş parçacığı) | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
-| arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
+| önizleme — kaynak sırası, mesajlar, iş parçacığı | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
+| önizleme paneli (kutu + üst bilgi çizimi) | `Arayuz/Gorunum/Onizleme/OnizlemePaneli.cs` |
+| kabuk önizlemesi (STA iş parçacığı) | `Arayuz/Gorunum/Onizleme/KabukOnizleme.cs` |
+| eski biçim gömülü önizleme okuma | `Cekirdek/OnizlemeOkuyucu.cs` |
+| arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
 | çoklu seçim (Ctrl · Shift) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
 | bir satırın boyanması (seçim · bırakma hedefi) | `Arayuz/Gorunum/Agac/SecimliAgacCizimi.cs` |
@@ -878,7 +881,11 @@ dosyasında** duruyor:
 | sürükleyerek taşıma | `Arayuz/Gorunum/Agac/SurukleBirak.cs` |
 | sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
 | **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
-| yeni klasör · adlandır · sil · taşı | `Islemler/<işlem>.cs` (her biri tek dosya) |
+| yeni klasör | `Arayuz/Gorunum/Islemler/YeniKlasorIslemi.cs` |
+| yeniden adlandır (F2) | `Arayuz/Gorunum/Islemler/YenidenAdlandirIslemi.cs` |
+| sil (çöpe taşı) + referans uyarısı | `Arayuz/Gorunum/Islemler/SilIslemi.cs` |
+| yenile (F5) · ağacı kapat | `Arayuz/Gorunum/Islemler/YenileIslemi.cs` · `AgaciKapatIslemi.cs` |
+| işlem sözleşmesi (`IAgacIslemi` · `SecimBaglami` · `IslemBaglami`) | `Arayuz/Gorunum/Islemler/AgacIslemi.cs` |
 | diskteki dosya işlemleri + hata sebebi | `Cekirdek/DosyaIslemleri.cs` |
 | çöp kutusu (sil · listele · geri yükle) | `Cekirdek/Cop.cs` |
 | çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
@@ -922,12 +929,28 @@ dosyasında** duruyor:
 | indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
 | indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
 | **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
-| tek tek raporlar | `Cekirdek/Raporlar/<rapor>.cs` |
+| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
+| uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
+| **AnaForm — yalnız bağlar** (üç parça) | `Arayuz/AnaForm.cs` + `AnaForm.Kisayollar.cs` + `AnaForm.Tasarim.cs` |
+| başlık şeridi (raptiye kararı dahil) | `Arayuz/Gorunum/BaslikSeridi.cs` |
+| süzgeç şeridi (`Ctrl+Shift+F`, durum cümlesi) | `Arayuz/Gorunum/SuzgecSeridi.cs` |
+| çöp/geri-al düğmelerinin durum kuralları | `Arayuz/Gorunum/AracDugmeleri.cs` |
+| onay kutusu + açık dosya uyarısı | `Arayuz/Gorunum/Islemler/OnayKutusu.cs` |
+| maddeli kutu (kırpma eşiği TEK sabit) | `Arayuz/Gorunum/Islemler/MaddeKutusu.cs` |
+| referans listesi denetimi (satırlar, başlıklar) | `Arayuz/Gorunum/ReferansListesi.cs` |
+| renk paleti (tek kopya) | `Arayuz/Gorunum/Renkler.cs` |
+| çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
+| **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/WindowsYolu.cs` |
+| klasör tarama + arama motoru | `Cekirdek/KlasorTarayici.cs` |
+| işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/IslemRaporu.cs` |
+| boyut biçimi · tarih biçimi · doğal sıralama | `Cekirdek/Boyut.cs` · `Zaman.cs` · `DogalKarsilastirici.cs` |
+| çoklu seçim özeti | `Cekirdek/SecimOzeti.cs` |
+| OLE bileşik belge okuma (2015 öncesi için bekliyor) | `Cekirdek/BilesikDosya.cs` |
 | **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
 | ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
 | referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/ReferansPaneliTuslari.cs` |
@@ -956,16 +979,39 @@ Hepsi sahiplerine taşındı; sayı artık ölçümle güncellenir, tahminle de�
 > `Onizleme` adı hem ad alanı hem tip olurdu ve her kullanım belirsiz olurdu.
 > Klasör **ad alanı değil**: dosyalar `SwPdm.Arayuz.Gorunum` içinde kalıyor.
 
+> **§1b DENETİMİ ÖLÇÜLDÜ (29.08.2026) — ve bilinçli kabul edilenler.**
+> İki denetim koşuldu (özellik yerelliği + katmanlama). Düzeltilenler o
+> günkü beş commit'te; şunlar ise İHLAL DEĞİL, bilinçli kabul:
+> - `SecimBaglami.AramaKipinde` / `CopKlasoru` — bağlam alanı; işlemlerin
+>   bağlamdan okuması, özelliğin içini bilmek değildir.
+> - Sil/Taşı'nın `Cop`'u çağırması — özellik bileşimi (sil = çöpe taşı).
+> - Dört tarayıcının `Cop.KlasorAdi` sabitini bilmesi — sabit tek yerde.
+> - `Ayarlar.cs`'te yeni ayar = aynı dosyada 3 nokta — tek dosya, tolere;
+>   anahtar adı iki yerde elle yazılıyor, kayarsa hata sessiz (bilinen borç).
+> - `DogalKarsilastirici`'nin `CurrentCultureIgnoreCase`'i — görüntü
+>   sıralaması için DOĞRU (Türkçe alfabe); kimlik karşılaştırması değil.
+
 ### Kapılar
 
 ```
 araclar/paket.sh               # Erkan'in deneyecegi zip (~120 KB)
-araclar/kapilar.sh [--kur]     # dördünü sırayla koşar
+araclar/kapilar.sh [--kur]     # beşini sırayla koşar
+├── kapi_harita.sh             # CLAUDE.md §11 tablosu <-> gerçek ağaç
 ├── kapi_boyut.sh              # ağaçtaki her .cs; satır sınırı 600
 ├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
 └── kapi_calistir.sh [--kur]   # uygulamayı Wine'da GERÇEKTEN açar
 ```
+
+> **Harita kapısı neden var (29.08.2026):** §11 tablosu 23 dosyayı hiç
+> saymıyordu (`AnaForm.cs` dahil) ve geçmişte silinmiş bir dosyayı
+> gösterdiği olmuştu. Kapı iki yönü ölçer: ağaçtaki her `.cs` bu belgede
+> geçmeli, tablodaki her `.cs` ağaçta olmalı. §9 döngüsüyle eklendi:
+> TEMİZ → haritasız dosya YAKALANDI → bayat işaretçi YAKALANDI → TEMİZ.
+>
+> **Çalıştırma kapısının `[N/14]` numaraları artık SAYAÇLA** üretiliyor —
+> 38 yerde elle yazılıydı ve bir ölçüm araya girince hepsi kayıyordu
+> (yedincinin araya girip süzgeci sekizinci yaptığı gün elle düzeltilmişti).
 
 Kapsam **adlara değil ağaca** bağlı (§9): proje `find` ile, WinExe içerikten
 (`OutputType`), test projesi içerikten (`Microsoft.NET.Test.Sdk`), uygulama adı
