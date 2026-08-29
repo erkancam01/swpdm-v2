@@ -874,7 +874,7 @@ dosyasında** duruyor:
 | kabuk önizlemesi (STA iş parçacığı) | `Arayuz/Gorunum/Onizleme/KabukOnizleme.cs` |
 | eski biçim gömülü önizleme okuma | `Cekirdek/OnizlemeOkuyucu.cs` |
 | arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
-| ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
+| ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/Agac/AgacDoldurucu.cs` |
 | çoklu seçim (Ctrl · Shift) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
 | bir satırın boyanması (seçim · bırakma hedefi) | `Arayuz/Gorunum/Agac/SecimliAgacCizimi.cs` |
 | açık dalların ve seçimin korunması | `Arayuz/Gorunum/Agac/AgacDurumu.cs` |
@@ -897,20 +897,20 @@ dosyasında** duruyor:
 | **ad sorma kutusu** (doğrulama · uzantı kilidi) | `Arayuz/Gorunum/Islemler/AdKutusu.cs` |
 | geri alma (yığın + `Ctrl+Z`) | `Arayuz/Gorunum/Islemler/GeriAlIslemi.cs` |
 | **sıralama kuralı** (ölçüt, yön, klasörler önce) | `Cekirdek/Siralama.cs` |
-| sıralama düğmesi + `Ctrl+Shift+S` | `Arayuz/Gorunum/SiralamaSecici.cs` |
+| sıralama düğmesi + `Ctrl+Shift+S` | `Arayuz/Gorunum/Serit/SiralamaSecici.cs` |
 | klasör boyutu hesabı (gezme, iptal) | `Cekirdek/KlasorBoyutu.cs` |
 | klasör boyutu işlemi (`Ctrl+Shift+B`) | `Arayuz/Gorunum/Islemler/BoyutHesaplaIslemi.cs` |
 | otomatik tazeleme (izleme, gecikme) | `Arayuz/Gorunum/DiskIzleyici.cs` |
-| alttaki ilerleme çubuğu | `Arayuz/Gorunum/IlerlemeYuzeyi.cs` |
+| alttaki ilerleme çubuğu | `Arayuz/Gorunum/Serit/IlerlemeYuzeyi.cs` |
 | **`~$` kilit dosyaları** (gizle · işaretle · kalıntı) | `Cekirdek/Kilit.cs` |
 | bir dosya satırının görünüşü (simge, metin, renk, ipucu) | `Arayuz/Gorunum/Agac/DosyaSatiri.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
-| klasör seçme + son açılanlar | `Arayuz/Gorunum/KokSecici.cs` |
+| klasör seçme + son açılanlar | `Arayuz/Gorunum/Serit/KokSecici.cs` |
 | kabuk kutuları (çalışma klasörünü koruma) | `Arayuz/Gorunum/KabukKutusu.cs` |
-| yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/YolCubugu.cs` |
+| yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/Serit/YolCubugu.cs` |
 | kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ayarlar.cs` |
 | Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
-| alttaki durum yazıları | `Arayuz/Gorunum/DurumCubugu.cs` |
+| alttaki durum yazıları | `Arayuz/Gorunum/Serit/DurumCubugu.cs` |
 | **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwPaket.cs` |
 | MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
 | **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
@@ -930,21 +930,21 @@ dosyasında** duruyor:
 | indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
 | **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
 | tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
-| referansların arayüzde görünmesi | `Arayuz/Gorunum/ReferansSurucusu.cs` |
+| referansların arayüzde görünmesi | `Arayuz/Gorunum/Referans/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
 | **AnaForm — yalnız bağlar** (üç parça) | `Arayuz/AnaForm.cs` + `AnaForm.Kisayollar.cs` + `AnaForm.Tasarim.cs` |
-| başlık şeridi (raptiye kararı dahil) | `Arayuz/Gorunum/BaslikSeridi.cs` |
-| süzgeç şeridi (`Ctrl+Shift+F`, durum cümlesi) | `Arayuz/Gorunum/SuzgecSeridi.cs` |
-| çöp/geri-al düğmelerinin durum kuralları | `Arayuz/Gorunum/AracDugmeleri.cs` |
+| başlık şeridi (raptiye kararı dahil) | `Arayuz/Gorunum/Serit/BaslikSeridi.cs` |
+| süzgeç şeridi (`Ctrl+Shift+F`, durum cümlesi) | `Arayuz/Gorunum/Serit/SuzgecSeridi.cs` |
+| çöp/geri-al düğmelerinin durum kuralları | `Arayuz/Gorunum/Serit/AracDugmeleri.cs` |
 | onay kutusu + açık dosya uyarısı | `Arayuz/Gorunum/Islemler/OnayKutusu.cs` |
 | maddeli kutu (kırpma eşiği TEK sabit) | `Arayuz/Gorunum/Islemler/MaddeKutusu.cs` |
-| referans listesi denetimi (satırlar, başlıklar) | `Arayuz/Gorunum/ReferansListesi.cs` |
-| renk paleti (tek kopya) | `Arayuz/Gorunum/Renkler.cs` |
-| çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
+| referans listesi denetimi (satırlar, başlıklar) | `Arayuz/Gorunum/Referans/ReferansListesi.cs` |
+| renk paleti (tek kopya) | `Arayuz/Gorunum/Tema/Renkler.cs` |
+| çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Tema/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
 | **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/WindowsYolu.cs` |
 | klasör tarama + arama motoru | `Cekirdek/KlasorTarayici.cs` |
 | işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/IslemRaporu.cs` |
@@ -953,8 +953,8 @@ dosyasında** duruyor:
 | OLE bileşik belge okuma (2015 öncesi için bekliyor) | `Cekirdek/BilesikDosya.cs` |
 | **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
 | ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
-| referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/ReferansPaneliTuslari.cs` |
-| hatırlanan yerleşim (boyut · bölücü · süzgeç) | `Arayuz/Gorunum/Yerlesim.cs` |
+| referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/Referans/ReferansPaneliTuslari.cs` |
+| hatırlanan yerleşim (boyut · bölücü · süzgeç) | `Arayuz/Gorunum/Tema/Yerlesim.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
 `AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı

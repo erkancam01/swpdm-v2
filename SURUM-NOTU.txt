@@ -1,4 +1,37 @@
-BU SURUMDE YENI - ILERI ALMA (Ctrl+Y) VE YEDI KUCUK EKSIK
+BU SURUMDE YENI - KOD TABANI PROFESYONEL YAPIYA CEKILDI
+
+  Sen: "bir ozellige mudahale ederken tek sayfaya dokunmaliyiz,
+  profesyonel sistemlerdeki katmanlama gibi olsun." Iki denetim kosuldu,
+  bes turda duzeltildi. UYGULAMANIN DAVRANISINDA DEGISIKLIK YOK - bu bir
+  ic duzen turu; sana gorunen tek sey asagidaki iki kucuk duzelme.
+
+  GORUNUR IKI DUZELME
+    - "C:\Kok2" gibi KOMSU klasor, "C:\Kok" kokunun ici sanilabiliyordu
+      (referansa git ve yol cubugu yanlis dala gidebilirdi). "Altinda mi"
+      sorusu BES yerde uc farkli bicimde elle yazilmisti, ikisi hataliydi;
+      artik tek kopya ve testli.
+    - Kutulardaki madde listelerinin kirpma esigi her yerde ayni (10);
+      onceden 8/10/12 karisikti.
+
+  IC DUZEN (olculdu)
+    - AnaForm 570 -> 454 satir: bes karar tasiyan metot sahiplerine gitti
+      (raptiye, dugme kurallari, kok gecmisi, etkin klasor, suzgec mesaji).
+    - Madde-listesi kutusu 12 yerde elle kuruluydu -> tek yardimci.
+    - "bilinmeyen sebep" yedegi 20 kusur yerdeydi -> tek ozellik.
+    - Olu kod silindi (cizilmis cop simgesi - hic cagrilmiyordu).
+    - Arayuz dosyalari konu klasorlerine tasindi: Referans/, Serit/, Tema/.
+
+  YENI BIR KAPI DAHA: HARITA
+    CLAUDE.md'deki "hangi konu hangi dosyada" tablosu 33 dosyayi hic
+    saymiyordu. Artik BESINCI kapi var: agactaki her dosya haritada,
+    haritadaki her dosya agacta olmak zorunda - yoksa kapi KIRIK der.
+    Yani "neye dokunacagim" sorusunun cevabi bir daha bayatlayamaz.
+
+  OLCULDU
+    312 test (307 gecti, 5 Windows'a ozel atlandi) - 17'si yeni.
+    BES kapi TEMIZ; calistirma kapisi 14/14, her turdan sonra kosuldu.
+
+ONCEKI SURUMDE - ILERI ALMA (Ctrl+Y) VE YEDI KUCUK EKSIK
 
   Sen sordun: "kendi alaninda eksik bir ozellik kaldi mi?" Sekiz tane
   vardi, sekizi de kapandi.
