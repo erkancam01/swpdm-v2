@@ -68,6 +68,15 @@ fi
   fi
 } > "$ICERI/OKU-BENI.txt"
 
+# KULLANIM KILAVUZU DA PAKETE GIRER: "bu dugme ne yapiyor" sorusunun cevabi
+# zip'in icinde olsun. CRLF sart - Not Defteri LF'li dosyayi tek satir
+# gosteriyor (CLAUDE.md 4'teki .bat tuzaginin zararsiz akrabasi).
+if [ -f "$KOK/OZELLIKLER.md" ]; then
+  sed 's/$/\r/' "$KOK/OZELLIKLER.md" > "$ICERI/OZELLIKLER.txt"
+else
+  echo "   UYARI: OZELLIKLER.md yok - kilavuz pakete girmedi."
+fi
+
 ZIP="$CIKTI/swpdm-$COMMIT.zip"
 ( cd "$CIKTI" && zip -qr "$ZIP" swpdm ) || { echo "PAKET URETILEMEDI: zip basarisiz."; exit 1; }
 

@@ -895,8 +895,8 @@ dosyasında** duruyor:
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
-| **taşırken bağımlıları da al** | `Arayuz/Gorunum/Islemler/BagimlilariEkle.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
+| **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
 | ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
 | referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/ReferansPaneliTuslari.cs` |

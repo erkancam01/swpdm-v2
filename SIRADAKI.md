@@ -4,11 +4,14 @@
 > gerçekler; burası **bugünün açık işleri**. Bir iş bitince bu dosyadan
 > silinir; hepsi bitince dosya silinir.
 >
-> Son durum: dal `claude/v2-pdm-start-u058ey`, commit `e860c09`.
-> `main` de aynı yerde (ileri sarma, 28.08.2026).
-> 272 test · 267 geçti · 5 atlandı (Windows'a özel) · dört kapı TEMİZ
-> (çalıştırma kapısı 13 ölçüm).
+> Son durum: dal `claude/v2-pdm-start-u058ey` (bu dosyayı taşıyan commit'in
+> kendisi); `main` de aynı yerde (ileri sarma, 29.08.2026).
+> 278 test · 273 geçti · 5 atlandı (Windows'a özel) · dört kapı TEMİZ
+> (çalıştırma kapısı 14 ölçüm).
 > Erkan denedi: *"her şey mükemmel."*
+>
+> **Kullanım kılavuzu artık var:** `OZELLIKLER.md` (pakete `OZELLIKLER.txt`
+> olarak giriyor). Bir düğme/kısayol değişirse orası da değişmeli.
 
 ---
 
@@ -61,9 +64,6 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   **mutlak satır numaralarına** bağlı ve yeni dosya eklemek onları kaydırıyor
   (11. ölçüm "satır 13 = Parça1.SLDPRT" diyor). Eklenecekse önce o ölçümler
   satır numarasından kurtarılmalı.
-- **`BaslikSeridi.Bagli` hiç atanmıyor** → başlıkta her zaman
-  *"SOLIDWORKS: kapalı"* yazıyor, gerçek durumdan bağımsız. §3 borcu,
-  küçük iş: ya doğru gösterilir ya da yazı kaldırılır.
 
 ## C — Bekleyen fikirler (Erkan'a sunuldu, seçilmedi)
 

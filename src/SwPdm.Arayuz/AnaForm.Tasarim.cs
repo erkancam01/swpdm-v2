@@ -101,14 +101,16 @@ internal sealed partial class AnaForm
             ToolTipText = "Klasör aç (Ctrl+O)",
         };
 
-        // CLAUDE.md 3: tiklayip hicbir sey olmamasi SESSIZ YALAN. Ne yapacaklari
-        // henuz tanimlanmadigi icin devre disi duruyorlar; tanimlanip yazilinca
-        // acilacaklar.
+        // BASLANGIC HALI: yazi ve etkinlik kurucuda hemen uzerine yaziliyor
+        // (AnaForm.CopDugmesiniTazele) - kok acik degilken gri, acikken
+        // "Çöp kutusu (N)". Buradaki deger yalnizca ilk cizime kadar yasiyor.
+        // Onceki hali "henüz yapılmadı" diyordu ve o yazi COKTAN bayatlamisti;
+        // gorunmuyor olmasi dogru olmasini saglamiyor (CLAUDE.md 3).
         _copDugmesi = new ToolStripButton
         {
-            Text = "Çöp",
+            Text = "Çöp kutusu",
             DisplayStyle = ToolStripItemDisplayStyle.Text,
-            ToolTipText = "Çöp kutusu — henüz yapılmadı",
+            ToolTipText = "Çöp kutusu",
             Enabled = false,
         };
 

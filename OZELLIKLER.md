@@ -1,0 +1,286 @@
+# SW PDM — TÜM ÖZELLİKLER
+
+Her madde: **ne yapılır → ne olur.** Hepsi koddan çıkarıldı; karşılığı
+olmayan hiçbir şey buraya yazılmadı.
+
+---
+
+## 1. Genel
+
+- **Uygulama** → SOLIDWORKS dosyalarını taşırken/adlandırırken montaj ve teknik resim referanslarını koruyan dosya yöneticisi.
+- **Pencere** → iki sekme: **Dosyalar** ve **Ayarlar**.
+- **Kök klasör** → uygulamanın çalıştığı ağacın tepesi; her şey (arama, tarama, çöp kutusu, raporlar) bu kökün içinde geçer.
+- **Açılış** → en son kullanılan kök kendiliğinden açılır; klasör artık yoksa sebebi yazılır ve o kök geçmişten düşer.
+- **Komut satırı** → `SwPdm.exe --klasor <yol>` ile doğrudan o kökle açılır.
+- **Beklenmedik hata** → kırmızı ikonlu bir kutuda sebebiyle gösterilir, sessizce kapanmaz.
+
+---
+
+## 2. Ağaç — fare
+
+- **Sol tık (satır metni/simgesi)** → yalnız o öğe seçilir.
+- **Sol tık (satırın sağındaki boşluk)** → seçim boşalır.
+- **Sol tık (+ / − kutusu)** → dal açılır/kapanır, seçim değişmez.
+- **Ctrl + tık** → o öğeyi seçime ekler ya da seçimden çıkarır.
+- **Shift + tık** → son tıklanandan buraya kadar olan satırları seçer.
+- **Sağ tık (seçili öğede)** → çoklu seçim bozulmaz, menü açılır.
+- **Sağ tık (herhangi bir yer)** → işlem menüsü açılır.
+- **Çift tık (dosya)** → dosyayı Windows'un varsayılan uygulamasıyla açar.
+- **Çift tık (klasör)** → dalı açar/kapatır.
+- **Sürükle-bırak (klasör üstüne)** → seçilenleri o klasöre **taşır** (kopyalama yok); onay kutusu çıkar.
+- **Sürükle-bırak (dosya ya da boşluk üstüne)** → kabul edilmez, hiçbir şey olmaz.
+
+> **Dikdörtgenle (kutu) seçim YOK** — kodda böyle bir şey bulunmuyor.
+
+---
+
+## 3. Ağaç — klavye
+
+- **Ok tuşları** → satırlar arasında gezinir, seçim tek öğeye iner.
+- **Shift + Yukarı/Aşağı/Home/End** → aralık seçer.
+- **Ctrl+A** → **yalnızca içinde bulunulan klasörün** doğrudan çocuklarını seçer (kökün tamamını değil); klasör kapalıysa önce açar.
+- **Enter (dosya)** → dosyayı açar.
+- **Enter (klasör)** → dalı açar/kapatır.
+- **Enter (seçim yok)** → "Önce bir dosya seçin." yazar.
+- **Backspace** → bir üst klasöre çıkar; köktesen "Zaten en üst klasördesiniz." der.
+- **Esc** → aramadan çıkar (arama kutusu odaktayken de çalışır).
+
+---
+
+## 4. Sağ tık menüsü — 13 işlem
+
+| İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
+|---|---|---|---|
+| **Yeni klasör** | `Ctrl+Shift+N` | Etkin klasörde çakışmayan adla klasör açar, seçili gelir | Arama sonucundayken · kök yokken |
+| **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır | Seçim yokken · birden çok öğe seçiliyken |
+| **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
+| **Kes** | `Ctrl+X` | Seçilenleri panoya "taşınacak" olarak koyar | Seçim yokken |
+| **Kopyala** | `Ctrl+C` | Seçilenleri panoya "kopyalanacak" olarak koyar | Seçim yokken |
+| **Yapıştır** | `Ctrl+V` | Panodakileri etkin klasöre taşır/kopyalar | Pano boşken · arama sonucundayken · hedef yokken |
+| **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar) | Geri alınacak iş yokken |
+| **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
+| **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
+| **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
+| **Referans raporları** | `Ctrl+Shift+D` | Rapor penceresini açar | Kök yokken |
+| **Yenile** | `F5` | Ağacı diskten tazeler, açık dallar korunur | Kök yokken |
+| **Ağacı kapat** | `Ctrl+Shift+K` | Bütün dalları kapatır, köke döner | Kök yokken |
+
+- **Gri öğe** → gizlenmez; sebebi ipucunda **ve** fareyle üstüne gelince durum çubuğunda yazar.
+- **Kısayolla gri bir işlem denenirse** → sebep doğrudan durum çubuğuna düşer.
+
+---
+
+## 5. Araç çubuğu
+
+- **Klasör aç (klasör simgesi)** → kök klasör seçme kutusunu açar (`Ctrl+O`).
+- **Klasör aç → ok kısmı** → daha önce açılan kökleri listeler, birine tıklayınca o kök açılır.
+- **Çöp kutusu (N)** → çöp kutusu penceresini açar; parantezdeki sayı içindeki öğe adedidir.
+- **Çöp kutusu (kök yokken)** → gri; ipucu "önce bir klasör açın" der.
+- **Geri al** → `Ctrl+Z` ile aynı işi yapar; ipucunda geri alınacak işlemin adı yazar.
+- **Ara kutusu** → yazdıkça kök içinde arar.
+
+---
+
+## 6. Başlık şeridi
+
+- **Raptiye düğmesi** → pencereyi hep üstte tutmayı açar/kapatır; açıkken düğme vurgulu, durum çubuğunda yazar.
+- **Dişli düğmesi** → Ayarlar sekmesine geçer.
+
+---
+
+## 7. Tür süzgeci ve sıralama
+
+- **Tümü** → süzgeci kaldırır, her şey görünür.
+- **Montaj / Parça / Teknik resim / PDF** → ağaçta yalnız o türü bırakır.
+- **Sıralama düğmesi** (şeridin sağında, üstünde "Ad ↑" gibi yazar) → ölçüt menüsünü açar: **Ad · Tür · Boyut · Tarih**.
+- **Aynı ölçüte tekrar basmak** → yönü çevirir (artan ↔ azalan).
+- **`Ctrl+Shift+S`** → sekiz hâl (4 ölçüt × 2 yön) arasında sırayla ilerler.
+- **Sıralama ve süzgeç** → kalıcıdır, uygulama kapanıp açılınca geri gelir.
+
+---
+
+## 8. Yol çubuğu (ağacın üstü)
+
+- **Yol parçaları** → seçili klasörün yolunu `›` ile ayrılmış gösterir.
+- **Kök altındaki bir parçaya tık** → ağaç oraya gider ve orayı seçer.
+- **Kökün üstündeki parçalar** → soluk ve tıklanamaz; oraya gitmek için "Klasör aç".
+- **Yol sığmazsa** → soldan kırpılır, başına `…` konur; tam yol ipucunda.
+
+---
+
+## 9. Arama
+
+- **Kutuya yazmak** → son tuştan 350 ms sonra arama başlar.
+- **Enter** → beklemeden hemen arar.
+- **Ne aranır** → yalnızca **dosya adı** (büyük/küçük harf ayrımı yok, "içeriyor" eşleşmesi).
+- **Sonuç** → ağaç arama kipine geçer: kökte `— "metin": N eşleşme`, altında klasör klasör gruplanmış eşleşmeler.
+- **Süzgeç açıkken** → sonuç da süzülür, özet "N / M eşleşme (süzgeç açık)" der.
+- **Sınır** → 2000 eşleşme; sınıra ulaşılırsa durum çubuğunda söylenir.
+- **Arama sürerken** → ağaç geçici olarak kilitlenir, durum çubuğunda ilerleme yazar.
+- **Esc ya da kutuyu boşaltmak** → gezinmeye döner, arama öncesi açık dallar geri gelir.
+- **Arama sonucundayken dosya işlemi** → sonuç yeniden üretilir, arama kipi düşmez.
+
+---
+
+## 10. Önizleme paneli (sol alt)
+
+- **Resim** → sırayla üç kaynaktan denenir: Windows kabuğu (Gezgin ne gösteriyorsa) → SOLIDWORKS dosyasının içindeki önizleme → eski sürümlerin gömülü önizlemesi.
+- **Yüklenirken** → "Önizleme yükleniyor…" yazar (boş kutu bırakılmaz).
+- **Hiçbiri yoksa** → "Önizleme yok" ya da okunamama sebebi yazar.
+- **PDF'te önizleme yoksa** → PDF okuyucunun Gezgin küçük resim ayarını açmayı anlatan yönlendirme çıkar.
+- **Klasör seçilince** → "Klasör" yazar.
+- **Çoklu seçimde** → "N öğe seçildi" yazar.
+- **Ad** → dosya adı.
+- **Tür** → Montaj / Parça / Teknik resim / PDF / Dosya / Klasör.
+- **Boyut** → dosya boyutu (klasör ve çoklu seçimde `—`).
+- **Değiştirme** → son değiştirme tarihi.
+- **Kullandığı** → bu dosyanın içinden referans verdiği dosya sayısı; `taranmadı` / `okunamadı` / `yok` / `N dosya`.
+- **Kullanan** → bu dosyayı kullanan dosya sayısı; taranmadıysa sayı yerine `taranmadı`, eksikse "(liste eksik olabilir)".
+- **Özellikler** → belgenin içinden: Kaydeden, Yapılandırma ve en fazla 3 özel özellik; gerçek bir şey yoksa satır hiç görünmez.
+
+---
+
+## 11. Referans paneli (sağ alt)
+
+- **▼ KULLANDIKLARI** → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
+- **▲ KULLANANLAR** → bu dosyayı kullanan dosyalar (yukarı yön).
+- **Bölüm başlığı** → solda başlık, sağda sayı ("9 dosya", "taranmadı").
+- **`içinde`** → referans çözüldü, dosya bulundu.
+- **`içinde? N aday`** → aynı adda birden çok dosya var, hangisi olduğu kesin değil (uydurulmuyor).
+- **`yol BAYAT`** → dosya duruyor ama belgenin içindeki yol başka yeri gösteriyor → SOLIDWORKS açamaz.
+- **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
+- **"N referans taranan klasörde yok — gizlendi"** → çözülemeyen satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
+- **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
+- **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
+- **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
+- **Ctrl+Shift+L (panel odaktayken)** → seçili dosyanın referansını elle bağlama akışını başlatır.
+- **Boş bölüm** → sebebini yazar ("Bu dosya başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı.").
+
+---
+
+## 12. Referans onarımı (uygulamanın varlık sebebi)
+
+- **Yeniden adlandırma (F2)** → adı değişen dosyayı kullanan belgelerin **içine** yeni ad yazılır.
+- **Taşıma (sürükle / Ctrl+X-V)** → taşınan dosyayı kullanan belgelerin içindeki yol yeni konuma çevrilir.
+- **Birlikte taşınan aile** → onarılmaz, gerekmez: SOLIDWORKS önce ebeveynin yanına bakar.
+- **Kopyalama** → onarım yapılmaz; kopya, özgün parçaları göstermeye devam eder (onay kutusunda yazar).
+- **Toplu onarım** → raporlardaki "Bayat yollar" sekmesinde **"Bulunanları düzelt"** düğmesi; geçmişte kırılmış bağları toparlar.
+- **Elle bağlama (`Ctrl+Shift+L`)** → otomatik bulamıyorsa hedefi sen seçersin (ör. dosyanın adı dışarıda değişmişse).
+- **Her onarım** → KOPYALA → YAMA → DOĞRULA → DEĞİŞTİR; tutmazsa asıl dosya **hiç değişmez** ve sebep söylenir.
+- **SOLIDWORKS'te açık dosya** (yanında `~$` kilidi) → yazılmaz, atlanır ve söylenir.
+
+---
+
+## 13. Raporlar (`Ctrl+Shift+D`) — 6 rapor
+
+- **Kırık referanslar** → içinde yazan bir dosyanın karşılığı taranan ağaçta bulunamadı.
+- **Bayat yollar** → dosya duruyor ama belgedeki yol başka yeri gösteriyor; **düzeltilebilir**.
+- **Yetim parçalar** → taranan ağaçta hiçbir montajın/teknik resmin kullanmadığı parçalar.
+- **Teknik resmi olmayanlar** → hiçbir teknik resmin baz almadığı parça ve montajlar.
+- **Taşınmış dosyalar** → son kaydedildiği yer ile şimdiki yeri farklı olan dosyalar.
+- **Okunamayan dosyalar** → referansları çıkarılamayan dosyalar (öteki raporlar bu kadar eksik).
+- **Sekme başlığındaki sayı** → bulgu adedi; tarama güvenilir değilse sayı yerine `(?)` yazar.
+- **"Bulunanları düzelt (N)"** → yalnızca "Bayat yollar"da çıkar; onay ister, sonra pencereyi kapatır (listeler bayatladığı için).
+- **Kapat / Esc** → pencereyi kapatır.
+
+---
+
+## 14. Çöp kutusu
+
+- **Yeri** → kökün içinde `.SwPdmCop` klasörü (Ayarlar'dan başka bir yere alınabilir); ağaçta görünmez.
+- **Neden Windows Çöp Kutusu değil** → ağ sürücüsünden silinen dosya oraya gitmez, kalıcı gider.
+- **Silme** → aynı diskte **taşımadır**, yani 1 GB'lık montaj bile anında gider.
+- **Sütunlar** → Ad · Eski konum · Silinme · Boyut (klasörde "klasör" yazar).
+- **Geri yükle** → seçilenleri eski yerine koyar, onay sormaz; aynı adda dosya varsa üzerine yazmaz, adı numaralar ve söyler.
+- **Kalıcı sil** → seçilenleri geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
+- **Tümünü boşalt** → çöpteki her şeyi geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
+- **Kapat / Esc** → pencereyi kapatır, ağaç tazelenir.
+- **Kendiliğinden temizlik YOK** → çöp yalnızca sen boşaltınca boşalır.
+
+---
+
+## 15. Ayarlar sekmesi
+
+- **Çöp kutusu yolu (salt okunur kutu)** → çöp kutusunun o anki tam yerini gösterir.
+- **Değiştir…** → çöp kutusunun konacağı üst klasörü seçtirir; başka diskse uyarır (silme kopyalamaya döner).
+- **Varsayılana dön** → çöp yine kökün içine alınır.
+- **"Diskte bir şey değişince ağacı kendiliğinden tazele"** → disk izleyicisini açar/kapatır (varsayılan açık).
+- **Ayarlar: <yol>** → ayar dosyasının yerini gösterir (`%APPDATA%\SwPdm\ayarlar.txt`).
+- **Ayar yazılamazsa** → "Ayar bu oturumda geçerli ama diske YAZILAMADI" uyarısı çıkar.
+
+**Saklanan ayarlar:** son açılan kökler (en fazla 10) · çöp üst klasörü · sıralama · otomatik tazeleme · pencere boyutu · iki bölücünün yeri · son tür süzgeci.
+**Saklanmayan:** pencere **konumu** (bilerek: ikinci ekran çıkarılınca pencere görünmez bir yerde açılabilirdi).
+
+---
+
+## 16. Kutular
+
+- **Onay kutusu** → düğmeleri hep **Evet / Vazgeç**; tehlikeli işlemlerde varsayılan **Vazgeç**.
+- **Kutu ne zaman çıkar** → yalnızca (1) geri alması zor bir işlemin onayı, (2) görmeden geçilmemesi gereken bir hata. Bilgi durum çubuğuna yazılır.
+- **Ad kutusu (F2)** → eski adla dolu gelir, uzantısız kısım seçili; geçersiz adda sebep anında kırmızı yazar ve Tamam gri kalır.
+- **Uzantı değişiyorsa** → "DİKKAT: uzantı değişiyor" uyarısı çıkar.
+- **Onarım kutusu** → adı değişen dosyayı kullananları (en fazla 12 ad) listeler; tarama yapılmamışsa "kimin kullandığını bilmiyoruz" der ve varsayılan Vazgeç olur.
+- **Çakışma kutusu** → hedefte aynı ad varsa; iki tarafı boyut ve tarihle karşılaştırır.
+  - **İkisini de tut** → yeni gelen "(2)" ekiyle konur (varsayılan).
+  - **Atla** → bu öğe olduğu yerde kalır.
+  - **Değiştir — eskisi çöp kutusuna gider** → üzerine yazılan dosya yok edilmez, çöpe taşınır (klasörlerde bu seçenek yok).
+  - **Vazgeç** → işlemin tamamı iptal.
+  - **"Kalan bütün çakışmalara da uygula"** → aynı karar kalanlara sorulmadan uygulanır.
+- **Taşı/Kopyala onayı** → ne taşınacağını ve hedef klasörü yazar; taşımada "kullandığı N dosya taşınmıyor; referansları onarılacak" der.
+- **Elle bağlama** → (1) "Hangi referans bağlanacak?" (tek aday varsa atlanır), (2) "Dosyayı seç" — **kendi ağacımız**, Windows kutusu yok, (3) onay: eski ve yeni yol tam yazar, **geri alınamaz** olduğu söylenir.
+
+---
+
+## 17. Durum çubuğu
+
+- **Sol taraf** → nerede olduğun: seçili dosyanın adı · boyutu · tarihi, klasörde yol, çoklu seçimde özet.
+- **Sağ taraf** → ne olduğu: işlem sonuçları, tarama özeti, arama ilerlemesi, hata sebepleri.
+- **İlerleme çubuğu + sayaç + İptal** → yalnızca uzun bir iş sürerken görünür (tarama, taşıma, boyut hesabı).
+- **İptal** → iş öğeler arasında durur; yarım dosya bırakılmaz.
+
+---
+
+## 18. Otomatik tazeleme
+
+- **Diskte değişiklik** → ağaç kendiliğinden tazelenir (seçim ve açık dallar korunur).
+- **Kendi işlemlerimiz** → izleme kısa süre susturulur, "başkası yaptı" gibi görünmez.
+- **İzleme kurulamazsa/koparsa** → sebep yazılır, `F5` ile elle yenileme her zaman var.
+- **Kapatmak** → Ayarlar sekmesindeki onay kutusundan.
+
+---
+
+## 19. Kısayollar — tek bakışta
+
+| Tuş | İş |
+|---|---|
+| `Ctrl+O` | Klasör aç (kök seç) |
+| `F5` | Ağacı yenile |
+| `Ctrl+Shift+K` | Ağacı kapat |
+| `Ctrl+Shift+N` | Yeni klasör |
+| `F2` | Yeniden adlandır |
+| `Delete` | Sil (çöp kutusuna) |
+| `Ctrl+X` / `Ctrl+C` / `Ctrl+V` | Kes / Kopyala / Yapıştır |
+| `Ctrl+Z` | Geri al |
+| `Ctrl+A` | İçinde bulunulan klasörü seç |
+| `Shift+ok`, `Shift+Home/End` | Aralık seç |
+| `Enter` | Dosyayı aç / klasörü aç-kapat |
+| `Backspace` | Üst klasör |
+| `Esc` | Aramadan çık |
+| `Ctrl+Shift+S` | Sıralamayı ilerlet |
+| `Ctrl+Shift+B` | Klasör boyutunu hesapla |
+| `Ctrl+Shift+R` | Referansları tara |
+| `Ctrl+Shift+L` | Referansı elle bağla |
+| `Ctrl+Shift+D` | Referans raporları |
+| `Ctrl+C` (referans panelinde) | Satırın yolunu panoya kopyala |
+
+> İşlem kısayolları yalnızca **ağaç** ya da **referans paneli** odaktayken çalışır. `Ctrl+O`, `Ctrl+Shift+S` ve `Esc` her yerde çalışır.
+
+---
+
+## 20. Bilinen sınırlar (dürüstçe)
+
+- **Kök dışındaki referanslar** → çözücü yalnızca açık kökü bilir; dosya diskte dursa bile kök dışındaysa "bulunamadı" sayılır ve panelde gizlenir. Üst klasörü kök yaparsan çoğu çözülür.
+- **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
+- **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
+- **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.
+- **Boş liste asla "yok" demek değildir** → tarama yapılmadıysa panel sayı yerine "taranmadı" yazar; bu bilerek böyle.
