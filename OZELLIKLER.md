@@ -27,7 +27,8 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Sağ tık (herhangi bir yer)** → işlem menüsü açılır.
 - **Çift tık (dosya)** → dosyayı Windows'un varsayılan uygulamasıyla açar.
 - **Çift tık (klasör)** → dalı açar/kapatır.
-- **Sürükle-bırak (klasör üstüne)** → seçilenleri o klasöre **taşır** (kopyalama yok); onay kutusu çıkar.
+- **Sürükle-bırak (klasör üstüne)** → seçilenleri o klasöre **taşır**; onay kutusu çıkar.
+- **Ctrl + sürükle-bırak** → taşımaz, **kopyalar**; sürüklerken imleç de bunu gösterir.
 - **Sürükle-bırak (dosya ya da boşluk üstüne)** → kabul edilmez, hiçbir şey olmaz.
 
 > **Dikdörtgenle (kutu) seçim YOK** — kodda böyle bir şey bulunmuyor.
@@ -51,7 +52,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
-| **Yeni klasör** | `Ctrl+Shift+N` | Etkin klasörde çakışmayan adla klasör açar, seçili gelir | Arama sonucundayken · kök yokken |
+| **Yeni klasör** | `Ctrl+Shift+N` | **Adı sorar** (çakışmayan bir ad dolu gelir), sonra klasörü açar ve seçili gelir | Arama sonucundayken · kök yokken |
 | **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır | Seçim yokken · birden çok öğe seçiliyken |
 | **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
 | **Kes** | `Ctrl+X` | Seçilenleri panoya "taşınacak" olarak koyar | Seçim yokken |
@@ -75,9 +76,10 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Klasör aç (klasör simgesi)** → kök klasör seçme kutusunu açar (`Ctrl+O`).
 - **Klasör aç → ok kısmı** → daha önce açılan kökleri listeler, birine tıklayınca o kök açılır.
 - **Çöp kutusu (N)** → çöp kutusu penceresini açar; parantezdeki sayı içindeki öğe adedidir.
-- **Çöp kutusu (kök yokken)** → gri; ipucu "önce bir klasör açın" der.
+- **Çöp kutusu (kök yokken)** → gri; ipucu "Çöp kutusu — önce bir klasör açın".
+- **Çöp kutusu (?)** → çöp kaydı okunamadı demektir; sayı YAZILMAZ (okunamayan bir kutu "boş" gibi gösterilmez), ipucunda sebebi yazar.
 - **Geri al** → `Ctrl+Z` ile aynı işi yapar; ipucunda geri alınacak işlemin adı yazar.
-- **Ara kutusu** → yazdıkça kök içinde arar.
+- **Ara kutusu** → yazdıkça kök içinde arar; içinde "Ara..." yer tutucusu yazar.
 
 ---
 
@@ -131,8 +133,9 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Klasör seçilince** → "Klasör" yazar.
 - **Çoklu seçimde** → "N öğe seçildi" yazar.
 - **Ad** → dosya adı.
-- **Tür** → Montaj / Parça / Teknik resim / PDF / Dosya / Klasör.
-- **Boyut** → dosya boyutu (klasör ve çoklu seçimde `—`).
+- **Tür** → Montaj / Parça / Teknik resim / PDF / Dosya / Klasör / **Çoklu seçim**.
+- **Boyut** → dosya boyutu; **çoklu seçimde seçilenlerin toplamı**, klasörde `—`.
+- **Özellikler satırında 3'ten fazlası varsa** → sonuna "+N daha" eklenir.
 - **Değiştirme** → son değiştirme tarihi.
 - **Kullandığı** → bu dosyanın içinden referans verdiği dosya sayısı; `taranmadı` / `okunamadı` / `yok` / `N dosya`.
 - **Kullanan** → bu dosyayı kullanan dosya sayısı; taranmadıysa sayı yerine `taranmadı`, eksikse "(liste eksik olabilir)".
@@ -192,6 +195,8 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Silme** → aynı diskte **taşımadır**, yani 1 GB'lık montaj bile anında gider.
 - **Sütunlar** → Ad · Eski konum · Silinme · Boyut (klasörde "klasör" yazar).
 - **Geri yükle** → seçilenleri eski yerine koyar, onay sormaz; aynı adda dosya varsa üzerine yazmaz, adı numaralar ve söyler.
+- **Üst satır** → "N öğe.   Yeri: <yol>"; kayıt okunamıyorsa **sebebi** yazar — "boş" DEMEZ.
+- **Okunamayan çöp kutusu** → "Tümünü boşalt" çalışmaz; elimizdeki liste eksik olabileceği için sebebi kutuda söylenir.
 - **Kalıcı sil** → seçilenleri geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
 - **Tümünü boşalt** → çöpteki her şeyi geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
 - **Kapat / Esc** → pencereyi kapatır, ağaç tazelenir.
@@ -217,8 +222,11 @@ olmayan hiçbir şey buraya yazılmadı.
 
 - **Onay kutusu** → düğmeleri hep **Evet / Vazgeç**; tehlikeli işlemlerde varsayılan **Vazgeç**.
 - **Kutu ne zaman çıkar** → yalnızca (1) geri alması zor bir işlemin onayı, (2) görmeden geçilmemesi gereken bir hata. Bilgi durum çubuğuna yazılır.
-- **Ad kutusu (F2)** → eski adla dolu gelir, uzantısız kısım seçili; geçersiz adda sebep anında kırmızı yazar ve Tamam gri kalır.
-- **Uzantı değişiyorsa** → "DİKKAT: uzantı değişiyor" uyarısı çıkar.
+- **Ad kutusu (F2 · Ctrl+Shift+N)** → ad dolu ve seçili gelir; geçersiz adda sebep anında kırmızı yazar ve Tamam gri kalır.
+- **Uzantı ayrı kutuda ve KİLİTLİ** → dosya adının uzantısı kazayla değişemez.
+- **"Uzantıyı da değiştir"** → işaretlenirse uzantı kutusu açılır ve "DİKKAT: uzantı değişiyor" uyarısı anında görünür; işaret kalkınca eski uzantı geri gelir.
+- **Aynı adda öğe varsa** → kutuda anında söylenir, Tamam gri kalır (sessizce "(2)" eklenmez).
+- **Ad çok uzunsa** → 255 karakteri ya da tam yolda 259 karakteri aşan ad kabul edilmez, sebebi yazılır.
 - **Onarım kutusu** → adı değişen dosyayı kullananları (en fazla 12 ad) listeler; tarama yapılmamışsa "kimin kullandığını bilmiyoruz" der ve varsayılan Vazgeç olur.
 - **Çakışma kutusu** → hedefte aynı ad varsa; iki tarafı boyut ve tarihle karşılaştırır.
   - **İkisini de tut** → yeni gelen "(2)" ekiyle konur (varsayılan).
@@ -226,6 +234,8 @@ olmayan hiçbir şey buraya yazılmadı.
   - **Değiştir — eskisi çöp kutusuna gider** → üzerine yazılan dosya yok edilmez, çöpe taşınır (klasörlerde bu seçenek yok).
   - **Vazgeç** → işlemin tamamı iptal.
   - **"Kalan bütün çakışmalara da uygula"** → aynı karar kalanlara sorulmadan uygulanır.
+- **Silme onayı ("Çöp kutusuna gönder")** → ne silineceğini sayar (en fazla 10 ad), "çöp kutusundan geri yüklenebilir" der, varsayılan düğme **Vazgeç**.
+  - **Referans uyarısı** → tarama yoksa "kimin kullandığını BİLMİYORUZ", tarama varsa "bunları N dosya KULLANIYOR" (en fazla 8 ad) yazar. **Uyarır, engellemez.**
 - **Taşı/Kopyala onayı** → ne taşınacağını ve hedef klasörü yazar; taşımada "kullandığı N dosya taşınmıyor; referansları onarılacak" der.
 - **Elle bağlama** → (1) "Hangi referans bağlanacak?" (tek aday varsa atlanır), (2) "Dosyayı seç" — **kendi ağacımız**, Windows kutusu yok, (3) onay: eski ve yeni yol tam yazar, **geri alınamaz** olduğu söylenir.
 
@@ -264,6 +274,8 @@ olmayan hiçbir şey buraya yazılmadı.
 | `Ctrl+A` | İçinde bulunulan klasörü seç |
 | `Shift+ok`, `Shift+Home/End` | Aralık seç |
 | `Enter` | Dosyayı aç / klasörü aç-kapat |
+| `Enter` (referans panelinde) | Seçili referansın dosyasına git |
+| `Enter` (arama kutusunda) | Beklemeden hemen ara |
 | `Backspace` | Üst klasör |
 | `Esc` | Aramadan çık |
 | `Ctrl+Shift+S` | Sıralamayı ilerlet |

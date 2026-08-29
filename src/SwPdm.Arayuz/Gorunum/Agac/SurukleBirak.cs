@@ -6,10 +6,12 @@ using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
-/// <summary>Surukle-birak ile tasima istegi.</summary>
-/// <param name="Yollar">Tasinacak ogelerin yollari.</param>
+/// <summary>Surukle-birak ile aktarma istegi.</summary>
+/// <param name="Yollar">Aktarilacak ogelerin yollari.</param>
 /// <param name="HedefKlasor">Birakilan klasor.</param>
-internal sealed record TasimaIstegi(IReadOnlyList<string> Yollar, string HedefKlasor);
+/// <param name="Kopyala">Ctrl basiliydi: tasima degil KOPYALAMA.</param>
+internal sealed record TasimaIstegi(
+    IReadOnlyList<string> Yollar, string HedefKlasor, bool Kopyala);
 
 /// <summary>
 /// SURUKLE-BIRAKIN TEK KAPISI. Agaca takilir; agac bunu bilmez.
@@ -21,8 +23,9 @@ internal sealed record TasimaIstegi(IReadOnlyList<string> Yollar, string HedefKl
 /// TASIMAYI KENDISI YAPMAZ - yalnizca istegi bildirir. Tasimanin karari
 /// (onay, uyari, kismi basarisizlik) <see cref="Tasi"/>'da, tek yerde.
 ///
-/// Surukleme yalnizca DUGUM uzerinden baslar; bos alandan baslayan surukleme
-/// dikdortgen secimdir (Gezgin'in ayrimi) ve o <see cref="SecimliAgac"/>'in isi.
+/// Surukleme yalnizca DUGUM uzerinden baslar.
+///
+/// CTRL BASILI SURUKLEME KOPYALAR (Gezgin kurali); basili degilse tasir.
 /// </summary>
 internal sealed class SurukleBirak
 {
@@ -61,19 +64,37 @@ internal sealed class SurukleBirak
 
         if (yollar.Count > 0)
         {
-            _agac.DoDragDrop(yollar, DragDropEffects.Move);
+            // IKI ETKI DE VERILIR: hangisinin secilecegini Ctrl belirler.
+            // Yalnizca Move verilirse Ctrl'e basmak imleci "yasak"a cevirir.
+            _agac.DoDragDrop(yollar, DragDropEffects.Move | DragDropEffects.Copy);
         }
     }
 
+    /// <summary>
+    /// CTRL BASILIYSA KOPYALA - Gezgin'in kurali.
+    ///
+    /// NEDEN EKLENDI (29.08.2026): burada etki her zaman <c>Move</c>'du.
+    /// Gezgin aliskanligiyla Ctrl basili surukleyen kullanici KOPYALADIGINI
+    /// sanarken dosyayi TASIYORDU; imlecte de hicbir fark yoktu ve hicbir
+    /// yerde sorulmuyordu. Sessiz ve yanlis (CLAUDE.md 3).
+    /// </summary>
+    private static bool KopyaMi(DragEventArgs e)
+        => (e.KeyState & CtrlBiti) != 0;
+
+    /// <summary>Surukleme sirasinda Ctrl'un <c>KeyState</c>'teki biti.</summary>
+    private const int CtrlBiti = 8;
+
     private void Uzerinde(object? gonderen, DragEventArgs e)
-        => e.Effect = Hedef(e) is null ? DragDropEffects.None : DragDropEffects.Move;
+        => e.Effect = Hedef(e) is null
+            ? DragDropEffects.None
+            : KopyaMi(e) ? DragDropEffects.Copy : DragDropEffects.Move;
 
     private void Birakildi(object? gonderen, DragEventArgs e)
     {
         string? hedef = Hedef(e);
         if (hedef is not null && e.Data?.GetData(typeof(List<string>)) is List<string> yollar)
         {
-            Tasindi?.Invoke(this, new TasimaIstegi(yollar, hedef));
+            Tasindi?.Invoke(this, new TasimaIstegi(yollar, hedef, KopyaMi(e)));
         }
     }
 

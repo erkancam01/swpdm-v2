@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
-/// YENIDEN ADLANDIR. Kutu, dogrulama, uzanti uyarisi ve referans uyarisi -
-/// hepsi burada (CLAUDE.md 1b).
+/// YENIDEN ADLANDIR. Uzanti uyarisi ve referans uyarisi burada; ad kutusunun
+/// KENDISI ortak arac (Islemler/AdKutusu.cs) cunku "yeni klasor" de onu
+/// kullaniyor - CLAUDE.md 1b'nin 3. kurali: ortak arac, ozellik degil.
 /// </summary>
 internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 {
@@ -54,7 +54,13 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         string eskiAd = SecimBaglami.Adi(oge);
 
-        string? yeniAd = AdKutusu.Sor(baglam.Sahip, eskiAd);
+        // AD KUTUSU ORTAK ARAC (Islemler/AdKutusu.cs): dogrulama, uzunluk
+        // siniri, cakisma uyarisi ve UZANTI KILIDI orada tek kopya. Uzanti
+        // artik ayri ve kilitli geliyor - kaza ile degismesi imkansiz.
+        string? yeniAd = AdKutusu.Sor(
+            baglam.Sahip, "Yeniden adlandır", eskiAd,
+            WindowsYolu.Klasor(yol), oge is DosyaOgesi);
+
         if (yeniAd is null || yeniAd == eskiAd)
         {
             return;
@@ -200,61 +206,4 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
                 return olmayan;
             });
-}
-
-/// <summary>
-/// /// Kucuk ad sorma kutusu. WinForms'ta hazir bir "InputBox" yok; buraya
-/// yaziliyor cunku yalnizca bu islem kullaniyor (CLAUDE.md 1b).
-/// </summary>
-internal static class AdKutusu
-{
-    /// <summary>Yeni adi sorar. Vazgecilirse null.</summary>
-    internal static string? Sor(IWin32Window sahip, string eskiAd)
-    {
-        // CLAUDE.md 6: alanlar boyut degistiren her seyden ONCE atanir.
-        var kutu = new TextBox { Text = eskiAd };
-        var uyari = new Label { ForeColor = Color.FromArgb(0xB0, 0x30, 0x30), AutoSize = false };
-        var tamam = new Button { Text = "Tamam", DialogResult = DialogResult.OK };
-        var vazgec = new Button { Text = "Vazgeç", DialogResult = DialogResult.Cancel };
-
-        using var pencere = new Form
-        {
-            Text = "Yeniden adlandır",
-            FormBorderStyle = FormBorderStyle.FixedDialog,
-            StartPosition = FormStartPosition.CenterParent,
-            MinimizeBox = false,
-            MaximizeBox = false,
-            ClientSize = new Size(380, 120),
-            Font = new Font("Segoe UI", 9f),
-        };
-
-        kutu.SetBounds(12, 12, 356, 24);
-        uyari.SetBounds(12, 42, 356, 32);
-        tamam.SetBounds(196, 82, 80, 26);
-        vazgec.SetBounds(284, 82, 80, 26);
-
-        pencere.Controls.Add(kutu);
-        pencere.Controls.Add(uyari);
-        pencere.Controls.Add(tamam);
-        pencere.Controls.Add(vazgec);
-        pencere.AcceptButton = tamam;
-        pencere.CancelButton = vazgec;
-
-        // Uzantisiz kismi secili gelir - Gezgin de oyle yapar.
-        string uzanti = WindowsYolu.Uzanti(eskiAd);
-        kutu.SelectionStart = 0;
-        kutu.SelectionLength = eskiAd.Length - uzanti.Length;
-
-        void Denetle()
-        {
-            bool olur = WindowsYolu.AdGecerliMi(kutu.Text, out string sebep);
-            uyari.Text = olur ? string.Empty : sebep;   // sebep EKRANDA, aninda
-            tamam.Enabled = olur;
-        }
-
-        kutu.TextChanged += (_, _) => Denetle();
-        Denetle();
-
-        return pencere.ShowDialog(sahip) == DialogResult.OK ? kutu.Text : null;
-    }
 }

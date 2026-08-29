@@ -573,6 +573,12 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
 
   xdotool key --clearmodifiers ctrl+shift+n > /dev/null 2>&1
   sleep 2
+
+  # AD KUTUSU (29.08.2026): "Yeni klasör" artik adi SORUYOR. Kutu cakismayan
+  # bir adla DOLU geliyor, yani Enter eski davranisin aynisi. Bu satir
+  # olmadan kapi dogru sekilde HAYIR der - olculen sey degisti, kod degil.
+  xdotool key --clearmodifiers Return > /dev/null 2>&1
+  sleep 2
   import -window root "$CALISMA/klasor.png" > /dev/null 2>&1
   EKLENDI="$(agac_satir_say "$CALISMA/klasor.png" "$PENCERE_X" "$PENCERE_Y")"
 

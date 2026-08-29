@@ -48,6 +48,10 @@ internal static class Renkler
     // edici bir uyari rengi.
     internal static readonly Color YolBayatYazi = Color.FromArgb(0xB0, 0x5A, 0x00);
 
+    // Kutulardaki "olmaz" yazisi (gecersiz ad, cakisma, uzanti uyarisi).
+    // TEK KOPYA (CLAUDE.md 8): once ad kutusunun icinde elle yazilmisti.
+    internal static readonly Color UyariYazi = Color.FromArgb(0xB0, 0x30, 0x30);
+
     // Agacta kilit dosyasi durumu ("~$"). Hem yazi hem ZEMIN rengi var.
     //
     // ZEMIN NEDEN SART - OLCULDU (28.08.2026): yalnizca yazi rengiyle

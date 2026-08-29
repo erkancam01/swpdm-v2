@@ -312,11 +312,63 @@ public static class WindowsYolu
     private static string[] Parcala(string yol)
         => yol.Split(new[] { Ayirici, EgikAyirici }, StringSplitOptions.RemoveEmptyEntries);
 
+    /// <summary>Windows'ta bir dosya/klasor adinin en fazla karakteri.</summary>
+    public const int EnUzunAd = 255;
+
+    /// <summary>
+    /// Uzun yol destegi acik degilken Windows'un tam yol siniri. 260, sonu
+    /// bitiren karakter dahil; kullanilabilir uzunluk 259.
+    /// </summary>
+    public const int EnUzunYol = 259;
+
+    /// <summary>
+    /// Ad gecerli mi VE o klasorde olusacak tam yol sinira siginiyor mu.
+    ///
+    /// Ayri bir uye, cunku ad tek basina gecerli olsa bile derin bir klasorde
+    /// yol sinirini asabilir - ve o hata ancak diske yazarken cikardi.
+    /// </summary>
+    public static bool YolGecerliMi(string klasor, string? ad, out string sebep)
+    {
+        if (!AdGecerliMi(ad, out sebep))
+        {
+            return false;
+        }
+
+        int uzunluk = Birlestir(klasor, ad!).Length;
+        if (uzunluk > EnUzunYol)
+        {
+            sebep = $"Tam yol çok uzun ({uzunluk} karakter); Windows sınırı {EnUzunYol}. "
+                + "Daha kısa bir ad verin ya da daha üstteki bir klasöre koyun.";
+            return false;
+        }
+
+        sebep = string.Empty;
+        return true;
+    }
+
     public static bool AdGecerliMi(string? ad, out string sebep)
     {
         if (string.IsNullOrWhiteSpace(ad))
         {
             sebep = "Ad boş olamaz.";
+            return false;
+        }
+
+        // UZUNLUK SINIRI - burada HIC YOKTU (29.08.2026). Sonucu: Windows
+        // PathTooLongException atiyordu, HatayiCevir haritasinda karsiligi
+        // olmadigi icin kullaniciya .NET'in ham Ingilizce mesaji cikiyordu.
+        // Sinir onden konur ve sebep TURKCE yazilir (CLAUDE.md 3).
+        if (ad.Length > EnUzunAd)
+        {
+            sebep = $"Ad çok uzun ({ad.Length} karakter); en fazla {EnUzunAd} olabilir.";
+            return false;
+        }
+
+        // Bastaki bosluk: Windows'ta acilabiliyor ama Gezgin'de gorunmez bir
+        // fark yaratiyor - "Parca" ile " Parca" ayni gorunup ayri dosya olur.
+        if (ad[0] == ' ')
+        {
+            sebep = "Ad boşlukla başlayamaz.";
             return false;
         }
 
@@ -340,8 +392,12 @@ public static class WindowsYolu
         // Uzantili hali de yasak: "CON.SLDPRT" da acilamiyor.
         // Ordinal karsilastirma SART: Turkce yerelinde ToUpper() noktali I
         // uretiyor ve kulture bagli karsilastirma sasiyor.
+        //
+        // GOVDE KIRPILIYOR: "CON .SLDPRT" gibi bir adda govde "CON " olur ve
+        // kirpilmadan bakan bir denetim bunu KACIRIR; Windows sondaki boslugu
+        // atip aygit adi sayar.
         int nokta = ad.IndexOf('.');
-        string govde = nokta < 0 ? ad : ad[..nokta];
+        string govde = (nokta < 0 ? ad : ad[..nokta]).TrimEnd(' ', '.');
         foreach (string ayrilmis in AyrilmisAdlar)
         {
             if (govde.Equals(ayrilmis, StringComparison.OrdinalIgnoreCase))

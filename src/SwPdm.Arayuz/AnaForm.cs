@@ -126,7 +126,7 @@ internal sealed partial class AnaForm : Form
                 _doldurucu.HepsiniKapat, _referansSurucusu),
             e.Yollar,
             e.HedefKlasor,
-            AktarmaKipi.Tasi);
+            e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
 
         // --- referans listesinde cift tik: o dosyaya GIT
         // PDM'de asil ise yarayan sey bu: "bu parcayi Montaj3 kullaniyor"
@@ -416,8 +416,19 @@ internal sealed partial class AnaForm : Form
             return;
         }
 
-        int adet = Cop.Listele(Cop.Yolu(kok, _ayarlar.CopUstKlasoru)).Count;
+        CopDurumu durum = Cop.Oku(Cop.Yolu(kok, _ayarlar.CopUstKlasoru));
         _copDugmesi.Enabled = true;
+
+        // KAYIT OKUNAMADIYSA SAYI YAZILMAZ. "Çöp kutusu" yazip gecmek,
+        // okunamayan bir kutuyu BOS gibi gosterirdi (CLAUDE.md 3).
+        if (!durum.Guvenilir)
+        {
+            _copDugmesi.Text = "Çöp kutusu (?)";
+            _copDugmesi.ToolTipText = durum.Okunamadi;
+            return;
+        }
+
+        int adet = durum.Ogeler.Count;
         _copDugmesi.Text = adet == 0 ? "Çöp kutusu" : $"Çöp kutusu ({adet})";
         _copDugmesi.ToolTipText = "Silinenleri gör ve geri yükle";
     }

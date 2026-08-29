@@ -65,7 +65,7 @@ public static class DosyaIslemleri
     /// Klasorde cakismayan bir ad bulur: "Yeni klasör", "Yeni klasör (2)"...
     /// Gezgin'in davranisi. 1000'de durur - sonsuz donguye girmez.
     /// </summary>
-    public static string BosAdBul(string klasor, string istenenAd)
+    public static string? BosAdBul(string klasor, string istenenAd)
     {
         if (!Var(WindowsYolu.Birlestir(klasor, istenenAd)))
         {
@@ -92,7 +92,13 @@ public static class DosyaIslemleri
             }
         }
 
-        return istenenAd;   // cagiran ZatenVar alacak; sessizce ustune yazmaz
+        // TUKENDI. Eskiden burasi ISTENEN ADI donduruyordu ve yorumda
+        // "cagiran ZatenVar alacak" yaziyordu - ama OLCULDU (29.08.2026):
+        // dogru degildi. Kopyalamada hedef VAR OLAN dosyaya/klasore esitlenip
+        // kopyalama patliyor, ardindan YarimKalaniSil o VAR OLAN ogeyi
+        // siliyordu (klasorde recursive). Yani "sessizce ustune yazmaz"
+        // yerine "sessizce SILER" oluyordu. Artik null: cagiran karar verir.
+        return null;
     }
 
     /// <summary>Yeni bir alt klasor olusturur.</summary>
@@ -212,7 +218,8 @@ public static class DosyaIslemleri
         }
 
         IslemRaporu? karar = CakismayiCoz(
-            hedefKlasor, ad, klasorMu, cakisma, eskisiniKurtar, out string hedef);
+            hedefKlasor, ad, klasorMu, cakisma, eskisiniKurtar,
+            out string hedef, out bool eskisiCopeAlindi);
         if (karar is not null)
         {
             return karar;
@@ -238,7 +245,7 @@ public static class DosyaIslemleri
         }
         catch (Exception hata)
         {
-            return HatayiCevir(hata);
+            return EskisiniSoyle(HatayiCevir(hata), eskisiCopeAlindi, ad);
         }
     }
 
@@ -282,11 +289,18 @@ public static class DosyaIslemleri
         Cakisma etkin = ayniKlasor ? Cakisma.IkisiniDeTut : cakisma;
 
         IslemRaporu? karar = CakismayiCoz(
-            hedefKlasor, ad, klasorMu, etkin, eskisiniKurtar, out string hedef);
+            hedefKlasor, ad, klasorMu, etkin, eskisiniKurtar,
+            out string hedef, out bool eskisiCopeAlindi);
         if (karar is not null)
         {
             return karar;
         }
+
+        // HEDEF ONCEDEN VAR MIYDI: yarim kalani silerken tek olcut bu.
+        // Cakisma cozuldukten sonra hedefin var OLMAMASI gerekir; yine de
+        // olculuyor, cunku burada yanilmanin bedeli VAR OLAN BIR KLASORU
+        // icerigiyle silmek (CLAUDE.md 1a).
+        bool hedefVardi = Var(hedef);
 
         try
         {
@@ -304,11 +318,34 @@ public static class DosyaIslemleri
         catch (Exception hata)
         {
             // Yarim kalan kopya BIRAKILMAZ: kullanici onu tam sanip
-            // kaynagi silebilir (CLAUDE.md 1a).
-            YarimKalaniSil(hedef, klasorMu);
-            return HatayiCevir(hata);
+            // kaynagi silebilir (CLAUDE.md 1a). Ama BIZIM olusturmadigimiz
+            // bir hedefe DOKUNULMAZ.
+            if (!hedefVardi)
+            {
+                YarimKalaniSil(hedef, klasorMu);
+            }
+            return EskisiniSoyle(HatayiCevir(hata), eskisiCopeAlindi, ad);
         }
     }
+
+    /// <summary>
+    /// "Degistir" secilip hedefteki eski dosya cope alindiktan SONRA islem
+    /// patarsa, o dosya artik hedef klasorde DEGILDIR.
+    ///
+    /// OLCULDU (29.08.2026): ekranda "TASINMADI (yerinde duruyor)" yaziyordu
+    /// ve bu, hedef klasordeki dosyanin da yerinde oldugunu dusunduruyordu.
+    /// Kaynak yerindeydi, hedefteki dosya copteydi ve bunu HICBIR SATIR
+    /// soylemiyordu (CLAUDE.md 3).
+    /// </summary>
+    private static IslemRaporu EskisiniSoyle(IslemRaporu rapor, bool eskisiCopeAlindi, string ad)
+        => eskisiCopeAlindi
+            ? rapor with
+            {
+                Sebep = (rapor.Sebep ?? "Bilinmeyen sebep.")
+                    + $" Hedefteki eski \"{ad}\" çöp kutusuna alınmıştı; "
+                    + "oradan geri yükleyebilirsiniz.",
+            }
+            : rapor;
 
     private static void KlasoruKopyala(string kaynak, string hedef)
     {
@@ -357,9 +394,11 @@ public static class DosyaIslemleri
         bool klasorMu,
         Cakisma cakisma,
         Func<string, bool>? eskisiniKurtar,
-        out string hedef)
+        out string hedef,
+        out bool eskisiCopeAlindi)
     {
         hedef = WindowsYolu.Birlestir(hedefKlasor, ad);
+        eskisiCopeAlindi = false;
 
         if (!Var(hedef))
         {
@@ -372,7 +411,14 @@ public static class DosyaIslemleri
                 return new IslemRaporu(IslemSonucu.Atlandi, null, $"\"{ad}\" atlandı.");
 
             case Cakisma.IkisiniDeTut:
-                hedef = WindowsYolu.Birlestir(hedefKlasor, BosAdBul(hedefKlasor, ad));
+                if (BosAdBul(hedefKlasor, ad) is not string bosAd)
+                {
+                    return new IslemRaporu(
+                        IslemSonucu.ZatenVar, null,
+                        $"\"{ad}\" için boş bir ad bulunamadı (1000 kopya denendi).");
+                }
+
+                hedef = WindowsYolu.Birlestir(hedefKlasor, bosAd);
                 return null;
 
             case Cakisma.Degistir:
@@ -395,6 +441,11 @@ public static class DosyaIslemleri
                         $"\"{ad}\" değiştirilemedi: eskisi çöp kutusuna alınamadı.");
                 }
 
+                // BURADAN SONRA HEDEFTEKI DOSYA ARTIK ORADA DEGIL. Islem
+                // patlarsa cagiranin bunu SOYLEMESI gerekiyor; yoksa mesaj
+                // "yerinde duruyor" deyip hedefteki dosyanin cope gittigini
+                // gizler (CLAUDE.md 3).
+                eskisiCopeAlindi = true;
                 return null;
 
             default:
@@ -444,7 +495,13 @@ public static class DosyaIslemleri
             ? yol
             : yol + WindowsYolu.Ayiricisi(yol);
 
-    private static bool Var(string yol) => File.Exists(yol) || Directory.Exists(yol);
+    /// <summary>
+    /// Bu yolda bir sey var mi - dosya ya da klasor.
+    ///
+    /// ACIK (public) cunku ad kutusu da cakismayi ONDEN gostermek icin
+    /// soruyor; iki ayri "var mi" mantigi yazilmaz (CLAUDE.md 8).
+    /// </summary>
+    public static bool Var(string yol) => File.Exists(yol) || Directory.Exists(yol);
 
     /// <summary>
     /// Istisnayi ayirt edilebilir bir sebebe cevirir.
@@ -468,6 +525,7 @@ public static class DosyaIslemleri
             {
                 UnauthorizedAccessException => IslemSonucu.Erisim,
                 FileNotFoundException or DirectoryNotFoundException => IslemSonucu.Bulunamadi,
+                PathTooLongException => IslemSonucu.GecersizAd,
                 _ => IslemSonucu.Bilinmeyen,
             },
         };
@@ -484,6 +542,8 @@ public static class DosyaIslemleri
             + "kilit dosyaları Gezgin'de görünmez ama klasörü doldurur. " + hata.Message,
         IslemSonucu.Bulunamadi => "Bulunamadı. " + hata.Message,
         IslemSonucu.ZatenVar => "Hedefte aynı adda bir şey var. " + hata.Message,
+        IslemSonucu.GecersizAd => $"Yol Windows sınırından ({WindowsYolu.EnUzunYol} karakter) "
+            + "uzun. " + hata.Message,
         _ => hata.Message,
     };
 }

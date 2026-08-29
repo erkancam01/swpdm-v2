@@ -7,8 +7,9 @@ using SwPdm.Cekirdek;
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
-/// YENI KLASOR. Bu islemin butun karari burada: nereye acilir, adi ne olur,
-/// cakisirsa ne yapar, hata olursa ne yazar (CLAUDE.md 1b).
+/// YENI KLASOR. Bu islemin butun karari burada: nereye acilir, adi
+/// nasil sorulur, hata olursa ne yazar (CLAUDE.md 1b). Ad kutusunun kendisi
+/// ortak arac (Islemler/AdKutusu.cs) - ad degistirme de onu kullaniyor.
 /// </summary>
 internal sealed class YeniKlasorIslemi : IAgacIslemi
 {
@@ -49,8 +50,24 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
             return;
         }
 
-        // Gezgin gibi: cakisirsa "Yeni klasör (2)". Kullaniciya soru sormaz.
-        string ad = DosyaIslemleri.BosAdBul(ust, VarsayilanAd);
+        // ADI SORULUYOR (Erkan, 29.08.2026): burasi eskiden hic sormadan
+        // "Yeni klasör" adinda bir klasor aciyordu; kullanici adini vermek
+        // icin ayrica F2'ye basmak zorundaydi. Kutu, cakismayan bir ad ile
+        // DOLU geliyor - yani "Enter"a basmak eski davranisin aynisi.
+        string? onerilen = DosyaIslemleri.BosAdBul(ust, VarsayilanAd);
+        if (onerilen is null)
+        {
+            baglam.Bildir("Bu klasörde boş bir ad bulunamadı.");
+            return;
+        }
+
+        if (AdKutusu.Sor(baglam.Sahip, "Yeni klasör", onerilen, ust, uzantiliMi: false)
+            is not string ad)
+        {
+            baglam.Bildir("Yeni klasör açılmadı.");
+            return;
+        }
+
         IslemRaporu rapor = DosyaIslemleri.KlasorOlustur(ust, ad);
 
         if (!rapor.Oldu)

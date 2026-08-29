@@ -95,6 +95,11 @@ internal static class Aktar
         var olmayan = new List<string>();
         var atlanan = new List<string>();
         var ciftler = new List<(string Eski, string Yeni)>();
+
+        // "Degistir" ile UZERINE YAZILAN dosyalarin hedef yollari. Geri alma
+        // bunlari da geri yuklemeli; yoksa Ctrl+Z "geri alindi" der ama hedef
+        // klasordeki eski dosya copte kalir (CLAUDE.md 3).
+        var copeGidenler = new List<string>();
         bool kesildi = false;
 
         // "Hepsine uygula" isaretlenirse kalan cakismalar sorulmadan bu
@@ -114,7 +119,7 @@ internal static class Aktar
             string ad = WindowsYolu.DosyaAdi(yol);
             baglam.Ilerleme.Adim(i, yollar.Count, ad);
 
-            IslemRaporu rapor = Uygula(baglam, yol, hedefKlasor, kip, hepsiIcin);
+            IslemRaporu rapor = Uygula(baglam, yol, hedefKlasor, kip, hepsiIcin, copeGidenler);
 
             // Cakisma var ve daha once "hepsine" denmedi: KULLANICIYA SOR.
             if (rapor.Sonuc == IslemSonucu.ZatenVar && hepsiIcin == Cakisma.Sor)
@@ -133,7 +138,7 @@ internal static class Aktar
                     hepsiIcin = karar.Karar;
                 }
 
-                rapor = Uygula(baglam, yol, hedefKlasor, kip, karar.Karar);
+                rapor = Uygula(baglam, yol, hedefKlasor, kip, karar.Karar, copeGidenler);
             }
 
             if (rapor.Oldu)
@@ -185,7 +190,7 @@ internal static class Aktar
 
         baglam.Ilerleme.Bitti(() => Topla(
             baglam, ciftler, olan, olmayan, atlanan, kip, kesildi,
-            onarilan, onarimHatalari, tutan, onarimSebebi));
+            onarilan, onarimHatalari, tutan, onarimSebebi, copeGidenler));
     }
 
     /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
@@ -194,12 +199,23 @@ internal static class Aktar
         string yol,
         string hedefKlasor,
         AktarmaKipi kip,
-        Cakisma cakisma)
+        Cakisma cakisma,
+        List<string> copeGidenler)
     {
         // "Degistir" secilirse uzerine yazilan dosya YOK EDILMEZ, once cope
         // tasinir. Kurtarma tutmazsa cekirdek islemi YAPMAZ (CLAUDE.md 1a).
+        //
+        // KURTARILAN YOL YAZILIYOR: geri alma onu da geri yuklemek zorunda.
         bool Kurtar(string eskisi)
-            => baglam.Secim.CopKlasoru is string cop && Cop.Sil(cop, eskisi).Oldu;
+        {
+            if (baglam.Secim.CopKlasoru is not string cop || !Cop.Sil(cop, eskisi).Oldu)
+            {
+                return false;
+            }
+
+            copeGidenler.Add(eskisi);
+            return true;
+        }
 
         return kip == AktarmaKipi.Tasi
             ? DosyaIslemleri.Tasi(yol, hedefKlasor, cakisma, Kurtar)
@@ -258,23 +274,32 @@ internal static class Aktar
         int onarilan,
         IReadOnlyList<string> onarimHatalari,
         IReadOnlyList<OnarimPlani> onarilanPlanlar,
-        string? onarimSebebi)
+        string? onarimSebebi,
+        IReadOnlyList<string> copeGidenler)
     {
-        Pano.Bosalt();
+        AktarmaGeriAlma.Panoyu(kip, olan.Count > 0);
 
         if (olan.Count > 0)
         {
             // Her ozellik KENDI geri almasini yaziyor (CLAUDE.md 1b): defter
             // hicbir islemi adiyla bilmez.
             GeriAlDefteri.Kaydet(kip == AktarmaKipi.Tasi
-                ? TasimayiGeriAl(ciftler, onarilanPlanlar)
-                : KopyalamayiGeriAl(olan));
+                ? AktarmaGeriAlma.TasimayiGeriAl(
+                    ciftler, onarilanPlanlar, copeGidenler, baglam.Secim.CopKlasoru)
+                : AktarmaGeriAlma.KopyalamayiGeriAl(
+                    olan, copeGidenler, baglam.Secim.CopKlasoru));
         }
 
         baglam.Tazele(null);
 
         string is_ = kip == AktarmaKipi.Tasi ? "taşındı" : "kopyalandı";
-        string olumsuz = kip == AktarmaKipi.Tasi ? "TAŞINMADI (yerinde duruyor)" : "KOPYALANMADI";
+        // "KAYNAK yerinde" - eskiden yalnizca "yerinde duruyor" yaziyordu ve
+        // hedef klasordeki dosyanin da yerinde oldugu sanilirdi; "Degiştir"
+        // secilmisse o dosya cope alinmis olabiliyor. Cekirdek bunu artik
+        // sebebin sonuna yaziyor (DosyaIslemleri.EskisiniSoyle).
+        string olumsuz = kip == AktarmaKipi.Tasi
+            ? "TAŞINMADI (kaynak yerinde duruyor)"
+            : "KOPYALANMADI";
 
         // IKI AYRI HATA KUTUSU BIRLESTI (28.08.2026): once "Bazi ogeler
         // aktarilamadi" ve "Referans onarilamadi" ust uste iki kutu
@@ -352,88 +377,6 @@ internal static class Aktar
         }
 
         ReferansTazeleme.Sonra(baglam, dokunulan);
-    }
-
-    /// <summary>Tasinanlari eski klasorlerine geri gonderir.</summary>
-    /// <summary>
-    /// Tasimayi geri alir - VE onarimi da.
-    ///
-    /// CIFTLER TASINIYOR, iki ayri liste degil: onceden "kaynaklar" ve
-    /// "olan" listeleri ayni indisle eslestiriliyordu ve bir oge
-    /// tasinamayinca hizalama KAYIYORDU - yani geri alma dosyayi YANLIS
-    /// klasore gonderebilirdi. Cift tutmak bunu imkansiz kiliyor.
-    ///
-    /// ONARIM DA GERI ALINIR: yalnizca dosyalar geri tasinsaydi, ebeveynler
-    /// yeni yola bakar halde kalir ve GERI ALMA referansi KIRARDI.
-    /// </summary>
-    private static GeriAlinabilir TasimayiGeriAl(
-        IReadOnlyList<(string Eski, string Yeni)> ciftler,
-        IReadOnlyList<OnarimPlani> onarilanPlanlar)
-    {
-        var kopya = new List<(string Eski, string Yeni)>(ciftler);
-        var planlar = new List<OnarimPlani>(onarilanPlanlar);
-
-        return new GeriAlinabilir(
-            $"{kopya.Count} öğenin taşınması",
-            baglam =>
-            {
-                var olmayan = new List<string>();
-
-                // ONCE onarim geri alinir: dosyalar hala yeni yerindeyken
-                // yamalar okunabiliyor ve yazilabiliyor.
-                ReferansOnarimi.GeriOnar(planlar);
-
-                foreach ((string eski, string yeni) in kopya)
-                {
-                    IslemRaporu rapor = DosyaIslemleri.Tasi(yeni, WindowsYolu.Klasor(eski));
-                    if (!rapor.Oldu)
-                    {
-                        olmayan.Add(WindowsYolu.DosyaAdi(yeni)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
-                    }
-                }
-
-                var dokunulan = new List<string>();
-                foreach ((string eski, _) in kopya)
-                {
-                    dokunulan.Add(eski);
-                }
-
-                baglam.Referanslar.Tazele(dokunulan);
-                return olmayan;
-            });
-    }
-
-    /// <summary>Olusan kopyalari cope gonderir - kalici silmez.</summary>
-    private static GeriAlinabilir KopyalamayiGeriAl(IReadOnlyList<string> yeniYollar)
-    {
-        var yollar = new List<string>(yeniYollar);
-
-        return new GeriAlinabilir(
-            $"{yollar.Count} öğenin kopyalanması",
-            baglam =>
-            {
-                var olmayan = new List<string>();
-                if (baglam.Secim.CopKlasoru is not string cop)
-                {
-                    olmayan.Add("Kök klasör kapalı; kopyalar kaldırılamadı.");
-                    return olmayan;
-                }
-
-                foreach (string yol in yollar)
-                {
-                    // KALICI SILME YOK: kopyalar da cope gider, oradan geri
-                    // alinabilir (CLAUDE.md 1a).
-                    IslemRaporu rapor = Cop.Sil(cop, yol);
-                    if (!rapor.Oldu)
-                    {
-                        olmayan.Add(WindowsYolu.DosyaAdi(yol)
-                            + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
-                    }
-                }
-
-                return olmayan;
-            });
     }
 
     /// <summary>

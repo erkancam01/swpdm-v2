@@ -107,7 +107,8 @@ internal sealed class CopKutusuPenceresi : Form
         _liste.BeginUpdate();
         _liste.Items.Clear();
 
-        IReadOnlyList<CopOgesi> ogeler = Cop.Listele(_cop);
+        CopDurumu durum = Cop.Oku(_cop);
+        IReadOnlyList<CopOgesi> ogeler = durum.Ogeler;
         foreach (CopOgesi oge in ogeler)
         {
             var satir = new ListViewItem(oge.Ad) { Tag = oge };
@@ -121,9 +122,19 @@ internal sealed class CopKutusuPenceresi : Form
 
         _liste.EndUpdate();
 
-        _yer.Text = ogeler.Count == 0
-            ? "Çöp kutusu boş.   Yeri: " + _cop
-            : $"{ogeler.Count} öğe.   Yeri: {_cop}";
+        // "OKUNAMADI" ILE "BOS" AYRI SEY. Okunamayan bir kutuya "boş" demek,
+        // kullaniciya silinmis dosyalarinin kayboldugunu dusundurur
+        // (CLAUDE.md 3). Bozuk satir varsa o da sayilir: listede gorunmeyen
+        // ama diskte duran oge demektir.
+        string ek = durum.BozukSatir > 0
+            ? $"   ({durum.BozukSatir} kayıt satırı okunamadı)"
+            : string.Empty;
+
+        _yer.Text = !durum.Guvenilir
+            ? durum.Okunamadi + "   Yeri: " + _cop
+            : ogeler.Count == 0
+                ? "Çöp kutusu boş.   Yeri: " + _cop + ek
+                : $"{ogeler.Count} öğe.   Yeri: {_cop}{ek}";
 
         DugmeleriTazele();
     }
@@ -214,7 +225,19 @@ internal sealed class CopKutusuPenceresi : Form
 
     private void Bosalt()
     {
-        IReadOnlyList<CopOgesi> hepsi = Cop.Listele(_cop);
+        CopDurumu durum = Cop.Oku(_cop);
+        IReadOnlyList<CopOgesi> hepsi = durum.Ogeler;
+
+        // OKUNAMAYAN KUTU BOSALTILMAZ: elimizdeki liste eksik olabilir ve
+        // "boşalttım" demek yalan olurdu (CLAUDE.md 3).
+        if (!durum.Guvenilir)
+        {
+            MessageBox.Show(
+                this, durum.Okunamadi, "Çöp kutusu boşaltılamadı",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
         if (hepsi.Count == 0)
         {
             return;

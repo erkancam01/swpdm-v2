@@ -135,7 +135,7 @@ internal sealed class SilIslemi : IAgacIslemi
                 foreach (string yol in yollar)
                 {
                     CopOgesi? oge = null;
-                    foreach (CopOgesi aday in Cop.Listele(cop))
+                    foreach (CopOgesi aday in Cop.Oku(cop).Ogeler)
                     {
                         if (string.Equals(aday.EskiYol, yol, StringComparison.OrdinalIgnoreCase))
                         {

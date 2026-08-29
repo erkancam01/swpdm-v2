@@ -21,6 +21,25 @@ public sealed record CopOgesi(
     bool KlasorMu);
 
 /// <summary>
+/// Cop kutusunun OKUNMUS hali.
+///
+/// NEDEN AYRI BIR TIP: "bos" ile "okunamadi" ayni sey degil. Ikisini de bos
+/// liste ile anlatmak, kullaniciya silinmis dosyalarinin kayboldugunu
+/// dusundurur (CLAUDE.md 3).
+/// </summary>
+/// <param name="Ogeler">Diskte karsiligi bulunan ogeler, en yeni basta.</param>
+/// <param name="Okunamadi">Kayit okunamadiysa sebebi; okunduysa null.</param>
+/// <param name="BozukSatir">Cozulemeyen kayit satiri sayisi.</param>
+public sealed record CopDurumu(
+    IReadOnlyList<CopOgesi> Ogeler,
+    string? Okunamadi,
+    int BozukSatir)
+{
+    /// <summary>Kayit okunabildi mi. false ise SAYI GOSTERILMEZ.</summary>
+    public bool Guvenilir => Okunamadi is null;
+}
+
+/// <summary>
 /// COP KUTUSU - uygulamanin kendi cop klasoru, kokun icinde.
 ///
 /// NEDEN WINDOWS COP KUTUSU DEGIL - olculmus gerekce:
@@ -122,10 +141,11 @@ public static class Cop
         string ad = WindowsYolu.DosyaAdi(yol);
         long boyut = klasorMu ? -1 : YeniBoyut(yol);
 
+        string hedef = WindowsYolu.Birlestir(kutu, ad);
+
         try
         {
             Directory.CreateDirectory(kutu);
-            string hedef = WindowsYolu.Birlestir(kutu, ad);
 
             if (klasorMu)
             {
@@ -135,16 +155,66 @@ public static class Cop
             {
                 File.Move(yol, hedef, overwrite: false);
             }
-
-            // Kayit tasimadan SONRA yazilir: tasima tutmadiysa kayitta olmayan
-            // bir oge birakmayiz (CLAUDE.md 3: indekse yalan yazma).
-            KayitEkle(cop, new CopOgesi(no, ad, yol, DateTime.Now, boyut, klasorMu));
-            return IslemRaporu.Basarili(hedef);
         }
         catch (Exception hata)
         {
             TemizlemeyeCalis(kutu);
             return DosyaIslemleri.HatayiCevir(hata);
+        }
+
+        // BURADAN SONRASI AYRI BIR TRY - VE SEBEBI OLCULDU:
+        // kayit tasimadan SONRA yazilir (tasima tutmadiysa kayitta olmayan
+        // bir oge birakmayiz). Ama ikisi AYNI try icindeyken, tasima olup
+        // kayit yazilamadiginda ortaya SESSIZ BIR KAYIP cikiyordu:
+        // dosya cop klasorunun icinde duruyor, kayit.txt'te olmadigi icin
+        // Listele onu GOSTERMIYOR, cagiran da "SILINEMEDI" diyor. Yani
+        // kullaniciya gore dosya yok olmus oluyor (CLAUDE.md 3).
+        // File.AppendAllText ag surucusunde en olasi hata noktasi.
+        try
+        {
+            KayitEkle(cop, new CopOgesi(no, ad, yol, DateTime.Now, boyut, klasorMu));
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            return KayitYazilamadi(kutu, hedef, yol, ad, klasorMu, hata);
+        }
+
+        return IslemRaporu.Basarili(hedef);
+    }
+
+    /// <summary>
+    /// Tasima OLDU ama kayit yazilamadi. Once dosya YERINE geri konur -
+    /// boylece kullanicinin gordugu ile diskteki hal ayni kalir. Geri de
+    /// konamiyorsa dosyanin NEREDE oldugu yazilir; "silinemedi" deyip
+    /// susmak, kullaniciya dosyayi kaybettirir (CLAUDE.md 3).
+    /// </summary>
+    private static IslemRaporu KayitYazilamadi(
+        string kutu, string hedef, string eskiYol, string ad, bool klasorMu, Exception hata)
+    {
+        try
+        {
+            if (klasorMu)
+            {
+                Directory.Move(hedef, eskiYol);
+            }
+            else
+            {
+                File.Move(hedef, eskiYol, overwrite: false);
+            }
+
+            TemizlemeyeCalis(kutu);
+            return new IslemRaporu(
+                IslemSonucu.Bilinmeyen, null,
+                $"\"{ad}\" silinmedi: çöp kaydı yazılamadı ({hata.Message}). "
+                + "Dosya yerinde bırakıldı.");
+        }
+        catch (Exception geri) when (geri is IOException or UnauthorizedAccessException)
+        {
+            return new IslemRaporu(
+                IslemSonucu.Bilinmeyen, null,
+                $"\"{ad}\" çöp kutusuna taşındı ama kaydı yazılamadı "
+                + $"({hata.Message}) ve geri de konamadı ({geri.Message}). "
+                + $"Dosya şurada: {hedef}");
         }
     }
 
@@ -154,13 +224,17 @@ public static class Cop
     /// Diskte KARSILIGI OLMAYAN kayitlar atlanir - kullaniciya var olmayan bir
     /// dosyayi "geri yukleyebilirsin" diye gostermek yalan olur.
     /// </summary>
-    public static IReadOnlyList<CopOgesi> Listele(string cop)
+    public static CopDurumu Oku(string cop)
     {
         string kayit = WindowsYolu.Birlestir(cop, KayitAdi);
 
         if (!File.Exists(kayit))
         {
-            return [];
+            // Ayni adda bir KLASOR duruyorsa kayit okunamiyor demektir;
+            // "hic silinmemis" ile karistirilmaz (CLAUDE.md 3).
+            return Directory.Exists(kayit)
+                ? new CopDurumu([], "Çöp kaydı okunamadı: " + kayit + " bir klasör.", 0)
+                : new CopDurumu([], null, 0);   // hic silinmemis: GERCEKTEN bos
         }
 
         string[] satirlar;
@@ -170,16 +244,28 @@ public static class Cop
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
-            return [];
+            // BOS LISTE "YOK" DEMEK DEGILDIR (CLAUDE.md 3). Burasi eskiden
+            // sessizce [] donuyordu ve ekranda "Çöp kutusu boş." yaziyordu:
+            // kullanici okunamayan bir kutuya bakip "silinenlerim gitmis"
+            // saniyordu. Sebep artik cagirana kadar gidiyor.
+            return new CopDurumu([], "Çöp kaydı okunamadı: " + hata.Message, 0);
         }
 
         var sonuc = new List<CopOgesi>(satirlar.Length);
+        int bozuk = 0;
         foreach (string satir in satirlar)
         {
             CopOgesi? oge = Coz(satir);
             if (oge is null)
             {
-                continue;   // bozuk satir uygulamayi dusurmez, atlanir
+                // Bozuk satir uygulamayi dusurmez - ama SAYILIR: sessizce
+                // atlanan bir satir, listede gorunmeyen bir dosya demek.
+                if (satir.Trim().Length > 0)
+                {
+                    bozuk++;
+                }
+
+                continue;
             }
 
             if (Var(IcerdekiYol(cop, oge)))
@@ -189,7 +275,7 @@ public static class Cop
         }
 
         sonuc.Reverse();
-        return sonuc;
+        return new CopDurumu(sonuc, null, bozuk);
     }
 
     /// <summary>Bir ogeyi eski yerine geri koyar.</summary>
@@ -212,7 +298,13 @@ public static class Cop
 
             // Ayni adda bir sey geri gelmisse USTUNE YAZILMAZ; numaralanir ve
             // bu cagirana SOYLENIR (rapor.YeniYol'a bakilir).
-            string ad = DosyaIslemleri.BosAdBul(ustKlasor, oge.Ad);
+            if (DosyaIslemleri.BosAdBul(ustKlasor, oge.Ad) is not string ad)
+            {
+                return new IslemRaporu(
+                    IslemSonucu.ZatenVar, null,
+                    $"\"{oge.Ad}\" geri yüklenemedi: eski klasöründe boş bir ad bulunamadı.");
+            }
+
             string hedef = WindowsYolu.Birlestir(ustKlasor, ad);
 
             if (oge.KlasorMu)

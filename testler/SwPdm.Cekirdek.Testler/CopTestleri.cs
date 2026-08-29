@@ -64,7 +64,7 @@ public class CopTestleri : IDisposable
         Assert.True(rapor.Oldu);
         Assert.False(File.Exists(yol));
 
-        IReadOnlyList<CopOgesi> liste = Cop.Listele(_cop);
+        IReadOnlyList<CopOgesi> liste = Cop.Oku(_cop).Ogeler;
         Assert.Single(liste);
         Assert.Equal("Parca1.SLDPRT", liste[0].Ad);
         Assert.Equal(yol, liste[0].EskiYol);
@@ -77,11 +77,11 @@ public class CopTestleri : IDisposable
         string yol = DosyaKoy("Parca1.SLDPRT", "onemli veri");
         Cop.Sil(_cop, yol);
 
-        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Listele(_cop)[0]);
+        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Oku(_cop).Ogeler[0]);
 
         Assert.True(rapor.Oldu);
         Assert.Equal("onemli veri", File.ReadAllText(yol));
-        Assert.Empty(Cop.Listele(_cop));
+        Assert.Empty(Cop.Oku(_cop).Ogeler);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class CopTestleri : IDisposable
         Assert.True(Cop.Sil(_cop, Yol("montaj")).Oldu);
         Assert.False(Directory.Exists(Yol("montaj")));
 
-        CopOgesi oge = Cop.Listele(_cop)[0];
+        CopOgesi oge = Cop.Oku(_cop).Ogeler[0];
         Assert.True(oge.KlasorMu);
         Assert.True(Cop.GeriYukle(_cop, oge).Oldu);
         Assert.Equal("ic veri", File.ReadAllText(Yol("montaj", "ic.SLDPRT")));
@@ -106,7 +106,7 @@ public class CopTestleri : IDisposable
         Cop.Sil(_cop, Yol("alt", "Parca.SLDPRT"));
         Directory.Delete(Yol("alt"), recursive: true);
 
-        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Listele(_cop)[0]);
+        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Oku(_cop).Ogeler[0]);
 
         // Klasor yok diye "olmaz" demek, dosyayi copte mahsur birakirdi.
         Assert.True(rapor.Oldu);
@@ -120,7 +120,7 @@ public class CopTestleri : IDisposable
         Cop.Sil(_cop, yol);
         File.WriteAllText(yol, "yeni");   // ayni ada baska bir dosya kondu
 
-        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Listele(_cop)[0]);
+        IslemRaporu rapor = Cop.GeriYukle(_cop, Cop.Oku(_cop).Ogeler[0]);
 
         Assert.True(rapor.Oldu);
         Assert.Equal("yeni", File.ReadAllText(yol));                    // dokunulmadi
@@ -138,9 +138,9 @@ public class CopTestleri : IDisposable
         Assert.True(Cop.Sil(_cop, Yol("a", "P.SLDPRT")).Oldu);
         Assert.True(Cop.Sil(_cop, Yol("b", "P.SLDPRT")).Oldu);
 
-        Assert.Equal(2, Cop.Listele(_cop).Count);
+        Assert.Equal(2, Cop.Oku(_cop).Ogeler.Count);
 
-        foreach (CopOgesi oge in Cop.Listele(_cop))
+        foreach (CopOgesi oge in Cop.Oku(_cop).Ogeler)
         {
             Assert.True(Cop.GeriYukle(_cop, oge).Oldu);
         }
@@ -154,8 +154,8 @@ public class CopTestleri : IDisposable
     {
         Cop.Sil(_cop, DosyaKoy("P.SLDPRT"));
 
-        Assert.True(Cop.KaliciSil(_cop, Cop.Listele(_cop)[0]).Oldu);
-        Assert.Empty(Cop.Listele(_cop));
+        Assert.True(Cop.KaliciSil(_cop, Cop.Oku(_cop).Ogeler[0]).Oldu);
+        Assert.Empty(Cop.Oku(_cop).Ogeler);
     }
 
     [Fact]
@@ -167,19 +167,19 @@ public class CopTestleri : IDisposable
             "bu bozuk bir satir" + Environment.NewLine);
 
         // Bozuk satir ATLANIR; saglam olan yine gorunur.
-        Assert.Single(Cop.Listele(_cop));
+        Assert.Single(Cop.Oku(_cop).Ogeler);
     }
 
     [Fact]
     public void Listele_DISKTE_OLMAYAN_KAYIT_GOSTERILMEZ()
     {
         Cop.Sil(_cop, DosyaKoy("P.SLDPRT"));
-        CopOgesi oge = Cop.Listele(_cop)[0];
+        CopOgesi oge = Cop.Oku(_cop).Ogeler[0];
         Directory.Delete(WindowsYolu.Birlestir(_cop, oge.No), recursive: true);
 
         // CLAUDE.md 3: olmayan bir dosyayi "geri yukleyebilirsin" diye
         // gostermek yalandir.
-        Assert.Empty(Cop.Listele(_cop));
+        Assert.Empty(Cop.Oku(_cop).Ogeler);
     }
 
     [Fact]
@@ -219,5 +219,5 @@ public class CopTestleri : IDisposable
 
     [Fact]
     public void Listele_BosCopBosListe()
-        => Assert.Empty(Cop.Listele(_cop));
+        => Assert.Empty(Cop.Oku(_cop).Ogeler);
 }
