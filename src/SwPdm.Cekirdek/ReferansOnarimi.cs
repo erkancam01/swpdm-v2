@@ -481,5 +481,5 @@ public static class ReferansOnarimi
 
     private static void Sil(string yol) => DosyaIslemleri.GeciciyiSil(yol);
 
-    private static bool Dosya(Exception hata) => DosyaIslemleri.DiskHatasi(hata);
+    private static bool Dosya(Exception hata) => IslemSonuclari.DiskHatasi(hata);
 }

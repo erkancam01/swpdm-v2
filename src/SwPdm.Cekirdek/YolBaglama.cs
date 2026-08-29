@@ -146,7 +146,7 @@ public static class YolBaglama
             DosyaIslemleri.GeciciyiSil(yedek);
             return null;
         }
-        catch (Exception hata) when (DosyaIslemleri.DiskHatasi(hata))
+        catch (Exception hata) when (IslemSonuclari.DiskHatasi(hata))
         {
             DosyaIslemleri.GeciciyiSil(yeni);
             return hata.Message;

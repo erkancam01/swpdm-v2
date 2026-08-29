@@ -159,7 +159,7 @@ public static class Cop
         catch (Exception hata)
         {
             TemizlemeyeCalis(kutu);
-            return DosyaIslemleri.HatayiCevir(hata);
+            return IslemSonuclari.HatayiCevir(hata);
         }
 
         // BURADAN SONRASI AYRI BIR TRY - VE SEBEBI OLCULDU:
@@ -373,7 +373,7 @@ public static class Cop
         }
         catch (Exception hata)
         {
-            return DosyaIslemleri.HatayiCevir(hata);
+            return IslemSonuclari.HatayiCevir(hata);
         }
     }
 
@@ -393,7 +393,7 @@ public static class Cop
         }
         catch (Exception hata)
         {
-            return DosyaIslemleri.HatayiCevir(hata);
+            return IslemSonuclari.HatayiCevir(hata);
         }
     }
 
