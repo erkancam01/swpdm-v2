@@ -279,8 +279,8 @@ public static class ReferansOnarimi
     {
         foreach (string k in kume)
         {
-            if (string.Equals(k, yol, StringComparison.OrdinalIgnoreCase)
-                || yol.StartsWith(k + WindowsYolu.Ayirici, StringComparison.OrdinalIgnoreCase))
+            // "Altinda mi" TEK kopyadan sorulur (CLAUDE.md 8).
+            if (WindowsYolu.AltindaMi(yol, k))
             {
                 return true;
             }

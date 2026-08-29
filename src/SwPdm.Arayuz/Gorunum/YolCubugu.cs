@@ -121,8 +121,9 @@ internal sealed class YolCubugu : FlowLayoutPanel
         string kokAdi = _kok is null ? string.Empty : WindowsYolu.DosyaAdi(_kok);
 
         // Kokten asagisi: kokun uzunlugundan sonrasini bolumlere ayir.
-        bool icerde = _kok is not null
-            && klasor.StartsWith(_kok, StringComparison.OrdinalIgnoreCase);
+        // "Altinda mi" TEK kopyadan (CLAUDE.md 8) - onceki elle StartsWith
+        // ayiricisizdi ve "C:\Kok2"yi kokun ici sayiyordu.
+        bool icerde = _kok is not null && WindowsYolu.AltindaMi(klasor, _kok);
 
         if (icerde && _kok is not null)
         {

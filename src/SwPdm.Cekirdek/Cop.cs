@@ -279,6 +279,23 @@ public static class Cop
     }
 
     /// <summary>
+    /// Geri yukleme raporunda oge ESKI ADINDAN farkli bir adla mi dondu;
+    /// dondurduyse yeni adi, donmediyse null.
+    ///
+    /// NEDEN BURADA - iki cagiran (Ctrl+Z ve cop penceresi) ayni iki satiri
+    /// KOPYALAMISTI ve kopyalardan biri bir kez zaten ayrismisti
+    /// (CLAUDE.md 8). Karar, raporu ureten sinifta durur.
+    /// </summary>
+    public static string? DegisenAd(IslemRaporu rapor, CopOgesi oge)
+    {
+        ArgumentNullException.ThrowIfNull(rapor);
+        ArgumentNullException.ThrowIfNull(oge);
+
+        string yeniAd = WindowsYolu.DosyaAdi(rapor.YeniYol ?? string.Empty);
+        return string.Equals(yeniAd, oge.Ad, StringComparison.Ordinal) ? null : yeniAd;
+    }
+
+    /// <summary>
     /// Bir ogeyi eski yerine geri koyar.
     ///
     /// CAKISMA KARARI DISARIDAN GELIR (29.08.2026). Once burasi her zaman

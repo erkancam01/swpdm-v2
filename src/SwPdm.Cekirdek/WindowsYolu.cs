@@ -312,6 +312,43 @@ public static class WindowsYolu
     private static string[] Parcala(string yol)
         => yol.Split(new[] { Ayirici, EgikAyirici }, StringSplitOptions.RemoveEmptyEntries);
 
+    /// <summary>
+    /// <paramref name="yol"/>, <paramref name="klasor"/>'un KENDISI mi ya da
+    /// ALTINDA mi (buyuk-kucuk harf duyarsiz, iki ayirici da taninir).
+    ///
+    /// NEDEN TEK KOPYA - OLCULDU (29.08.2026): bu soru bes yerde uc farkli
+    /// bicimde elle yazilmisti ve ikisi HATALIYDI - ayirici eklemeyen
+    /// StartsWith, "C:\Kok2"yi "C:\Kok"un ici sayiyordu. CLAUDE.md 8'in
+    /// "yolun son parcasi dokuz yerdeydi" dersinin aynisi, bu kez
+    /// "altinda mi" sorusunda. Ikinci kopya YASAK; bu soruyu soran herkes
+    /// buraya gelir.
+    /// </summary>
+    public static bool AltindaMi(string? yol, string? klasor)
+    {
+        if (string.IsNullOrWhiteSpace(yol) || string.IsNullOrWhiteSpace(klasor))
+        {
+            return false;
+        }
+
+        if (string.Equals(yol, klasor, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Surucu koku ("C:\") zaten ayiriciyla bitiyor; ona bir ayirici daha
+        // aramak her yolu disarida birakirdi (CLAUDE.md 4'un kok tuzagi).
+        if (AyiriciMi(klasor[^1]))
+        {
+            return yol.StartsWith(klasor, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Ayirici, klasor adinin BITTIGI yerde olmali: "C:\Kok2\a" yolunun
+        // 6. karakteri '2' oldugu icin "C:\Kok"un altina girmez.
+        return yol.Length > klasor.Length
+            && AyiriciMi(yol[klasor.Length])
+            && yol.StartsWith(klasor, StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>Windows'ta bir dosya/klasor adinin en fazla karakteri.</summary>
     public const int EnUzunAd = 255;
 

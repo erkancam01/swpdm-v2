@@ -160,17 +160,10 @@ internal sealed class SilIslemi : IAgacIslemi
                         continue;
                     }
 
-                    // AD DEGISTIYSE SOYLENIR (29.08.2026). Cop.GeriYukle
-                    // cakismada numaralandiriyor ve bunu YeniYol'da
-                    // soyluyor; cop kutusu penceresi bunu raporluyordu ama
-                    // Ctrl+Z yolu HIC BAKMIYORDU - yalnizca "geri alindi"
-                    // diyordu. Ayni cekirdek cagrisinin iki cagirani
-                    // ayrismisti (CLAUDE.md 8).
-                    //
-                    // Onemi: adi degisen dosyanin referansi KIRILIR, cunku
-                    // onu kullanan montaj eski adi arar.
-                    string yeniAd = WindowsYolu.DosyaAdi(rapor.YeniYol ?? string.Empty);
-                    if (!string.Equals(yeniAd, oge.Ad, StringComparison.Ordinal))
+                    // Ad degistiyse soylenir - karar TEK yerde, Cop.DegisenAd
+                    // (CLAUDE.md 8; onemi: adi degisen dosyanin referansi
+                    // kirilir, onu kullanan montaj eski adi arar).
+                    if (Cop.DegisenAd(rapor, oge) is string yeniAd)
                     {
                         olmayan.Add($"{oge.Ad} — aynı adda bir şey olduğu için "
                             + $"\"{yeniAd}\" olarak geri geldi.");

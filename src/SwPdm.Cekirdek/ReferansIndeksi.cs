@@ -340,7 +340,9 @@ public sealed class ReferansIndeksi
     {
         foreach (string s in secili)
         {
-            if (yol.StartsWith(s + WindowsYolu.Ayirici, StringComparison.OrdinalIgnoreCase))
+            // "Altinda mi" TEK kopyadan sorulur (CLAUDE.md 8). Esitlik de
+            // dahil - cagiran zaten Contains ile eledigi icin zararsiz.
+            if (WindowsYolu.AltindaMi(yol, s))
             {
                 return true;
             }

@@ -147,7 +147,9 @@ internal sealed class CopKutusuPenceresi : Form
         {
             var satir = new ListViewItem(oge.Ad) { Tag = oge };
             satir.SubItems.Add(WindowsYolu.Klasor(oge.EskiYol));
-            satir.SubItems.Add(oge.Zaman.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture));
+            // Tarih bicimi TEK yerde (Zaman.Yaz) - bir alt satirdaki Boyut.Yaz
+            // ile ayni disiplin (CLAUDE.md 8).
+            satir.SubItems.Add(Zaman.Yaz(oge.Zaman));
 
             // Klasorun boyutu BILINMIYOR ve "0 B" yazmak yalan olurdu.
             satir.SubItems.Add(oge.KlasorMu ? "klasör" : Boyut.Yaz(oge.Boyut));
@@ -287,8 +289,8 @@ internal sealed class CopKutusuPenceresi : Form
 
             // Ayni adda bir sey varsa numaralanmis olabilir; bu SOYLENIR,
             // yoksa kullanici dosyayi eski adiyla arar ve bulamaz.
-            string yeniAd = WindowsYolu.DosyaAdi(rapor.YeniYol ?? string.Empty);
-            if (!string.Equals(yeniAd, oge.Ad, StringComparison.Ordinal))
+            // Karar TEK yerde: Cop.DegisenAd (CLAUDE.md 8).
+            if (Cop.DegisenAd(rapor, oge) is string yeniAd)
             {
                 adiDegisen.Add($"{oge.Ad}  →  {yeniAd}");
             }

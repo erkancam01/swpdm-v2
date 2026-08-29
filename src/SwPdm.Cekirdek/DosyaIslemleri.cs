@@ -462,12 +462,85 @@ public static class DosyaIslemleri
         }
     }
 
-    /// <summary>Hedef klasor, kaynak klasorun kendi altinda mi.</summary>
+    /// <summary>
+    /// Hedef klasor, kaynak klasorun kendi altinda mi. Karari
+    /// <see cref="WindowsYolu.AltindaMi"/> verir - "altinda mi" sorusunun
+    /// TEK kopyasi orada (CLAUDE.md 8); buradaki ad yalnizca niyeti tasiyor.
+    /// </summary>
     public static bool KendiAltindaMi(string kaynakKlasor, string hedefKlasor)
+        => WindowsYolu.AltindaMi(hedefKlasor, kaynakKlasor);
+
+    /// <summary>
+    /// Bir klasoru YALNIZCA BOSSA siler; icinde bir sey varsa DOKUNMAZ ve
+    /// sebebini soyler.
+    ///
+    /// NEDEN BURADA (29.08.2026 denetimi): "yeni klasor"un geri almasi bu isi
+    /// KENDI dosyasinda Directory.Delete ile yapiyordu - yani bir silme yolu
+    /// "diskteki dosya islemleri tek kapidan" kuralinin (CLAUDE.md 11
+    /// tablosu) DISINDAN geciyordu ve kendi istisna yakalamasini tasiyordu.
+    /// </summary>
+    public static IslemRaporu BosKlasoruSil(string yol)
     {
-        string kaynak = SonuAyiriciyaGetir(kaynakKlasor);
-        string hedef = SonuAyiriciyaGetir(hedefKlasor);
-        return hedef.StartsWith(kaynak, StringComparison.OrdinalIgnoreCase);
+        try
+        {
+            if (!Directory.Exists(yol))
+            {
+                // Zaten yok: silinmek istenen sey ortada olmadigina gore
+                // islem AMACINA ulasmis sayilir; "bulunamadi" hatasi vermek
+                // geri almayi bosuna yarim gosterirdi.
+                return new IslemRaporu(IslemSonucu.Tamam, null, null);
+            }
+
+            if (Directory.GetFileSystemEntries(yol).Length > 0)
+            {
+                return new IslemRaporu(
+                    IslemSonucu.Dolu, null,
+                    $"\"{WindowsYolu.DosyaAdi(yol)}\" içine bir şeyler konmuş, silinmedi.");
+            }
+
+            Directory.Delete(yol);
+            return new IslemRaporu(IslemSonucu.Tamam, null, null);
+        }
+        catch (Exception hata)
+        {
+            return HatayiCevir(hata);
+        }
+    }
+
+    /// <summary>Bir yolun kutuda gosterilecek ozeti.</summary>
+    /// <param name="KlasorMu">Klasor mu.</param>
+    /// <param name="Boyut">Dosyaysa boyutu; klasorse ya da okunamadiysa null.</param>
+    /// <param name="Degistirme">Son degistirme; okunamadiysa null.</param>
+    public sealed record YolOzeti(bool KlasorMu, long? Boyut, DateTime? Degistirme);
+
+    /// <summary>
+    /// Yolun boyut/tarih ozetini OKUR. Okunamayan alan null doner - uydurma
+    /// deger gosterilmez (CLAUDE.md 3).
+    ///
+    /// NEDEN BURADA: cakisma kutusu bu bilgiyi diskten KENDISI okuyordu
+    /// (FileInfo + GetLastWriteTime + kendi istisna yakalamasi). Diske giden
+    /// her yol tek kapidan gecer.
+    /// </summary>
+    public static YolOzeti Ozet(string yol)
+    {
+        bool klasorMu = Directory.Exists(yol);
+
+        try
+        {
+            if (klasorMu)
+            {
+                return new YolOzeti(true, null, Directory.GetLastWriteTime(yol));
+            }
+
+            var bilgi = new FileInfo(yol);
+            return bilgi.Exists
+                ? new YolOzeti(false, bilgi.Length, bilgi.LastWriteTime)
+                : new YolOzeti(false, null, null);
+        }
+        catch (Exception hata) when (DiskHatasi(hata))
+        {
+            return new YolOzeti(klasorMu, null, null);
+        }
     }
 
     /// <summary>
@@ -498,11 +571,6 @@ public static class DosyaIslemleri
     public static bool DiskHatasi(Exception hata)
         => hata is IOException or UnauthorizedAccessException
             or NotSupportedException or ArgumentException;
-
-    private static string SonuAyiriciyaGetir(string yol)
-        => yol.Length > 0 && WindowsYolu.AyiriciMi(yol[^1])
-            ? yol
-            : yol + WindowsYolu.Ayiricisi(yol);
 
     /// <summary>
     /// Bu yolda bir sey var mi - dosya ya da klasor.

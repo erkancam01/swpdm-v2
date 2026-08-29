@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -103,26 +102,14 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
             Ters: () => YenidenAcmasi(yol, ad),
             Uygula: baglam =>
             {
+                // Diske giden her yol TEK kapidan (DosyaIslemleri) gecer -
+                // burasi eskiden Directory.Delete'i kendisi cagiriyordu ve
+                // "bossa sil" karari cekirdegin disinda yasiyordu (CLAUDE.md 8).
                 var olmayan = new List<string>();
-
-                try
+                IslemRaporu rapor = DosyaIslemleri.BosKlasoruSil(yol);
+                if (!rapor.Oldu)
                 {
-                    if (!Directory.Exists(yol))
-                    {
-                        return olmayan;   // zaten yok, geri alinacak bir sey de yok
-                    }
-
-                    if (Directory.GetFileSystemEntries(yol).Length > 0)
-                    {
-                        olmayan.Add($"{ad} — içine bir şeyler konmuş, silinmedi.");
-                        return olmayan;
-                    }
-
-                    Directory.Delete(yol);
-                }
-                catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
-                {
-                    olmayan.Add(ad + " — " + hata.Message);
+                    olmayan.Add(ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
                 }
 
                 return olmayan;

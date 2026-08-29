@@ -288,7 +288,10 @@ internal sealed class AgacDoldurucu
             return false;
         }
 
-        if (!yol.StartsWith(kok, StringComparison.OrdinalIgnoreCase))
+        // "Altinda mi" TEK kopyadan (CLAUDE.md 8). Onceki elle StartsWith
+        // AYIRICISIZDI ve "C:\Kok2"yi "C:\Kok"un ici sayiyordu - yani komsu
+        // bir klasorun dosyasina gitmeye kalkip yanlis dallari acabilirdi.
+        if (!WindowsYolu.AltindaMi(yol, kok))
         {
             return false;   // taranan kokun disinda
         }
@@ -298,8 +301,7 @@ internal sealed class AgacDoldurucu
         // calismaz cunku alt dugum daha var olmamis olur.
         var zincir = new List<string>();
         string klasor = WindowsYolu.Klasor(yol);
-        while (klasor.Length > kok.Length
-               && klasor.StartsWith(kok, StringComparison.OrdinalIgnoreCase))
+        while (klasor.Length > kok.Length && WindowsYolu.AltindaMi(klasor, kok))
         {
             zincir.Add(klasor);
             klasor = WindowsYolu.Klasor(klasor);

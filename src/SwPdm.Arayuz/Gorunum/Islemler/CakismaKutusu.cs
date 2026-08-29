@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -30,7 +29,9 @@ internal static class CakismaKutusu
     /// <summary>Kullaniciya sorar.</summary>
     internal static CakismaKarari Sor(IWin32Window sahip, string kaynak, string hedef)
     {
-        bool klasorMu = Directory.Exists(kaynak);
+        // Diske TEK kapidan gidilir (CLAUDE.md 8): once burasi FileInfo ve
+        // GetLastWriteTime'i kendisi cagiriyordu.
+        bool klasorMu = DosyaIslemleri.Ozet(kaynak).KlasorMu;
 
         var pencere = new Form
         {
@@ -167,20 +168,16 @@ internal static class CakismaKutusu
     /// </summary>
     private static string Anlat(string yol)
     {
-        try
-        {
-            if (Directory.Exists(yol))
-            {
-                return $"  Klasör  ·  değiştirme: "
-                     + Zaman.Yaz(Directory.GetLastWriteTime(yol));
-            }
+        DosyaIslemleri.YolOzeti ozet = DosyaIslemleri.Ozet(yol);
 
-            var bilgi = new FileInfo(yol);
-            return $"  {Boyut.Yaz(bilgi.Length)}  ·  değiştirme: {Zaman.Yaz(bilgi.LastWriteTime)}";
-        }
-        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        if (ozet.Degistirme is not DateTime zaman)
         {
             return "  (okunamadı)";
         }
+
+        return ozet.KlasorMu
+            ? "  Klasör  ·  değiştirme: " + Zaman.Yaz(zaman)
+            : $"  {(ozet.Boyut is long b ? Boyut.Yaz(b) : "boyut okunamadı")}"
+              + $"  ·  değiştirme: {Zaman.Yaz(zaman)}";
     }
 }
