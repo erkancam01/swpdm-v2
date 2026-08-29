@@ -78,6 +78,31 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
         }
     }
 
+    /// <summary>
+    /// SUZGEC KISAYOLU (Ctrl+Shift+F): siradaki suzgece gecer, sonunda
+    /// "Tümü"ye doner. Doner: tus kullanildi mi.
+    ///
+    /// NEDEN VAR - IKI SEBEP:
+    /// 1. Suzgec YALNIZCA fareyle kullanilabiliyordu (dugmeler TabStop=false
+    ///    ve hicbir tus bagli degildi); siralamanin klavye karsiligi vardi,
+    ///    suzgecin yoktu.
+    /// 2. CLAUDE.md 11: Wine'da acilir menu coktugu icin "menusuz kalan
+    ///    ozellik kor noktadir" - kisayol, ozelligi olculebilir de kiliyor.
+    ///
+    /// Karar BURADA (CLAUDE.md 1b): AnaForm yalnizca tusu iletiyor.
+    /// </summary>
+    internal bool TusaBasildi(Keys tus)
+    {
+        if (tus != (Keys.Control | Keys.Shift | Keys.F) || _dugmeler.Count == 0)
+        {
+            return false;
+        }
+
+        int siradaki = _secili is null ? 0 : _dugmeler.IndexOf(_secili) + 1;
+        Sec(_dugmeler[siradaki >= _dugmeler.Count ? 0 : siradaki]);
+        return true;
+    }
+
     private void Ekle(string etiket, DosyaTuru? tur)
     {
         Button d = Dugme(etiket);

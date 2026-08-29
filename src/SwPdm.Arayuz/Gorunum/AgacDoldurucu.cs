@@ -246,14 +246,23 @@ internal sealed class AgacDoldurucu
 
     /// <summary>
     /// Verilen yoldaki dugumu secer ve gorunur yapar. Dugum agacta yoksa
-    /// (ust dali acilmamissa) hicbir sey yapmaz - sessizce baska bir sey
-    /// SECMEZ, cunku yanlis oge secmek sonraki islemi yanlis hedefe yollar.
+    /// (ust dali acilmamissa) baska bir sey SECMEZ - yanlis oge secmek
+    /// sonraki islemi yanlis hedefe yollar.
+    ///
+    /// SESSIZ DEGIL (29.08.2026): burasi eskiden duz "return" ediyordu ve
+    /// bunun gorunur bir sonucu vardi - ARAMA KIPINDE yol cubugundaki her
+    /// tiklama hicbir sey yapmiyordu (arama sonucunda agacta yalnizca
+    /// eslesme gruplari var). Imlec el sekline giriyor, tiklaniyor, hicbir
+    /// sey olmuyor, sebep de yok (CLAUDE.md 3). Artik sebep sayiliyor.
     /// </summary>
     internal void YoluSec(string yol)
     {
         TreeNode? dugum = AgacDurumlari.DuguuBul(_agac, yol);
         if (dugum is null)
         {
+            Durum?.Invoke(this, AramaKipinde
+                ? "Arama sonucundayken yol çubuğu kullanılamaz — önce aramayı temizleyin (Esc)."
+                : "Bu klasör ağaçta açık değil: " + yol);
             return;
         }
 

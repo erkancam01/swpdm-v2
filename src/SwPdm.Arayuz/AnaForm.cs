@@ -482,7 +482,15 @@ internal sealed partial class AnaForm : Form
     /// <summary>Ayarlar sekmesinin icerigi. Tasarim tarafindan cagriliyor.</summary>
     private Control AyarlarSayfasiKur()
     {
-        var sayfa = new AyarlarSayfasi(_ayarlar, () => _doldurucu?.Kok);
+        // "_durum.Bilgi" DEGIL, LAMBDA - ve sebebi OLCULDU (29.08.2026,
+        // calistirma kapisi yakaladi): bu metot kurucudan cagriliyor ve
+        // o an "_durum" HENUZ ATANMAMIS. Metot grubu yazmak delegeyi
+        // HEMEN kuruyor ve null bir "this" ile
+        // "Delegate to an instance method cannot have null 'this'" atiyor -
+        // uygulama HIC ACILMIYORDU. Lambda alani cagri aninda okuyor.
+        // (CLAUDE.md 6'nin kurucu tuzaginin kardesi; yandaki
+        // "() => _doldurucu?.Kok" da tam bu yuzden lambda.)
+        var sayfa = new AyarlarSayfasi(_ayarlar, () => _doldurucu?.Kok, cumle => _durum.Bilgi(cumle));
         sayfa.Degisti += (_, _) =>
         {
             CopDugmesiniTazele();

@@ -20,11 +20,15 @@ internal sealed class AyarlarSayfasi : Panel
     private readonly Label _ayarDosyasi = new();
     private readonly CheckBox _otomatikTazele = new();
 
-    internal AyarlarSayfasi(Ayarlar ayarlar, Func<string?> kok)
+    /// <summary>Durum cubuguna yazar; sayfanin kendi kutusu yok.</summary>
+    private readonly Action<string> _bildir;
+
+    internal AyarlarSayfasi(Ayarlar ayarlar, Func<string?> kok, Action<string> bildir)
     {
         // CLAUDE.md 6: alanlar boyut degistiren her seyden ONCE atandi.
         _ayarlar = ayarlar;
         _kok = kok;
+        _bildir = bildir;
 
         Dock = DockStyle.Fill;
         BackColor = Renkler.GovdeArkaPlan;
@@ -156,8 +160,47 @@ internal sealed class AyarlarSayfasi : Panel
             return;
         }
 
+        EskisiniSoyle();
         _ayarlar.CopUstKlasoru = kutu.SelectedPath;
         Kaydet();
+    }
+
+    /// <summary>
+    /// Cop kutusunun yeri degisiyor: ESKISINDE oge varsa soylenir.
+    ///
+    /// NEDEN (29.08.2026): once yalnizca "baska disk" uyarisi vardi. Yer
+    /// degisince eski kutudaki dosyalar diskte duruyor ama uygulamadan
+    /// ULASILAMAZ oluyordu - liste yeni yeri okuyor, eskisini kimse
+    /// gostermiyordu. Sessizce erisilemez hale gelen dosya, kaybolmus
+    /// dosyadir (CLAUDE.md 3).
+    ///
+    /// TASIMIYORUZ, SOYLUYORUZ: tasima baska diske kopyalamaya doner ve
+    /// dakikalar surebilir; kullanicinin haberi olmadan boyle bir is
+    /// baslatilmaz. Yol yaziliyor, karar onun.
+    /// </summary>
+    private void EskisiniSoyle()
+    {
+        if (_kok() is not string kok)
+        {
+            return;
+        }
+
+        string eski = Cop.Yolu(kok, _ayarlar.CopUstKlasoru);
+        CopDurumu durum = Cop.Oku(eski);
+        if (durum.Ogeler.Count == 0)
+        {
+            return;
+        }
+
+        MessageBox.Show(
+            this,
+            $"Eski çöp kutusunda {durum.Ogeler.Count} öğe var ve BURADA KALACAK:\n\n"
+            + eski + "\n\n"
+            + "Uygulama bundan sonra yeni çöp kutusunu gösterir. Bu öğeleri geri\n"
+            + "yüklemek isterseniz önce eski klasörü tekrar seçin.",
+            "Eski çöp kutusu",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
     }
 
     /// <summary>
@@ -192,8 +235,18 @@ internal sealed class AyarlarSayfasi : Panel
 
     private void Varsayilana()
     {
+        // ZATEN VARSAYILANSA HICBIR SEY YAPILMIYORDU - ama ayar dosyasi yine
+        // yaziliyordu ve ekranda tek kelime degismiyor, "oldu" da denmiyordu.
+        if (_ayarlar.CopUstKlasoru is null)
+        {
+            _bildir("Çöp kutusu zaten kökün içinde.");
+            return;
+        }
+
+        EskisiniSoyle();
         _ayarlar.CopUstKlasoru = null;
         Kaydet();
+        _bildir("Çöp kutusu kökün içine alındı.");
     }
 
     private void Kaydet()

@@ -18,8 +18,8 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 2. Ağaç — fare
 
-- **Sol tık (satır metni/simgesi)** → yalnız o öğe seçilir.
-- **Sol tık (satırın sağındaki boşluk)** → seçim boşalır.
+- **Sol tık (satırın herhangi bir yeri)** → yalnız o öğe seçilir; adın sağı da satıra dahildir.
+- **Sol tık (soldaki girinti)** → seçim boşalır.
 - **Sol tık (+ / − kutusu)** → dal açılır/kapanır, seçim değişmez.
 - **Ctrl + tık** → o öğeyi seçime ekler ya da seçimden çıkarır.
 - **Shift + tık** → son tıklanandan buraya kadar olan satırları seçer.
@@ -30,6 +30,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Sürükle-bırak (klasör üstüne)** → seçilenleri o klasöre **taşır**; onay kutusu çıkar.
 - **Ctrl + sürükle-bırak** → taşımaz, **kopyalar**; sürüklerken imleç de bunu gösterir.
 - **Sürükle-bırak (dosya ya da boşluk üstüne)** → kabul edilmez, hiçbir şey olmaz.
+- **Sürüklerken hedef klasör** → sarı zeminle işaretlenir; kapalı bir klasörün üstünde ~1 saniye beklersen dal açılır.
 
 > **Dikdörtgenle (kutu) seçim YOK** — kodda böyle bir şey bulunmuyor.
 
@@ -97,6 +98,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Sıralama düğmesi** (şeridin sağında, üstünde "Ad ↑" gibi yazar) → ölçüt menüsünü açar: **Ad · Tür · Boyut · Tarih**.
 - **Aynı ölçüte tekrar basmak** → yönü çevirir (artan ↔ azalan).
 - **`Ctrl+Shift+S`** → sekiz hâl (4 ölçüt × 2 yön) arasında sırayla ilerler.
+- **`Ctrl+Shift+F`** → tür süzgecini ilerletir (Tümü → Montaj → Parça → Teknik resim → PDF → Tümü); süzgeç düğmeleri fare istemesin diye.
 - **Sıralama ve süzgeç** → kalıcıdır, uygulama kapanıp açılınca geri gelir.
 
 ---
@@ -105,6 +107,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 - **Yol parçaları** → seçili klasörün yolunu `›` ile ayrılmış gösterir.
 - **Kök altındaki bir parçaya tık** → ağaç oraya gider ve orayı seçer.
+- **Arama sonucundayken tık** → çalışmaz ve **sebebi yazılır** ("önce aramayı temizleyin"); ağaçta o an yalnızca eşleşmeler var.
 - **Kökün üstündeki parçalar** → soluk ve tıklanamaz; oraya gitmek için "Klasör aç".
 - **Yol sığmazsa** → soldan kırpılır, başına `…` konur; tam yol ipucunda.
 
@@ -158,6 +161,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
 - **Ctrl+Shift+L (panel odaktayken)** → seçili dosyanın referansını elle bağlama akışını başlatır.
 - **Boş bölüm** → sebebini yazar ("Bu dosya başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı.").
+- **Klasör, çoklu seçim ya da SOLIDWORKS olmayan dosya** → panel boş kalmaz, **neden boş olduğunu** yazar ("SOLIDWORKS dosyası değil" · "Seçim yok" · "taranmadı").
 
 ---
 
@@ -183,7 +187,8 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Taşınmış dosyalar** → son kaydedildiği yer ile şimdiki yeri farklı olan dosyalar.
 - **Okunamayan dosyalar** → referansları çıkarılamayan dosyalar (öteki raporlar bu kadar eksik).
 - **Sekme başlığındaki sayı** → bulgu adedi; tarama güvenilir değilse sayı yerine `(?)` yazar.
-- **"Bulunanları düzelt (N)"** → yalnızca "Bayat yollar"da çıkar; onay ister, sonra pencereyi kapatır (listeler bayatladığı için).
+- **Satıra çift tık / Enter** → pencere kapanır ve o dosya ağaçta seçilir.
+- **"Bulunanları düzelt (N)"** → yalnızca "Bayat yollar"da çıkar; onay ister, sonra pencereyi kapatır (listeler bayatladığı için). Düzeltilecek bir şey çıkmazsa düğme geri açılır ve sebebi durum çubuğuna yazılır.
 - **Kapat / Esc** → pencereyi kapatır.
 
 ---
@@ -197,9 +202,13 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Geri yükle** → seçilenleri eski yerine koyar. **Aynı adda bir şey varsa çakışma kutusu çıkar** (Atla · İkisini de tut · Değiştir — eskisi çöpe gider · Vazgeç); numaralanan adlar sonunda tek tek raporlanır.
 - **Üst satır** → "N öğe.   Yeri: <yol>"; kayıt okunamıyorsa **sebebi** yazar — "boş" DEMEZ.
 - **Okunamayan çöp kutusu** → "Tümünü boşalt" çalışmaz; elimizdeki liste eksik olabileceği için sebebi kutuda söylenir.
+- **Çift tık / Enter** → seçileni geri yükler.
+- **`Delete`** → seçileni kalıcı siler (onay ister).
+- **Sütun başlığına tık** → o sütuna göre sıralar; aynı başlığa ikinci tık yönü çevirir.
 - **Kalıcı sil** → seçilenleri geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
 - **Tümünü boşalt** → çöpteki her şeyi geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
 - **Kapat / Esc** → pencereyi kapatır, ağaç tazelenir.
+- **Toplu işlerde ilerleme** → üst satırda "N/M" yazar. **İptal yok**: pencere modal ve iş arayüz iş parçacığında koşuyor, tıklanamayacak bir İptal düğmesi konmadı.
 - **Kendiliğinden temizlik YOK** → çöp yalnızca sen boşaltınca boşalır.
 
 ---
@@ -208,7 +217,8 @@ olmayan hiçbir şey buraya yazılmadı.
 
 - **Çöp kutusu yolu (salt okunur kutu)** → çöp kutusunun o anki tam yerini gösterir.
 - **Değiştir…** → çöp kutusunun konacağı üst klasörü seçtirir; başka diskse uyarır (silme kopyalamaya döner).
-- **Varsayılana dön** → çöp yine kökün içine alınır.
+- **Varsayılana dön** → çöp yine kökün içine alınır; zaten öyleyse bunu söyler.
+- **Çöp yeri değişirken eskisinde öğe varsa** → uyarı çıkar ve eski yol yazılır. **Taşınmaz** (başka diske kopyalamaya döner, dakikalar sürebilir); geri yüklemek için eski klasörü tekrar seçmek gerekir.
 - **"Diskte bir şey değişince ağacı kendiliğinden tazele"** → disk izleyicisini açar/kapatır (varsayılan açık).
 - **Ayarlar: <yol>** → ayar dosyasının yerini gösterir (`%APPDATA%\SwPdm\ayarlar.txt`).
 - **Ayar yazılamazsa** → "Ayar bu oturumda geçerli ama diske YAZILAMADI" uyarısı çıkar.
@@ -280,6 +290,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | `Backspace` | Üst klasör |
 | `Esc` | Aramadan çık |
 | `Ctrl+Shift+S` | Sıralamayı ilerlet |
+| `Ctrl+Shift+F` | Tür süzgecini ilerlet (Tümü → Montaj → … → Tümü) |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |
@@ -296,5 +307,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
 - **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
 - **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.
+- **`Ctrl+Z` uzun sürerse pencere donar** → geri alma arayüz iş parçacığında koşuyor; ileri yön (taşıma/kopyalama) arka planda ve iptal edilebilir, geri yön değil.
+- **Çöp kutusunda iptal yok** → toplu geri yükleme/silme başlayınca pencere iş bitene kadar cevap vermez; ilerleme yazılır.
 - **Kök değişince pano ve geri alma listesi boşalır** → eski kökün yolları yeni ağaçta yanlış yere dokunurdu.
 - **Boş liste asla "yok" demek değildir** → tarama yapılmadıysa panel sayı yerine "taranmadı" yazar; bu bilerek böyle.

@@ -85,12 +85,64 @@ internal sealed class SurukleBirak
     private const int CtrlBiti = 8;
 
     private void Uzerinde(object? gonderen, DragEventArgs e)
-        => e.Effect = Hedef(e) is null
+    {
+        TreeNode? hedef = HedefDugum(e);
+
+        e.Effect = hedef is null
             ? DragDropEffects.None
             : KopyaMi(e) ? DragDropEffects.Copy : DragDropEffects.Move;
 
+        // HEDEF VURGULANIYOR (29.08.2026): once yalnizca imlec sekli
+        // degisiyordu, hangi klasorun uzerinde oldugun BELLI DEGILDI -
+        // 20 satirlik bir agacta bir satir yukariya birakmak cok kolay ve
+        // sonucu geri alinacak bir tasima.
+        Vurgula(hedef);
+
+        // KAPALI KLASOR ACILIYOR: uzerinde bir sure beklemek Gezgin'de
+        // dali aciyor; yoksa kapali bir dalin icine birakmak imkansiz.
+        if (hedef is not null && !hedef.IsExpanded && hedef.Nodes.Count > 0)
+        {
+            if (_bekleyen != hedef)
+            {
+                _bekleyen = hedef;
+                _bekleyenden = DateTime.UtcNow;
+            }
+            else if (DateTime.UtcNow - _bekleyenden > TimeSpan.FromSeconds(1))
+            {
+                hedef.Expand();
+                _bekleyen = null;
+            }
+        }
+        else
+        {
+            _bekleyen = null;
+        }
+    }
+
+    /// <summary>Vurgulanan dugum; birakma bitince temizlenir.</summary>
+    private TreeNode? _vurgulu;
+
+    /// <summary>Uzerinde beklenen kapali klasor ve ne zamandan beri.</summary>
+    private TreeNode? _bekleyen;
+    private DateTime _bekleyenden;
+
+    private void Vurgula(TreeNode? dugum)
+    {
+        if (ReferenceEquals(_vurgulu, dugum))
+        {
+            return;
+        }
+
+        // SecimliAgac kendi secimini kendisi boyuyor; buradaki vurgu
+        // denetimin "DropHighlight" isini yapiyor ve secime DOKUNMUYOR.
+        _agac.BirakmaHedefi = dugum;
+        _vurgulu = dugum;
+    }
+
     private void Birakildi(object? gonderen, DragEventArgs e)
     {
+        Vurgula(null);
+        _bekleyen = null;
         string? hedef = Hedef(e);
         if (hedef is not null && e.Data?.GetData(typeof(List<string>)) is List<string> yollar)
         {
@@ -100,6 +152,10 @@ internal sealed class SurukleBirak
 
     /// <summary>Farenin altindaki KLASORUN yolu; klasor degilse null.</summary>
     private string? Hedef(DragEventArgs e)
+        => HedefDugum(e)?.Tag is KlasorOgesi klasor ? klasor.Yol : null;
+
+    /// <summary>Farenin altindaki KLASOR dugumu; klasor degilse null.</summary>
+    private TreeNode? HedefDugum(DragEventArgs e)
     {
         if (e.Data?.GetDataPresent(typeof(List<string>)) != true)
         {
@@ -107,7 +163,7 @@ internal sealed class SurukleBirak
         }
 
         TreeNode? dugum = _agac.GetNodeAt(_agac.PointToClient(new Point(e.X, e.Y)));
-        return dugum?.Tag is KlasorOgesi klasor ? klasor.Yol : null;
+        return dugum?.Tag is KlasorOgesi ? dugum : null;
     }
 
     private static string? Yolu(TreeNode? dugum) => dugum?.Tag switch

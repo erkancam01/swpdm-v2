@@ -22,7 +22,7 @@ namespace SwPdm.Arayuz.Gorunum;
 /// devam ediyor - hepsi <c>AfterSelect</c> ve <c>SelectedNode</c> uzerinden
 /// konusuyor.
 /// </summary>
-internal sealed class SecimliAgac : TreeView
+internal sealed partial class SecimliAgac : TreeView
 {
     private readonly HashSet<TreeNode> _secililer = [];
 
@@ -137,55 +137,6 @@ internal sealed class SecimliAgac : TreeView
         // gosteriyor ve ona bakan kod baska bir sey saniyor.
         OdagiTasi(null);
         Bildir();
-    }
-
-    protected override void OnDrawNode(DrawTreeNodeEventArgs e)
-    {
-        if (e.Node is null)
-        {
-            base.OnDrawNode(e);
-            return;
-        }
-
-        bool secili = _secililer.Contains(e.Node);
-        bool odakli = ReferenceEquals(e.Node, SelectedNode);
-
-        // Dugumun kendi metin dikdortgeni bazen bir iki piksel dar cikiyor ve
-        // vurgu yaziyi kirpiyor; biraz genisletiliyor.
-        Rectangle alan = e.Node.Bounds;
-        alan.Inflate(1, 0);
-
-        // Dugumun KENDI zemini varsa o kullanilir - secim her zaman ustte
-        // kalir, cunku kullanicinin neyi sectigi her seyden onemli.
-        Color kendiZemini = e.Node.BackColor.IsEmpty ? BackColor : e.Node.BackColor;
-        Color arka = secili
-            ? (Focused ? Renkler.SecimArkaPlan : Renkler.SecimArkaPlanPasif)
-            : kendiZemini;
-        // Dugumun KENDI rengi varsa o kullanilir. Bu genel bir yetenek, belli
-        // bir ozelligin bilgisi degil: SecimliAgac neyin neden renkli
-        // oldugunu BILMEZ, yalnizca dugumun soyledigini cizer (CLAUDE.md 1b).
-        Color kendiRengi = e.Node.ForeColor.IsEmpty ? ForeColor : e.Node.ForeColor;
-        Color yazi = secili && Focused ? Renkler.SecimYazi : kendiRengi;
-
-        using (var firca = new SolidBrush(arka))
-        {
-            e.Graphics.FillRectangle(firca, alan);
-        }
-
-        TextRenderer.DrawText(
-            e.Graphics,
-            e.Node.Text,
-            e.Node.NodeFont ?? Font,
-            alan,
-            yazi,
-            TextFormatFlags.GlyphOverhangPadding | TextFormatFlags.NoPrefix);
-
-        // Odaklanmis dugum, secili olmayan bir dugum de olabilir (Ctrl ile
-        // gezinirken). Nokta cerceve onu gorunur tutuyor.
-        if (odakli && Focused)
-        {
-            ControlPaint.DrawFocusRectangle(e.Graphics, alan);
-        }
     }
 
     protected override void OnBeforeSelect(TreeViewCancelEventArgs e)
@@ -339,9 +290,18 @@ internal sealed class SecimliAgac : TreeView
     }
 
     /// <summary>
-    /// Yalnizca dugumun METIN alanina vuran tik dugumu sayar. <c>GetNodeAt</c>
-    /// satirin tamamini eslestiriyor; oyle olsa metnin sagindaki bos alandan
-    /// dikdortgen baslatilamazdi.
+    /// Tikin hangi dugume vurdugu. Simgeden satirin SAGINA kadar her yer o
+    /// dugumdur; yalnizca soldaki girinti ve "+/-" kutusu disaridadir.
+    ///
+    /// ONCE SATIRIN SAGI "BOS ALAN" SAYILIYORDU (29.08.2026'ya kadar) ve
+    /// gerekcesi "oradan dikdortgen secim baslar"di - ama dikdortgen secim
+    /// HIC YAZILMADI. Sonuc: adin birkac piksel sagina tiklamak butun
+    /// secimi sessizce siliyordu, ve oradan surukleme de hicbir sey
+    /// yapmiyordu. Var olmayan bir ozellik icin yer ayirmak, var olan bir
+    /// ozelligi bozuyordu.
+    ///
+    /// Dikdortgen secim bir gun yazilirsa BURASI degisir: o zaman satirin
+    /// sagi yeniden ayrilir. SIRADAKI.md'de duruyor.
     /// </summary>
     private TreeNode? MetneVuranDugum(Point nokta)
     {
@@ -358,6 +318,9 @@ internal sealed class SecimliAgac : TreeView
         // genisligi kadar geri aliniyor.
         alan.X -= ImageList is null ? 0 : ImageList.ImageSize.Width + 2;
         alan.Width += ImageList is null ? 0 : ImageList.ImageSize.Width + 2;
+
+        // SAGA DOGRU SATIRIN SONUNA KADAR: Gezgin de boyle davraniyor.
+        alan.Width = Math.Max(alan.Width, ClientSize.Width - alan.X);
 
         return alan.Contains(nokta) ? dugum : null;
     }

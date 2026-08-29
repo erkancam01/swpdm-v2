@@ -473,6 +473,16 @@ kullanıcıya yanlış dosyayı sildirir.
   → Aynı hata `ReferansListesi`'nde de vardı ve yalnızca uygulama daha erken
   öldüğü için görülmemişti. **Bir `On*` ezmesi yazan her sınıf bu açıdan
   denetlenir.**
+- **METOT GRUBU DELEGEYİ HEMEN KURUYOR — alan `null` ise uygulama AÇILMIYOR.**
+  `new Sayfa(..., _durum.Bilgi)` yazmak, `_durum` o an atanmamışsa
+  `ArgumentException: Delegate to an instance method cannot have null 'this'`
+  atıyor. 29.08.2026'da tam bu oldu: `SekmeleriKur()` kurucuda `_durum =
+  new DurumCubugu()` satırından **önce** çağrılıyordu. Derleme 0 uyarı, 0
+  hata; uygulama **hiç açılmadı** ve bunu yalnızca çalıştırma kapısı gördü.
+  → Kurucudan çağrılan bir metoda alan geçilecekse **lambda** yazılır
+  (`cumle => _durum.Bilgi(cumle)`): lambda alanı **çağrı anında** okur.
+  Bu, "kurucudan çağrılan sanal metot" maddesinin kardeşi — aynı sebep,
+  başka kılık.
 - **`TreeNode`'un BÜTÜN çocukları silinince düğüm DARALIYOR** ve çocuk geri
   eklendiğinde açık hâli **geri gelmiyor**. Süzgeç uygularken yalnızca dosya
   içeren bir klasör bir an sıfır çocuklu kalıyor ve kullanıcının açtığı dal
@@ -775,6 +785,11 @@ değişmiyor.
 çalıştı**; yani menü öğelerinin çağırdığı kod doğru, ölçülemeyen yalnızca
 menünün kendisi.
 
+> **BU KURAL 29.08.2026'DA BİR BORÇ DAHA KAPATTI:** tür süzgecinin
+> düğmeleri `TabStop = false` ve hiçbir tuşa bağlı değildi — yani süzgeç
+> **yalnızca fareyle** kullanılabiliyordu, oysa sıralamanın (`Ctrl+Shift+S`)
+> klavye karşılığı vardı. `Ctrl+Shift+F` eklendi.
+>
 > **İKİNCİ KURBAN ÖLÇÜLDÜ (27.08.2026):** sıralama düğmesinin açılır listesi
 > de bir `ContextMenuStrip` ve Wine'da **aynı** yığın izini verip uygulamayı
 > indirdi. Yani bu, sağ tık menüsüne özgü değil: **her `ToolStripDropDown`.**
@@ -844,7 +859,8 @@ dosyasında** duruyor:
 | önizleme (kaynak, sıra, mesaj, iş parçacığı) | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
 | arama (ne zaman başlar, gecikme, iptal) | `Arayuz/Gorunum/AramaSurucusu.cs` |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/AgacDoldurucu.cs` |
-| çoklu seçim (Ctrl · Shift · dikdörtgen) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
+| çoklu seçim (Ctrl · Shift) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
+| bir satırın boyanması (seçim · bırakma hedefi) | `Arayuz/Gorunum/Agac/SecimliAgacCizimi.cs` |
 | açık dalların ve seçimin korunması | `Arayuz/Gorunum/Agac/AgacDurumu.cs` |
 | sürükleyerek taşıma | `Arayuz/Gorunum/Agac/SurukleBirak.cs` |
 | sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
@@ -855,8 +871,10 @@ dosyasında** duruyor:
 | çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
 | kes · kopyala · yapıştır (pano) | `Arayuz/Gorunum/Islemler/PanoIslemleri.cs` |
 | taşıma/kopyalama motoru + onay | `Arayuz/Gorunum/Islemler/TasiIslemi.cs` |
+| taşıma/kopyalamanın **geri alınması** | `Arayuz/Gorunum/Islemler/AktarmaGeriAlma.cs` |
 | **ad çakışmasında ne olur** (çekirdek) | `Cekirdek/Cakisma.cs` + `DosyaIslemleri.cs` |
 | ad çakışması penceresi | `Arayuz/Gorunum/Islemler/CakismaKutusu.cs` |
+| **ad sorma kutusu** (doğrulama · uzantı kilidi) | `Arayuz/Gorunum/Islemler/AdKutusu.cs` |
 | geri alma (yığın + `Ctrl+Z`) | `Arayuz/Gorunum/Islemler/GeriAlIslemi.cs` |
 | **sıralama kuralı** (ölçüt, yön, klasörler önce) | `Cekirdek/Siralama.cs` |
 | sıralama düğmesi + `Ctrl+Shift+S` | `Arayuz/Gorunum/SiralamaSecici.cs` |

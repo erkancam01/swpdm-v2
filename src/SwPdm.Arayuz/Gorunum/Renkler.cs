@@ -26,6 +26,10 @@ internal static class Renkler
     internal static readonly Color SecimArkaPlanPasif = Color.FromArgb(0xD5, 0xE5, 0xF7);
     internal static readonly Color SecimYazi = Color.FromArgb(0xFF, 0xFF, 0xFF);
 
+    // Surukleme sirasinda uzerinde bulunulan klasor. Secim renginden AYRI:
+    // "neyi sectim" ile "nereye birakiyorum" ayni anda gorunmeli.
+    internal static readonly Color BirakmaHedefiZemin = Color.FromArgb(0xFF, 0xE1, 0x8A);
+
     // Suzgec dugmeleri
     internal static readonly Color SuzgecSeciliArkaPlan = Color.FromArgb(0xDC, 0xE6, 0xF2);
     internal static readonly Color SuzgecSeciliKenar = Color.FromArgb(0x8F, 0xA8, 0xC2);

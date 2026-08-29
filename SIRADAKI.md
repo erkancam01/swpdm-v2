@@ -55,8 +55,30 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   bir yolu **atlıyor** ve sonucun eksik olduğunu **söylüyor**.
 - **Farklı ADLA elle bağlanan dosyayı SOLIDWORKS açıyor mu.** Aynı kod
   yolu ad değiştirmede doğrulandı; bu senaryo ayrıca denenmedi.
+- **`Ctrl` ile sürükleyip kopyalama.** Wine'da sürükle-bırak ölçülmüyor;
+  kod yolu "Yapıştır (kopyala)" ile aynı motora giriyor ama fare hareketi
+  denenmedi.
+- **Ad kutusundaki uzantı kilidi.** Wine'da kutu açılıyor ve Enter ile
+  kapanıyor (kapı 9. ölçüm), ama "Uzantıyı da değiştir" kutusunun kendisi
+  tıklanarak ölçülmedi.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
+
+- **Dikdörtgenle seçim yok.** `SecimliAgac` satırın sağını uzun süre
+  "dikdörtgen başlar" diye ayırmıştı ama özellik hiç yazılmadı; 29.08.2026'da
+  satırın tamamı tıklanabilir yapıldı. Dikdörtgen seçim yazılırsa
+  `MetneVuranDugum` yeniden ayrılmalı. Wine'da `DrawReversibleFrame`
+  çalışıyor (CLAUDE.md §11), yani ölçülebilir.
+- **Çöp kutusu penceresinde toplu iş İPTAL EDİLEMİYOR.** Pencere modal ve iş
+  arayüz iş parçacığında koşuyor; ilerleme yazılıyor ama tıklanamayacak bir
+  İptal düğmesi konmadı (§3: çalışmayan düğme koymaktansa yok). Doğru çözüm
+  işi `IIlerlemeYuzeyi`'ne taşımak — pencerenin tamamını değiştirir.
+- **`Ctrl+Z` (geri alma) arayüz iş parçacığında.** 20 öğelik bir taşımanın
+  ağ sürücüsünde geri alınması uygulamayı dondurur. İleri yön (`Aktar`) arka
+  planda + ilerleme + iptal ile koşuyor; geri yön değil.
+- **Önizlemede zaman aşımı yok.** Takılan bir kabuk sağlayıcısı bütün
+  önizleme kuyruğunu kilitleyebilir. Wine'da ölçülemez (§11), Erkan'ın
+  makinesinde belirti görülmedi — o yüzden yazılmadı.
 
 - **Elle bağlamanın kapıda kalıcı ölçümü YOK.** Wine'da uçtan uca bir kez
   ölçüldü (pencere açıldı · kendi ağacımızdan dosya seçildi · yama yazıldı),

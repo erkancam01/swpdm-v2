@@ -65,6 +65,14 @@ internal sealed partial class AnaForm
                 return;
             }
 
+            // Tur suzgeci kisayolu (Ctrl+Shift+F) - ayni kalip, karar
+            // SuzgecSeridi'nde.
+            if (_suzgecler.TusaBasildi(e.KeyData))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // AGAC ODAKTAYKEN klavye: Enter = dosyayi ac, Backspace = ust
             // klasor. Karari Agac/AgacTuslari veriyor (CLAUDE.md 1b).
             if (_agac.Focused

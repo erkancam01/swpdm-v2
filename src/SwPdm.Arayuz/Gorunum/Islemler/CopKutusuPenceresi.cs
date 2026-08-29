@@ -28,6 +28,10 @@ internal sealed class CopKutusuPenceresi : Form
     private readonly Button _bosalt = new();
     private readonly Button _kapat = new();
 
+    /// <summary>Hangi sutuna gore siralaniyor ve hangi yonde.</summary>
+    private int _siraSutunu = 2;   // varsayilan: silinme zamani
+    private bool _artan;
+
     private CopKutusuPenceresi(string cop, Action<string> bildir)
     {
         // CLAUDE.md 6: alanlar boyut degistiren her seyden ONCE atanmis olmali.
@@ -53,6 +57,34 @@ internal sealed class CopKutusuPenceresi : Form
         _liste.Columns.Add("Silinme", 130);
         _liste.Columns.Add("Boyut", 90, HorizontalAlignment.Right);
         _liste.SelectedIndexChanged += (_, _) => DugmeleriTazele();
+
+        // LISTE ARTIK FAREYE VE KLAVYEYE CEVAP VERIYOR (29.08.2026). Once
+        // yalnizca SelectedIndexChanged bagliydi: cift tiklamak hicbir sey
+        // yapmiyor, Delete hicbir sey yapmiyor, sutun basligina tiklamak
+        // siralamiyordu - oysa bunlarin hepsi bir liste penceresinden
+        // beklenen seyler.
+        _liste.MouseDoubleClick += (_, _) => GeriYukle();
+        _liste.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.Delete && _liste.SelectedItems.Count > 0)
+            {
+                e.SuppressKeyPress = true;
+                KaliciSil();
+            }
+            else if (e.KeyCode == Keys.Enter && _liste.SelectedItems.Count > 0)
+            {
+                e.SuppressKeyPress = true;
+                GeriYukle();
+            }
+        };
+
+        _liste.ColumnClick += (_, e) =>
+        {
+            // Ayni sutuna ikinci tik yonu cevirir.
+            _artan = _siraSutunu == e.Column ? !_artan : true;
+            _siraSutunu = e.Column;
+            Doldur();
+        };
 
         _yer.Dock = DockStyle.Top;
         _yer.Height = 34;
@@ -108,7 +140,9 @@ internal sealed class CopKutusuPenceresi : Form
         _liste.Items.Clear();
 
         CopDurumu durum = Cop.Oku(_cop);
-        IReadOnlyList<CopOgesi> ogeler = durum.Ogeler;
+        List<CopOgesi> ogeler = [.. durum.Ogeler];
+        Sirala(ogeler);
+
         foreach (CopOgesi oge in ogeler)
         {
             var satir = new ListViewItem(oge.Ad) { Tag = oge };
@@ -137,6 +171,42 @@ internal sealed class CopKutusuPenceresi : Form
                 : $"{ogeler.Count} öğe.   Yeri: {_cop}{ek}";
 
         DugmeleriTazele();
+    }
+
+    /// <summary>
+    /// Listeyi secili sutuna gore sirala. Ad ve klasor DOGAL siralamayla
+    /// ("Parça10" > "Parça9") - agacta kullanilan karsilastiricinin aynisi
+    /// (CLAUDE.md 8: ikinci bir siralama mantigi yazilmaz).
+    /// </summary>
+    /// <summary>
+    /// Toplu isin ilerlemesini UST SATIRDA gosterir.
+    ///
+    /// NEDEN Refresh() VE NEDEN IPTAL YOK: bu pencere modal ve is arayuz is
+    /// parcaciginda kosuyor; mesaj kuyrugu pompalanmadigi icin bir "Iptal"
+    /// dugmesi TIKLANAMAZ - koysaydik calismayan bir dugme olurdu (CLAUDE.md 3).
+    /// Refresh() yalnizca bu etiketi boyuyor, kuyruga dokunmuyor.
+    ///
+    /// ISI ARKA PLANA ALMAK dogru cozum ama bu pencerenin tamamini
+    /// degistirmek demek; SIRADAKI.md'ye yazildi.
+    /// </summary>
+    private void Ilerle(string is_, int yapilan, int toplam)
+    {
+        _yer.Text = $"{is_}: {yapilan}/{toplam}…";
+        _yer.Refresh();
+    }
+
+    private void Sirala(List<CopOgesi> ogeler)
+    {
+        Comparison<CopOgesi> olcut = _siraSutunu switch
+        {
+            0 => (a, b) => DogalKarsilastirici.Ortak.Compare(a.Ad, b.Ad),
+            1 => (a, b) => DogalKarsilastirici.Ortak.Compare(
+                WindowsYolu.Klasor(a.EskiYol), WindowsYolu.Klasor(b.EskiYol)),
+            3 => (a, b) => a.Boyut.CompareTo(b.Boyut),
+            _ => (a, b) => a.Zaman.CompareTo(b.Zaman),
+        };
+
+        ogeler.Sort((a, b) => _artan ? olcut(a, b) : olcut(b, a));
     }
 
     private void DugmeleriTazele()
@@ -172,8 +242,12 @@ internal sealed class CopKutusuPenceresi : Form
         // Uygulamada tam bu is icin bir cakisma kutusu duruyordu.
         Cakisma hepsiIcin = Cakisma.Sor;
 
-        foreach (CopOgesi oge in Secililer())
+        List<CopOgesi> secililer = Secililer();
+        int sira = 0;
+
+        foreach (CopOgesi oge in secililer)
         {
+            Ilerle("Geri yükleniyor", ++sira, secililer.Count);
             Cakisma karar = hepsiIcin;
             string dogrudan = WindowsYolu.Birlestir(WindowsYolu.Klasor(oge.EskiYol), oge.Ad);
 
@@ -245,8 +319,11 @@ internal sealed class CopKutusuPenceresi : Form
 
         var olan = new List<string>();
         var olmayan = new List<string>();
+        int sira = 0;
+
         foreach (CopOgesi oge in secililer)
         {
+            Ilerle("Kalıcı siliniyor", ++sira, secililer.Count);
             IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
                 rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
@@ -284,8 +361,11 @@ internal sealed class CopKutusuPenceresi : Form
 
         var olan = new List<string>();
         var olmayan = new List<string>();
+        int sira = 0;
+
         foreach (CopOgesi oge in hepsi)
         {
+            Ilerle("Boşaltılıyor", ++sira, hepsi.Count);
             IslemRaporu rapor = Cop.KaliciSil(_cop, oge);
             (rapor.Oldu ? olan : olmayan).Add(
                 rapor.Oldu ? oge.Ad : oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));

@@ -304,8 +304,33 @@ internal sealed class ReferansSurucusu
         {
             liste.Items.Clear();
 
-            if (_indeks is null || string.IsNullOrWhiteSpace(yol) || !SwReferans.TasiyabilirMi(yol))
+            // SEBEPSIZ BOSALMA YOK (CLAUDE.md 3). Burasi eskiden duz "return"
+            // ediyordu: klasor secilince, coklu secimde ve SOLIDWORKS
+            // olmayan bir dosyada panel tek kelime etmeden bosaliyordu -
+            // oysa ayni dosyadaki diger butun bos haller ("taranmadı",
+            // "kullanan yok") cumleyle aciklaniyor. Bos panel, kullaniciya
+            // "bu dosyayi kimse kullanmiyor" diye okunabilir.
+            if (string.IsNullOrWhiteSpace(yol))
             {
+                liste.Ekle("Seçim yok", "—", 0, Renkler.UstBilgiYazi);
+                return;
+            }
+
+            if (!SwReferans.TasiyabilirMi(yol))
+            {
+                liste.Ekle(
+                    WindowsYolu.DosyaAdi(yol), "SOLIDWORKS dosyası değil", 0,
+                    Renkler.UstBilgiYazi,
+                    tamMetin: "Referanslar yalnızca .SLDPRT, .SLDASM ve .SLDDRW "
+                        + "dosyalarında okunur.");
+                return;
+            }
+
+            if (_indeks is null)
+            {
+                liste.Ekle(
+                    WindowsYolu.DosyaAdi(yol), "taranmadı", 0, Renkler.UstBilgiYazi,
+                    tamMetin: "Referans taraması yapılmadı — Ctrl+Shift+R.");
                 return;
             }
 

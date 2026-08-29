@@ -23,9 +23,14 @@ namespace SwPdm.Arayuz.Gorunum;
 internal static class RaporPenceresi
 {
     /// <summary>Raporlari gosterir.</summary>
-    internal static void Ac(IWin32Window sahip, ReferansIndeksi? indeks, Action<string> bildir)
+    /// <param name="git">
+    /// Bir rapor satirina gidilir: pencere kapanir ve o dosya agacta secilir.
+    /// </param>
+    internal static void Ac(
+        IWin32Window sahip, ReferansIndeksi? indeks, Action<string> bildir, Action<string> git)
     {
         ArgumentNullException.ThrowIfNull(bildir);
+        ArgumentNullException.ThrowIfNull(git);
 
         if (indeks is null)
         {
@@ -47,7 +52,7 @@ internal static class RaporPenceresi
 
         foreach (IRapor rapor in RaporListesi.Tumu)
         {
-            sekmeler.TabPages.Add(Sekme(pencere, rapor, indeks, bildir));
+            sekmeler.TabPages.Add(Sekme(pencere, rapor, indeks, bildir, git));
         }
 
         var kapat = new Button
@@ -67,7 +72,8 @@ internal static class RaporPenceresi
     }
 
     private static TabPage Sekme(
-        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir)
+        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir,
+        Action<string> git)
     {
         RaporSonucu sonuc = rapor.Uret(indeks);
         // Sekme basliginda SAYI var ama yalnizca guvenilirse. Guvenilir
@@ -89,11 +95,39 @@ internal static class RaporPenceresi
 
         foreach (RaporSatiri satir in sonuc.Satirlar)
         {
-            var oge = new ListViewItem(WindowsYolu.DosyaAdi(satir.Yol));
+            var oge = new ListViewItem(WindowsYolu.DosyaAdi(satir.Yol)) { Tag = satir.Yol };
             oge.SubItems.Add(WindowsYolu.Klasor(satir.Yol));
             oge.SubItems.Add(satir.Aciklama);
             liste.Items.Add(oge);
         }
+
+        // SATIRA GIDILEBILIYOR (29.08.2026). Once liste yalnizca BAKILAN bir
+        // seydi: "Dosya" ve "Klasör" yaziyordu ama oraya gitmenin yolu yoktu,
+        // kullanici dosyayi agacta elle ariyordu. Referans panelinde bu
+        // yetenek zaten vardi (cift tik / Enter = oraya git); rapor
+        // penceresinde yoktu.
+        void Git()
+        {
+            if (liste.SelectedItems.Count == 0 || liste.SelectedItems[0].Tag is not string yol)
+            {
+                return;
+            }
+
+            // Pencere KAPANIR: modal pencerenin arkasindaki secim gorunmez.
+            pencere.DialogResult = DialogResult.OK;
+            pencere.Close();
+            git(yol);
+        }
+
+        liste.MouseDoubleClick += (_, _) => Git();
+        liste.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                Git();
+            }
+        };
 
         var baslik = new Label
         {
@@ -165,6 +199,11 @@ internal static class RaporPenceresi
         OnarimOzeti? ozet = rapor.Duzelt(indeks);
         if (ozet is null)
         {
+            // DUGME OLU KALMASIN: burasi eskiden duz "return" ediyordu ve
+            // dugme kalici olarak sonuk kaliyordu - hicbir sey olmuyor,
+            // sebep de yok (CLAUDE.md 3).
+            dugme.Enabled = true;
+            bildir("Düzeltilecek bir şey bulunamadı.");
             return;
         }
 
@@ -241,5 +280,6 @@ internal sealed class RaporIslemi : IAgacIslemi
 
     /// <inheritdoc/>
     public void Uygula(IslemBaglami baglam)
-        => RaporPenceresi.Ac(baglam.Sahip, baglam.Referanslar.Indeks, baglam.Bildir);
+        => RaporPenceresi.Ac(
+            baglam.Sahip, baglam.Referanslar.Indeks, baglam.Bildir, baglam.Tazele);
 }
