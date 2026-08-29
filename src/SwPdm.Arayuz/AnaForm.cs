@@ -120,6 +120,7 @@ internal sealed partial class AnaForm : Form
         // yazisini gormek yetmez, oraya GIDEBILMEK gerekir.
         _referanslar.MouseDoubleClick += (_, e) => ReferansaGit(_referanslar.TiklananHedef(e.Location));
 
+
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
         _kokSecici.Secildi += (_, yol) => KokuAc(yol);
@@ -129,6 +130,21 @@ internal sealed partial class AnaForm : Form
 
         // --- onizleme
         _onizleme = new Gorunum.Onizleme(_onizlemePaneli, this);
+
+        // --- referans satirina TEK TIK: o dosyanin onizlemesi (Erkan,
+        // 29.08.2026: "13 kullananin resmine yerinden kipirdamadan bakayim").
+        // Hedefsiz satirda (bolum basligi, gizlenen ozeti) onizleme DEGISMEZ -
+        // pasif secim; aktif islemler (Enter, cift tik) zaten sebep yaziyor.
+        // "_onizleme" atamasindan SONRA duruyor - CLAUDE.md 6'nin kurucu
+        // sirasi tuzagi; derleyici de ayni sebepten uyardi.
+        _referanslar.SecimDegisti += (_, _) =>
+        {
+            if (_referanslar.SeciliHedef is string hedef)
+            {
+                ReferansOzeti komsu = _referansSurucusu.Ozet(hedef);
+                _onizleme.KomsuGoster(hedef, komsu.Kullandigi, komsu.Kullanan);
+            }
+        };
 
         // --- arama
         _arama = new AramaSurucusu(_araKutusu, this);

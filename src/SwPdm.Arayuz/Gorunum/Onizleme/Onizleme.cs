@@ -70,12 +70,20 @@ internal sealed class Onizleme : IDisposable
 
     private (string Yol, Size Boyut)? _bekleyen;
     private string? _beklenenYol;
+
+    /// <summary>
+    /// CIPA: agacta secili dosya ve onun referans metinleri. Referans
+    /// satirina tiklamak GECICI bir gosterimdir; cipa degismez ve basliga
+    /// tiklaninca buraya donulur. Klasor/coklu secim/temizlik cipayi siler.
+    /// </summary>
+    private (DosyaOgesi Dosya, string Kullandigi, string Kullanan)? _capa;
     private volatile bool _duruyor;
 
     internal Onizleme(OnizlemePaneli panel, Control arayuz)
     {
         _panel = panel;
         _arayuz = arayuz;
+        _panel.BasligaTiklandi += (_, _) => CipayaDon();
 
         // Neden ayri is parcacigi: dosyalar ag surucusunde; bir onizleme
         // saniyeler surebilir ve arayuz donmamali.
@@ -98,7 +106,11 @@ internal sealed class Onizleme : IDisposable
     /// </summary>
     internal void Goster(DosyaOgesi dosya, string kullandigi, string kullanan)
     {
+        _capa = (dosya, kullandigi, kullanan);
         _beklenenYol = dosya.Yol;
+
+        // Cipadayken baslik tiklanmaz - donulecek baska yer yok.
+        _panel.BasligiYaz(dosya.Ad, geriDonulebilir: false);
 
         _panel.UstBilgiyiYaz(
             ad: dosya.Ad,
@@ -136,9 +148,62 @@ internal sealed class Onizleme : IDisposable
         _uyandir.Release();
     }
 
+    /// <summary>
+    /// KOMSU GOSTERIMI: referans panelinde tiklanan dosyanin onizlemesi ve
+    /// bilgileri - agactaki secim (cipa) DEGISMEDEN. Baslik cipanin adini
+    /// tasir ve tiklaninca cipaya donulur.
+    ///
+    /// NEDEN VAR (Erkan, 29.08.2026): "kullananlar listesindeki 13 dosyanin
+    /// resmine bakmak icin 13 kez gidip donmek" gerekiyordu.
+    /// </summary>
+    internal void KomsuGoster(string yol, string kullandigi, string kullanan)
+    {
+        _beklenenYol = yol;
+
+        _panel.BasligiYaz(
+            _capa is { } c ? c.Dosya.Ad : WindowsYolu.DosyaAdi(yol),
+            geriDonulebilir: _capa is not null);
+
+        // Bilgiler diskten TEK kapidan okunur (DosyaIslemleri.Ozet);
+        // okunamayan alan "—" olur, uydurma deger yazilmaz (CLAUDE.md 3).
+        DosyaIslemleri.YolOzeti ozet = DosyaIslemleri.Ozet(yol);
+        _panel.UstBilgiyiYaz(
+            ad: WindowsYolu.DosyaAdi(yol),
+            tur: DosyaTurleri.Adi(DosyaTurleri.Tani(WindowsYolu.DosyaAdi(yol))),
+            boyut: ozet.Boyut is long b ? Boyut.Yaz(b) : "—",
+            degistirme: ozet.Degistirme is DateTime z ? Zaman.Yaz(z) : "—",
+            kullandigi: kullandigi,
+            kullanan: kullanan);
+
+        _panel.MesajGoster(Yukleniyor);
+
+        Size kutu = _panel.KutuBoyutu;
+        var istenen = new Size(
+            Math.Max(kutu.Width, EnKucukIstek.Width),
+            Math.Max(kutu.Height, EnKucukIstek.Height));
+
+        lock (_kilit)
+        {
+            _bekleyen = (yol, istenen);   // SON ISTEK KAZANIR
+        }
+
+        _uyandir.Release();
+    }
+
+    /// <summary>Basliga tiklandi: cipaya (agacta secili dosyaya) don.</summary>
+    private void CipayaDon()
+    {
+        if (_capa is { } c)
+        {
+            Goster(c.Dosya, c.Kullandigi, c.Kullanan);
+        }
+    }
+
     /// <summary>Klasor secilince: onizleme aranmaz, ust bilgi yine de yazilir.</summary>
     internal void Goster(KlasorOgesi klasor)
     {
+        _capa = null;
+        _panel.BasligiYaz(klasor.Ad, geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster("Klasör");
         _panel.UstBilgiyiYaz(
@@ -159,6 +224,8 @@ internal sealed class Onizleme : IDisposable
     /// </summary>
     internal void Goster(SecimOzeti ozet)
     {
+        _capa = null;
+        _panel.BasligiYaz(ozet.Yaz(), geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster($"{ozet.Toplam} öğe seçildi");
         _panel.UstBilgiyiYaz(
@@ -173,6 +240,8 @@ internal sealed class Onizleme : IDisposable
     /// <summary>Secim yokken paneli bosaltir.</summary>
     internal void Temizle()
     {
+        _capa = null;
+        _panel.BasligiYaz(string.Empty, geriDonulebilir: false);
         _beklenenYol = null;
         _panel.Temizle();
     }

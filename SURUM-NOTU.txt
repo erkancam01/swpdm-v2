@@ -1,4 +1,35 @@
-BU SURUMDE YENI - KOD TABANI PROFESYONEL YAPIYA CEKILDI
+BU SURUMDE YENI - REFERANS SATIRINA TIKLA, ONIZLEMESINE BAK
+
+  Sen: "kullananlar listesindeki parcalarin onizlemesi de gozuksun,
+  yerimden kipirdamadan." Yapildi:
+
+  - ONIZLEME PANELININ USTUNDE artik bir AD var: kimin onizlemesine
+    baktigin orada yaziyor.
+  - Sagdaki KULLANDIKLARI / KULLANANLAR listesinde bir satira TEK TIK
+    (ya da ok tusuyla gezinme): soldaki onizleme VE alttaki bilgiler
+    (Tur, Boyut, Tarih, Kullanan...) o dosyaya doner. Agactaki secimin
+    BOZULMAZ.
+  - Ustteki ad o sirada "< <secili dosya>" olur ve MAVI'dir; tiklayinca
+    onizleme secili dosyaya geri doner.
+  - Cift tik degismedi: yine "o dosyaya git".
+
+  KUCUK NOT
+    Geri-don isaretinin ok karakteri Wine'da kutu gibi cizildi (Segoe UI
+    yok); senin makinende duzgun gorunmeli. Bir de: basliga tiklamak icin
+    ustundeki yazinin uzerine gelmen yeter, el imleci cikiyor.
+
+  OLCULDU
+    Calistirma kapisina 15. olcum girdi: kapi referans satirina tiklayip
+    onizlemenin DEGISTIGINI, basliga tiklayip GERI DONDUGUNU olcuyor.
+    Baglanti bilerek koparilip yakaladigi da olculdu (TEMIZ -> YAKALADI ->
+    TEMIZ). 312 test - BES kapi TEMIZ (15/15).
+
+  BURADA OLCULEMEYEN
+    Komsu onizlemeler Wine'da dosyanin icindeki PreviewPNG'den geldi;
+    senin makinende kabuk (Gezgin) onizlemesi de devreye girer - sira
+    ayni: kabuk -> PreviewPNG -> gomulu.
+
+ONCEKI SURUMDE - KOD TABANI PROFESYONEL YAPIYA CEKILDI
 
   Sen: "bir ozellige mudahale ederken tek sayfaya dokunmaliyiz,
   profesyonel sistemlerdeki katmanlama gibi olsun." Iki denetim kosuldu,

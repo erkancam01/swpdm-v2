@@ -138,6 +138,17 @@ internal sealed class ReferansListesi : ListView
     internal string? TiklananHedef(Point nokta)
         => (GetItemAt(nokta.X, nokta.Y)?.Tag as Satir)?.Hedef;
 
+    /// <summary>
+    /// Secim degisti - fareyle TEK TIK ya da klavyeyle ok. Panele bakan
+    /// (onizleme gibi) taraflar bunu dinler; cift tik "oraya git" olarak
+    /// ayri yasamaya devam eder.
+    /// </summary>
+    internal event EventHandler? SecimDegisti
+    {
+        add => SelectedIndexChanged += value;
+        remove => SelectedIndexChanged -= value;
+    }
+
     /// <summary>Secili satirin hedef yolu (Enter icin); yoksa null.</summary>
     internal string? SeciliHedef => Secili?.Hedef;
 

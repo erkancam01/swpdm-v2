@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=14
+OLCUM_TOPLAM=15
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -77,6 +77,10 @@ AGAC_KIRP="560x250+5+$(( AGAC_ILK_SATIR - 7 ))"
 # Alt panel: solda onizleme kutusu, sagda referans listesi.
 ONIZLEME_KIRP="250x280+15+458"                  # pencere ici: genislikxyukseklik+x+y
 REFERANS_KIRP="260x150+295+458"
+REF_SATIR_X=360                                 # referans panelinde tiklanacak x
+REF_SATIR2_Y=516                                # KULLANANLAR'in ilk veri satiri (y)
+ONIZLEME_BASLIK_X=60                             # onizleme panelinin ustundeki ad (x)
+ONIZLEME_BASLIK_Y=463
 BOLUM_ZEMIN="#E4EAF1"                           # Renkler.ReferansBolumZemin
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 # ==========================================================================
@@ -794,6 +798,46 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   fi
 else
   olcum "Esc ile aramadan cikis" "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 15) KOMSU ONIZLEME: referans satirina tiklayinca onizleme O dosyaya doner,
+#     ustteki ada tiklayinca CIPAYA (agacta seciliye) geri gelir
+#
+# NEDEN VAR (Erkan, 29.08.2026): "kullananlar listesindeki dosyalarin
+# resmine yerinden kipirdamadan bakayim." Tek tikin baglantisi bir tani
+# temizliginde sessizce silinirse (CLAUDE.md 8'in suzgec vakasi) bunu
+# yalnizca bu olcum gorur.
+#
+# Olcum PARMAK IZIYLE: once .SLDPRT secilir (cipa) ve onizleme kirpmasinin
+# izi alinir; referans satirina tiklaninca iz DEGISMELI (baslik "◂ ..."
+# olur, bilgiler komsuya doner); usteki ada tiklaninca ilk ize DONMELI.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/komsu-once.png" > /dev/null 2>&1
+  IZ_CIPA="$(kirpma_izi "$CALISMA/komsu-once.png" "$ONIZLEME_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_SATIR2_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/komsu-sonra.png" > /dev/null 2>&1
+  IZ_KOMSU="$(kirpma_izi "$CALISMA/komsu-sonra.png" "$ONIZLEME_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool mousemove "$(( PENCERE_X + ONIZLEME_BASLIK_X ))" "$(( PENCERE_Y + ONIZLEME_BASLIK_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/komsu-geri.png" > /dev/null 2>&1
+  IZ_GERI="$(kirpma_izi "$CALISMA/komsu-geri.png" "$ONIZLEME_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_CIPA" != "$IZ_KOMSU" ] && [ "$IZ_GERI" = "$IZ_CIPA" ]; then
+    olcum "komsu onizleme ........" "EVET (degisti ve cipaya dondu)"
+  else
+    olcum "komsu onizleme ........" "HAYIR (iz ${IZ_CIPA:0:6}/${IZ_KOMSU:0:6}/${IZ_GERI:0:6})"
+    SORUN=1
+  fi
+else
+  olcum "komsu onizleme ........" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

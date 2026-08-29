@@ -12,6 +12,7 @@ namespace SwPdm.Arayuz.Gorunum;
 internal sealed class OnizlemePaneli : TableLayoutPanel
 {
     private readonly PictureBox _resim;
+    private readonly Label _baslik;
     private readonly Label _ad;
     private readonly Label _tur;
     private readonly Label _boyut;
@@ -23,13 +24,37 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
     internal OnizlemePaneli()
     {
         ColumnCount = 1;
-        RowCount = 2;
+        RowCount = 3;
         Dock = DockStyle.Fill;
         BackColor = Renkler.GovdeArkaPlan;
         Padding = new Padding(8, 4, 8, 4);
         ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+        RowStyles.Add(new RowStyle(SizeType.AutoSize));
         RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
         RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        // BASLIK: kimin onizlemesine bakildigi. Referans satirina tiklayip
+        // KOMSU bir dosyaya bakarken cipanin (agacta secili dosyanin) adi
+        // burada durur ve TIKLANABILIR olur - tiklaninca cipaya donulur.
+        // ToolTip BILEREK yok: Wine'da tiklamayi yiyor (CLAUDE.md 6).
+        _baslik = new Label
+        {
+            AutoSize = false,
+            Dock = DockStyle.Fill,
+            Height = 22,
+            TextAlign = ContentAlignment.MiddleLeft,
+            ForeColor = Renkler.BolumBasligiYazi,
+            Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+            AutoEllipsis = true,
+            Margin = new Padding(0, 0, 0, 2),
+        };
+        _baslik.Click += (_, _) =>
+        {
+            if (_geriDonulebilir)
+            {
+                BasligaTiklandi?.Invoke(this, EventArgs.Empty);
+            }
+        };
 
         _resim = new PictureBox
         {
@@ -60,8 +85,29 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         bilgi.Controls.AddRange(
             [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan, _ozellikler]);
 
-        Controls.Add(_resim, 0, 0);
-        Controls.Add(bilgi, 0, 1);
+        Controls.Add(_baslik, 0, 0);
+        Controls.Add(_resim, 0, 1);
+        Controls.Add(bilgi, 0, 2);
+    }
+
+    /// <summary>Baslik tiklandi - cipaya donulmek isteniyor.</summary>
+    internal event EventHandler? BasligaTiklandi;
+
+    private bool _geriDonulebilir;
+
+    /// <summary>
+    /// Basligi yazar. <paramref name="geriDonulebilir"/> true ise bu bir
+    /// KOMSU gosterimidir: baslik cipanin adini "◂" ile tasir, el imleci ve
+    /// vurgu rengi alir; tiklaninca <see cref="BasligaTiklandi"/> atesler.
+    /// </summary>
+    internal void BasligiYaz(string ad, bool geriDonulebilir)
+    {
+        _geriDonulebilir = geriDonulebilir;
+        _baslik.Text = geriDonulebilir ? "◂ " + ad : ad;
+        _baslik.Cursor = geriDonulebilir ? Cursors.Hand : Cursors.Default;
+        _baslik.ForeColor = geriDonulebilir
+            ? Renkler.ReferansAsagiYazi
+            : Renkler.BolumBasligiYazi;
     }
 
     /// <summary>Onizleme kutusunun su anki boyutu; istenecek resim olcusu.</summary>

@@ -133,6 +133,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 10. Önizleme paneli (sol alt)
 
+- **Üstteki ad** → kimin önizlemesine bakıldığı. Referans satırına tıklayıp komşu bir dosyaya bakarken `◂ <seçili dosya>` olur ve **tıklayınca seçili dosyaya döner**.
 - **Resim** → sırayla üç kaynaktan denenir: Windows kabuğu (Gezgin ne gösteriyorsa) → SOLIDWORKS dosyasının içindeki önizleme → eski sürümlerin gömülü önizlemesi.
 - **Yüklenirken** → "Önizleme yükleniyor…" yazar (boş kutu bırakılmaz).
 - **Hiçbiri yoksa** → "Önizleme yok" ya da okunamama sebebi yazar.
@@ -162,6 +163,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
 - **"N referans taranan klasörde yok — gizlendi"** → çözülemeyen satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
+- **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme ve bilgiler **o satırdaki dosyaya** döner; ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
 - **Ctrl+Shift+L (panel odaktayken)** → seçili dosyanın referansını elle bağlama akışını başlatır.
