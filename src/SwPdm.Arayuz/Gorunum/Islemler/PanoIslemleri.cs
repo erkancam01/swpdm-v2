@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
@@ -117,8 +118,36 @@ internal sealed class YapistirIslemi : IAgacIslemi
             return false;
         }
 
+        // AYNI KLASORE TASIMA ONDEN REDDEDILIR (29.08.2026). Eskiden buraya
+        // kadar geliyordu ve cekirdek "zaten bu klasorde" deyip ZatenVar
+        // donuyordu; aktarma motoru bunu AD CAKISMASI sanip dosyayi
+        // KENDISIYLE karsilastiran bir cakisma kutusu aciyordu - ve hangi
+        // secenek secilirse secilsin sonuc "TASINMADI" oluyordu.
+        //
+        // Kopyalamada ayni klasor MESRUDUR: cogaltma demektir, numaralanir.
+        if (Pano.Kip == AktarmaKipi.Tasi && HepsiAyniKlasorde(secim.EtkinKlasor))
+        {
+            nedenOlmaz = "Kesilen öğeler zaten bu klasörde.";
+            return false;
+        }
+
         nedenOlmaz = string.Empty;
         return true;
+    }
+
+    /// <summary>Panodakilerin TAMAMI verilen klasorde mi.</summary>
+    private static bool HepsiAyniKlasorde(string klasor)
+    {
+        foreach (string yol in Pano.Icerik)
+        {
+            if (!string.Equals(
+                WindowsYolu.Klasor(yol), klasor, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return Pano.Adet > 0;
     }
 
     /// <inheritdoc/>

@@ -30,8 +30,13 @@ internal enum AktarmaKipi
 /// </summary>
 internal static class Aktar
 {
-    /// <summary>Ayni anda ikinci bir aktarma baslamasin.</summary>
-    private static bool _kosuyor;
+    /// <summary>
+    /// Ayni anda ikinci bir aktarma baslamasin.
+    ///
+    /// VOLATILE: bayragi arka plan is parcacigi dusuruyor, arayuz is
+    /// parcacigi okuyor. Ayni dersi ReferansTazeleme daha once odedi.
+    /// </summary>
+    private static volatile bool _kosuyor;
 
     /// <summary>
     /// Ogeleri hedefe aktarir. Kismi basarisizlikta duran ogeler tek tek
@@ -43,8 +48,17 @@ internal static class Aktar
         string hedefKlasor,
         AktarmaKipi kip)
     {
-        if (yollar.Count == 0 || _kosuyor)
+        if (yollar.Count == 0)
         {
+            return;
+        }
+
+        // SESSIZ DONME YOK (CLAUDE.md 3): burasi eskiden hicbir sey
+        // yazmadan donuyordu - kullanici Ctrl+V'ye basiyor, hicbir sey
+        // olmuyor, sebep de yok.
+        if (_kosuyor)
+        {
+            baglam.Bildir("Bir aktarma zaten sürüyor — bitmesini bekleyin.");
             return;
         }
 
@@ -67,7 +81,19 @@ internal static class Aktar
 
         _kosuyor = true;
         var iptal = new CancellationTokenSource();
-        baglam.Ilerleme.Basladi(yollar.Count, iptal);
+
+        // BAYRAK DUSURULMEDEN KALMASIN: Basladi patlarsa _kosuyor sonsuza
+        // kadar true kalir ve BUTUN yapistirmalar sessizce olurdu.
+        try
+        {
+            baglam.Ilerleme.Basladi(yollar.Count, iptal);
+        }
+        catch
+        {
+            _kosuyor = false;
+            iptal.Dispose();
+            throw;
+        }
 
         // Kopya SART: arka plan is parcacigi calisirken cagiranin listesi
         // (ornegin pano) temizlenebilir.
@@ -417,6 +443,18 @@ internal static class Aktar
             }
         }
 
-        return OnayKutusu.Sor(sahip, kip == AktarmaKipi.Tasi ? "Taşı" : "Kopyala", metin.ToString());
+        // ACIK DOSYA UYARISI (29.08.2026): kilit hicbir dosya isleminde
+        // sorulmuyordu. Acikken tasimak Windows tarafindan engelleniyor ve
+        // kullanici sebebi ancak islem yarim kaldiktan sonra goruyordu.
+        string acik = OnayKutusu.AcikUyarisi(
+            yollar, kip == AktarmaKipi.Tasi ? "taşımak" : "kopyalamak");
+        if (acik.Length > 0)
+        {
+            metin.AppendLine();
+            metin.AppendLine(acik);
+        }
+
+        return OnayKutusu.Sor(
+            sahip, kip == AktarmaKipi.Tasi ? "Taşı" : "Kopyala", metin.ToString().TrimEnd());
     }
 }

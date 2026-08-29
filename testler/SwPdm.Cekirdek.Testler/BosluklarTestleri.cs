@@ -188,6 +188,84 @@ public class BosluklarTestleri : IDisposable
         Assert.Equal(1, durum.BozukSatir);   // sessizce atlanmiyor
     }
 
+    // ---------- copten geri yuklemede cakisma ----------
+
+    [Fact]
+    public void GERI_YUKLERKEN_ATLA_SECILIRSE_HICBIR_SEY_DEGISMEZ()
+    {
+        string cop = Cop.Yolu(_kok);
+        string dosya = Path.Combine(_kok, "a.txt");
+
+        File.WriteAllText(dosya, "eski");
+        Assert.True(Cop.Sil(cop, dosya).Oldu);
+        File.WriteAllText(dosya, "yeni");   // ayni ada bir sey geri geldi
+
+        CopOgesi oge = Cop.Oku(cop).Ogeler[0];
+        IslemRaporu rapor = Cop.GeriYukle(cop, oge, Cakisma.Atla);
+
+        Assert.Equal(IslemSonucu.Atlandi, rapor.Sonuc);
+        Assert.Equal("yeni", File.ReadAllText(dosya));
+        Assert.Single(Cop.Oku(cop).Ogeler);   // copte duruyor
+    }
+
+    [Fact]
+    public void GERI_YUKLERKEN_DEGISTIR_ESKISINI_COPE_ALIR()
+    {
+        string cop = Cop.Yolu(_kok);
+        string dosya = Path.Combine(_kok, "a.txt");
+
+        File.WriteAllText(dosya, "eski");
+        Assert.True(Cop.Sil(cop, dosya).Oldu);
+        File.WriteAllText(dosya, "yeni");
+
+        CopOgesi oge = Cop.Oku(cop).Ogeler[0];
+        Assert.True(Cop.GeriYukle(cop, oge, Cakisma.Degistir).Oldu);
+
+        // Geri yuklenen kendi ADIYLA geldi VE uzerine yazilan yok edilmedi.
+        Assert.Equal("eski", File.ReadAllText(dosya));
+        Assert.Single(Cop.Oku(cop).Ogeler);
+        Assert.Equal("a.txt", Cop.Oku(cop).Ogeler[0].Ad);
+    }
+
+    [Fact]
+    public void GERI_YUKLERKEN_IKISINI_DE_TUT_NUMARALAR()
+    {
+        string cop = Cop.Yolu(_kok);
+        string dosya = Path.Combine(_kok, "a.txt");
+
+        File.WriteAllText(dosya, "eski");
+        Assert.True(Cop.Sil(cop, dosya).Oldu);
+        File.WriteAllText(dosya, "yeni");
+
+        CopOgesi oge = Cop.Oku(cop).Ogeler[0];
+        IslemRaporu rapor = Cop.GeriYukle(cop, oge, Cakisma.IkisiniDeTut);
+
+        Assert.True(rapor.Oldu);
+        Assert.Equal("a (2).txt", WindowsYolu.DosyaAdi(rapor.YeniYol));
+        Assert.Equal("yeni", File.ReadAllText(dosya));
+    }
+
+    // ---------- kilit dosyalari kopyalanmaz ----------
+
+    [Fact]
+    public void KLASOR_KOPYALANIRKEN_KILIT_DOSYALARI_GITMEZ()
+    {
+        string kaynak = Path.Combine(_kok, "kaynak");
+        Directory.CreateDirectory(kaynak);
+        File.WriteAllText(Path.Combine(kaynak, "Parça1.SLDPRT"), "veri");
+        File.WriteAllText(Path.Combine(kaynak, "~$Parça1.SLDPRT"), "kilit");
+
+        string hedefKlasor = Path.Combine(_kok, "hedef");
+        Directory.CreateDirectory(hedefKlasor);
+
+        IslemRaporu rapor = DosyaIslemleri.Kopyala(kaynak, hedefKlasor);
+        Assert.True(rapor.Oldu);
+
+        string kopya = Path.Combine(hedefKlasor, "kaynak");
+        Assert.True(File.Exists(Path.Combine(kopya, "Parça1.SLDPRT")));
+        Assert.False(File.Exists(Path.Combine(kopya, "~$Parça1.SLDPRT")));
+    }
+
     // ---------- ayni klasore tasima ----------
 
     [Fact]

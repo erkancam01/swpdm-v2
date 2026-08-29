@@ -278,8 +278,17 @@ public static class Cop
         return new CopDurumu(sonuc, null, bozuk);
     }
 
-    /// <summary>Bir ogeyi eski yerine geri koyar.</summary>
-    public static IslemRaporu GeriYukle(string cop, CopOgesi oge)
+    /// <summary>
+    /// Bir ogeyi eski yerine geri koyar.
+    ///
+    /// CAKISMA KARARI DISARIDAN GELIR (29.08.2026). Once burasi her zaman
+    /// numaralandiriyordu: kullaniciya "uzerine yaz / atla / ikisini de tut"
+    /// hic sorulmuyordu, oysa uygulamada tam bu is icin bir cakisma kutusu
+    /// var. Varsayilan hala numaralamak - yani hicbir cagiran sessizce
+    /// uzerine yazmaz.
+    /// </summary>
+    public static IslemRaporu GeriYukle(
+        string cop, CopOgesi oge, Cakisma cakisma = Cakisma.IkisiniDeTut)
     {
         string kaynak = IcerdekiYol(cop, oge);
 
@@ -298,14 +307,39 @@ public static class Cop
 
             // Ayni adda bir sey geri gelmisse USTUNE YAZILMAZ; numaralanir ve
             // bu cagirana SOYLENIR (rapor.YeniYol'a bakilir).
-            if (DosyaIslemleri.BosAdBul(ustKlasor, oge.Ad) is not string ad)
+            string dogrudan = WindowsYolu.Birlestir(ustKlasor, oge.Ad);
+            string hedef;
+
+            if (!DosyaIslemleri.Var(dogrudan))
+            {
+                hedef = dogrudan;   // cakisma yok
+            }
+            else if (cakisma == Cakisma.Atla)
+            {
+                return new IslemRaporu(IslemSonucu.Atlandi, null, $"\"{oge.Ad}\" atlandı.");
+            }
+            else if (cakisma == Cakisma.Degistir)
+            {
+                // Uzerine yazilan YOK EDILMEZ; o da cope gider (CLAUDE.md 1a).
+                if (!Sil(cop, dogrudan).Oldu)
+                {
+                    return new IslemRaporu(
+                        IslemSonucu.ZatenVar, null,
+                        $"\"{oge.Ad}\" değiştirilemedi: eskisi çöp kutusuna alınamadı.");
+                }
+
+                hedef = dogrudan;
+            }
+            else if (DosyaIslemleri.BosAdBul(ustKlasor, oge.Ad) is string ad)
+            {
+                hedef = WindowsYolu.Birlestir(ustKlasor, ad);
+            }
+            else
             {
                 return new IslemRaporu(
                     IslemSonucu.ZatenVar, null,
                     $"\"{oge.Ad}\" geri yüklenemedi: eski klasöründe boş bir ad bulunamadı.");
             }
-
-            string hedef = WindowsYolu.Birlestir(ustKlasor, ad);
 
             if (oge.KlasorMu)
             {
@@ -345,6 +379,14 @@ public static class Cop
             return DosyaIslemleri.HatayiCevir(hata);
         }
     }
+
+    /// <summary>
+    /// Ogenin cop kutusunun ICINDEKI yolu.
+    ///
+    /// ACIK (public): cakisma kutusu "hangi dosya hangisiyle carpisiyor"
+    /// diye ikisinin de boyut/tarihini okuyor.
+    /// </summary>
+    public static string IcerdekiYolu(string cop, CopOgesi oge) => IcerdekiYol(cop, oge);
 
     private static string IcerdekiYol(string cop, CopOgesi oge)
         => WindowsYolu.Birlestir(WindowsYolu.Birlestir(cop, oge.No), oge.Ad);

@@ -167,9 +167,42 @@ internal sealed class CopKutusuPenceresi : Form
         var olmayan = new List<string>();
         var adiDegisen = new List<string>();
 
+        // CAKISMA ARTIK SORULUYOR (29.08.2026): eskiden aynı adda bir şey
+        // varsa karar kullanicinin degil KODUN'du - sessizce numaralaniyordu.
+        // Uygulamada tam bu is icin bir cakisma kutusu duruyordu.
+        Cakisma hepsiIcin = Cakisma.Sor;
+
         foreach (CopOgesi oge in Secililer())
         {
-            IslemRaporu rapor = Cop.GeriYukle(_cop, oge);
+            Cakisma karar = hepsiIcin;
+            string dogrudan = WindowsYolu.Birlestir(WindowsYolu.Klasor(oge.EskiYol), oge.Ad);
+
+            if (DosyaIslemleri.Var(dogrudan) && karar == Cakisma.Sor)
+            {
+                CakismaKarari cevap = CakismaKutusu.Sor(
+                    this, Cop.IcerdekiYolu(_cop, oge), dogrudan);
+
+                if (cevap.Vazgecti)
+                {
+                    break;
+                }
+
+                if (cevap.Hepsine)
+                {
+                    hepsiIcin = cevap.Karar;
+                }
+
+                karar = cevap.Karar;
+            }
+
+            IslemRaporu rapor = Cop.GeriYukle(
+                _cop, oge, karar == Cakisma.Sor ? Cakisma.IkisiniDeTut : karar);
+
+            if (rapor.Sonuc == IslemSonucu.Atlandi)
+            {
+                continue;
+            }
+
             if (!rapor.Oldu)
             {
                 olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));

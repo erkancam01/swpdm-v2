@@ -154,6 +154,23 @@ internal sealed class SilIslemi : IAgacIslemi
                     if (!rapor.Oldu)
                     {
                         olmayan.Add(oge.Ad + " — " + (rapor.Sebep ?? "bilinmeyen sebep"));
+                        continue;
+                    }
+
+                    // AD DEGISTIYSE SOYLENIR (29.08.2026). Cop.GeriYukle
+                    // cakismada numaralandiriyor ve bunu YeniYol'da
+                    // soyluyor; cop kutusu penceresi bunu raporluyordu ama
+                    // Ctrl+Z yolu HIC BAKMIYORDU - yalnizca "geri alindi"
+                    // diyordu. Ayni cekirdek cagrisinin iki cagirani
+                    // ayrismisti (CLAUDE.md 8).
+                    //
+                    // Onemi: adi degisen dosyanin referansi KIRILIR, cunku
+                    // onu kullanan montaj eski adi arar.
+                    string yeniAd = WindowsYolu.DosyaAdi(rapor.YeniYol ?? string.Empty);
+                    if (!string.Equals(yeniAd, oge.Ad, StringComparison.Ordinal))
+                    {
+                        olmayan.Add($"{oge.Ad} — aynı adda bir şey olduğu için "
+                            + $"\"{yeniAd}\" olarak geri geldi.");
                     }
                 }
 
@@ -192,7 +209,25 @@ internal sealed class SilIslemi : IAgacIslemi
         if (uyari.Length > 0)
         {
             metin.AppendLine();
-            metin.Append(uyari);
+            metin.AppendLine(uyari);
+        }
+
+        // ACIK DOSYA UYARISI: kilit sorulmadan siliniyordu ve sebep ancak
+        // islem yarim kaldiktan sonra goruluyordu (CLAUDE.md 5).
+        var yollar = new List<string>();
+        foreach (object oge in ogeler)
+        {
+            if (SecimBaglami.Yolu(oge) is string yol)
+            {
+                yollar.Add(yol);
+            }
+        }
+
+        string acik = OnayKutusu.AcikUyarisi(yollar, "silmek");
+        if (acik.Length > 0)
+        {
+            metin.AppendLine();
+            metin.Append(acik);
         }
 
         return OnayKutusu.Sor(

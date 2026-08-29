@@ -57,8 +57,8 @@ olmayan hiçbir şey buraya yazılmadı.
 | **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
 | **Kes** | `Ctrl+X` | Seçilenleri panoya "taşınacak" olarak koyar | Seçim yokken |
 | **Kopyala** | `Ctrl+C` | Seçilenleri panoya "kopyalanacak" olarak koyar | Seçim yokken |
-| **Yapıştır** | `Ctrl+V` | Panodakileri etkin klasöre taşır/kopyalar | Pano boşken · arama sonucundayken · hedef yokken |
-| **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar) | Geri alınacak iş yokken |
+| **Yapıştır** | `Ctrl+V` | Panodakileri etkin klasöre taşır/kopyalar; menüde kaç öğe ve hangi iş olduğu yazar | Pano boşken · arama sonucundayken · hedef yokken · **kesilenler zaten o klasördeyken** |
+| **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar); "Değiştir" ile çöpe giden dosyayı da geri yükler, ad değiştiyse söyler | Geri alınacak iş yokken |
 | **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
 | **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
 | **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
@@ -194,7 +194,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Neden Windows Çöp Kutusu değil** → ağ sürücüsünden silinen dosya oraya gitmez, kalıcı gider.
 - **Silme** → aynı diskte **taşımadır**, yani 1 GB'lık montaj bile anında gider.
 - **Sütunlar** → Ad · Eski konum · Silinme · Boyut (klasörde "klasör" yazar).
-- **Geri yükle** → seçilenleri eski yerine koyar, onay sormaz; aynı adda dosya varsa üzerine yazmaz, adı numaralar ve söyler.
+- **Geri yükle** → seçilenleri eski yerine koyar. **Aynı adda bir şey varsa çakışma kutusu çıkar** (Atla · İkisini de tut · Değiştir — eskisi çöpe gider · Vazgeç); numaralanan adlar sonunda tek tek raporlanır.
 - **Üst satır** → "N öğe.   Yeri: <yol>"; kayıt okunamıyorsa **sebebi** yazar — "boş" DEMEZ.
 - **Okunamayan çöp kutusu** → "Tümünü boşalt" çalışmaz; elimizdeki liste eksik olabileceği için sebebi kutuda söylenir.
 - **Kalıcı sil** → seçilenleri geri dönüşsüz siler; **onay ister**, varsayılan düğme Vazgeç.
@@ -236,6 +236,7 @@ olmayan hiçbir şey buraya yazılmadı.
   - **"Kalan bütün çakışmalara da uygula"** → aynı karar kalanlara sorulmadan uygulanır.
 - **Silme onayı ("Çöp kutusuna gönder")** → ne silineceğini sayar (en fazla 10 ad), "çöp kutusundan geri yüklenebilir" der, varsayılan düğme **Vazgeç**.
   - **Referans uyarısı** → tarama yoksa "kimin kullandığını BİLMİYORUZ", tarama varsa "bunları N dosya KULLANIYOR" (en fazla 8 ad) yazar. **Uyarır, engellemez.**
+  - **Açık dosya uyarısı** → SOLIDWORKS'te açık görünen (yanında `~$` kilidi olan) öğeler sayılır ve adlanır. Silme ve taşıma/kopyalama onaylarının ikisinde de çıkar. **Uyarır, engellemez.**
 - **Taşı/Kopyala onayı** → ne taşınacağını ve hedef klasörü yazar; taşımada "kullandığı N dosya taşınmıyor; referansları onarılacak" der.
 - **Elle bağlama** → (1) "Hangi referans bağlanacak?" (tek aday varsa atlanır), (2) "Dosyayı seç" — **kendi ağacımız**, Windows kutusu yok, (3) onay: eski ve yeni yol tam yazar, **geri alınamaz** olduğu söylenir.
 
@@ -295,4 +296,5 @@ olmayan hiçbir şey buraya yazılmadı.
 - **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
 - **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
 - **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.
+- **Kök değişince pano ve geri alma listesi boşalır** → eski kökün yolları yeni ağaçta yanlış yere dokunurdu.
 - **Boş liste asla "yok" demek değildir** → tarama yapılmadıysa panel sayı yerine "taranmadı" yazar; bu bilerek böyle.

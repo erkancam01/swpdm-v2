@@ -353,6 +353,15 @@ public static class DosyaIslemleri
 
         foreach (string dosya in Directory.GetFiles(kaynak))
         {
+            // SOLIDWORKS'un "~$" KILIT DOSYALARI KOPYALANMAZ. Kopyalanirsa
+            // kopyanin icinde SAHIPSIZ kilitler olusuyor: agacta oyle
+            // gorunuyorlar ve klasorun sonradan silinmesini engelleyebiliyorlar
+            // (CLAUDE.md 4 - "dizin bos degil"in gorunmez sebebi).
+            if (Kilit.KilitMi(WindowsYolu.DosyaAdi(dosya)))
+            {
+                continue;
+            }
+
             File.Copy(dosya, WindowsYolu.Birlestir(hedef, WindowsYolu.DosyaAdi(dosya)),
                 overwrite: false);
         }

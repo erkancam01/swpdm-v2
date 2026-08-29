@@ -271,7 +271,12 @@ internal sealed partial class AnaForm : Form
 
         // Kok degisti: eski yollara bakan geri alma adimlari artik BASKA bir
         // agacin yollari olur ve yanlis yere dokunurdu (CLAUDE.md 1a).
+        //
+        // PANO DA BOSALIR - AYNI GEREKCE, ama once unutulmustu: panoda A
+        // kokunun mutlak yollari duruyor, agacta B koku aciliyordu ve
+        // "Yapıştır (3 öğe)" hicbir sey belli etmeden A'dan B'ye tasiyordu.
         GeriAlDefteri.Temizle();
+        Pano.Bosalt();
         CopDugmesiniTazele();
         GeriAlDugmesiniTazele();
         _ayarlarSayfasi?.Tazele();

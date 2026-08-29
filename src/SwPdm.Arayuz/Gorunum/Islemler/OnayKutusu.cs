@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
@@ -23,6 +26,58 @@ internal static class OnayKutusu
 {
     /// <summary>Kutunun en fazla genisligi; uzun yollar tasmasin.</summary>
     private const int EnFazlaGenislik = 520;
+
+    /// <summary>
+    /// "Bunlardan N tanesi SOLIDWORKS'te acik gorunuyor" satiri; acik yoksa
+    /// bos metin.
+    ///
+    /// NEDEN VAR (29.08.2026): Kilit.AcikMi'nin kendi belgesi "dosyaya yazan
+    /// her yol once bunu sormali" diyordu, ama sil/tasi/kopyala HIC
+    /// sormuyordu. Acik bir dosyayi tasimayi Windows engelliyor ve kullanici
+    /// sebebi ANCAK islem yarim kaldiktan sonra goruyordu. Uyari ONDEN
+    /// veriliyor - ama ENGELLEMIYOR: kilit, SOLIDWORKS temiz kapanmadiysa
+    /// kalinti da olabilir (CLAUDE.md 5).
+    ///
+    /// BURADA, cunku ayni satiri iki onay kutusu da kullaniyor (CLAUDE.md 8).
+    /// </summary>
+    internal static string AcikUyarisi(IReadOnlyList<string> yollar, string fiil)
+    {
+        ArgumentNullException.ThrowIfNull(yollar);
+
+        var acikOlanlar = new List<string>();
+        foreach (string yol in yollar)
+        {
+            if (Kilit.AcikMi(yol))
+            {
+                acikOlanlar.Add(WindowsYolu.DosyaAdi(yol));
+            }
+        }
+
+        if (acikOlanlar.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var metin = new StringBuilder();
+        metin.AppendLine($"DİKKAT: {acikOlanlar.Count} öğe SOLIDWORKS'te AÇIK görünüyor "
+            + "(yanında \"~$\" kilit dosyası var):");
+
+        int yazilan = 0;
+        foreach (string ad in acikOlanlar)
+        {
+            if (yazilan == 8)
+            {
+                metin.AppendLine($"  … ve {acikOlanlar.Count - 8} tane daha");
+                break;
+            }
+
+            metin.AppendLine("  • " + ad);
+            yazilan++;
+        }
+
+        metin.Append($"Açıkken {fiil} Windows tarafından engellenebilir.");
+        return metin.ToString();
+    }
 
     /// <summary>
     /// Onay sorar. Doner: kullanici "Evet" dedi mi.
