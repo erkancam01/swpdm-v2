@@ -35,29 +35,30 @@ internal sealed partial class ReferansSurucusu
             return;
         }
 
-        if (kayit.YazilanYollar.Count == 0)
+        List<(string Yazilan, Cozum Cozum)> gorunen = Icindekiler(yol);
+
+        if (gorunen.Count == 0)
         {
+            // IKI AYRI BOSLUK, IKI AYRI CUMLE (CLAUDE.md 3). Ikisini ayni
+            // kelimeyle yazmak, referanslarinin HEPSI kirik olan bir dosyayi
+            // "hicbir sey kullanmiyor" diye gosterirdi - ve bu uygulamada
+            // oyle bir yanlis okuma saglam dosya sildirir.
+            //
             // KISA CUMLE SART: ad sutunu dar ve uzun cumle KIRPILIYOR -
             // "Bu dosya başka dosya kull..." ekranda tam TERSI anlama
             // ("kullanıyor") okunabiliyordu (olculdu, 30.08.2026).
             Aciklama(
-                liste, "Başka dosya kullanmıyor.", Ilgisiz, Renkler.ReferansAsagiYazi);
+                liste,
+                kayit.YazilanYollar.Count == 0
+                    ? "Başka dosya kullanmıyor."
+                    : "Hepsi kırık — KIRIK bölümünde.",
+                Ilgisiz,
+                Renkler.ReferansAsagiYazi);
             return;
         }
 
-        // BULUNAMAYANLAR VE BAYAT YOLLAR ARTIK KIRIK BOLUMUNDE (Erkan,
-        // 30.08.2026). Bu bolumde kalan, gercekten YERINDE olan referanslar;
-        // "belirsiz" (n aday) da burada kalir - orada gercek bir karar var
-        // ve karari kullanici verecek, kirik degil.
-        PanelSatirlari satirlar = _indeks.KullandiklariGorunur(yol);
-
-        foreach ((string yazilan, Cozum cozum) in satirlar.Gosterilecekler)
+        foreach ((string yazilan, Cozum cozum) in gorunen)
         {
-            if (ReferansIndeksi.BayatMi(yol, yazilan, cozum))
-            {
-                continue;
-            }
-
             // IPUCUNDA HANGI YOL: bulunduysa dosyanin GERCEK yeri (kullanici
             // "hangi dosya" diye ona bakiyor), bulunamadiysa dosyanin ICINDE
             // yazan yol (aranan seyin ne oldugunu ancak o soyluyor).
@@ -70,19 +71,61 @@ internal sealed partial class ReferansSurucusu
                 cozum.Yol ?? yazilan);
         }
 
-        // KISALMA SESSIZ OLAMAZ. Kisalmis bir liste "bu dosya bunlari
-        // kullanmiyor" diye okunur ve o yanlis, bu uygulamada saglam dosya
-        // sildirir (CLAUDE.md 3). Bir satir kacinin ayrildigini ve NEREDE
-        // olduklarini soyluyor - serit zaten sayiyi da tasiyor.
-        int kirik = Kirikler(yol).Count;
-        if (kirik > 0)
+        // LISTENIN ALTINDAKI "N kırık referans — KIRIK bölümünde" SATIRI
+        // KALKTI (Erkan, 30.08.2026: "gerek yok, zaten kırık dosyalar diye
+        // bölüm var"). Guvenli, cunku ayni bilgi seritte HER AN duruyor
+        // ("KIRIK 29 dosya") ve serit sarmali - gizlenmiyor. Ustelik
+        // sekmedeki sayi artik listedeki satir sayisiyla BIREBIR ayni;
+        // "43 yaziyor, 14 satir var" celiskisi de bu turda kapandi.
+    }
+
+    /// <summary>
+    /// ICINDEKILER bolumunde GORUNECEK satirlar - kirik olmayanlar.
+    ///
+    /// TEK KAYNAK (CLAUDE.md 8): hem <see cref="Asagiyi"/> bunu ciziyor hem
+    /// seritteki sayi bunu sayiyor. Once sayi yazilan yollarin TAMAMINDAN
+    /// geliyordu ve ayrismisti: Erkan'in ekraninda sekme "43 dosya" derken
+    /// listede 14 satir vardi (29'u KIRIK bolumunde).
+    ///
+    /// "Belirsiz" (n aday) satirlar BURADA KALIR - orada gercek bir karar
+    /// var ve karari kullanici verecek; kirik degil.
+    /// </summary>
+    private List<(string Yazilan, Cozum Cozum)> Icindekiler(string yol)
+    {
+        var sonuc = new List<(string, Cozum)>();
+
+        foreach ((string yazilan, Cozum cozum) in _indeks!.KullandiklariGorunur(yol).Gosterilecekler)
         {
-            Aciklama(
-                liste,
-                $"{kirik} kırık referans — KIRIK bölümünde",
-                "Ctrl+Shift+E",
-                Renkler.YolBayatYazi);
+            if (!ReferansIndeksi.BayatMi(yol, yazilan, cozum))
+            {
+                sonuc.Add((yazilan, cozum));
+            }
         }
+
+        return sonuc;
+    }
+
+    /// <summary>
+    /// ICINDEKILER sekmesinin sayisi - <see cref="Icindekiler"/>'i sayar,
+    /// yani ekranda GERCEKTEN duran satirlari. <see cref="KirikMetni"/>'nin
+    /// birebir kardesi; "0" ile "bilmiyoruz" ayni kelimeyle yazilmaz
+    /// (CLAUDE.md 3).
+    /// </summary>
+    private string IcindekilerMetni(string yol)
+    {
+        IndeksKaydi? kayit = _indeks!.Kayit(yol);
+        if (kayit is null)
+        {
+            return "taranmadı";
+        }
+
+        if (!kayit.Okundu)
+        {
+            return "okunamadı";
+        }
+
+        int adet = Icindekiler(yol).Count;
+        return adet == 0 ? "yok" : $"{adet} dosya";
     }
 
     /// <summary>
@@ -194,14 +237,16 @@ internal sealed partial class ReferansSurucusu
 
         // SEBEP SATIRI YALNIZCA LISTE BOSKEN - Erkan, 30.08.2026: dolu bir
         // listenin altindaki "17 dosya okunamadı" satiri "gerek yok".
-        // KALDIRMAK NEDEN GUVENLI: eksiklik isareti KAYBOLMUYOR - bolum
-        // basliginin sag sutunu zaten "2 dosya · eksik" / "taranmadı"
-        // yaziyor (YukariMetni) ve ayrinti durum cubugundaki tarama
-        // cumlesinde duruyor ("EKSİK — 17 dosya okunamadı").
+        //
+        // BU ARTIK TEK ISARET (30.08.2026, ikinci tur): sekmedeki "· eksik"
+        // de Erkan'in karariyla kalkti. Yani DOLU bir listede eksiklik
+        // yalnizca durum cubugundaki tarama cumlesinde yaziyor
+        // ("EKSİK — 15 dosya okunamadı") - riski soylendi, karar onun.
         //
         // LISTE BOSKEN SATIR SART (CLAUDE.md 3): guvenilir olmayan bos bir
         // listeye "Bunu kullanan dosya yok." yazmak, taranmamis kokte
         // "bu parcayi kimse kullanmiyor" demektir ve SAGLAM DOSYA SILDIRIR.
+        // Sekmedeki sayi da o halde "yok" DEMIYOR, "taranmadı" diyor.
         if (sonuc.Kullananlar.Count > 0)
         {
             return;

@@ -224,88 +224,28 @@ internal sealed partial class ReferansSurucusu
     }
 
     /// <summary>
-    /// "Kullandığı:" satiri - ASAGI yon.
+    /// KULLANILDIGI YERLER sekmesinin sayisi.
     ///
-    /// Uc ayri hal, UCU DE farkli yazilir:
-    ///   indekste yok  -> taranmadı   (bilmiyoruz)
-    ///   okunamadi     -> okunamadı   (denedik, olmadi)
-    ///   okundu, 0     -> yok         (gercekten kullanmiyor)
-    /// </summary>
-    internal string KullandigiMetni(string? yol)
-    {
-        if (_indeks is null || string.IsNullOrWhiteSpace(yol))
-        {
-            return "taranmadı";
-        }
-
-        if (!SwReferans.TasiyabilirMi(yol))
-        {
-            return Ilgisiz;   // bu tur zaten referans tasimaz; "taranmadı" yaniltirdi
-        }
-
-        IndeksKaydi? kayit = _indeks.Kayit(yol);
-        if (kayit is null)
-        {
-            return "taranmadı";
-        }
-
-        if (!kayit.Okundu)
-        {
-            return "okunamadı";
-        }
-
-        // ASAGI YON, YARIM TARAMADA DA TAMDIR: bu sayi dosyanin KENDI
-        // icinden (Header2) okundu; baska dosyalarin taranip taranmamasi
-        // onu degistirmez. Yukari yonun guvenilirligi ise butun agaca bagli -
-        // ikisinin ayri satir olmasinin sebebi tam olarak bu.
-        return kayit.YazilanYollar.Count == 0 ? "yok" : $"{kayit.YazilanYollar.Count} dosya";
-    }
-
-    /// <summary>
-    /// "Kullanan:" satiri - YUKARI yon.
+    /// "· EKSIK" KALDIRILDI (Erkan, 30.08.2026: "eksik yazmasın"). O kelime
+    /// KIRIK bolumuyle ilgili DEGILDI - taramanin yarim kaldigini, yani bu
+    /// dosyayi kullanan baska bir belgenin GORULEMEMIS olabilecegini
+    /// soyluyordu. Erkan'a bu soylendi ve karari "tamamen kaldır" oldu.
     ///
-    /// Uc ayri hal, UCU DE farkli yazilir - "0" hepsini ayni gostermek olurdu:
-    ///   taranmadi        -> bilmiyoruz
-    ///   taranmis, 0      -> gercekten kullanan yok
-    ///   taranmis, n      -> n dosya
+    /// TEHLIKELI HAL YINE DE KORUNUYOR (CLAUDE.md 3): liste BOSKEN ve tarama
+    /// guvenilir DEGILKEN sayi "yok" DEMIYOR, "taranmadı" diyor - ve bolumun
+    /// icindeki sebep satiri da duruyor. Bos bir listeye "bunu kimse
+    /// kullanmiyor" dedirtmek saglam dosya sildirir; kalkan yalnizca DOLU
+    /// listedeki kelime, ayrinti durum cubugundaki tarama cumlesinde
+    /// ("EKSİK — 15 dosya okunamadı").
     /// </summary>
-    internal string KullananMetni(string? yol)
+    private static string YukariMetni(KullanimSonucu sonuc)
     {
-        if (_indeks is null || string.IsNullOrWhiteSpace(yol))
+        if (sonuc.Kullananlar.Count > 0)
         {
-            return "taranmadı";
+            return $"{sonuc.Kullananlar.Count} dosya";
         }
 
-        if (!SwReferans.TasiyabilirMi(yol))
-        {
-            return Ilgisiz;
-        }
-
-        return YukariMetni(_indeks.Kullananlar(yol), kisa: false);
-    }
-
-    /// <summary>
-    /// Yukari yonun metni. TEK YERDE duruyor cunku iki musterisi var: panelin
-    /// "Kullanan:" satiri (uzun) ve bolum basligi (kisa). Iki kopya yazilsa
-    /// biri gunun birinde otekinden FARKLI sayi gosterirdi - v1'de boyut
-    /// bicimlendirmesi tam boyle ayrismisti (CLAUDE.md 8).
-    /// </summary>
-    /// <param name="kisa">Baslikta yer dar; uzun guvenilirlik cumlesi sigmaz.</param>
-    private static string YukariMetni(KullanimSonucu sonuc, bool kisa)
-    {
-        if (!sonuc.Guvenilir)
-        {
-            if (sonuc.Kullananlar.Count == 0)
-            {
-                return "taranmadı";
-            }
-
-            return kisa
-                ? $"{sonuc.Kullananlar.Count} dosya · eksik"
-                : $"{sonuc.Kullananlar.Count} dosya (liste eksik olabilir)";
-        }
-
-        return sonuc.Kullananlar.Count == 0 ? "yok" : $"{sonuc.Kullananlar.Count} dosya";
+        return sonuc.Guvenilir ? "yok" : "taranmadı";
     }
 
     /// <summary>
@@ -337,8 +277,8 @@ internal sealed partial class ReferansSurucusu
 
         return bolum switch
         {
-            ReferansBolumu.Icindekiler => KullandigiMetni(yol),
-            ReferansBolumu.KullanildigiYerler => YukariMetni(_indeks.Kullananlar(yol), kisa: true),
+            ReferansBolumu.Icindekiler => IcindekilerMetni(yol),
+            ReferansBolumu.KullanildigiYerler => YukariMetni(_indeks.Kullananlar(yol)),
             _ => KirikMetni(yol),
         };
     }

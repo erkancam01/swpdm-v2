@@ -1,4 +1,40 @@
-BU SURUMDE - REFERANS PANELI UC SEKME OLDU
+BU SURUMDE - SEKME SAYILARI SADELESTI
+
+  Uc istegin de yapildi:
+
+  1. "ICINDEKILER 43 dosya" DIYORDU, LISTEDE 14 SATIR VARDI.
+     Sayi yazili referanslarin TAMAMINI sayiyordu; cizim ise kirikleri
+     atliyordu - iki ayri yerden hesaplanan ayni sayi ayrismisti. Artik
+     sayi ile cizim TEK KAYNAKTAN geliyor: sekmede ne yaziyorsa listede o
+     kadar satir var. Kirikler KIRIK sekmesinde sayiliyor.
+
+  2. Listenin altindaki "29 kırık referans — KIRIK bölümünde" satiri
+     KALKTI ("gerek yok, zaten kırık dosyalar diye bölüm var"). Guvenli,
+     cunku ayni bilgi seritte HER AN duruyor ("KIRIK 29 dosya").
+
+  3. "KULLANILDIGI YERLER 4 dosya · eksik" -> "4 dosya".
+     "eksik" kelimesi KIRIK bolumuyle ilgili DEGILDI; taramanin yarim
+     kaldigini, yani bu dosyayi kullanan baska bir belgenin gorulememis
+     olabilecegini soyluyordu. Sana soylendi, kararin "tamamen kaldır"
+     oldu ve oyle yapildi.
+
+  BILEREK KALAN IKI SEY (CLAUDE.md 3 - bunlar dosya sildirir)
+    - Liste BOSKEN ve tarama yarim kaldiysa sekme "yok" DEMIYOR,
+      "taranmadı" diyor; bolumun icindeki satir da sebebini yaziyor.
+      Bos bir listeye "bunu kimse kullanmiyor" dedirtmek, sağlam bir
+      parcayi sildirir.
+    - Referanslarinin HEPSI kirik olan bir dosyada ICINDEKILER bombos
+      kalirdi ve "hicbir sey kullanmiyor" diye okunurdu. Artik orada
+      "Hepsi kırık — KIRIK bölümünde." yaziyor.
+    Tarama eksikligi ayrintisi durum cubugunda duruyor:
+    "EKSİK — 15 dosya okunamadı".
+
+  SENDE BAKILACAK - BURADA OLCULEMEDI
+    Ornek klasorde kirik referansi olan dosya YOK; yani "43 -> 14"
+    duzelmesi ancak senin agacinda gorulur. PANİKBAR KİLİT.SLDASM'i sec:
+    ICINDEKILER sekmesindeki sayi ile listedeki satir sayisi ayni mi?
+
+ONCEKI SURUMDE - REFERANS PANELI UC SEKME OLDU
 
   Sen: "içindekiler - kullanıldığı yerler ve kırık referanslar olsa …
   her alan ayrı pencerede, bakmak istediği şeye tıklar açar. ama
