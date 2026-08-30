@@ -1,4 +1,39 @@
-BU SURUMDE YENI - REFERANS SATIRINA TIKLA, ONIZLEMESINE BAK
+BU SURUMDE YENI - "KOK DISINDA" ARTIK "BULUNAMADI" DEGIL
+
+  Senin sectigin is. Dosya diskte DURUYOR ama acik kokun disindaysa
+  (kutuphane klasoru, baska surucu) panel onu "bulunamadi" sayip
+  gizliyordu - saglam bag, kayip gibi gorunuyordu. Ayrildi:
+
+  - Referans panelinde yeni satir turu: "kok disinda" (MOR yazi).
+    Gizlenmiyor; TEK TIKLA onizlemesi ve bilgileri geliyor (dosya
+    gercek). Cift tik agacta gosteremez ve sebebini yazar - agac
+    orayi gormuyor.
+  - Gizleme cumlesi durustce daraldi: "N referans bulunamadi -
+    gizlendi" artik yalnizca NE AGACTA NE DISKTE olanlari sayiyor.
+  - YEDINCI RAPOR: "Kok disindakiler" (Ctrl+Shift+D). Kirik degiller
+    ama tasima ve onarim o dosyalari GOREMEZ - tasimadan once bilinmeli.
+  - "Kirik referanslar" raporu artik yalnizca GERCEKTEN kayip olanlari
+    listeliyor.
+  - Elle baglama penceresi de ayni kelimeyi kullaniyor; boyle bir
+    referans istersen yine elle baglanabilir.
+
+  SENDE OLCULECEK (burada olculemedi)
+    - Buradaki olcum yapay dosyayla: Wine'da "C:\Users\PC\..." yollari
+      yasamiyor. Senin 43 referansli montajinda gizlenen satirlarin
+      kaci "kok disinda"ya doner, panel okunur kalir mi - ancak sende
+      gorulur. KALABALIK olursa soyle: tek dosyalik is, gizlemeye
+      cevrilir.
+    - OLU bir sunucu adi yazan referans ilk secimde paneli birkac
+      saniye bekletebilir (dosya var mi sorusu agda bekler; cevap
+      onbellekleniyor, ayni yol ikinci kez sorulmaz). Gorursen soyle.
+
+  OLCULDU
+    5 yeni cekirdek testi, gercek dosyalarla: kok disindaki ayriliyor -
+    diskte de olmayan "bulunamadi" kaliyor - kok ALTINDAKI taranmamis
+    dosya "kok disinda" SAYILMIYOR (o taramanin isi) - satir kendi
+    raporunda, Kirik'ta degil. 317 test, BES kapi TEMIZ (15/15).
+
+ONCEKI SURUMDE - REFERANS SATIRINA TIKLA, ONIZLEMESINE BAK
 
   Sen: "kullananlar listesindeki parcalarin onizlemesi de gozuksun,
   yerimden kipirdamadan." Yapildi:

@@ -929,7 +929,7 @@ dosyasında** duruyor:
 | indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
 | indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
 | **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
-| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
+| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `KokDisindakiler.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/Referans/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |

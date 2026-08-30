@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SwPdm.Cekirdek;
 
@@ -21,8 +22,10 @@ public sealed record IndeksKaydi(
     string? Sebep);
 
 /// <summary>Panelde gosterilecek referans satirlari ve gizlenenlerin sayisi.</summary>
-/// <param name="Gosterilecekler">Cozulmus ya da belirsiz satirlar.</param>
-/// <param name="Gizlenen">Taranan agacta bulunamadigi icin gizlenen satir sayisi.</param>
+/// <param name="Gosterilecekler">Cozulmus, belirsiz ya da kok disindaki satirlar.</param>
+/// <param name="Gizlenen">
+/// Gizlenen satir sayisi: ne taranan agacta ne diskteki yazili yerde bulunanlar.
+/// </param>
 public sealed record PanelSatirlari(
     IReadOnlyList<(string YazilanYol, Cozum Cozum)> Gosterilecekler, int Gizlenen);
 
@@ -60,6 +63,7 @@ public sealed class ReferansIndeksi
 
     private Dictionary<string, List<string>>? _adaGore;
     private Dictionary<string, List<string>>? _kullananlar;
+    private readonly Dictionary<string, bool> _diskteVar = new(StringComparer.OrdinalIgnoreCase);
     private int? _okunamayan;
 
     /// <summary>Yeni, bos indeks.</summary>
@@ -140,12 +144,60 @@ public sealed class ReferansIndeksi
         return _adaGore!.TryGetValue(ad, out List<string>? yollar) ? yollar : [];
     }
 
-    /// <summary>Bir kaydin yazdigi yolu gercek dosyaya cozer.</summary>
+    /// <summary>
+    /// Bir kaydin yazdigi yolu gercek dosyaya cozer.
+    ///
+    /// KOK DISINDA AYRIMI BURADA yapiliyor, cozucude degil: cozucu yalnizca
+    /// elindeki adaylara bakar, taramanin nereye kadar gittigini indeks bilir
+    /// (<see cref="ReferansCozucu"/> belgesi). Adaylarda yoksa AMA yazili yol
+    /// diskte gercek bir dosyayi gosteriyorsa bu "kayip" degil "taranmamis
+    /// yerdeki dosya"dir - SOLIDWORKS onu acar. Ikisini ayni kelimeyle anlatmak
+    /// kullaniciya saglam referansi kirik gosteriyordu (CLAUDE.md 3).
+    ///
+    /// Yalnizca MUTLAK yol diskte aranir: goreli bir yol calisma klasorune
+    /// gore bakilirdi ve o cevap yalan olurdu. Kokun ALTINDAKI ama indekste
+    /// olmayan dosya da "kok disinda" SAYILMAZ - orasi taramanin isi.
+    /// </summary>
     public Cozum Coz(IndeksKaydi kaynak, string yazilanYol)
     {
         ArgumentNullException.ThrowIfNull(kaynak);
-        return ReferansCozucu.Coz(
+        Cozum cozum = ReferansCozucu.Coz(
             yazilanYol, kaynak.Yol, AdaGoreAdaylar(WindowsYolu.DosyaAdi(yazilanYol)));
+
+        if (cozum.Durum == CozumDurumu.Bulunamadi
+            && MutlakMi(yazilanYol)
+            && !WindowsYolu.AltindaMi(yazilanYol, Kok)
+            && DiskteVar(yazilanYol))
+        {
+            return new Cozum(CozumDurumu.KokDisinda, yazilanYol, []);
+        }
+
+        return cozum;
+    }
+
+    /// <summary>Surucu ("C:"), UNC ("\\sunucu") ya da kokten baslayan yol.</summary>
+    private static bool MutlakMi(string yol)
+        => yol.Length >= 2 && (yol[1] == ':' || WindowsYolu.AyiriciMi(yol[0]));
+
+    /// <summary>
+    /// Yazili yol diskte var mi - ONBELLEKLI.
+    ///
+    /// NEDEN ONBELLEK: bu soru her cozumde sorulur ve cevabi bir disk
+    /// dokunusu; ag surucusundeki OLU bir sunucu adi saniyeler bekletebilir.
+    /// Onbellek ayni yolu bir indeks nesli boyunca BIR kez sorar; kayit
+    /// degisince oteki turetilmis dizinlerle birlikte duser. Bayatlama
+    /// penceresi indeksin kendisiyle ayni - daha taze bir iddia yalan olurdu.
+    /// </summary>
+    private bool DiskteVar(string yol)
+    {
+        if (_diskteVar.TryGetValue(yol, out bool var))
+        {
+            return var;
+        }
+
+        var = File.Exists(yol);
+        _diskteVar[yol] = var;
+        return var;
     }
 
     /// <summary>
@@ -191,12 +243,10 @@ public sealed class ReferansIndeksi
     /// bir montajda satirlarin neredeyse tamami "BULUNAMADI" cikiyordu ve
     /// panel okunamaz hale geliyordu.
     ///
-    /// NEDEN BU KADAR COK "BULUNAMADI" VAR - OLCULDU: cozucu YALNIZCA
-    /// taranan kokun indeksine bakiyor (<see cref="ReferansCozucu"/>: aday
-    /// yoksa "Yok"). Dosya diskte dursa bile ACIK KOKUN DISINDAYSA
-    /// bulunamadi sayiliyor. Yani o satirlarin cogu "kayip dosya" DEGIL,
-    /// "taranmamis yerdeki dosya" - ama panel ikisini ayni kelimeyle
-    /// anlatiyordu.
+    /// O satirlarin cogu aslinda "kayip dosya" degil "taranmamis yerdeki
+    /// dosya"ydi; artik <see cref="CozumDurumu.KokDisinda"/> olarak AYRILIYOR
+    /// ve GIZLENMIYOR - dosya gercek, onizlenebilir ve SOLIDWORKS acar.
+    /// Gizlenen yalnizca GERCEKTEN bulunamayan: ne agacta ne diskte.
     ///
     /// GIZLEMEK SESSIZ DEGIL: sayi cagirana DONUYOR ve ekranda yaziliyor.
     /// Kisalmis bir liste "bu dosya bunlari kullanmiyor" diye okunursa
@@ -369,6 +419,7 @@ public sealed class ReferansIndeksi
         _adaGore = null;
         _kullananlar = null;
         _okunamayan = null;
+        _diskteVar.Clear();
     }
 
     /// <summary>

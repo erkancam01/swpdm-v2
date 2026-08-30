@@ -3,16 +3,17 @@ using System.Collections.Generic;
 namespace SwPdm.Cekirdek;
 
 /// <summary>
-/// KIRIK REFERANSLAR: dosyanin icinde yazan bir yolun karsiligi taranan
-/// agacta YOK.
+/// KIRIK REFERANSLAR: dosyanin icinde yazan bir yolun karsiligi ne taranan
+/// agacta ne diskteki yazili yerde VAR.
 ///
 /// En degerli rapor bu: bir montaj acildiginda SOLIDWORKS'un "dosya
 /// bulunamadi" diyecegi durumlari, montaji hic acmadan onceden gosteriyor.
 ///
-/// DIKKAT - "bulunamadi" iki sey olabilir ve ikisi de burada listelenir
-/// ama sebep AYNI degil: dosya gercekten silinmis olabilir, ya da taranan
-/// kokun disinda durabilir (baska bir surucude, kutuphane klasorunde).
-/// Bu yuzden aciklamada "taranan ağaçta" yaziyor - "yok" demiyor.
+/// Eskiden "bulunamadi" iki ayri seyi birden kapsiyordu: gercekten kayip
+/// dosya VE taranan kokun disinda duran saglam dosya. Ikincisi artik
+/// <see cref="CozumDurumu.KokDisinda"/> olarak ayrildi ve KENDI raporunda
+/// (<see cref="KokDisindakiler"/>) listeleniyor - SOLIDWORKS o dosyalari
+/// acar, kirik degiller. Burada kalan, gercekten kayip olanlar.
 /// </summary>
 internal sealed class KirikReferanslar : IRapor
 {
@@ -20,7 +21,7 @@ internal sealed class KirikReferanslar : IRapor
     public string Ad => "Kırık referanslar";
 
     /// <inheritdoc/>
-    public string Aciklama => "İçinde yazan bir dosyanın karşılığı taranan ağaçta bulunamadı.";
+    public string Aciklama => "İçinde yazan bir dosya ne taranan ağaçta ne yazılı yerde bulundu.";
 
     /// <inheritdoc/>
     public RaporSonucu Uret(ReferansIndeksi indeks)

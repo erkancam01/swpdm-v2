@@ -227,9 +227,12 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
             return "yol BAYAT";
         }
 
-        return cozum.Durum == CozumDurumu.Belirsiz
-            ? $"{cozum.Adaylar.Count} aday"
-            : "BULUNAMADI";
+        return cozum.Durum switch
+        {
+            CozumDurumu.Belirsiz => $"{cozum.Adaylar.Count} aday",
+            CozumDurumu.KokDisinda => "kök dışında",
+            _ => "BULUNAMADI",
+        };
     }
 
     /// <summary>

@@ -52,6 +52,12 @@ internal static class Renkler
     // edici bir uyari rengi.
     internal static readonly Color YolBayatYazi = Color.FromArgb(0xB0, 0x5A, 0x00);
 
+    // Referans ACIK KOKUN DISINDAKI gercek bir dosyayi gosteriyor. Uyari
+    // rengi DEGIL: dosya diskte var ve SOLIDWORKS acar; yalnizca bizim
+    // agacimiz orayi gormuyor. Mavi (asagi yon) ile turuncudan (bayat)
+    // ayirt edilen sakin bir mor.
+    internal static readonly Color KokDisindaYazi = Color.FromArgb(0x5B, 0x4A, 0x8A);
+
     // Kutulardaki "olmaz" yazisi (gecersiz ad, cakisma, uzanti uyarisi).
     // TEK KOPYA (CLAUDE.md 8): once ad kutusunun icinde elle yazilmisti.
     internal static readonly Color UyariYazi = Color.FromArgb(0xB0, 0x30, 0x30);

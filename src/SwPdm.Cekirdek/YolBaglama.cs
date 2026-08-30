@@ -155,7 +155,9 @@ public static class YolBaglama
 
     /// <summary>
     /// Bir ebeveynin ICINDE yazan, ama ELLE baglanabilecek yollar: cozulemeyen
-    /// (BULUNAMADI/BELIRSIZ) ve bayat olanlar.
+    /// (BULUNAMADI/BELIRSIZ), kok disindakiler ve bayat olanlar. Kok disindaki
+    /// baglanabilir kalir: kullanici kutuphane parcasini koke tasiyip bagi
+    /// iceri almak isteyebilir.
     ///
     /// COZULMUS VE YERINDE olanlar listeye GIRMEZ: calisan bir bagi elle
     /// degistirmek icin bir sebep yok ve listeyi kalabalik yapmak yanlis
