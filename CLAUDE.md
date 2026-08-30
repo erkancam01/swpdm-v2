@@ -949,6 +949,8 @@ dosyasında** duruyor:
 | **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
 | tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/Referans/ReferansSurucusu.cs` |
+| **üç bölümün içeriği** (içindekiler · kullanıldığı yerler · kırık) | `Arayuz/Gorunum/Referans/ReferansSurucusu.Bolumler.cs` |
+| **bölüm seçme şeridi** (`Ctrl+Shift+E`, sayılar) | `Arayuz/Gorunum/Referans/ReferansSeridi.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
@@ -1057,7 +1059,7 @@ söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
 mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
 **önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu** ·
-**referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
+**referansların üç bölümü ayrı listeler gösteriyor mu** · **`~$` kilit dosyaları gizlenip
 sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
 **panelden çalıştırılan işlem SATIRIN dosyasına mı gidiyor** ·
@@ -1128,6 +1130,30 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > metindi (`▼ İÇİNDEKİLER — 9 dosya`); dar pencerede tam da **sayı**
 > kırpılıyordu: `▼ İÇİNDEKİLER …`. Ad sütunu solda, sayı sağ sütunda
 > durunca her genişlikte görünüyor.
+>
+> **30.08.2026 — BÖLÜM BAŞLIKLARI KALKTI, ÖLÇÜM YENİDEN YAZILDI.** Erkan
+> gerçek veride (67 referanslı montaj) *"her alan ayrı pencerede"* istedi:
+> başlıklar yerine üç sekmelik bir **şerit** geldi (`ReferansSeridi`), üçüncü
+> bölüm **KIRIK** (`BULUNAMADI` + `yol BAYAT`). Başlıkların iki ölçülmüş
+> kusuru vardı: 67 satırlık bir bölümün **altındaki** bölüm hiç görünmüyordu,
+> ve başlık **liste kaydırılınca ekrandan çıkıyordu** — yani yönü anlatan
+> işaret tam da uzun listede kayboluyordu.
+>
+> Zemin rengi ölçümü böylece **anlamsız kaldı** ve yerine aynı tehlikeyi
+> ölçen şey kondu: üç bölümün listesi birbirinden **farklı** olmalı ve
+> `Ctrl+Shift+E` üç kez basılınca **başa dönmeli** (sıralama ölçümündeki
+> "başa dön" şartının aynısı — tek başına "değişti" demek düğme etiketi
+> değiştiği için de sağlanırdı). §9 döngüsü: TEMİZ → şeridin bölümü
+> sürücüye yazması kesilince **YAKALADI** (dört iz de aynı) → geri konunca
+> TEMİZ.
+>
+> **ŞERİT SARMALI OLMAK ZORUNDA — ölçüldü.** İlk hâli tek satırdı ve
+> 572 piksellik pencerede `KULLANILDIĞI YERLER` kırpılıp **KIRIK hiç
+> görünmüyordu**. Görünmeyen bir sekme olmayan bir sekmedir: kullanıcı
+> kırık referansların varlığından haberdar olmaz (§3). `WrapContents` +
+> `AutoSize` ile geniş pencerede tek satır, darda alt satıra geçiyor.
+> Bunun bedeli kapıda: liste ~77 piksel aşağı kaydı, `REFERANS_KIRP` ve
+> `REF_ILK_SATIR_Y` yeniden ölçüldü.
 
 > **On üçüncüsü neden var (kilit dosyaları):** SOLIDWORKS her açtığı belge
 > için klasöre gizli bir `~$<ad>` dosyası yazıyor (§5) ve bunlar ağaçta

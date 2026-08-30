@@ -26,6 +26,7 @@ internal sealed partial class AnaForm
     private SplitContainer _altBolen = null!;
     private OnizlemePaneli _onizlemePaneli = null!;
     private ReferansListesi _referanslar = null!;
+    private ReferansSeridi _referansSeridi = null!;
     private DurumCubugu _durum = null!;
 
     private void TasarimiKur()
@@ -190,8 +191,18 @@ internal sealed partial class AnaForm
 
         _onizlemePaneli = new OnizlemePaneli();
         _referanslar = new ReferansListesi { SmallImageList = _simgeler };
+
+        // SERIT LISTENIN USTUNDE ve SABIT: bolum basligi satiri liste
+        // kaydirilinca ekrandan cikiyordu, serit cikmiyor - "hangi yone
+        // bakiyorum" sorusu her an cevapli (CLAUDE.md 3).
+        _referansSeridi = new ReferansSeridi { Dock = DockStyle.Top };
+
         _altBolen.Panel1.Controls.Add(_onizlemePaneli);
+
+        // SIRA ONEMLI: Dock=Fill olan liste ONCE eklenir, Dock=Top olan serit
+        // SONRA - WinForms z-sirasi doldurma sirasini belirliyor.
         _altBolen.Panel2.Controls.Add(_referanslar);
+        _altBolen.Panel2.Controls.Add(_referansSeridi);
 
         bolen.Panel2.Controls.Add(_altBolen);
         bolen.Panel2.Controls.Add(_altBolumBasligi);

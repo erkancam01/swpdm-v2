@@ -7,6 +7,42 @@ using SwPdm.Cekirdek;
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
+/// Referans panelinin UC BOLUMU. Sira, kullanicinin seritte gordugu siradir
+/// ve varsayilan ILKIDIR (Erkan, 30.08.2026: "varsayılan olarak en başta
+/// içindekiler gelsin").
+/// </summary>
+internal enum ReferansBolumu
+{
+    /// <summary>Bu dosyanin ICINDEKILER - asagi yon.</summary>
+    Icindekiler,
+
+    /// <summary>Bu dosyayi KIM KULLANIYOR - yukari yon.</summary>
+    KullanildigiYerler,
+
+    /// <summary>Cozulemeyen ve bayat yollar - onarilacaklar.</summary>
+    Kirik,
+}
+
+/// <summary>
+/// Bolumlerin ADI TEK YERDE. Serit dugmelerini bundan URETIYOR; elle yazilmis
+/// ikinci bir liste yok (CLAUDE.md 1b'nin 2. kurali - iki listenin sirasi
+/// kayarsa hata SESSIZDIR, yanlis basligin altinda dogru liste cizilir).
+/// </summary>
+internal static class ReferansBolumleri
+{
+    /// <summary>Seritte gorunen sirayla.</summary>
+    internal static ReferansBolumu[] Tumu => Enum.GetValues<ReferansBolumu>();
+
+    /// <summary>Seritte yazan ad.</summary>
+    internal static string Adi(ReferansBolumu bolum) => bolum switch
+    {
+        ReferansBolumu.Icindekiler => "İÇİNDEKİLER",
+        ReferansBolumu.KullanildigiYerler => "KULLANILDIĞI YERLER",
+        _ => "KIRIK",
+    };
+}
+
+/// <summary>
 /// REFERANS BILGISININ ARAYUZDEKI TEK KAPISI.
 ///
 /// Indeksi tutar, diskten yukler, diske yazar, sorgular ve sag alt
@@ -33,11 +69,8 @@ namespace SwPdm.Arayuz.Gorunum;
 /// sildirir. Bu yuzden iki bolumun de kendi bosluk cumlesi var: "kullandigi
 /// yok" ile "kullanani yok" ayni satirla anlatilamaz.
 /// </summary>
-internal sealed class ReferansSurucusu
+internal sealed partial class ReferansSurucusu
 {
-    private const string AsagiBaslik = "▼ İÇİNDEKİLER";
-    private const string YukariBaslik = "▲ KULLANILDIĞI YERLER";
-
     /// <summary>Referans tasimayan bir dosyada (PDF, resim...) yazilan.</summary>
     private const string Ilgisiz = "—";
 
@@ -276,10 +309,47 @@ internal sealed class ReferansSurucusu
     }
 
     /// <summary>
-    /// Sag alt listeyi doldurur: once ASAGI bolumu (kullandiklari), sonra
-    /// YUKARI bolumu (kullananlar). Her bolum kendi basligini, kendi sayisini
-    /// ve BOSSA kendi sebebini tasir - bos bir liste tek basina hicbir sey
-    /// iddia etmemeli (CLAUDE.md 3).
+    /// Su an gosterilen bolum. Seritten geliyor; degisince cagiran
+    /// <see cref="Doldur"/>'u yeniden cagirir.
+    ///
+    /// YAPISKAN (oturum boyu): dosyadan dosyaya gecerken sifirlanmiyor -
+    /// "kirik referanslari gez" gibi bir isi her dosyada yeniden tiklamak
+    /// gerekmesin. Acilista ILK bolum secili gelir.
+    /// </summary>
+    internal ReferansBolumu Bolum { get; set; } = ReferansBolumu.Icindekiler;
+
+    /// <summary>
+    /// Bir bolumun SERITTE yazacak sayisi.
+    ///
+    /// SAYI HER BOLUMDE GORUNMEK ZORUNDA (CLAUDE.md 3): sekmeli duzende
+    /// yalnizca bir bolum aciktir ve otekilerin durumu gorunmezse panel
+    /// SESSIZCE eksik konusur - "kullanan yok mu, taranmadi mi" sorusu
+    /// sekme degistirmeden cevapsiz kalirdi.
+    ///
+    /// Metinler bugunku ureticilerden geliyor; ikinci kopya yok (CLAUDE.md 8).
+    /// </summary>
+    internal string Sayi(ReferansBolumu bolum, string? yol)
+    {
+        if (_indeks is null || string.IsNullOrWhiteSpace(yol) || !SwReferans.TasiyabilirMi(yol))
+        {
+            return string.Empty;   // panel zaten sebebini yaziyor
+        }
+
+        return bolum switch
+        {
+            ReferansBolumu.Icindekiler => KullandigiMetni(yol),
+            ReferansBolumu.KullanildigiYerler => YukariMetni(_indeks.Kullananlar(yol), kisa: true),
+            _ => KirikMetni(yol),
+        };
+    }
+
+    /// <summary>
+    /// Sag alt listeyi doldurur - YALNIZCA acik olan bolumu. Hangi bolumun
+    /// acik oldugunu serit soyluyor; bolum basligi satiri YOK, cunku serit
+    /// her zaman ekranda ve liste kaydirilinca kaybolmuyor.
+    ///
+    /// Her bolum BOSSA kendi sebebini tasir - bos bir liste tek basina
+    /// hicbir sey iddia etmemeli (CLAUDE.md 3).
     /// </summary>
     internal void Doldur(ReferansListesi liste, string? yol)
     {
@@ -320,8 +390,20 @@ internal sealed class ReferansSurucusu
                 return;
             }
 
-            Asagiyi(liste, yol);
-            Yukariyi(liste, yol);
+            switch (Bolum)
+            {
+                case ReferansBolumu.KullanildigiYerler:
+                    Yukariyi(liste, yol);
+                    break;
+
+                case ReferansBolumu.Kirik:
+                    Kiriklari(liste, yol);
+                    break;
+
+                default:
+                    Asagiyi(liste, yol);
+                    break;
+            }
         }
         finally
         {
@@ -336,124 +418,4 @@ internal sealed class ReferansSurucusu
     /// </summary>
     internal IReadOnlyList<string> Kullananlarin(string yol)
         => _indeks is null ? [] : _indeks.Kullananlar(yol).Kullananlar;
-
-    /// <summary>ASAGI bolumu: bu dosyanin ICINDEKILER.</summary>
-    private void Asagiyi(ReferansListesi liste, string yol)
-    {
-        liste.Baslik(AsagiBaslik, KullandigiMetni(yol));
-
-        IndeksKaydi? kayit = _indeks!.Kayit(yol);
-        if (kayit is null)
-        {
-            Aciklama(liste, "Bu kök henüz taranmadı.", "Ctrl+Shift+R", Renkler.ReferansAsagiYazi);
-            return;
-        }
-
-        if (!kayit.Okundu)
-        {
-            Aciklama(
-                liste, kayit.Sebep ?? "Dosyanın referansları okunamadı.", "hata",
-                Renkler.ReferansAsagiYazi);
-            return;
-        }
-
-        if (kayit.YazilanYollar.Count == 0)
-        {
-            // KISA CUMLE SART: ad sutunu dar ve uzun cumle KIRPILIYOR -
-            // "Bu dosya başka dosya kull..." ekranda tam TERSI anlama
-            // ("kullanıyor") okunabiliyordu (olculdu, 30.08.2026).
-            Aciklama(
-                liste, "Başka dosya kullanmıyor.", Ilgisiz, Renkler.ReferansAsagiYazi);
-            return;
-        }
-
-        // BULUNAMAYANLAR GIZLENIYOR (Erkan, 29.08.2026). Gercek veride 43
-        // referansin neredeyse tamami "BULUNAMADI" cikiyor ve ekran
-        // okunamaz oluyordu. Karar cekirdekte, sayimla birlikte.
-        PanelSatirlari satirlar = _indeks.KullandiklariGorunur(yol);
-
-        foreach ((string yazilan, Cozum cozum) in satirlar.Gosterilecekler)
-        {
-            bool bayat = ReferansIndeksi.BayatMi(yol, yazilan, cozum);
-
-            // IPUCUNDA HANGI YOL: bulunduysa dosyanin GERCEK yeri (kullanici
-            // "hangi dosya" diye ona bakiyor), bulunamadiysa dosyanin ICINDE
-            // yazan yol (aranan seyin ne oldugunu ancak o soyluyor).
-            liste.Ekle(
-                WindowsYolu.DosyaAdi(yazilan),
-                bayat ? "yol BAYAT" : AsagiRol(cozum),
-                Simge(yazilan),
-                bayat ? Renkler.YolBayatYazi : Renkler.ReferansAsagiYazi,
-                cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null,
-                cozum.Yol ?? yazilan);
-        }
-
-        // GIZLEME SESSIZ OLAMAZ. Kisalmis bir liste "bu dosya bunlari
-        // kullanmiyor" diye okunur ve o yanlis, bu uygulamada saglam dosya
-        // sildirir (CLAUDE.md 3). Bir satir, kac tanesinin gizlendigini ve
-        // nereden gorulecegini soyluyor.
-        if (satirlar.Gizlenen > 0)
-        {
-            Aciklama(
-                liste,
-                $"{satirlar.Gizlenen} referans taranan klasörde yok — gizlendi",
-                "Ctrl+Shift+D",
-                Renkler.YolBayatYazi);
-        }
-    }
-
-    /// <summary>YUKARI bolumu: bu dosyayi KIM KULLANIYOR.</summary>
-    private void Yukariyi(ReferansListesi liste, string yol)
-    {
-        KullanimSonucu sonuc = _indeks!.Kullananlar(yol);
-        liste.Baslik(YukariBaslik, YukariMetni(sonuc, kisa: true));
-
-        foreach (string kullanan in sonuc.Kullananlar)
-        {
-            liste.Ekle(
-                WindowsYolu.DosyaAdi(kullanan), "kullanan", Simge(kullanan),
-                Renkler.ReferansYukariYazi, kullanan, kullanan);
-        }
-
-        // SEBEP SATIRI YALNIZCA LISTE BOSKEN - Erkan, 30.08.2026: dolu bir
-        // listenin altindaki "17 dosya okunamadı" satiri "gerek yok".
-        // KALDIRMAK NEDEN GUVENLI: eksiklik isareti KAYBOLMUYOR - bolum
-        // basliginin sag sutunu zaten "2 dosya · eksik" / "taranmadı"
-        // yaziyor (YukariMetni) ve ayrinti durum cubugundaki tarama
-        // cumlesinde duruyor ("EKSİK — 17 dosya okunamadı").
-        //
-        // LISTE BOSKEN SATIR SART (CLAUDE.md 3): guvenilir olmayan bos bir
-        // listeye "Bunu kullanan dosya yok." yazmak, taranmamis kokte
-        // "bu parcayi kimse kullanmiyor" demektir ve SAGLAM DOSYA SILDIRIR.
-        if (sonuc.Kullananlar.Count > 0)
-        {
-            return;
-        }
-
-        Aciklama(
-            liste,
-            sonuc.Guvenilir ? "Bunu kullanan dosya yok." : sonuc.Sebep ?? "Liste eksik olabilir.",
-            sonuc.Guvenilir ? Ilgisiz : "eksik",
-            Renkler.ReferansYukariYazi);
-    }
-
-    /// <summary>
-    /// Bolumun bos ya da eksik olma SEBEBINI yazan satir.
-    /// Simgesi YOK (-1): bir dosya satiri gibi gorunmemeli, cunku degil.
-    /// </summary>
-    private static void Aciklama(ReferansListesi liste, string cumle, string rol, Color yazi)
-        => liste.Ekle(cumle, rol, -1, yazi, hedefYol: null, tamMetin: cumle);
-
-    /// <summary>
-    /// Asagi yondeki satirin rol kelimesi. BELIRSIZ olan SAKLANMAZ: tek bir
-    /// cevap uydurmak yanlis dosyayi sildirir (CLAUDE.md 5).
-    /// </summary>
-    private static string AsagiRol(Cozum cozum) => cozum.Durum switch
-    {
-        CozumDurumu.Bulundu => "içinde",
-        CozumDurumu.Belirsiz => $"içinde? {cozum.Adaylar.Count} aday",
-        _ => "BULUNAMADI",
-    };
-
-    private static int Simge(string yol) => TurSimgeleri.Sira(DosyaTurleri.Tani(yol));
 }

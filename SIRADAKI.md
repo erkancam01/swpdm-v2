@@ -20,6 +20,8 @@
 > `▼ İÇİNDEKİLER` / `▲ KULLANILDIĞI YERLER` oldu (Erkan'ın kararı).
 > Aynı gün **referans panelinde sağ tık** geldi: menü ağaçtakinin aynısı,
 > hedef o satırdaki dosya (`ReferansMenusu.cs`).
+> Aynı gün panel **üç sekme** oldu: İÇİNDEKİLER · KULLANILDIĞI YERLER ·
+> **KIRIK** (`ReferansSeridi.cs`); `Ctrl+Shift+E` ile gezilir.
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -83,6 +85,11 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   bu da çalışır.
 - **Yol çubuğundaki `…` tıklaması.** Dar pencerede kırpma oluşması gerekiyor;
   kapıdaki pencere boyutunda kırpma çıkmıyor.
+- **KIRIK sekmesinin GERÇEK veriyle hâli.** Örnek klasörde kırık referans
+  yok; burada sekme hep "yok" diyor. Erkan'ın 67 referanslı montajında
+  ölçülecek: sayı doğru mu, `BULUNAMADI` ile `yol BAYAT` ayrımı okunur mu,
+  liste kalabalıklaşınca kullanışlı mı.
+
 - **Referans panelinin SAĞ TIK MENÜSÜ.** Wine'da açılan her
   `ToolStripDropDown` uygulamayı çökertiyor (CLAUDE.md §11), yani menünün
   kendisi burada hiç açılamadı. Ölçülen tek şey, menüyle **aynı kodu**

@@ -1,4 +1,39 @@
-BU SURUMDE - REFERANS PANELINDE SAG TIK
+BU SURUMDE - REFERANS PANELI UC SEKME OLDU
+
+  Sen: "içindekiler - kullanıldığı yerler ve kırık referanslar olsa …
+  her alan ayrı pencerede, bakmak istediği şeye tıklar açar. ama
+  varsayılan olarak en başta içindekiler gelsin." Yapildi:
+
+  - USTTE UC SEKMELIK BIR SERIT, altinda o sekmenin listesi:
+      ICINDEKILER (varsayilan) · KULLANILDIGI YERLER · KIRIK
+  - SERIT SABIT. Bolum basliklari kalkti; onlar liste kaydirilinca
+    ekrandan cikiyordu, serit cikmiyor. 67 satirlik bir bolumun ALTINDA
+    kalan bolum de artik gorunmez degil.
+  - KIRIK YENI BOLUM. Iki hal birden:
+      BULUNAMADI - bu adda dosya taranan agacta YOK
+      yol BAYAT  - dosya duruyor ama belgedeki yol baska yeri gosteriyor
+    BULUNAMADI satirlari ONCEDEN HIC GORUNMUYORDU: kalabaliktan panel
+    okunamaz oldugu icin gizleniyor, yerine "N referans gizlendi"
+    yaziliyordu. Artik onarilacaklar kendi sekmesinde duruyor.
+  - HER SEKMEDE SAYI YAZIYOR: "ICINDEKILER 67" · "KULLANILDIGI YERLER
+    2 dosya · eksik" · "KIRIK yok". Sekmeyi acmadan da durumu goruyorsun -
+    ve "yok" ile "taranmadi" ASLA ayni kelimeyle yazilmiyor.
+  - Ctrl+Shift+E siradaki bolume gecer (tur suzgecinin Ctrl+Shift+F'i
+    gibi). Sekme secimi dosyadan dosyaya YAPISKAN; acilista ICINDEKILER.
+  - Dar pencerede serit ALT SATIRA SARAR; hicbir sekme gizlenmez.
+
+  BURADA OLCULEN VE OLCULEMEYEN
+    Olculdu: uc sekmenin listeleri gercekten FARKLI ve Ctrl+Shift+E ucuncu
+    basista basa donuyor (kapinin 12. olcumu yeniden yazildi - eski olcum
+    bolum basliklarinin rengini sayiyordu, basliklar kalkinca anlamsiz
+    kaldi). Serit tek satirdayken "KIRIK" sekmesinin HIC GORUNMEDIGI de
+    burada olculdu; sarmali yapildi.
+    Olculemedi: senin agacindaki GERCEK kirik referanslar. Ornek klasorde
+    kirik yok, yani KIRIK sekmesi burada hep "yok" diyor. Sende bakilacak:
+    67 referansli montajda KIRIK sekmesi kac dosya diyor, satirlar dogru
+    mu, sag tik oradaki satirlarda dogru calisiyor mu.
+
+ONCEKI SURUMDE - REFERANS PANELINDE SAG TIK
 
   Sen: "içindekiler ve kullanıldığı yerler bölümlerinde sağ tık
   yapamıyorum. ama yapabilmem lazım sonuçta ordakilerde parça." Yapildi:

@@ -10,8 +10,10 @@ namespace SwPdm.Arayuz.Gorunum;
 ///
 /// Yalnizca GORUNUM; referans cozmez, bolumleri kendisi kurmaz. Hangi bolum
 /// var, hangi sirada ve ne yaziyor kararinin TAMAMI
-/// <see cref="ReferansSurucusu"/>'nda (CLAUDE.md 1b). Bu sinif iki sey
-/// cizebilir: bir BASLIK satiri ve bir REFERANS satiri.
+/// <see cref="ReferansSurucusu"/>'nda (CLAUDE.md 1b). Bu sinif TEK bir sey
+/// cizer: bir REFERANS satiri. (Bolum basligi satiri 30.08.2026'da KALKTI -
+/// isini <see cref="ReferansSeridi"/> yapiyor; baslik liste kaydirilinca
+/// ekrandan cikiyordu, serit cikmiyor.)
 ///
 /// CLAUDE.md 3 geregi bos liste tek basina "referansi yok" anlamina GELMEZ -
 /// o ayrimi dolduran kod yapar, bu sinif kendiliginden hicbir sey iddia etmez.
@@ -31,8 +33,6 @@ internal sealed class ReferansListesi : ListView
     /// dosyanin ICINDE yazan yol, aciklama satirinda ise cumlenin tamami.
     /// </summary>
     private sealed record Satir(string? Hedef, string TamMetin);
-
-    private Font? _kalin;
 
     internal ReferansListesi()
     {
@@ -61,35 +61,6 @@ internal sealed class ReferansListesi : ListView
 
         _hazir = true;
         SutunlariPaylastir();
-    }
-
-    /// <summary>
-    /// Bir BOLUM BASLIGI satiri ekler: solda "▼ KULLANDIKLARI", sagda "9 dosya".
-    ///
-    /// NEDEN AYRI BIR SATIR, ListViewGroup DEGIL: gruplar Wine'da
-    /// olculemez ve bu depoda olculemeyen bir gorunum kor nokta demek
-    /// (CLAUDE.md 11). Duz satir ekran goruntusunden sayilabiliyor.
-    ///
-    /// SAYI NEDEN SAG SUTUNDA - OLCULDU (28.08.2026): ikisi tek metin
-    /// oldugunda dar pencerede "▼ KULLANDIKLARI ..." diye KIRPILIYOR ve
-    /// kirpilan sey tam da sayinin kendisi oluyordu. Iki sutuna bolununce
-    /// sayi her genislikte gorunuyor.
-    ///
-    /// Hedef yolu YOK: basliga cift tiklayinca hicbir yere gidilmez.
-    /// </summary>
-    internal void Baslik(string metin, string sayi)
-    {
-        var satir = new ListViewItem(metin)
-        {
-            ImageIndex = -1,
-            Tag = new Satir(null, metin),
-            BackColor = Renkler.ReferansBolumZemin,
-            ForeColor = Renkler.BolumBasligiYazi,
-            Font = KalinYazi(),
-        };
-
-        satir.SubItems.Add(sayi);
-        Items.Add(satir);
     }
 
     /// <summary>
@@ -161,14 +132,6 @@ internal sealed class ReferansListesi : ListView
     private Satir? Secili
         => SelectedItems.Count > 0 ? SelectedItems[0].Tag as Satir : null;
 
-    /// <summary>Yazi tipi degisince kalin kopya bayatlar; atilir.</summary>
-    protected override void OnFontChanged(EventArgs e)
-    {
-        base.OnFontChanged(e);
-        _kalin?.Dispose();
-        _kalin = null;
-    }
-
     /// <summary>Sutun genisliklerini panelin genisligine gore paylastirir.</summary>
     protected override void OnResize(EventArgs e)
     {
@@ -181,28 +144,6 @@ internal sealed class ReferansListesi : ListView
 
         SutunlariPaylastir();
     }
-
-    /// <inheritdoc/>
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _kalin?.Dispose();
-            _kalin = null;
-        }
-
-        base.Dispose(disposing);
-    }
-
-    /// <summary>
-    /// Basliklarin kalin yazisi.
-    ///
-    /// KURUCUDA URETILMIYOR: denetim bir kaba eklenene kadar <see cref="Font"/>
-    /// kabin yazisini almiyor; kurucuda alinan kalin kopya YANLIS aileden
-    /// olurdu ve hata SESSIZ kalirdi (yalnizca baslik otekilerden farkli
-    /// gorunurdu). Ilk kullanimda uretiliyor, yazi degisince atiliyor.
-    /// </summary>
-    private Font KalinYazi() => _kalin ??= new Font(Font, FontStyle.Bold);
 
     private void SutunlariPaylastir()
     {

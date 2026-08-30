@@ -84,6 +84,14 @@ internal sealed partial class AnaForm
                 return;
             }
 
+            // Referans bolumu kisayolu (Ctrl+Shift+E) - ayni kalip, karar
+            // ReferansSeridi'nde.
+            if (_referansSeridi.TusaBasildi(e.KeyData))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // AGAC ODAKTAYKEN klavye: Enter = dosyayi ac, Backspace = ust
             // klasor. Karari Agac/AgacTuslari veriyor (CLAUDE.md 1b).
             if (_agac.Focused

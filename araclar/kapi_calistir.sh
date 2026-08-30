@@ -76,12 +76,14 @@ ARAMA_Y=68                                      # arama kutusunun y'si
 AGAC_KIRP="560x250+5+$(( AGAC_ILK_SATIR - 7 ))"
 # Alt panel: solda onizleme kutusu, sagda referans listesi.
 ONIZLEME_KIRP="250x280+15+458"                  # pencere ici: genislikxyukseklik+x+y
-REFERANS_KIRP="260x150+295+458"
+# REFERANS PANELI: ustte SEKME SERIDI (30.08.2026), altinda liste. Serit
+# SARMALI - bu dar pencerede uc satir ediyor ve listeyi ~77 piksel asagi
+# itiyor; asagidaki iki sayi OLCULDU (ekran goruntusunden), tahmin degil.
+REFERANS_KIRP="260x120+295+535"                 # SERIDIN ALTINDAKI liste alani
 REF_SATIR_X=360                                 # referans panelinde tiklanacak x
-REF_SATIR2_Y=516                                # KULLANANLAR'in ilk veri satiri (y)
+REF_ILK_SATIR_Y=543                             # listenin ILK veri satiri (y)
 ONIZLEME_BASLIK_X=60                             # onizleme panelinin ustundeki ad (x)
 ONIZLEME_BASLIK_Y=463
-BOLUM_ZEMIN="#E4EAF1"                           # Renkler.ReferansBolumZemin
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 # ==========================================================================
 
@@ -698,30 +700,56 @@ else
   SORUN=1
 fi
 
-# 12) YON AYRIMI: referans listesinde IKI BOLUM BASLIGI var mi
+# 12) YON AYRIMI: uc bolum seridi gercekten AYRI listeler gosteriyor mu
 #
-# NEDEN VAR: liste hem "bu dosyanin kullandiklari" hem "bu dosyayi
-# kullananlar" satirlarini tasiyor. Once ikisini ayiran tek sey rol
-# sutunundaki BIR OK ISARETIYDI ve okunmuyordu; ayni ad iki bolumde birden
-# cikabiliyor (montaj baglaminda yapilmis parca) ve hangi yonun hangisi
-# oldugu anlasilmiyordu. Yon karistirmak bu uygulamada tehlikeli: "beni
-# kimse kullanmiyor" diye okunan bir satir dosya sildirir (CLAUDE.md 3).
+# NEDEN VAR: liste uc ayri soruya cevap veriyor - "bu dosya neyi kullaniyor"
+# (ICINDEKILER), "bu dosyayi kim kullaniyor" (KULLANILDIGI YERLER) ve
+# "hangileri kirik". Yon karistirmak bu uygulamada tehlikeli: "beni kimse
+# kullanmiyor" diye okunan bir satir SAGLAM DOSYA SILDIRIR (CLAUDE.md 3).
 #
-# Olcum SAYIYLA olmaz - bolum eklemek satir sayisini da parmak izini de
-# zaten degistirir, yani 11. olcum bunu YAKALAMAZ. Ayirt eden sey basligin
-# ZEMIN RENGI (#E4EAF1 = Renkler.ReferansBolumZemin): o panelde baska
-# hicbir sey bu rengi kullanmiyor. Iki AYRI bant olmali.
+# OLCUM DEGISTI (30.08.2026): once bolum basliklarinin ZEMIN RENGI sayiliyordu
+# (iki bant). Basliklar kalkti - islerini serit yapiyor - ve o olcum
+# ANLAMSIZ kaldi. Yerine ayni tehlikeyi olcen sey kondu: uc bolumun listesi
+# birbirinden FARKLI olmali.
+#
+# SERIT WINE'DA TIKLANMIYOR degil ama koordinati sarmaya bagli; ayni kodu
+# cagiran Ctrl+Shift+E olculuyor (CLAUDE.md 11: menusuz/faresiz kalan ozellik
+# kor noktadir).
+#
+# IKI SART: uc iz de birbirinden farkli OLMALI, VE ucuncu basista basa
+# donmeli. Tek basina "degisti" demek yetmez - dugme etiketi degistigi icin
+# de saglanabilirdi (siralama olcumundeki dersin aynisi).
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  BASLIK_BANT="$(renk_bant_say "$CALISMA/referans.png" "$REFERANS_KIRP" \
-    "$PENCERE_X" "$PENCERE_Y" "$BOLUM_ZEMIN")"
-  if [ "${BASLIK_BANT:-0}" -ge 2 ]; then
-    olcum "yon ayrimi ............" "EVET ($BASLIK_BANT bolum basligi)"
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/bolum1.png" > /dev/null 2>&1
+  IZ_B1="$(kirpma_izi "$CALISMA/bolum1.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/bolum2.png" > /dev/null 2>&1
+  IZ_B2="$(kirpma_izi "$CALISMA/bolum2.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/bolum3.png" > /dev/null 2>&1
+  IZ_B3="$(kirpma_izi "$CALISMA/bolum3.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/bolum4.png" > /dev/null 2>&1
+  IZ_B4="$(kirpma_izi "$CALISMA/bolum4.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_B1" != "$IZ_B2" ] && [ "$IZ_B2" != "$IZ_B3" ] && [ "$IZ_B1" != "$IZ_B3" ] \
+     && [ "$IZ_B4" = "$IZ_B1" ]; then
+    olcum "yon ayrimi (uc bolum) ." "EVET (uc liste farkli, basa dondu)"
   else
-    olcum "yon ayrimi ............" "HAYIR ($BASLIK_BANT bolum basligi, 2 bekleniyordu)"
+    olcum "yon ayrimi (uc bolum) ." \
+      "HAYIR (iz ${IZ_B1:0:6}/${IZ_B2:0:6}/${IZ_B3:0:6}/${IZ_B4:0:6})"
     SORUN=1
   fi
 else
-  olcum "yon ayrimi ............" "OLCULEMEDI (pencere yok)"
+  olcum "yon ayrimi (uc bolum) ." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -820,7 +848,11 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/komsu-once.png" > /dev/null 2>&1
   IZ_CIPA="$(kirpma_izi "$CALISMA/komsu-once.png" "$ONIZLEME_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
-  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_SATIR2_Y ))" \
+  # KOMSU, "KULLANILDIGI YERLER" bolumundedir (Parça1.SLDDRW). Serit
+  # ICINDEKILER'de duruyor - once oraya gecilir (12. olcum basa dondurmustu).
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
     click 1 > /dev/null 2>&1
   sleep 5
   import -window root "$CALISMA/komsu-sonra.png" > /dev/null 2>&1
@@ -858,7 +890,8 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   # agacta Parça1.SLDPRT; panelde onu KULLANAN Parça1.SLDDRW satiri
   xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
   sleep 5
-  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_SATIR2_Y ))" \
+  # Serit 15. olcumden beri "KULLANILDIGI YERLER"de; satir Parça1.SLDDRW.
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
     click 1 > /dev/null 2>&1
   sleep 3
 

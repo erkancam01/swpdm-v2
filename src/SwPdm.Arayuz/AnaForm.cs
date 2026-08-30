@@ -30,6 +30,9 @@ internal sealed partial class AnaForm : Form
     private readonly KokSecici _kokSecici;
     private readonly AgacMenusu _menu;
     private readonly ReferansMenusu _referansMenusu;
+
+    /// <summary>Referans panelinin su an gosterdigi dosya; serit degisince gerekiyor.</summary>
+    private string? _referansYolu;
     private readonly SurukleBirak _surukleBirak;
     private readonly IlerlemeYuzeyi _ilerleme;
     private readonly DiskIzleyici _izleyici;
@@ -155,6 +158,15 @@ internal sealed partial class AnaForm : Form
         // agactaki secim: ElleBagla satira degil ona uygulanir.
         // _onizleme'den SONRA duruyor - IslemOncesi kancasi onu okuyor
         // (CLAUDE.md 6'nin kurucu sirasi tuzagi).
+        // --- referans seridi: uc bolum (Erkan, 30.08.2026). Karari serit ve
+        // surucu veriyor; burada yalnizca bagliyoruz.
+        _referansSeridi.SecimDegisti += (_, bolum) =>
+        {
+            _referansSurucusu.Bolum = bolum;
+            ReferanslariGoster(_referansYolu);
+        };
+        _referansSeridi.Durum += (_, cumle) => _durum.Bilgi(cumle);
+
         _referansMenusu = new ReferansMenusu(_referanslar);
         _referansMenusu.Bagla(
             _ilerleme,
@@ -462,6 +474,19 @@ internal sealed partial class AnaForm : Form
     private string? CopKlasoru()
         => _doldurucu.Kok is string kok ? Cop.Yolu(kok, _ayarlar.CopUstKlasoru) : null;
 
+    /// <summary>
+    /// Referans panelini gosterir: serit sayilari + acik bolumun listesi.
+    /// TEK KAPI - dort cagri yerinin hepsi buradan geciyor, yoksa biri
+    /// serit sayilarini tazelemeyi unutur ve sayilar SESSIZCE bayatlar
+    /// (CLAUDE.md 3: kullanici o sayiya bakip dosya siliyor).
+    /// </summary>
+    private void ReferanslariGoster(string? yol)
+    {
+        _referansYolu = yol;
+        _referansSeridi.Sayilari(bolum => _referansSurucusu.Sayi(bolum, yol));
+        _referansSurucusu.Doldur(_referanslar, yol);
+    }
+
     private void SecimiGoster()
     {
         IReadOnlyList<TreeNode> secililer = _agac.Secililer;
@@ -478,7 +503,7 @@ internal sealed partial class AnaForm : Form
 
             SecimOzeti ozet = SecimOzeti.Hesapla(etiketler);
             _onizleme.Goster(ozet);
-            _referansSurucusu.Doldur(_referanslar, null);
+            ReferanslariGoster(null);
             _durum.Secildi(ozet);
             return;
         }
@@ -487,21 +512,21 @@ internal sealed partial class AnaForm : Form
         {
             case DosyaOgesi dosya:
                 _onizleme.Goster(dosya);
-                _referansSurucusu.Doldur(_referanslar, dosya.Yol);
+                ReferanslariGoster(dosya.Yol);
                 _durum.Secildi(dosya);
                 _yol.Goster(WindowsYolu.Klasor(dosya.Yol));
                 break;
 
             case KlasorOgesi klasor:
                 _onizleme.Goster(klasor);
-                _referansSurucusu.Doldur(_referanslar, null);
+                ReferanslariGoster(null);
                 _durum.Secildi(klasor);
                 _yol.Goster(klasor.Yol);
                 break;
 
             default:
                 _onizleme.Temizle();
-                _referansSurucusu.Doldur(_referanslar, null);
+                ReferanslariGoster(null);
                 break;
         }
     }

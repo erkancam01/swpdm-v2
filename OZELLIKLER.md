@@ -148,14 +148,20 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 11. Referans paneli (sağ alt)
 
-- **▼ İÇİNDEKİLER** → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
-- **▲ KULLANILDIĞI YERLER** → bu dosyayı kullanan dosyalar (yukarı yön).
-- **Bölüm başlığı** → solda başlık, sağda sayı ve eksiklik: "9 dosya", "taranmadı", "2 dosya · eksik".
+Üstte **üç sekmelik bir şerit**, altında o sekmenin listesi. Şerit sabittir —
+liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cevaplı.
+
+- **İÇİNDEKİLER** (varsayılan) → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
+- **KULLANILDIĞI YERLER** → bu dosyayı kullanan dosyalar (yukarı yön).
+- **KIRIK** → SOLIDWORKS'ün açamayacağı referanslar: `BULUNAMADI` (bu adda dosya taranan ağaçta yok) ve `yol BAYAT` (dosya duruyor ama belgedeki yol başka yeri gösteriyor).
+- **Her sekmede SAYI yazar** → "İÇİNDEKİLER 67" · "KULLANILDIĞI YERLER 2 dosya · eksik" · "KIRIK yok". Sekmeyi açmadan da durumu görürsün; "yok" ile "taranmadı" asla aynı kelimeyle yazılmaz.
+- **Ctrl+Shift+E** → sıradaki bölüme geçer, sonunda başa döner.
+- Şerit dar pencerede **alt satıra sarar**; hiçbir sekme gizlenmez.
 - **`içinde`** → referans çözüldü, dosya bulundu.
 - **`içinde? N aday`** → aynı adda birden çok dosya var, hangisi olduğu kesin değil (uydurulmuyor).
 - **`yol BAYAT`** → dosya duruyor ama belgenin içindeki yol başka yeri gösteriyor → SOLIDWORKS açamaz.
-- **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
-- **"N referans taranan klasörde yok — gizlendi"** → çözülemeyen satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
+- **`kullanan`** → KULLANILDIĞI YERLER bölümünde, bu dosyayı kullanan belge.
+- **"N kırık referans — KIRIK bölümünde"** → İÇİNDEKİLER kısaltıldıysa kaçının ayrıldığını ve nerede olduklarını söyler; hepsi `Ctrl+Shift+D` raporlarında da duruyor.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
 - **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme **o satırdaki dosyaya** döner (üstteki başlık da o dosyanın adını yazar); ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
@@ -164,8 +170,8 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Kısayollar da aynı hedefe gider** (panel odaktayken): `F2` · `Delete` · `Ctrl+X` · `Ctrl+V` … satırın dosyasına uygulanır.
 - **Menüde "Kopyala" yanında kısayol yazmaz** → `Ctrl+C` bu panelde "yolu kopyala"dır; iki ayrı iş, ikisi de duruyor.
 - **Ctrl+Shift+L (panel odaktayken)** → **satıra değil**, panelin gösterdiği (ağaçta seçili) dosyaya uygulanır: düzeltilecek yazı onun içinde durur. Çözülemeyen bir satıra bakarken de çalışması bu yüzden.
-- **Satırda dosya yoksa** (bölüm başlığı, "BULUNAMADI", kök dışında kalan yol) → menü yine açılır ama dosya işlemleri **gri durur ve sebebini söyler**; sessizce başka bir dosyaya uygulanmaz.
-- **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz; eksiklik bölüm başlığındaki "· eksik" ile ve durum çubuğundaki tarama cümlesiyle söylenir.
+- **Satırda dosya yoksa** (açıklama satırı, "BULUNAMADI", kök dışında kalan yol) → menü yine açılır ama dosya işlemleri **gri durur ve sebebini söyler**; sessizce başka bir dosyaya uygulanmaz. KIRIK bölümündeki `yol BAYAT` satırlarının hedefi ise **gerçek dosyadır**, işlem ona gider.
+- **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Kırık referans yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz; eksiklik sekmedeki "· eksik" ile ve durum çubuğundaki tarama cümlesiyle söylenir.
 - **Klasör, çoklu seçim ya da SOLIDWORKS olmayan dosya** → panel boş kalmaz, **neden boş olduğunu** yazar ("SOLIDWORKS dosyası değil" · "Seçim yok" · "taranmadı").
 
 ---
@@ -298,13 +304,14 @@ olmayan hiçbir şey buraya yazılmadı.
 | `Esc` | Süren işi iptal et; iş yoksa aramadan çık |
 | `Ctrl+Shift+S` | Sıralamayı ilerlet |
 | `Ctrl+Shift+F` | Tür süzgecini ilerlet (Tümü → Montaj → … → Tümü) |
+| `Ctrl+Shift+E` | Referans bölümünü ilerlet (İÇİNDEKİLER → KULLANILDIĞI YERLER → KIRIK → …) |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |
 | `Ctrl+Shift+D` | Referans raporları |
 | `Ctrl+C` (referans panelinde) | Satırın yolunu panoya kopyala |
 
-> İşlem kısayolları yalnızca **ağaç** ya da **referans paneli** odaktayken çalışır. `Ctrl+O`, `Ctrl+Shift+S`, `Ctrl+Shift+F` ve `Esc` her yerde çalışır.
+> İşlem kısayolları yalnızca **ağaç** ya da **referans paneli** odaktayken çalışır. `Ctrl+O`, `Ctrl+Shift+S`, `Ctrl+Shift+F`, `Ctrl+Shift+E` ve `Esc` her yerde çalışır.
 
 ---
 
