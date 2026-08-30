@@ -160,7 +160,11 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme **o satırdaki dosyaya** döner (üstteki başlık da o dosyanın adını yazar); ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
-- **Ctrl+Shift+L (panel odaktayken)** → seçili dosyanın referansını elle bağlama akışını başlatır.
+- **SAĞ TIK** → ağaçtakinin **aynı menüsü**, ama işlem **o satırdaki dosyaya** uygulanır; ağaçtaki seçim ve okunan liste yerinde kalır. Sağ tık önce o satırı seçer ve menünün en üstünde **hedefin adı** yazar — hangi dosyaya uygulanacağı görünmeden hiçbir işlem çalışmaz.
+- **Kısayollar da aynı hedefe gider** (panel odaktayken): `F2` · `Delete` · `Ctrl+X` · `Ctrl+V` … satırın dosyasına uygulanır.
+- **Menüde "Kopyala" yanında kısayol yazmaz** → `Ctrl+C` bu panelde "yolu kopyala"dır; iki ayrı iş, ikisi de duruyor.
+- **Ctrl+Shift+L (panel odaktayken)** → **satıra değil**, panelin gösterdiği (ağaçta seçili) dosyaya uygulanır: düzeltilecek yazı onun içinde durur. Çözülemeyen bir satıra bakarken de çalışması bu yüzden.
+- **Satırda dosya yoksa** (bölüm başlığı, "BULUNAMADI", kök dışında kalan yol) → menü yine açılır ama dosya işlemleri **gri durur ve sebebini söyler**; sessizce başka bir dosyaya uygulanmaz.
 - **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz; eksiklik bölüm başlığındaki "· eksik" ile ve durum çubuğundaki tarama cümlesiyle söylenir.
 - **Klasör, çoklu seçim ya da SOLIDWORKS olmayan dosya** → panel boş kalmaz, **neden boş olduğunu** yazar ("SOLIDWORKS dosyası değil" · "Seçim yok" · "taranmadı").
 

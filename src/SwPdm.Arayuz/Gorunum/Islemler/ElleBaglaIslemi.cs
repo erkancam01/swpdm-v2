@@ -34,6 +34,16 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.L;
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// TEK "true" DIYEN ISLEM. Referans panelinde bir satira sag tiklandiginda
+    /// oteki islemler O SATIRIN dosyasina uygulanir; bu, satirin SAHIBINE
+    /// uygulanir - cunku duzeltilecek yazi sahibin icinde durur. Ustelik asil
+    /// kullanim yeri cozulememis ("BULUNAMADI") satir ve orada satirin bir
+    /// dosyasi YOKTUR; satiri hedef almak ozelligi tam orada oldururdu.
+    /// </remarks>
+    public bool SahibineUygulanir => true;
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         ArgumentNullException.ThrowIfNull(secim);

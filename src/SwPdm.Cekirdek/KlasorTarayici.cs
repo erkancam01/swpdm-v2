@@ -220,7 +220,17 @@ public static class KlasorTarayici
         }
     }
 
-    private static DosyaOgesi? DosyayiOku(string yol)
+    /// <summary>
+    /// TEK bir dosyayi okur; okunamazsa null (tarama sirasinda silinmis ya da
+    /// erisilemiyor olabilir).
+    ///
+    /// DISA ACIK (30.08.2026): referans panelindeki bir satiri islemlere
+    /// verilecek <c>DosyaOgesi</c>'ne cevirmek icin gerekiyordu; ikinci bir
+    /// kopya yazmak yerine var olan kod kullaniliyor (CLAUDE.md 8).
+    /// TEK YOL icindir - geri cekilen "kok disinda" ozelligindeki gibi
+    /// TOPLU yoklama DEGIL (CLAUDE.md 4: erisilemeyen yolda uzun bloklar).
+    /// </summary>
+    public static DosyaOgesi? DosyayiOku(string yol)
     {
         try
         {

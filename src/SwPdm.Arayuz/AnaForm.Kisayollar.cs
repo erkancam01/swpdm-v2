@@ -107,6 +107,17 @@ internal sealed partial class AnaForm
                 return;
             }
 
+            // PANEL ODAKTAYKEN: satira uygulanan isler (F2, Delete, Ctrl+X,
+            // Ctrl+V...) SATIRIN dosyasina gider - sag tik menusuyle AYNI kod
+            // (CLAUDE.md 11: Wine'da menu acilamiyor, olculebilen tek yol
+            // kisayol). Sirasi burada: panelin kendi tuslari yukarida gecti,
+            // sahibe uygulananlar ve genel isler asagida deneniyor.
+            if (_referanslar.Focused && _referansMenusu.TusaBasildi(e.KeyData))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // Kisayollar islem listesinden geliyor; menudeki yazi ile calisan
             // tus AYRISAMAZ (CLAUDE.md 1b).
             //

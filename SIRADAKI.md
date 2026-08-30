@@ -9,7 +9,7 @@
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
 > 313 test · 308 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma 16 ölçüm).
+> (harita + boyut + derleme + test + çalıştırma **17** ölçüm).
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -18,6 +18,8 @@
 > Aynı gün **panel sadeleşti**: önizlemenin altındaki bilgi bloğu kalktı,
 > üstteki başlık artık **önizlenen** dosyanın adı, bölüm başlıkları
 > `▼ İÇİNDEKİLER` / `▲ KULLANILDIĞI YERLER` oldu (Erkan'ın kararı).
+> Aynı gün **referans panelinde sağ tık** geldi: menü ağaçtakinin aynısı,
+> hedef o satırdaki dosya (`ReferansMenusu.cs`).
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -81,6 +83,14 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   bu da çalışır.
 - **Yol çubuğundaki `…` tıklaması.** Dar pencerede kırpma oluşması gerekiyor;
   kapıdaki pencere boyutunda kırpma çıkmıyor.
+- **Referans panelinin SAĞ TIK MENÜSÜ.** Wine'da açılan her
+  `ToolStripDropDown` uygulamayı çökertiyor (CLAUDE.md §11), yani menünün
+  kendisi burada hiç açılamadı. Ölçülen tek şey, menüyle **aynı kodu**
+  çağıran kısayol yolu (kapının 16. ölçümü: panelden `F2` satırın
+  dosyasını adlandırıyor mu — diskten bakılıyor). Erkan'da bakılacak:
+  menü açılıyor mu · en üstte doğru ad yazıyor mu · Sil/Kes/Yapıştır
+  doğru dosyaya gidiyor mu · gri öğenin sebebi görünüyor mu.
+
 - **3B önizlemenin TAMAMI.** eDrawings burada yok; Wine'da ölçülen tek şey
   "eDrawings'siz çökmüyor + sebep yazıp 2B'ye düşüyor" (16. ölçüm).
   Erkan'da ölçülecek: 3B görünüm geliyor mu · döndürme · büyük montajda

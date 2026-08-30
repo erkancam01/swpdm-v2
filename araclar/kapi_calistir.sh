@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=16
+OLCUM_TOPLAM=17
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -761,7 +761,9 @@ else
   SORUN=1
 fi
 
-import -window root "$GORUNTU" > /dev/null 2>&1 && # 14) ESC: ARAMADAN CIKIS
+import -window root "$GORUNTU" > /dev/null 2>&1
+
+# 14) ESC: ARAMADAN CIKIS
 #
 # NEDEN VAR: Esc bu uygulamada BAGLI DEGILDI ve aramadan cikmanin tek yolu
 # kutuyu elle bosaltmakti (olculdu, 28.08.2026). Esc eklendi; eklenen sey
@@ -841,7 +843,62 @@ else
   SORUN=1
 fi
 
-# 16) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 16) PANELDEN ISLEM: referans satirindaki dosyaya uygulanmali (agactakine DEGIL)
+#
+# NEDEN VAR: sag tik menusunun kendisi Wine'da OLCULEMEZ - acilan her
+# ToolStripDropDown uygulamayi cokertiyor (CLAUDE.md 11). Menuyle AYNI kodu
+# cagiran kisayol yolu olculuyor.
+#
+# NEDEN TAM BU: bu ozelligin tek gercek tehlikesi hedef karisikligi. Agacta
+# "Parça1.SLDPRT" secili, panelde "Parça1.SLDDRW" satirina tiklanmis; F2
+# YANLIS dosyaya giderse kullanici parcayi adlandirdigini bilmeden montaji
+# adlandirir (CLAUDE.md 3). Olcum EKRANDAN degil DISKTEN yapiliyor - uzanti
+# hangi dosyanin adlandigini tek basina soyluyor.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # agacta Parça1.SLDPRT; panelde onu KULLANAN Parça1.SLDDRW satiri
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 5
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_SATIR2_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+
+  xdotool key F2 > /dev/null 2>&1
+  sleep 3
+  xdotool type --delay 60 "PanelAdi" > /dev/null 2>&1
+  sleep 1
+  xdotool key Return > /dev/null 2>&1
+  sleep 4
+
+  # ONARIM KUTUSU: ad kutusundan sonra "kimin kullandigini bilmiyoruz"
+  # uyarisi cikiyor ve odak "Vazgeç"te. Sol ok "Evet"e gecirir.
+  # (Kutunun CIKMASI bu olcumun ilk kosusunda GORULDU - tahmin degil;
+  # ustelik metni "Parça1.SLDDRW" yaziyordu, yani hedef daha o an dogruydu.)
+  xdotool key Left > /dev/null 2>&1
+  sleep 1
+  xdotool key Return > /dev/null 2>&1
+  sleep 6
+  import -window root "$CALISMA/panel-islem.png" > /dev/null 2>&1
+
+  # Ad kutusu tabani secili acabilir de acmayabilir de; ikisinde de yeni ad
+  # "PanelAdi" ile BASLAR. Ayirt edici olan UZANTI.
+  YENI_DRW="$(find "$ORNEK" -maxdepth 1 -iname "PanelAdi*.SLDDRW" | wc -l)"
+  YENI_PRT="$(find "$ORNEK" -maxdepth 1 -iname "PanelAdi*.SLDPRT" | wc -l)"
+
+  if [ "$YENI_DRW" -eq 1 ] && [ "$YENI_PRT" -eq 0 ]; then
+    olcum "panelden islem ........" "EVET (satirin dosyasi adlandi)"
+  elif [ "$YENI_PRT" -gt 0 ]; then
+    olcum "panelden islem ........" "HAYIR (AGACTAKI dosya adlandi - yanlis hedef)"
+    SORUN=1
+  else
+    olcum "panelden islem ........" "HAYIR (hicbir sey adlanmadi)"
+    SORUN=1
+  fi
+else
+  olcum "panelden islem ........" "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 17) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey

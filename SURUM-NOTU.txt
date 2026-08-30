@@ -1,4 +1,43 @@
-BU SURUMDE - PANEL SADELESTI, BASLIKLAR ANLASILIR OLDU
+BU SURUMDE - REFERANS PANELINDE SAG TIK
+
+  Sen: "içindekiler ve kullanıldığı yerler bölümlerinde sağ tık
+  yapamıyorum. ama yapabilmem lazım sonuçta ordakilerde parça." Yapildi:
+
+  - PANELDEKI HER SATIRA SAG TIK. Acilan menu AGACTAKININ AYNISI - ayni
+    islemler, ayni sira (tek listeden uretiliyor, ikinci kopya yok).
+  - HEDEF O SATIRDAKI DOSYA. Agactaki secim ve okudugun liste YERINDE
+    KALIR - baska bir dosyaya atlamiyorsun.
+  - SAG TIK ONCE O SATIRI SECER ve menunun en ustunde HEDEFIN ADI yazar;
+    hangi dosyaya uygulanacagi gorunmeden hicbir islem calismaz.
+  - KISAYOLLAR DA AYNI HEDEFE: panel odaktayken F2 · Delete · Ctrl+X ·
+    Ctrl+V satirin dosyasina uygulanir.
+
+  IKI ISTISNA - BILEREK
+    1. Ctrl+Shift+L (Referansı elle bağla) SATIRA DEGIL, panelin
+       gosterdigi (agacta secili) dosyaya uygulanir: duzeltilecek yazi
+       onun icinde durur. Cozulemeyen "BULUNAMADI" satirinda satirin
+       dosyasi zaten YOKTUR - hedefi satir yapsaydik ozellik tam da asil
+       kullanildigi yerde olurdu.
+    2. Menude "Kopyala"nin yaninda kisayol YAZMIYOR. Sebebi: Ctrl+C bu
+       panelde "yolu kopyala". Ikisi de duruyor; menude "Kopyala Ctrl+C"
+       yazmak yalan olurdu.
+
+  SATIRDA DOSYA YOKSA (bolum basligi, BULUNAMADI, kok disinda kalan yol)
+    Menu yine acilir ama dosya islemleri GRI DURUR ve sebebini soyler.
+    Sessizce agactaki dosyaya uygulanmasi, tam da yanlis dosyayi
+    sildirmenin yolu olurdu.
+
+  SENDE OLCULECEK - MENUNUN KENDISI BURADA HIC OLCULEMEDI
+    Wine'da acilan her sag tik menusu uygulamayi cokertiyor (bilinen,
+    Wine'a ozgu; gercek Windows'ta boyle bir sorun yok). Yani menuyu
+    BURADA acamadim. Olcebildigim sey, menuyle AYNI kodu cagiran kisayol
+    yolu: agacta bir parca secili, panelde onun teknik resmine tiklanmis,
+    F2 -> DISKTE teknik resmin adi degisti, parcaninki degil. Kapinin
+    yeni 16. olcumu bunu her koşuda yapiyor.
+    Sende bakilacak: sag tik menusu aciliyor mu · en ustte dogru ad
+    yaziyor mu · Sil/Kes/Yapistir dogru dosyaya gidiyor mu.
+
+ONCEKI SURUMDE - PANEL SADELESTI, BASLIKLAR ANLASILIR OLDU
 
   Sen (gorseldeki iki kirmizi kutu): "gorseldeki kirmizi kutu icindeki
   alanlari kaldir, gerek yok. ayrica KULLANDIKLARI yazisini KULLANANLAR

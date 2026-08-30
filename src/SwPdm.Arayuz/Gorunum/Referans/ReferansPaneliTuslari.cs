@@ -22,6 +22,18 @@ namespace SwPdm.Arayuz.Gorunum;
 internal static class ReferansPaneliTuslari
 {
     /// <summary>
+    /// Bu tusu panel SAHIPLENIYOR mu.
+    ///
+    /// NEDEN GEREKLI: <c>Ctrl+C</c> burada "yolu kopyala"dir, oysa
+    /// <c>KopyalaIslemi</c> de Ctrl+C kullaniyor. Panelin sag tik menusu
+    /// bunu sorup o ogenin kisayolunu YAZMIYOR - "Kopyala  Ctrl+C" yazmak
+    /// yalan olurdu (CLAUDE.md 3). Liste TEK YERDE: asagidaki switch ile
+    /// bu metot ayni tuslari sayar; biri degisirse oteki de degismeli.
+    /// </summary>
+    internal static bool Sahiplenir(Keys tus)
+        => tus is Keys.Enter or (Keys.Control | Keys.C);
+
+    /// <summary>
     /// Tusu isler. Doner: is gorulduyse true (cagiran tusu yutar).
     /// </summary>
     /// <param name="git">Verilen hedefe gider; null hedefte sebebini yazar.</param>

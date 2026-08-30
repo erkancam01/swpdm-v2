@@ -150,6 +150,21 @@ internal interface IAgacIslemi
     Keys Kisayol { get; }
 
     /// <summary>
+    /// REFERANS PANELINDEN calistirildiginda hedef, tiklanan SATIR mi yoksa
+    /// satirin SAHIBI mi (panelin o an gosterdigi, agacta secili dosya).
+    ///
+    /// Varsayilan SATIR: paneldeki satirlar da gercek dosyalar (Erkan,
+    /// 30.08.2026: "sonuçta ordakilerde parça"). Varsayilan govdesi oldugu
+    /// icin oteki islem dosyalari bu uye yuzunden DEGISMEZ (CLAUDE.md 1b).
+    ///
+    /// true diyen tek islem <see cref="ElleBaglaIslemi"/>: onun isi satirin
+    /// YAZILI yolunu duzeltmektir ve o yol sahibin ICINDE yazar. Hedefi
+    /// satir yapmak, ozelligi asil kullanildigi yerde (cozulememis
+    /// "BULUNAMADI" satirinda - orada satirin dosyasi yoktur) oldururdu.
+    /// </summary>
+    bool SahibineUygulanir => false;
+
+    /// <summary>
     /// Bu secimde uygulanabilir mi. Uygulanamiyorsa <paramref name="nedenOlmaz"/>
     /// EKRANDA gosterilecek bir cumle doner - oge GIZLENMEZ, gri durur ve
     /// sebebini soyler (CLAUDE.md 3).

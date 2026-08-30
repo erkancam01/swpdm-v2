@@ -29,6 +29,7 @@ internal sealed partial class AnaForm : Form
     private readonly AramaSurucusu _arama;
     private readonly KokSecici _kokSecici;
     private readonly AgacMenusu _menu;
+    private readonly ReferansMenusu _referansMenusu;
     private readonly SurukleBirak _surukleBirak;
     private readonly IlerlemeYuzeyi _ilerleme;
     private readonly DiskIzleyici _izleyici;
@@ -147,6 +148,22 @@ internal sealed partial class AnaForm : Form
         // AgacMenusu.Calistir'dan gecer - surukle-birak ve cop penceresi
         // asagida ayrica baglanir.
         _menu.IslemOncesi(() => _onizleme.BelgeyiBirak());
+
+        // --- referans panelinde SAG TIK (Erkan, 30.08.2026: "ordakilerde
+        // parça"). Karari ReferansMenusu veriyor; burada yalnizca kuruluyor
+        // ve agacinkiyle ayni baglantilar veriliyor. "Sahip secimi" =
+        // agactaki secim: ElleBagla satira degil ona uygulanir.
+        // _onizleme'den SONRA duruyor - IslemOncesi kancasi onu okuyor
+        // (CLAUDE.md 6'nin kurucu sirasi tuzagi).
+        _referansMenusu = new ReferansMenusu(_referanslar);
+        _referansMenusu.Bagla(
+            _ilerleme,
+            _doldurucu.HepsiniKapat,
+            _referansSurucusu,
+            SecimBaglamiKur,
+            () => _onizleme.BelgeyiBirak(),
+            (_, yol) => AgaciTazele(yol),
+            (_, cumle) => _durum.Bilgi(cumle));
 
         // --- referans satirina TEK TIK: o dosyanin onizlemesi (Erkan,
         // 29.08.2026: "13 kullananin resmine yerinden kipirdamadan bakayim").

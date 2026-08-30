@@ -972,6 +972,7 @@ dosyasında** duruyor:
 | **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
 | ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
 | referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/Referans/ReferansPaneliTuslari.cs` |
+| **referans panelinde sağ tık** (hedef satır · gri öğe sebebi) | `Arayuz/Gorunum/Referans/ReferansMenusu.cs` |
 | hatırlanan yerleşim (boyut · bölücü · süzgeç) | `Arayuz/Gorunum/Tema/Yerlesim.cs` |
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
@@ -1049,7 +1050,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on altı şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı on yedi şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1059,6 +1060,7 @@ mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu*
 **referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
 sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
+**panelden çalıştırılan işlem SATIRIN dosyasına mı gidiyor** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
@@ -1227,6 +1229,27 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > **Derleme kapısının GÖRMEDİĞİ sınıf vardır.** 27.08.2026'daki kurucu hatasında
 > derleme "0 uyarı 0 hata" diyordu ve uygulama hiç açılmıyordu. Çalıştırma kapısı
 > tam olarak bunun için var. **Yeşil derleme, çalışıyor demek değildir.**
+
+> **On altıncısı neden var (panelden işlem):** referans panelinde sağ tık
+> 30.08.2026'da eklendi (Erkan: *"ordakilerde parça"*) ve bu özelliğin tek
+> gerçek tehlikesi **hedef karışıklığı**: ağaçta `Parça1.SLDPRT` seçiliyken
+> panelde `Parça1.SLDDRW` satırına tıklanır; işlem yanlış dosyaya giderse
+> kullanıcı parçayı adlandırdığını sanırken teknik resmi adlandırır — ve
+> hiçbir şey patlamaz (§3). **Menünün kendisi burada ölçülemez** (Wine'da
+> her `ToolStripDropDown` çökertiyor), o yüzden aynı kodu çağıran `F2`
+> ölçülüyor: panel odaklıyken F2 → ad + Enter → onarım kutusunda "Evet".
+> Ölçüm **ekrandan değil DİSKTEN**: yeni ad `*.SLDDRW` mü çıktı, `*.SLDPRT`
+> mü — uzantı hangi dosyanın adlandığını tek başına söylüyor.
+> §9 döngüsü: TEMİZ → hedef ağaca çevrilince **YAKALADI** → geri alınca
+> TEMİZ. Yolda bir şey de öğrenildi: ilk koşuda kapı "hiçbir şey adlanmadı"
+> dedi ve **ekran görüntüsü özelliğin çalıştığını gösterdi** — onarım
+> kutusu `"Parça1.SLDDRW"` yazıyordu, yani hedef daha o an doğruydu;
+> eksik olan yalnızca kutuya cevap vermekti.
+>
+> Aynı turda kapının **kazara bir bağı** da çözüldü: ekran görüntüsünü alan
+> satır `import … && # 14) ESC` diye bitiyordu ve 14. ölçüm, `import`
+> başarılı olduğu sürece koşuyordu. `import` bir gün düşse ölçüm sessizce
+> atlanır ve sayaç kayardı; satır kendi başına alındı.
 
 Bu maddelerin numaraları kapının **çıktısındaki** sıradır; sıralama ölçümü
 yedinci olarak araya girdiği için süzgeç sekizinci, geri alma dokuzuncu oldu.
