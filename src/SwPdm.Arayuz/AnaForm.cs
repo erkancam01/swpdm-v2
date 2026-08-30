@@ -107,13 +107,21 @@ internal sealed partial class AnaForm : Form
         _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _menu.Tazele += (_, yol) => AgaciTazele(yol);
         _surukleBirak = new SurukleBirak(_agac);
-        _surukleBirak.Tasindi += (_, e) => Aktar.Yurut(
-            new IslemBaglami(
-                this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme,
-                _doldurucu.HepsiniKapat, _referansSurucusu),
-            e.Yollar,
-            e.HedefKlasor,
-            e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
+        _surukleBirak.Tasindi += (_, e) =>
+        {
+            // Surukle-birak AgacMenusu'nden GECMEZ; 3B belge kilidi burada
+            // ayrica birakilir. "?." sart: lambda kurulurken _onizleme HENUZ
+            // atanmamis ve derleyici bunu yakaladi - "() => _doldurucu?.Kok"
+            // ile ayni sebep (CLAUDE.md 6'nin kurucu tuzagi).
+            _onizleme?.BelgeyiBirak();
+            Aktar.Yurut(
+                new IslemBaglami(
+                    this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme,
+                    _doldurucu.HepsiniKapat, _referansSurucusu),
+                e.Yollar,
+                e.HedefKlasor,
+                e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
+        };
 
         // --- referans listesinde cift tik: o dosyaya GIT
         // PDM'de asil ise yarayan sey bu: "bu parcayi Montaj3 kullaniyor"
@@ -128,8 +136,17 @@ internal sealed partial class AnaForm : Form
         // --- yol cubugu: agacin ustunde, tiklanabilir
         _yol.Secildi += (_, klasor) => _doldurucu.YoluSec(klasor);
 
-        // --- onizleme
-        _onizleme = new Gorunum.Onizleme(_onizlemePaneli, this);
+        // --- onizleme. 3B ayari LAMBDA ile okunur: Ayarlar'dan degistirilince
+        // bir sonraki secimde aninda etkir.
+        _onizleme = new Gorunum.Onizleme(
+            _onizlemePaneli, this, () => _ayarlar.OnizlemeUcBoyutlu);
+        _onizleme.Durum += (_, cumle) => _durum.Bilgi(cumle);
+
+        // DOSYA KILIDI (CLAUDE.md 1a): 3B kipte eDrawings actigi dosyayi
+        // tutar; her islem baslamadan belge birakilir. Islemlerin tamami
+        // AgacMenusu.Calistir'dan gecer - surukle-birak ve cop penceresi
+        // asagida ayrica baglanir.
+        _menu.IslemOncesi(() => _onizleme.BelgeyiBirak());
 
         // --- referans satirina TEK TIK: o dosyanin onizlemesi (Erkan,
         // 29.08.2026: "13 kullananin resmine yerinden kipirdamadan bakayim").
@@ -381,6 +398,9 @@ internal sealed partial class AnaForm : Form
             return;
         }
 
+        // Geri yukleme onizlenen dosyanin USTUNE yazabilir ("Değiştir");
+        // 3B belge kilidi pencere acilmadan birakilir.
+        _onizleme.BelgeyiBirak();
         CopKutusuPenceresi.Goster(
             this, Cop.Yolu(kok, _ayarlar.CopUstKlasoru), cumle => _durum.Bilgi(cumle));
         AgaciTazele(null);
@@ -410,6 +430,10 @@ internal sealed partial class AnaForm : Form
             CopDugmesiniTazele();
             _izleyici.AcKapat(_ayarlar.OtomatikTazele, _doldurucu.Kok);
             _referansSurucusu.IzlemeGuvenilir = _izleyici.Guvenilir;
+
+            // 2B/3B secimi degistiyse acik secim yeni kiple hemen cizilsin -
+            // "ayari actim, hicbir sey olmadi" sanilmasin (CLAUDE.md 3).
+            SecimiGoster();
         };
         _ayarlarSayfasi = sayfa;
         return sayfa;

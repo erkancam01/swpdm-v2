@@ -12,6 +12,7 @@ namespace SwPdm.Arayuz.Gorunum;
 internal sealed class OnizlemePaneli : TableLayoutPanel
 {
     private readonly PictureBox _resim;
+    private readonly Panel _yuva;
     private readonly Label _baslik;
     private readonly Label _ad;
     private readonly Label _tur;
@@ -62,8 +63,17 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
             BackColor = Renkler.OnizlemeArkaPlan,
             BorderStyle = BorderStyle.FixedSingle,
             SizeMode = PictureBoxSizeMode.Zoom,
+        };
+
+        // YUVA: resim kutusu ile 3B denetimi AYNI hucreyi paylasir; ikisi de
+        // yuvaya dolar, hangisinin gorundugune UcBoyutlu karar verir.
+        // (TableLayoutPanel ayni hucreye iki denetim kabul etmiyor.)
+        _yuva = new Panel
+        {
+            Dock = DockStyle.Fill,
             Margin = new Padding(0, 0, 0, 6),
         };
+        _yuva.Controls.Add(_resim);
 
         var bilgi = new FlowLayoutPanel
         {
@@ -86,8 +96,37 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
             [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan, _ozellikler]);
 
         Controls.Add(_baslik, 0, 0);
-        Controls.Add(_resim, 0, 1);
+        Controls.Add(_yuva, 0, 1);
         Controls.Add(bilgi, 0, 2);
+    }
+
+    /// <summary>
+    /// 3B denetimin yerlestirilecegi yuva. Denetimi buraya KOYAN ve suren
+    /// UcBoyutluGorunum; panel yalnizca yeri verir (CLAUDE.md 1b).
+    /// </summary>
+    internal Control UcBoyutluYuvasi => _yuva;
+
+    /// <summary>
+    /// 2B kutu ile 3B denetim arasinda gecis. null = 2B resim gorunur.
+    /// </summary>
+    internal void UcBoyutlu(Control? denetim)
+    {
+        _resim.Visible = denetim is null;
+        if (denetim is not null)
+        {
+            denetim.Visible = true;
+            denetim.BringToFront();
+        }
+        else
+        {
+            foreach (Control c in _yuva.Controls)
+            {
+                if (!ReferenceEquals(c, _resim))
+                {
+                    c.Visible = false;
+                }
+            }
+        }
     }
 
     /// <summary>Baslik tiklandi - cipaya donulmek isteniyor.</summary>

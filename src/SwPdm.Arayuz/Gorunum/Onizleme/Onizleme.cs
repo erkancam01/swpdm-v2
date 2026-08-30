@@ -30,7 +30,7 @@ namespace SwPdm.Arayuz.Gorunum;
 /// Ikincisi bilerek CEKIRDEKTE: platformdan bagimsiz ve Linux'ta test
 /// ediliyor. Buraya tasimak o testleri kaybettirirdi.
 /// </summary>
-internal sealed class Onizleme : IDisposable
+internal sealed partial class Onizleme : IDisposable
 {
     private const string Yukleniyor = "Önizleme yükleniyor…";
     private const string Yok = "Önizleme yok";
@@ -68,7 +68,7 @@ internal sealed class Onizleme : IDisposable
     private readonly SemaphoreSlim _uyandir = new(0);
     private readonly object _kilit = new();
 
-    private (string Yol, Size Boyut)? _bekleyen;
+    private (string Yol, Size Boyut, bool YalnizBilgi)? _bekleyen;
     private string? _beklenenYol;
 
     /// <summary>
@@ -79,10 +79,11 @@ internal sealed class Onizleme : IDisposable
     private (DosyaOgesi Dosya, string Kullandigi, string Kullanan)? _capa;
     private volatile bool _duruyor;
 
-    internal Onizleme(OnizlemePaneli panel, Control arayuz)
+    internal Onizleme(OnizlemePaneli panel, Control arayuz, Func<bool> ucBoyutluMu)
     {
         _panel = panel;
         _arayuz = arayuz;
+        _ucBoyutluMu = ucBoyutluMu;
         _panel.BasligaTiklandi += (_, _) => CipayaDon();
 
         // Neden ayri is parcacigi: dosyalar ag surucusunde; bir onizleme
@@ -131,6 +132,14 @@ internal sealed class Onizleme : IDisposable
             kullandigi: kullandigi,
             kullanan: kullanan);
 
+        // 3B KIP (Ayarlar): SOLIDWORKS dosyasi eDrawings'te acilir; 2B boru
+        // hatti hic kosmaz. Kurulamaz/acamazsa sebep soylenir ve 2B devam.
+        if (UcBoyutluDene(dosya.Yol))
+        {
+            OzellikleriIste(dosya.Yol);
+            return;
+        }
+
         // CLAUDE.md 3: bos kutu "onizlemesi yok" demek DEGILDIR. Yuklenirken
         // de soyluyoruz ki kullanici bekledigini bilsin.
         _panel.MesajGoster(Yukleniyor);
@@ -142,7 +151,7 @@ internal sealed class Onizleme : IDisposable
 
         lock (_kilit)
         {
-            _bekleyen = (dosya.Yol, istenen);   // SON ISTEK KAZANIR
+            _bekleyen = (dosya.Yol, istenen, false);   // SON ISTEK KAZANIR
         }
 
         _uyandir.Release();
@@ -175,6 +184,12 @@ internal sealed class Onizleme : IDisposable
             kullandigi: kullandigi,
             kullanan: kullanan);
 
+        if (UcBoyutluDene(yol))
+        {
+            OzellikleriIste(yol);
+            return;
+        }
+
         _panel.MesajGoster(Yukleniyor);
 
         Size kutu = _panel.KutuBoyutu;
@@ -184,7 +199,7 @@ internal sealed class Onizleme : IDisposable
 
         lock (_kilit)
         {
-            _bekleyen = (yol, istenen);   // SON ISTEK KAZANIR
+            _bekleyen = (yol, istenen, false);   // SON ISTEK KAZANIR
         }
 
         _uyandir.Release();
@@ -203,6 +218,7 @@ internal sealed class Onizleme : IDisposable
     internal void Goster(KlasorOgesi klasor)
     {
         _capa = null;
+        UcBoyutluGizle();
         _panel.BasligiYaz(klasor.Ad, geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster("Klasör");
@@ -225,6 +241,7 @@ internal sealed class Onizleme : IDisposable
     internal void Goster(SecimOzeti ozet)
     {
         _capa = null;
+        UcBoyutluGizle();
         _panel.BasligiYaz(ozet.Yaz(), geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster($"{ozet.Toplam} öğe seçildi");
@@ -241,6 +258,7 @@ internal sealed class Onizleme : IDisposable
     internal void Temizle()
     {
         _capa = null;
+        UcBoyutluGizle();
         _panel.BasligiYaz(string.Empty, geriDonulebilir: false);
         _beklenenYol = null;
         _panel.Temizle();
@@ -253,6 +271,7 @@ internal sealed class Onizleme : IDisposable
         _uyandir.Release();
         _isParcacigi.Join(TimeSpan.FromSeconds(2));
         _uyandir.Dispose();
+        _ucBoyutlu?.Dispose();
     }
 
     // ------------------------------------------------------- is parcacigi
@@ -267,7 +286,7 @@ internal sealed class Onizleme : IDisposable
                 return;
             }
 
-            (string Yol, Size Boyut)? istek;
+            (string Yol, Size Boyut, bool YalnizBilgi)? istek;
             lock (_kilit)
             {
                 istek = _bekleyen;
@@ -279,7 +298,39 @@ internal sealed class Onizleme : IDisposable
                 continue;   // daha yeni bir istek zaten aldi
             }
 
+            if (istek.Value.YalnizBilgi)
+            {
+                // 3B kip: resim eDrawings'ten geliyor, buradan yalnizca
+                // ozellik satiri gecer.
+                BilgiSonucu(istek.Value.Yol, Ozellikleri(istek.Value.Yol));
+                continue;
+            }
+
             Sonucu(Yukle(istek.Value.Yol, istek.Value.Boyut), Ozellikleri(istek.Value.Yol));
+        }
+    }
+
+    /// <summary>Yalnizca ozellik satirini yazar (3B kip); bayat sonuc elenir.</summary>
+    private void BilgiSonucu(string yol, string ozellikler)
+    {
+        if (_arayuz.IsDisposed || !_arayuz.IsHandleCreated)
+        {
+            return;
+        }
+
+        try
+        {
+            _arayuz.BeginInvoke(() =>
+            {
+                if (string.Equals(_beklenenYol, yol, StringComparison.OrdinalIgnoreCase))
+                {
+                    _panel.OzellikleriYaz(ozellikler);
+                }
+            });
+        }
+        catch (Exception hata) when (hata is ObjectDisposedException or InvalidOperationException)
+        {
+            // Pencere tam bu sirada kapandi; yazilacak yer kalmadi.
         }
     }
 

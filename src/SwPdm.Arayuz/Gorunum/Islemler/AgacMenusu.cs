@@ -82,6 +82,17 @@ internal sealed class AgacMenusu
     /// <summary>Referans indeksini islemlere ulastirir.</summary>
     internal void ReferansSurucusunu(ReferansSurucusu surucu) => _referanslar = surucu;
 
+    /// <summary>
+    /// Her islemden HEMEN ONCE kosacak kanca. Bugunku tek musterisi 3B
+    /// onizleme: eDrawings actigi dosyayi kilitli tutabilir ve islem o
+    /// kilide carpardi (CLAUDE.md 1a); belge islem baslamadan birakilir.
+    /// Buraya baglaniyor cunku 14 islemin TAMAMI (menu + kisayol + arac
+    /// dugmesi) bu siniftaki Calistir'dan gecer - tek nokta.
+    /// </summary>
+    internal void IslemOncesi(Action kanca) => _islemOncesi = kanca;
+
+    private Action? _islemOncesi;
+
     /// <summary>Menu ogelerinin yazilarini ve durumlarini tazeler.</summary>
     internal void YazilariTazele() => YazilariKur(Secim());
 
@@ -141,6 +152,8 @@ internal sealed class AgacMenusu
         {
             return;
         }
+
+        _islemOncesi?.Invoke();
 
         islem.Uygula(new IslemBaglami(
             Sahip: _agac.FindForm() ?? (IWin32Window)_agac,

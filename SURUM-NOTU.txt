@@ -1,4 +1,32 @@
-BU SURUMDE - "KOK DISINDA" OZELLIGI GERI CEKILDI, ESKI SURUME DONULDU
+BU SURUMDE YENI - 3B ONIZLEME (eDrawings), AYARLAR'DAN SECILIR
+
+  Senin istegin: "ayarlarda secenek olsun; kullanici ister 2B ister 3B
+  onizleme kullansin." Yapildi:
+
+  - AYARLAR sekmesinde yeni kutu: "3B onizleme (eDrawings)".
+    Varsayilan KAPALI = bugunku hizli 2B kucuk resim, hicbir sey degismedi.
+  - ACINCA: SOLIDWORKS dosyalari ayni onizleme kutusunda eDrawings ile
+    acilir - DONDUR, yakinlastir, kaydir. PDF ve oteki turler yine 2B.
+  - Ayari degistirince acik secim HEMEN yeni kiple cizilir.
+  - HIZ DURUSTLUGU: 3B kipte dosya gercekten acilir; parca hizli, buyuk
+    montaj bekletebilir (eDrawings kendi ilerlemesini gosterir). Hiz
+    onceligin varsa 2B'de kal - bu yuzden varsayilan o.
+  - DOSYA KILIDI: eDrawings acik belgeyi tutabilir; her islem (tasima,
+    ad degistirme, silme, geri yukleme...) baslamadan belge kendiliginden
+    birakilir. 3B acikken tasima yine calismali - dene, gozle.
+
+  SENDE OLCULECEK (burada HIC olculemedi - Wine'da eDrawings yok)
+    1. Ayarlar -> 3B kutusunu ac; bir parca sec: eDrawings gorunumu
+       geliyor mu, dondurme calisiyor mu?
+    2. Buyuk montaj sec: ilk acilis kac saniye?
+    3. 3B acikken bir dosyayi tasi/yeniden adlandir: engel cikiyor mu?
+    4. eDrawings ACAMAZSA ne yaziyor? (durum cubuguna sebep dusmeli,
+       onizleme 2B'ye donmeli - cokmemeli.)
+    Olcebildigimiz tek sey olculdu: eDrawings OLMAYAN makinede (Wine)
+    3B ayariyla acilis cokmuyor, sebep yazip 2B'ye dusuyor - kapinin
+    yeni 16. olcumu tam bunu olcuyor.
+
+ONCEKI SURUMDE - "KOK DISINDA" OZELLIGI GERI CEKILDI, ESKI SURUME DONULDU
 
   Sen: "referanslari tara deyince dondu; donma problemi yasamadan onceki
   son surume don." Donuldu. Bu paket, calistigini gordugun son surumun

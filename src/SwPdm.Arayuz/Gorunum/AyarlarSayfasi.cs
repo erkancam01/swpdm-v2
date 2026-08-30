@@ -19,6 +19,7 @@ internal sealed class AyarlarSayfasi : Panel
     private readonly Label _copYolu = new();
     private readonly Label _ayarDosyasi = new();
     private readonly CheckBox _otomatikTazele = new();
+    private readonly CheckBox _ucBoyutlu = new();
 
     /// <summary>Durum cubuguna yazar; sayfanin kendi kutusu yok.</summary>
     private readonly Action<string> _bildir;
@@ -113,10 +114,43 @@ internal sealed class AyarlarSayfasi : Panel
             Location = new Point(32, 234),
         };
 
+        var onizlemeBaslik = new Label
+        {
+            Text = "Önizleme",
+            Font = new Font(Font, FontStyle.Bold),
+            AutoSize = true,
+            Location = new Point(14, 296),
+        };
+
+        _ucBoyutlu.Text = "3B önizleme (eDrawings) — parçayı döndürerek incele";
+        _ucBoyutlu.AutoSize = true;
+        _ucBoyutlu.Location = new Point(14, 322);
+        _ucBoyutlu.Checked = _ayarlar.OnizlemeUcBoyutlu;
+        _ucBoyutlu.CheckedChanged += (_, _) =>
+        {
+            _ayarlar.OnizlemeUcBoyutlu = _ucBoyutlu.Checked;
+            Kaydet();
+            _bildir(_ucBoyutlu.Checked
+                ? "3B önizleme açık — SOLIDWORKS dosyaları eDrawings ile gösterilecek."
+                : "2B önizleme — hızlı küçük resimler.");
+        };
+
+        var onizlemeAciklama = new Label
+        {
+            // DURUST BEDEL (CLAUDE.md 3): 3B, dosyayi GERCEKTEN acar.
+            Text = "Kapalıyken hızlı küçük resim gösterilir (dosya başına milisaniyeler).\n"
+                 + "Açıkken SOLIDWORKS dosyası eDrawings ile açılır: parça hızlı,\n"
+                 + "büyük montaj bekletebilir. eDrawings kurulu değilse kendiliğinden\n"
+                 + "2B'ye dönülür ve sebebi yazılır.",
+            AutoSize = true,
+            ForeColor = Renkler.UstBilgiYazi,
+            Location = new Point(32, 344),
+        };
+
         _ayarDosyasi.Text = "Ayarlar: " + Ayarlar.Yolu;
         _ayarDosyasi.AutoSize = true;
         _ayarDosyasi.ForeColor = Renkler.UstBilgiYazi;
-        _ayarDosyasi.Location = new Point(14, 302);
+        _ayarDosyasi.Location = new Point(14, 424);
 
         Controls.Add(baslik);
         Controls.Add(aciklama);
@@ -126,6 +160,9 @@ internal sealed class AyarlarSayfasi : Panel
         Controls.Add(tazeleBaslik);
         Controls.Add(_otomatikTazele);
         Controls.Add(tazeleAciklama);
+        Controls.Add(onizlemeBaslik);
+        Controls.Add(_ucBoyutlu);
+        Controls.Add(onizlemeAciklama);
         Controls.Add(_ayarDosyasi);
 
         Tazele();

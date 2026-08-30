@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=15
+OLCUM_TOPLAM=16
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -838,6 +838,62 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   fi
 else
   olcum "komsu onizleme ........" "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 16) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+#
+# NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
+# SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey
+# CLAUDE.md 11'deki WinRT kalibiyla ayni: COKMEDIGI ve sebep yazip 2B'ye
+# dustugu. Uygulama 3B ayari ACIK olarak yeniden baslatilir ve bir dosya
+# secilir; surec ayakta kalmali, hata akisina tek satir dusmemeli
+# (ele alinan hatalar da akisa "SW PDM — hata:" olarak yazilir -
+# Program.Bildir; yani sizinti buradan gorunur).
+UYG2_LOG="$CALISMA/uygulama-3b.log"
+: > "$UYG2_LOG"
+kill "$UYG_PID" > /dev/null 2>&1
+sleep 2
+
+AYAR_KLASORU="$(find "$WINEPREFIX/drive_c/users" -maxdepth 4 -type d -name "Roaming" 2>/dev/null | head -1)"
+if [ -n "$AYAR_KLASORU" ]; then
+  mkdir -p "$AYAR_KLASORU/SwPdm"
+  printf 'onizleme3b=evet\r\n' > "$AYAR_KLASORU/SwPdm/ayarlar.txt"
+
+  ( cd "$YAYIN" && "$WINE" "./$AD.exe" --klasor "$ORNEK_WIN" >> "$UYG2_LOG" 2>&1 ) &
+  UYG_PID=$!
+  sleep 18
+
+  P2="$(xwininfo -root -children 2>/dev/null)"
+  K2="$(echo "$P2" | grep -i "(\"${AD,,}.exe\"" \
+        | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' \
+        | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $3" "$4; exit}')"
+
+  if [ -n "$K2" ]; then
+    # shellcheck disable=SC2086
+    set -- $K2
+    # 3B dallanmasi SECIMDE kosuyor; kok seviyesindeki bir dosyaya tiklanir
+    # (5. olcumun ilk satiri) ve uygulamanin ayakta kaldigina bakilir.
+    xdotool mousemove "$(( $1 + AGAC_TIK_X ))" \
+      "$(( $2 + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * 6 ))" click 1 > /dev/null 2>&1
+    sleep 5
+
+    if ! kill -0 "$UYG_PID" > /dev/null 2>&1; then
+      olcum "3B ayariyla acilis ...." "HAYIR (uygulama oldu)"
+      SORUN=1
+    elif grep -qaE "Unhandled exception|Exception:|SW PDM — hata" "$UYG2_LOG" 2>/dev/null; then
+      olcum "3B ayariyla acilis ...." "HAYIR (hata akisina dusen var)"
+      grep -aE "Unhandled exception|Exception:|SW PDM — hata" "$UYG2_LOG" | head -3 | sed 's/^/           /'
+      SORUN=1
+    else
+      olcum "3B ayariyla acilis ...." "EVET (eDrawings'siz cokmedi)"
+    fi
+  else
+    olcum "3B ayariyla acilis ...." "HAYIR (3B ayariyla pencere dogmadi)"
+    SORUN=1
+  fi
+else
+  olcum "3B ayariyla acilis ...." "OLCULEMEDI (wine kullanici klasoru yok)"
   SORUN=1
 fi
 

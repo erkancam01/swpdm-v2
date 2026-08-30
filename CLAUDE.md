@@ -888,6 +888,8 @@ dosyasında** duruyor:
 | önizleme — kaynak sırası, mesajlar, iş parçacığı | `Arayuz/Gorunum/Onizleme/Onizleme.cs` |
 | önizleme paneli (kutu + üst bilgi çizimi) | `Arayuz/Gorunum/Onizleme/OnizlemePaneli.cs` |
 | kabuk önizlemesi (STA iş parçacığı) | `Arayuz/Gorunum/Onizleme/KabukOnizleme.cs` |
+| **3B önizleme (eDrawings)** — kur, aç, kilidi bırak | `Arayuz/Gorunum/Onizleme/UcBoyutluGorunum.cs` |
+| 3B kipin sürücüye bağlanması (dene · gizle · sebep) | `Arayuz/Gorunum/Onizleme/Onizleme.UcBoyutluKip.cs` |
 | eski biçim gömülü önizleme okuma | `Cekirdek/OnizlemeOkuyucu.cs` |
 | arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
 | ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/Agac/AgacDoldurucu.cs` |
@@ -1047,13 +1049,17 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on dört şey ölçer:** süreç ayakta mı · hata akışı temiz mi ·
+**Çalıştırma kapısı on altı şey ölçer** (bu sayı bir kez "on dört" diye bayat
+kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
+söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
 **`Ctrl+A` yalnızca bir klasörü mü kapsıyor** · **sıralama gerçekten sıralıyor
 mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu** ·
 **önizleme dosyadan çıkıyor mu** · **referans listesi doluyor mu** ·
 **referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
-sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu**.
+sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
+**referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
+**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.

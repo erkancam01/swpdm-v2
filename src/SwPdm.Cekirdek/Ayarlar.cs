@@ -68,6 +68,13 @@ public sealed class Ayarlar
     /// <summary>Son tur suzgeci ("Parça" gibi); "Tümü" secilinceye kadar null.</summary>
     public string? Suzgec { get; set; }
 
+    /// <summary>
+    /// SOLIDWORKS dosyalari eDrawings ile 3B gosterilsin mi (Erkan'in istegi,
+    /// 30.08.2026: "ayarlarda secenek olsun"). Varsayilan KAPALI: 2B kucuk
+    /// resim 3-10 ms (olculdu), 3B ise dosyayi gercekten aciyor.
+    /// </summary>
+    public bool OnizlemeUcBoyutlu { get; set; }
+
     /// <summary>Diskten okur. Dosya yoksa bos ayarlar doner - hata degildir.</summary>
     public static Ayarlar Oku(string? dosya = null)
     {
@@ -138,6 +145,10 @@ public sealed class Ayarlar
                 case "suzgec":
                     ayarlar.Suzgec = deger;
                     break;
+
+                case "onizleme3b":
+                    ayarlar.OnizlemeUcBoyutlu = deger == "evet";
+                    break;
             }
         }
 
@@ -204,6 +215,12 @@ public sealed class Ayarlar
             if (!string.IsNullOrWhiteSpace(Suzgec))
             {
                 satirlar.Add("suzgec=" + Suzgec);
+            }
+
+            // Varsayilan (kapali) yazilmaz - "BOS DEGER YAZILMAZ" kalibi.
+            if (OnizlemeUcBoyutlu)
+            {
+                satirlar.Add("onizleme3b=evet");
             }
 
             File.WriteAllLines(yol, satirlar);

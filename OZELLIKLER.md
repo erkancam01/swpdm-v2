@@ -134,7 +134,10 @@ olmayan hiçbir şey buraya yazılmadı.
 ## 10. Önizleme paneli (sol alt)
 
 - **Üstteki ad** → kimin önizlemesine bakıldığı. Referans satırına tıklayıp komşu bir dosyaya bakarken `◂ <seçili dosya>` olur ve **tıklayınca seçili dosyaya döner**.
-- **Resim** → sırayla üç kaynaktan denenir: Windows kabuğu (Gezgin ne gösteriyorsa) → SOLIDWORKS dosyasının içindeki önizleme → eski sürümlerin gömülü önizlemesi.
+- **Resim (2B — varsayılan)** → sırayla üç kaynaktan denenir: Windows kabuğu (Gezgin ne gösteriyorsa) → SOLIDWORKS dosyasının içindeki önizleme → eski sürümlerin gömülü önizlemesi.
+- **3B kip (Ayarlar'dan açılır)** → SOLIDWORKS dosyaları **eDrawings** ile açılır: döndür, yakınlaş, kaydır. PDF ve öteki türler yine 2B yoldan gösterilir. eDrawings kurulu değilse ya da dosyayı açamazsa **sebep durum çubuğuna yazılır** ve 2B'ye dönülür.
+- **3B kipte hız** → dosya gerçekten açılır: parça hızlı, büyük montaj bekletebilir (eDrawings kendi ilerlemesini gösterir).
+- **3B kipte dosya kilidi** → eDrawings açık belgeyi tutabilir; her işlem (taşıma, ad değiştirme, silme…) başlamadan belge kendiliğinden bırakılır.
 - **Yüklenirken** → "Önizleme yükleniyor…" yazar (boş kutu bırakılmaz).
 - **Hiçbiri yoksa** → "Önizleme yok" ya da okunamama sebebi yazar.
 - **PDF'te önizleme yoksa** → PDF okuyucunun Gezgin küçük resim ayarını açmayı anlatan yönlendirme çıkar.
@@ -227,10 +230,11 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Varsayılana dön** → çöp yine kökün içine alınır; zaten öyleyse bunu söyler.
 - **Çöp yeri değişirken eskisinde öğe varsa** → uyarı çıkar ve eski yol yazılır. **Taşınmaz** (başka diske kopyalamaya döner, dakikalar sürebilir); geri yüklemek için eski klasörü tekrar seçmek gerekir.
 - **"Diskte bir şey değişince ağacı kendiliğinden tazele"** → disk izleyicisini açar/kapatır (varsayılan açık); açıp kapattığında **durum çubuğuna ne olduğunu yazar**.
+- **"3B önizleme (eDrawings)"** → önizlemeyi 3B kipe alır (varsayılan kapalı = hızlı 2B); değiştirince açık seçim hemen yeni kiple çizilir ve durum çubuğuna yazılır.
 - **Ayarlar: <yol>** → ayar dosyasının yerini gösterir (`%APPDATA%\SwPdm\ayarlar.txt`).
 - **Ayar yazılamazsa** → "Ayar bu oturumda geçerli ama diske YAZILAMADI" uyarısı çıkar.
 
-**Saklanan ayarlar:** son açılan kökler (en fazla 10) · çöp üst klasörü · sıralama · otomatik tazeleme · pencere boyutu · iki bölücünün yeri · son tür süzgeci.
+**Saklanan ayarlar:** son açılan kökler (en fazla 10) · çöp üst klasörü · sıralama · otomatik tazeleme · pencere boyutu · iki bölücünün yeri · son tür süzgeci · 3B önizleme seçimi.
 **Saklanmayan:** pencere **konumu** (bilerek: ikinci ekran çıkarılınca pencere görünmez bir yerde açılabilirdi).
 
 ---
@@ -319,4 +323,5 @@ olmayan hiçbir şey buraya yazılmadı.
 - **`Ctrl+Z` uzun sürerse pencere donar** → geri alma arayüz iş parçacığında koşuyor; ileri yön (taşıma/kopyalama) arka planda ve iptal edilebilir, geri yön değil.
 - **Çöp kutusunda iptal yok** → toplu geri yükleme/silme başlayınca pencere iş bitene kadar cevap vermez; ilerleme yazılır.
 - **Kök değişince pano ve geri alma listesi boşalır** → eski kökün yolları yeni ağaçta yanlış yere dokunurdu.
+- **3B önizleme yalnızca eDrawings kuruluysa çalışır** → kurulu değilse sebep yazılır, 2B devam eder. eDrawings büyük montajı geç açar ve açık belgeyi kilitli tutabilir (işlem başlarken bırakılır). Bu özellik geliştirme ortamında ölçülemedi (eDrawings yok); ilk gerçek ölçüm senin makinende.
 - **Boş liste asla "yok" demek değildir** → tarama yapılmadıysa panel sayı yerine "taranmadı" yazar; bu bilerek böyle.

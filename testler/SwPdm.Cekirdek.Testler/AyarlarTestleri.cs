@@ -54,6 +54,20 @@ public class AyarlarTestleri : IDisposable
     }
 
     [Fact]
+    public void YazOku_UC_BOYUTLU_ONIZLEMEYI_HATIRLAR()
+    {
+        var yazilan = new Ayarlar { OnizlemeUcBoyutlu = true };
+        Assert.True(yazilan.Yaz(_dosya));
+
+        Assert.True(Ayarlar.Oku(_dosya).OnizlemeUcBoyutlu);
+
+        // Kapatilinca varsayilana doner ve dosyaya satir YAZILMAZ.
+        yazilan.OnizlemeUcBoyutlu = false;
+        Assert.True(yazilan.Yaz(_dosya));
+        Assert.False(Ayarlar.Oku(_dosya).OnizlemeUcBoyutlu);
+    }
+
+    [Fact]
     public void KokEkle_EN_YENI_BASTA()
     {
         var ayarlar = new Ayarlar();
