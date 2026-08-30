@@ -6,9 +6,9 @@ namespace SwPdm.Cekirdek;
 /// BAYAT YOLLAR: dosya duruyor ama ONU KULLANAN belgenin icindeki yol
 /// baska yeri gosteriyor - yani SOLIDWORKS acamaz.
 ///
-/// "KIRIK REFERANSLAR"DAN FARKI: orada dosya hicbir yerde BULUNAMIYOR ve
-/// onarilacak bir hedef yok (kok disinda duran saglamlar da ayri raporda).
-/// Burada dosya DURUYOR; yalnizca yazili yol eskimis. Yani DUZELTILEBILIR.
+/// "KIRIK REFERANSLAR"DAN FARKI: orada dosya BULUNAMIYOR (silinmis ya da
+/// taranan agacin disinda) ve onarilacak bir hedef yok. Burada dosya
+/// DURUYOR; yalnizca yazili yol eskimis. Yani bu rapor DUZELTILEBILIR.
 ///
 /// NEDEN VAR - GERCEK BIR HATA GORUNMEZ KALDI (Erkan, 28.08.2026):
 /// referans paneli "içinde" diyordu cunku BIZ dosyayi ADA ve KOMSULUGA gore

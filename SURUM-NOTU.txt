@@ -1,59 +1,25 @@
-BU SURUMDE - DONMA DUZELTILDI (58b6ecb'yi COPE AT, BUNU KULLAN)
+BU SURUMDE - "KOK DISINDA" OZELLIGI GERI CEKILDI, ESKI SURUME DONULDU
 
-  Sen: "yeni surumde program donuyor, boyle kaldi." Haklisin ve sebep
-  bulundu: "kok disinda" ayrimi diske SECIM ANINDA soruyordu (File.Exists);
-  olu/erisilemez ag yollari arayuz is parcaciginda saniyelerce, cok yol
-  varsa dakikalarca bekletti. Kotu tasarimdi, ozur.
+  Sen: "referanslari tara deyince dondu; donma problemi yasamadan onceki
+  son surume don." Donuldu. Bu paket, calistigini gordugun son surumun
+  (komsu onizleme, ca37316) birebir kendisi; yeni hicbir sey yok.
 
-  DUZELTME: diske artik yalniz TARAMA dokunuyor (arka planda); secim
-  aninda hicbir disk sorgusu yok. Sonuclari:
-    - Secim degisimi yine aninda.
-    - "Kok disinda" satirlari TARAMADAN SONRA belirir; tarama kosana
-      kadar boyle satirlar eskisi gibi gizli kalir.
-    - Olu ag yollari ilk taramayi uzatabilir - sure durum cubugundaki
-      tarama cumlesinde OLCULMUS yazar; her yol BIR kez yoklanir, sonraki
-      taramalar hizlidir.
-    - Kok disindaki bir dosya sonradan silinirse satir kok yeniden
-      acilana kadar eski kalir - kok disini hicbir sey izlemiyor, bu
-      bilincli bir sinir.
+  NE OLMUSTU
+    "Kok disinda" ayrimi, yazili yollarin diskte olup olmadigini
+    soruyordu. Iki deneme de senin veride tikandi (2341 dosya):
+      1. cozum aninda sormak -> SECIMDE dondu
+      2. taramanin sonunda toplu sormak -> TARAMA 2300/2341'de asili kaldi
+    Olu/erisilemez bir yola tek bir "var mi" sorusu bile cok uzun
+    surebiliyor; binlerce yol ust uste dakikalar demek. Iptal de yol
+    basina isliyor, yani aninda tepki veremiyordu.
 
-  8 test bu sozlesmeyi olcuyor (cozum diske dokunmaz - yoklanmamis yol
-  gizli kalir - tarama yoklamayi kendi kosar). Toplam 320 test, bes kapi
-  TEMIZ. Ama asil olcum SENDE: ayni klasoru ac, bir dosya sec - donmamali.
-
-ONCEKI SURUMDE - "KOK DISINDA" ARTIK "BULUNAMADI" DEGIL
-
-  Senin sectigin is. Dosya diskte DURUYOR ama acik kokun disindaysa
-  (kutuphane klasoru, baska surucu) panel onu "bulunamadi" sayip
-  gizliyordu - saglam bag, kayip gibi gorunuyordu. Ayrildi:
-
-  - Referans panelinde yeni satir turu: "kok disinda" (MOR yazi).
-    Gizlenmiyor; TEK TIKLA onizlemesi ve bilgileri geliyor (dosya
-    gercek). Cift tik agacta gosteremez ve sebebini yazar - agac
-    orayi gormuyor.
-  - Gizleme cumlesi durustce daraldi: "N referans bulunamadi -
-    gizlendi" artik yalnizca NE AGACTA NE DISKTE olanlari sayiyor.
-  - YEDINCI RAPOR: "Kok disindakiler" (Ctrl+Shift+D). Kirik degiller
-    ama tasima ve onarim o dosyalari GOREMEZ - tasimadan once bilinmeli.
-  - "Kirik referanslar" raporu artik yalnizca GERCEKTEN kayip olanlari
-    listeliyor.
-  - Elle baglama penceresi de ayni kelimeyi kullaniyor; boyle bir
-    referans istersen yine elle baglanabilir.
-
-  SENDE OLCULECEK (burada olculemedi)
-    - Buradaki olcum yapay dosyayla: Wine'da "C:\Users\PC\..." yollari
-      yasamiyor. Senin 43 referansli montajinda gizlenen satirlarin
-      kaci "kok disinda"ya doner, panel okunur kalir mi - ancak sende
-      gorulur. KALABALIK olursa soyle: tek dosyalik is, gizlemeye
-      cevrilir.
-    - (Ikinci madde dogru cikti: donma tam buradan geldi ve en ustteki
-      surumde duzeltildi - yoklama artik taramanin icinde.)
-
-  OLCULDU
-    5 yeni cekirdek testi, gercek dosyalarla: kok disindaki ayriliyor -
-    diskte de olmayan "bulunamadi" kaliyor - kok ALTINDAKI taranmamis
-    dosya "kok disinda" SAYILMIYOR (o taramanin isi) - satir kendi
-    raporunda, Kirik'ta degil. 317 test, BES kapi TEMIZ (15/15).
+  SIMDI NE VAR
+    - Referans paneli eski haliyle: cozulemeyenler "N referans taranan
+      klasorde yok - gizlendi" satirinda toplaniyor.
+    - Rapor sayisi yine 6 ("Kok disindakiler" kalkti).
+    - Komsu onizleme (satira tek tik) ve onceki her sey DURUYOR.
+    - Ders CLAUDE.md'ye yazildi; ozellik ancak beklemeyen bir yoklama
+      duzeniyle (zaman asimi / yalniz secili dosya) geri gelir.
 
 ONCEKI SURUMDE - REFERANS SATIRINA TIKLA, ONIZLEMESINE BAK
 

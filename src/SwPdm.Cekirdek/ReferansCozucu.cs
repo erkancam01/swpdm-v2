@@ -12,15 +12,7 @@ public enum CozumDurumu
     /// <summary>Birden cok aday var ve hicbiri digerinden ustun degil.</summary>
     Belirsiz,
 
-    /// <summary>
-    /// Taranan agacta yok AMA yazili yol diskte GERCEK bir dosyayi gosteriyor -
-    /// acik kokun disinda (kutuphane klasoru, baska surucu). SOLIDWORKS onu
-    /// ACAR; kirik degil. Bu durumu cozucu DEGIL, indeks uretir: taramanin
-    /// nereye kadar gittigini yalnizca o bilir.
-    /// </summary>
-    KokDisinda,
-
-    /// <summary>Bu adda dosya ne taranan agacta ne yazili yerde var.</summary>
+    /// <summary>Bu adda dosya taranan agacta YOK.</summary>
     Bulunamadi,
 }
 

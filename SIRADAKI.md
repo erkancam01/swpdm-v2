@@ -4,9 +4,11 @@
 > gerçekler; burası **bugünün açık işleri**. Bir iş bitince bu dosyadan
 > silinir; hepsi bitince dosya silinir.
 >
-> Son durum: dal `claude/v2-pdm-start-u058ey` (bu dosyayı taşıyan commit'in
-> kendisi); `main` de aynı yerde (ileri sarma, 30.08.2026).
-> 320 test · 315 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> Son durum: dal `claude/v2-pdm-start-u058ey`; `main` de aynı yerde
+> (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
+> iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
+> dönüldü (ders CLAUDE.md §4'te).
+> 312 test · 307 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
 > (harita + boyut + derleme + test + çalıştırma 15 ölçüm).
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
@@ -20,11 +22,9 @@
 ## Bitmiş olan (yeniden yapılmayacak)
 
 Dosya yöneticisi tarafı **ve** PDM tarafı çalışıyor: referans indeksi
-(kim kimi kullanıyor), yedi rapor, SOLIDWORKS'süz önizleme, belge ve özel
+(kim kimi kullanıyor), altı rapor, SOLIDWORKS'süz önizleme, belge ve özel
 özellikler, silmeden önce uyarı, referansa çift tıklayıp gitme, taşırken
-bağımlıları da götürme, "kök dışında" ayrımı (30.08.2026: diskte var ama
-kök dışında olan referans artık "bulunamadı" değil; gizlenmiyor,
-önizleniyor, kendi raporu var).
+bağımlıları da götürme.
 
 SOLIDWORKS 2022 dosya biçimi **çözüldü ve CLAUDE.md §5'e yazıldı** —
 adlandırılmış deflate akışları, nibble takaslı adlar, MFC dizeleri,
@@ -73,15 +73,6 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   bu da çalışır.
 - **Yol çubuğundaki `…` tıklaması.** Dar pencerede kırpma oluşması gerekiyor;
   kapıdaki pencere boyutunda kırpma çıkmıyor.
-- **"Kök dışında" satırları Erkan'ın gerçek verisinde.** Buradaki ölçüm
-  yapay dosyayla (Wine'da `C:\Users\PC\...` yaşamıyor). Onun 43 referanslı
-  montajında gizlenen satırların kaçının "kök dışında"ya dönüştüğü ve
-  panelin okunur kalıp kalmadığı ancak orada görülür; kalabalıksa tek
-  dosyalık iş — gizlemeye çevrilir.
-  **İlk sürüm onun makinesinde DONDU** (30.08.2026): `File.Exists` seçim
-  anında, arayüz iş parçacığında koşuyordu (CLAUDE.md §4'e yazıldı).
-  Yoklama taramaya taşındı; **donmanın gittiği ve ilk taramanın süresi**
-  onun makinesinde ölçülecek — tarama cümlesi süreyi zaten yazıyor.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 
@@ -123,6 +114,17 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   davranış doğru); çöp ayarları büyürse kendi sayfa dosyasına çıkar.
 
 ## C — Bekleyen fikirler (Erkan'a sunuldu, seçilmedi)
+
+- **"Kök dışında" ayrımı — İKİ KEZ DENENDİ, GERİ ÇEKİLDİ (30.08.2026).**
+  Fikir doğru (diskte var + kök dışında ≠ kayıp) ama `File.Exists`
+  erişilemeyen yolda uzun süre bloklıyor ve Erkan'ın 2341 dosyalık
+  ağacında iki deneme de dondurdu: çözüm anında sormak SEÇİMİ, taramanın
+  sonunda toplu sormak TARAMAYI (2300/2341'de asılı; Erkan geri çekilmesini
+  istedi). Ayrıntı CLAUDE.md §4'te; kod `git revert` edilen 58b6ecb +
+  b123617 commit'lerinde duruyor, oradan geri alınabilir. Üçüncü deneme
+  ancak BEKLEMEYEN yoklamayla: yol başına kısa zaman aşımı (ayrı iş
+  parçacığı, süresinde dönmezse "bilinmiyor"), sunucu adına "ölü" damgası,
+  ve/veya yalnız seçili dosyanın yolları istek üzerine.
 
 - **Özelliklere göre süzme/arama.** Özellikler (Malzeme, Ağırlık, Revizyon)
   şu an yalnızca **seçili dosyada** görünüyor. İndekse alınırsa

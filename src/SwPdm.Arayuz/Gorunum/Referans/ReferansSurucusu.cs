@@ -390,16 +390,12 @@ internal sealed class ReferansSurucusu
             // IPUCUNDA HANGI YOL: bulunduysa dosyanin GERCEK yeri (kullanici
             // "hangi dosya" diye ona bakiyor), bulunamadiysa dosyanin ICINDE
             // yazan yol (aranan seyin ne oldugunu ancak o soyluyor).
-            //
-            // KOK DISINDAKI satirin HEDEFI VAR: dosya diskte gercek, tek tik
-            // onizlemesini gosterir; cift tik agacta bulamaz ve sebebini
-            // yazar (kok disinda - agac orayi gormuyor).
             liste.Ekle(
                 WindowsYolu.DosyaAdi(yazilan),
                 bayat ? "yol BAYAT" : AsagiRol(cozum),
                 Simge(yazilan),
-                SatirRengi(bayat, cozum),
-                cozum.Durum is CozumDurumu.Bulundu or CozumDurumu.KokDisinda ? cozum.Yol : null,
+                bayat ? Renkler.YolBayatYazi : Renkler.ReferansAsagiYazi,
+                cozum.Durum == CozumDurumu.Bulundu ? cozum.Yol : null,
                 cozum.Yol ?? yazilan);
         }
 
@@ -411,7 +407,7 @@ internal sealed class ReferansSurucusu
         {
             Aciklama(
                 liste,
-                $"{satirlar.Gizlenen} referans bulunamadı — gizlendi",
+                $"{satirlar.Gizlenen} referans taranan klasörde yok — gizlendi",
                 "Ctrl+Shift+D",
                 Renkler.YolBayatYazi);
         }
@@ -462,25 +458,8 @@ internal sealed class ReferansSurucusu
     {
         CozumDurumu.Bulundu => "içinde",
         CozumDurumu.Belirsiz => $"içinde? {cozum.Adaylar.Count} aday",
-        CozumDurumu.KokDisinda => "kök dışında",
         _ => "BULUNAMADI",
     };
-
-    /// <summary>
-    /// Asagi yondeki satirin rengi. Rol kelimesiyle AYNI ayrimi anlatir:
-    /// liste kayinca kelime okunmadan da satirin hali gorunmeli.
-    /// </summary>
-    private static Color SatirRengi(bool bayat, Cozum cozum)
-    {
-        if (bayat)
-        {
-            return Renkler.YolBayatYazi;
-        }
-
-        return cozum.Durum == CozumDurumu.KokDisinda
-            ? Renkler.KokDisindaYazi
-            : Renkler.ReferansAsagiYazi;
-    }
 
     private static int Simge(string yol) => TurSimgeleri.Sira(DosyaTurleri.Tani(yol));
 }

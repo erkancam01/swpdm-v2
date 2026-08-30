@@ -199,14 +199,22 @@ olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
   içindeydi. Belirti tamamen sessiz: komut `exit 144` ile düşüyor, hiçbir hata
   yazmıyor. `pgrep -x` (yalnızca süreç adı) eşlemiyor; ölçüldü. Eski süreçler
   **ada** göre aranır, gerekiyorsa `/proc/<pid>/cmdline` ayrıca süzülür.
-- **`File.Exists` erişilemeyen ağ yolunda SANİYELERCE bloklanıyor — ve bunu
-  seçim anında çağırmak uygulamayı DONDURDU** (ölçüldü 30.08.2026, Erkan'ın
-  makinesi). "Kök dışında" sınıflandırmasının ilk hâli diski çözüm anında
-  yokluyordu; ilk seçimde ters dizin kurulurken bütün indeksin çözülemeyen
-  yolları arayüz iş parçacığında tek tek yoklandı ve pencere "böyle kaldı".
-  → Diske dokunan her sınıflandırma **arka plan taramasında** yapılır ve
-  önbelleğe yazılır; çözüm/çizim yolu yalnızca önbelleği okur. Ölü bir yol
-  **bir kez** yoklanır — her taramada yeniden yoklamak da dakikalar yedirir.
+- **`File.Exists` erişilemeyen yolda UZUN SÜRE bloklanabiliyor — ve bu bir
+  özelliği İKİ DENEMEDE öldürdü** (30.08.2026, Erkan'ın makinesi, 2341
+  dosyalık gerçek ağaç; yol başına süre ölçülemedi ama toplamı iki kez
+  uygulamayı kullanılmaz yaptı). "Kök dışında" ayrımı yazılı yolun diskte
+  var olup olmadığını soruyordu:
+  1. **Çözüm anında sormak** → ilk seçimde ters dizin kurulurken bütün
+     indeksin çözülemeyen yolları arayüz iş parçacığında yoklandı; uygulama
+     seçimde DONDU ("böyle kaldı").
+  2. **Taramanın sonunda toplu sormak** (arka planda, iptal edilebilir) →
+     tarama 2300/2341'de asılı kaldı ve Erkan yine "dondu" dedi. İptal de
+     kurtarmıyor: yoklama iptali yol başına yokluyor, tek bir ölü yol bile
+     tepkiyi o yolun zaman aşımı kadar geciktiriyor.
+  Özellik geri çekildi (Erkan'ın kararı). Üçüncü bir deneme ancak yoklamayı
+  **beklemeyen** bir düzenle olur: yol başına kısa zaman aşımı (ayrı iş
+  parçacığında yokla, süresinde dönmezse "bilinmiyor" de), sunucu adı
+  bazında "ölü" damgası, ve/veya yalnızca seçili dosyanın yolları.
 - **Kabuk dosya iletişim kutuları sürecin çalışma klasörünü kaydırıyor** ve o
   klasör bir daha silinemiyor. `RestoreDirectory = true` + kutu kapandıktan
   sonra çalışma klasörünü sabitle.
@@ -937,7 +945,7 @@ dosyasında** duruyor:
 | indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
 | indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
 | **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
-| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `KokDisindakiler.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
+| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/Referans/ReferansSurucusu.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |

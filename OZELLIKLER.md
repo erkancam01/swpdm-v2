@@ -160,9 +160,8 @@ olmayan hiçbir şey buraya yazılmadı.
 - **`içinde`** → referans çözüldü, dosya bulundu.
 - **`içinde? N aday`** → aynı adda birden çok dosya var, hangisi olduğu kesin değil (uydurulmuyor).
 - **`yol BAYAT`** → dosya duruyor ama belgenin içindeki yol başka yeri gösteriyor → SOLIDWORKS açamaz.
-- **`kök dışında`** (mor) → dosya diskte **var** ama açık kökün dışında (kütüphane klasörü, başka sürücü). Kırık değil, SOLIDWORKS açar. Tek tıkla önizlenir; çift tıkla gidilemez (ağaç orayı göstermiyor) ve sebebi yazılır. Bu bilgi **taramayla** gelir: tarama koşana kadar böyle satırlar gizli kalır.
 - **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
-- **"N referans bulunamadı — gizlendi"** → ne ağaçta ne diskte bulunan satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
+- **"N referans taranan klasörde yok — gizlendi"** → çözülemeyen satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
 - **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme ve bilgiler **o satırdaki dosyaya** döner; ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
@@ -186,11 +185,10 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 13. Raporlar (`Ctrl+Shift+D`) — 7 rapor
+## 13. Raporlar (`Ctrl+Shift+D`) — 6 rapor
 
-- **Kırık referanslar** → içinde yazan bir dosya **ne taranan ağaçta ne yazılı yerde** bulundu — gerçekten kayıp.
+- **Kırık referanslar** → içinde yazan bir dosyanın karşılığı taranan ağaçta bulunamadı.
 - **Bayat yollar** → dosya duruyor ama belgedeki yol başka yeri gösteriyor; **düzeltilebilir**.
-- **Kök dışındakiler** → referans, açık kökün dışında duran **gerçek** bir dosyayı gösteriyor; kırık değil ama taşıma/onarım o dosyaları göremez.
 - **Yetim parçalar** → taranan ağaçta hiçbir montajın/teknik resmin kullanmadığı parçalar.
 - **Teknik resmi olmayanlar** → hiçbir teknik resmin baz almadığı parça ve montajlar.
 - **Taşınmış dosyalar** → son kaydedildiği yer ile şimdiki yeri farklı olan dosyalar.
@@ -313,7 +311,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 20. Bilinen sınırlar (dürüstçe)
 
-- **Kök dışındaki referanslar** → artık ayırt edilir: dosya diskte varsa satır "kök dışında" der, gizlenmez ve önizlenir. Ama onarım, izleme ve "kullananlar" sorgusu kök dışını **göremez**; o dosyalarla çalışılacaksa üst klasör kök yapılmalı. Disk yoklaması taramanın içinde koşar (ilk tarama ölü ağ yolları varsa uzayabilir, süresi yazılır); her yol **bir kez** yoklanır, kök dışındaki bir dosya sonradan silinirse satır kök yeniden açılana kadar eski kalır.
+- **Kök dışındaki referanslar** → çözücü yalnızca açık kökü bilir; dosya diskte dursa bile kök dışındaysa "bulunamadı" sayılır ve panelde gizlenir. Üst klasörü kök yaparsan çoğu çözülür.
 - **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
 - **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
 - **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.

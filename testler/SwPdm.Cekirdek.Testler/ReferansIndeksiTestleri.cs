@@ -460,10 +460,9 @@ public class ReferansIndeksiTestleri : IDisposable
     [Fact]
     public void BULUNAMAYAN_referans_GIZLENIR_ve_SAYILIR()
     {
-        // Teknik resmin referansi taranan kokte YOK ve icindeki yazili yol
-        // (yazarin makinesi, "C:\Users\PC\...") bu diskte de yok - yani
-        // GERCEKTEN bulunamadi. Diskte VAR olan kok disindakiler artik
-        // gizlenmiyor; onlarin testi asagida ayri.
+        // Parca disariya tasiniyor: teknik resmin referansi taranan kokte
+        // artik YOK. (Gercek hayatta bu, dosyanin acik kokun DISINDA
+        // olmasidir - kayip olmasi degil.)
         var indeks = new ReferansIndeksi(_kok);
         IndeksTarama.Tara(indeks);
 

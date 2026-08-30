@@ -82,7 +82,6 @@ public static class RaporListesi
     [
         new KirikReferanslar(),
         new BayatYollar(),
-        new KokDisindakiler(),
         new Yetimler(),
         new TeknikResmiOlmayanlar(),
         new TasinmisDosyalar(),
