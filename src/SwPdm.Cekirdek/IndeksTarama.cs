@@ -171,6 +171,15 @@ public static class IndeksTarama
             }
         }
 
+        // "Kok disinda" sorusunun disk yoklamasi TARAMANIN icinde kosuyor -
+        // arayuz is parcaciginda kosunca uygulama donuyordu (ReferansIndeksi.
+        // DiskiYokla belgesi). Sure kronometreye giriyor: olu ag yollarinin
+        // bedeli tahmin edilmez, tarama cumlesinde olculmus gorunur.
+        if (!iptal)
+        {
+            indeks.DiskiYokla(belirtec);
+        }
+
         ilerleme?.Invoke(dosyalar.Count, dosyalar.Count, string.Empty);
         kronometre.Stop();
 

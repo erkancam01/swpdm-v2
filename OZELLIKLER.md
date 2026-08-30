@@ -160,7 +160,7 @@ olmayan hiçbir şey buraya yazılmadı.
 - **`içinde`** → referans çözüldü, dosya bulundu.
 - **`içinde? N aday`** → aynı adda birden çok dosya var, hangisi olduğu kesin değil (uydurulmuyor).
 - **`yol BAYAT`** → dosya duruyor ama belgenin içindeki yol başka yeri gösteriyor → SOLIDWORKS açamaz.
-- **`kök dışında`** (mor) → dosya diskte **var** ama açık kökün dışında (kütüphane klasörü, başka sürücü). Kırık değil, SOLIDWORKS açar. Tek tıkla önizlenir; çift tıkla gidilemez (ağaç orayı göstermiyor) ve sebebi yazılır.
+- **`kök dışında`** (mor) → dosya diskte **var** ama açık kökün dışında (kütüphane klasörü, başka sürücü). Kırık değil, SOLIDWORKS açar. Tek tıkla önizlenir; çift tıkla gidilemez (ağaç orayı göstermiyor) ve sebebi yazılır. Bu bilgi **taramayla** gelir: tarama koşana kadar böyle satırlar gizli kalır.
 - **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
 - **"N referans bulunamadı — gizlendi"** → ne ağaçta ne diskte bulunan satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
@@ -313,7 +313,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 20. Bilinen sınırlar (dürüstçe)
 
-- **Kök dışındaki referanslar** → artık ayırt edilir: dosya diskte varsa satır "kök dışında" der, gizlenmez ve önizlenir. Ama onarım, izleme ve "kullananlar" sorgusu kök dışını **göremez**; o dosyalarla çalışılacaksa üst klasör kök yapılmalı.
+- **Kök dışındaki referanslar** → artık ayırt edilir: dosya diskte varsa satır "kök dışında" der, gizlenmez ve önizlenir. Ama onarım, izleme ve "kullananlar" sorgusu kök dışını **göremez**; o dosyalarla çalışılacaksa üst klasör kök yapılmalı. Disk yoklaması taramanın içinde koşar (ilk tarama ölü ağ yolları varsa uzayabilir, süresi yazılır); her yol **bir kez** yoklanır, kök dışındaki bir dosya sonradan silinirse satır kök yeniden açılana kadar eski kalır.
 - **254 karakterden uzun yollar** → dosyanın içindeki bu yollar atlanır ve sonucun eksik olduğu söylenir.
 - **SOLIDWORKS 2022 dışındaki sürümler** → dosya biçimi 2022 ile ölçüldü; eski sürümlerde referans okuma çalışmayabilir.
 - **Toolbox / kütüphane parçaları** → ayrı bir işleme yok; kök dışındaysalar yukarıdaki maddeye girerler.

@@ -199,6 +199,14 @@ olmayan her katmanda bu dört üye kullanılmaz; kendi yol yardımcın olur.
   içindeydi. Belirti tamamen sessiz: komut `exit 144` ile düşüyor, hiçbir hata
   yazmıyor. `pgrep -x` (yalnızca süreç adı) eşlemiyor; ölçüldü. Eski süreçler
   **ada** göre aranır, gerekiyorsa `/proc/<pid>/cmdline` ayrıca süzülür.
+- **`File.Exists` erişilemeyen ağ yolunda SANİYELERCE bloklanıyor — ve bunu
+  seçim anında çağırmak uygulamayı DONDURDU** (ölçüldü 30.08.2026, Erkan'ın
+  makinesi). "Kök dışında" sınıflandırmasının ilk hâli diski çözüm anında
+  yokluyordu; ilk seçimde ters dizin kurulurken bütün indeksin çözülemeyen
+  yolları arayüz iş parçacığında tek tek yoklandı ve pencere "böyle kaldı".
+  → Diske dokunan her sınıflandırma **arka plan taramasında** yapılır ve
+  önbelleğe yazılır; çözüm/çizim yolu yalnızca önbelleği okur. Ölü bir yol
+  **bir kez** yoklanır — her taramada yeniden yoklamak da dakikalar yedirir.
 - **Kabuk dosya iletişim kutuları sürecin çalışma klasörünü kaydırıyor** ve o
   klasör bir daha silinemiyor. `RestoreDirectory = true` + kutu kapandıktan
   sonra çalışma klasörünü sabitle.

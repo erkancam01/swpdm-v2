@@ -10,10 +10,16 @@ namespace SwPdm.Cekirdek.Testler;
 /// VAR ama acik kokun DISINDA -> bu "kayip dosya" degil; BULUNAMADI'dan
 /// ayrilir, panelde gizlenmez ve kendi raporuna gider.
 ///
-/// Ayirt etmenin uc siniri da burada olculuyor:
-///   - diskte VAR + kok DISINDA        -> KokDisinda
-///   - diskte YOK                      -> Bulunamadi (gizlenmeye devam)
-///   - diskte var ama kokun ALTINDA    -> Bulunamadi (o taramanin isi)
+/// SOZLESMENIN KALBI: diske yalniz <see cref="ReferansIndeksi.DiskiYokla"/>
+/// dokunur (tarama, arka planda); <see cref="ReferansIndeksi.Coz"/> hicbir
+/// zaman dokunmaz. Ilk hal cozum aninda File.Exists cagiriyordu ve Erkan'in
+/// makinesinde secim degisiminde uygulama DONDU (olu ag yollari).
+///
+/// Ayirt etmenin sinirlari da burada olculuyor:
+///   - diskte VAR + kok DISINDA + yoklandi   -> KokDisinda
+///   - hic yoklanmadi                        -> Bulunamadi (gizli kalir)
+///   - diskte YOK                            -> Bulunamadi
+///   - diskte var ama kokun ALTINDA          -> Bulunamadi (o taramanin isi)
 /// </summary>
 public sealed class KokDisindaTestleri : IDisposable
 {
@@ -67,11 +73,17 @@ public sealed class KokDisindaTestleri : IDisposable
 
     private string Yol(params string[] p) => Path.Combine([_kok, .. p]);
 
-    /// <summary>Montaj1'in kaydina, kokun disindaki gercek bir dosyayi yazar.</summary>
-    private string DisReferansEkle(ReferansIndeksi indeks)
+    /// <summary>
+    /// Montaj1'in kaydina, kokun disindaki bir yolu yazar. Dosyanin kendisi
+    /// yalnizca <paramref name="dosyaOlsun"/> ise olusturulur.
+    /// </summary>
+    private string DisReferansEkle(ReferansIndeksi indeks, bool dosyaOlsun = true)
     {
         string disDosya = Path.Combine(_dis, "Kutuphane.SLDPRT");
-        File.WriteAllText(disDosya, "icerik onemsiz; varligi olculuyor");
+        if (dosyaOlsun)
+        {
+            File.WriteAllText(disDosya, "icerik onemsiz; varligi olculuyor");
+        }
 
         IndeksKaydi kayit = indeks.Kayit(Yol("Montaj1.SLDASM"))!;
         indeks.Koy(kayit with { YazilanYollar = [.. kayit.YazilanYollar, disDosya] });
@@ -82,10 +94,11 @@ public sealed class KokDisindaTestleri : IDisposable
         => indeks.Kullandiklari(Yol("Montaj1.SLDASM")).Single(x => x.YazilanYol == yazilan).Cozum;
 
     [Fact]
-    public void KOK_DISINDAKI_GERCEK_DOSYA_BULUNAMADI_SAYILMAZ()
+    public void YOKLANMIS_DIS_DOSYA_BULUNAMADI_SAYILMAZ()
     {
         ReferansIndeksi indeks = Taranmis();
         string disDosya = DisReferansEkle(indeks);
+        indeks.DiskiYokla();
 
         Cozum cozum = Cozumu(indeks, disDosya);
 
@@ -94,29 +107,58 @@ public sealed class KokDisindaTestleri : IDisposable
     }
 
     [Fact]
-    public void KOK_DISINDAKI_SATIR_PANELDE_GIZLENMEZ()
+    public void YOKLANMAMIS_YOL_BULUNAMADI_KALIR_cozum_diske_dokunmaz()
     {
+        // DONMA ONARIMININ SOZLESMESI: DiskiYokla kosmadan cozum "kok
+        // disinda" DIYEMEZ, cunku diyebilmesi icin diske bakmasi gerekirdi.
         ReferansIndeksi indeks = Taranmis();
-        DisReferansEkle(indeks);
+        string disDosya = DisReferansEkle(indeks);
 
-        PanelSatirlari p = indeks.KullandiklariGorunur(Yol("Montaj1.SLDASM"));
+        Assert.Equal(CozumDurumu.Bulunamadi, Cozumu(indeks, disDosya).Durum);
+    }
 
-        Assert.Contains(p.Gosterilecekler, x => x.Cozum.Durum == CozumDurumu.KokDisinda);
-        Assert.Equal(0, p.Gizlenen);
+    [Fact]
+    public void TARAMA_YOKLAMAYI_KENDI_KOSUYOR()
+    {
+        // Normal akis: kullanici DiskiYokla diye bir sey bilmez; tarama
+        // sonunda kendiliginden kosar.
+        ReferansIndeksi indeks = Taranmis();
+        string disDosya = DisReferansEkle(indeks);
+
+        IndeksTarama.Tara(indeks);
+
+        Assert.Equal(CozumDurumu.KokDisinda, Cozumu(indeks, disDosya).Durum);
     }
 
     [Fact]
     public void DISKTE_DE_OLMAYAN_YOL_BULUNAMADI_KALIR()
     {
         ReferansIndeksi indeks = Taranmis();
-        string disDosya = DisReferansEkle(indeks);
-
-        // Dis dosya silindi; bir sonraki indeks degisikliginde (her islem
-        // oncesi tarama bir degisikliktir) cevap BULUNAMADI'ya doner.
-        File.Delete(disDosya);
-        indeks.Koy(indeks.Kayit(Yol("Montaj1.SLDASM"))!);   // dokunus: onbellek duser
+        string disDosya = DisReferansEkle(indeks, dosyaOlsun: false);
+        indeks.DiskiYokla();
 
         Assert.Equal(CozumDurumu.Bulunamadi, Cozumu(indeks, disDosya).Durum);
+    }
+
+    [Fact]
+    public void AYNI_YOL_IKINCI_KEZ_YOKLANMAZ_yeni_indeks_yoklar()
+    {
+        // Bilinclii bayatlik (DiskiYokla belgesi): olu sunucu adi her
+        // taramada yeniden dakikalar yedirmesin diye cevap indeks nesli
+        // boyunca tutuluyor. Kok yeniden acilinca (yeni indeks) tazelenir.
+        ReferansIndeksi indeks = Taranmis();
+        string disDosya = DisReferansEkle(indeks);
+        indeks.DiskiYokla();
+        Assert.Equal(CozumDurumu.KokDisinda, Cozumu(indeks, disDosya).Durum);
+
+        File.Delete(disDosya);
+        indeks.DiskiYokla();
+        Assert.Equal(CozumDurumu.KokDisinda, Cozumu(indeks, disDosya).Durum);   // bayat, bilerek
+
+        ReferansIndeksi yeni = Taranmis();
+        DisReferansEkle(yeni, dosyaOlsun: false);
+        yeni.DiskiYokla();
+        Assert.Equal(CozumDurumu.Bulunamadi, Cozumu(yeni, disDosya).Durum);
     }
 
     [Fact]
@@ -131,8 +173,22 @@ public sealed class KokDisindaTestleri : IDisposable
 
         IndeksKaydi kayit = indeks.Kayit(Yol("Montaj1.SLDASM"))!;
         indeks.Koy(kayit with { YazilanYollar = [.. kayit.YazilanYollar, icDosya] });
+        indeks.DiskiYokla();
 
         Assert.Equal(CozumDurumu.Bulunamadi, Cozumu(indeks, icDosya).Durum);
+    }
+
+    [Fact]
+    public void KOK_DISINDAKI_SATIR_PANELDE_GIZLENMEZ()
+    {
+        ReferansIndeksi indeks = Taranmis();
+        DisReferansEkle(indeks);
+        indeks.DiskiYokla();
+
+        PanelSatirlari p = indeks.KullandiklariGorunur(Yol("Montaj1.SLDASM"));
+
+        Assert.Contains(p.Gosterilecekler, x => x.Cozum.Durum == CozumDurumu.KokDisinda);
+        Assert.Equal(0, p.Gizlenen);
     }
 
     [Fact]
@@ -140,6 +196,7 @@ public sealed class KokDisindaTestleri : IDisposable
     {
         ReferansIndeksi indeks = Taranmis();
         string disDosya = DisReferansEkle(indeks);
+        indeks.DiskiYokla();
 
         RaporSonucu disaridakiler = Uret("Kök dışındakiler", indeks);
         RaporSonucu kirik = Uret("Kırık referanslar", indeks);

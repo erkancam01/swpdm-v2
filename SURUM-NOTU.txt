@@ -1,4 +1,27 @@
-BU SURUMDE YENI - "KOK DISINDA" ARTIK "BULUNAMADI" DEGIL
+BU SURUMDE - DONMA DUZELTILDI (58b6ecb'yi COPE AT, BUNU KULLAN)
+
+  Sen: "yeni surumde program donuyor, boyle kaldi." Haklisin ve sebep
+  bulundu: "kok disinda" ayrimi diske SECIM ANINDA soruyordu (File.Exists);
+  olu/erisilemez ag yollari arayuz is parcaciginda saniyelerce, cok yol
+  varsa dakikalarca bekletti. Kotu tasarimdi, ozur.
+
+  DUZELTME: diske artik yalniz TARAMA dokunuyor (arka planda); secim
+  aninda hicbir disk sorgusu yok. Sonuclari:
+    - Secim degisimi yine aninda.
+    - "Kok disinda" satirlari TARAMADAN SONRA belirir; tarama kosana
+      kadar boyle satirlar eskisi gibi gizli kalir.
+    - Olu ag yollari ilk taramayi uzatabilir - sure durum cubugundaki
+      tarama cumlesinde OLCULMUS yazar; her yol BIR kez yoklanir, sonraki
+      taramalar hizlidir.
+    - Kok disindaki bir dosya sonradan silinirse satir kok yeniden
+      acilana kadar eski kalir - kok disini hicbir sey izlemiyor, bu
+      bilincli bir sinir.
+
+  8 test bu sozlesmeyi olcuyor (cozum diske dokunmaz - yoklanmamis yol
+  gizli kalir - tarama yoklamayi kendi kosar). Toplam 320 test, bes kapi
+  TEMIZ. Ama asil olcum SENDE: ayni klasoru ac, bir dosya sec - donmamali.
+
+ONCEKI SURUMDE - "KOK DISINDA" ARTIK "BULUNAMADI" DEGIL
 
   Senin sectigin is. Dosya diskte DURUYOR ama acik kokun disindaysa
   (kutuphane klasoru, baska surucu) panel onu "bulunamadi" sayip
@@ -23,9 +46,8 @@ BU SURUMDE YENI - "KOK DISINDA" ARTIK "BULUNAMADI" DEGIL
       kaci "kok disinda"ya doner, panel okunur kalir mi - ancak sende
       gorulur. KALABALIK olursa soyle: tek dosyalik is, gizlemeye
       cevrilir.
-    - OLU bir sunucu adi yazan referans ilk secimde paneli birkac
-      saniye bekletebilir (dosya var mi sorusu agda bekler; cevap
-      onbellekleniyor, ayni yol ikinci kez sorulmaz). Gorursen soyle.
+    - (Ikinci madde dogru cikti: donma tam buradan geldi ve en ustteki
+      surumde duzeltildi - yoklama artik taramanin icinde.)
 
   OLCULDU
     5 yeni cekirdek testi, gercek dosyalarla: kok disindaki ayriliyor -

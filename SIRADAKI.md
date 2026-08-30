@@ -6,7 +6,7 @@
 >
 > Son durum: dal `claude/v2-pdm-start-u058ey` (bu dosyayı taşıyan commit'in
 > kendisi); `main` de aynı yerde (ileri sarma, 30.08.2026).
-> 317 test · 312 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> 320 test · 315 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
 > (harita + boyut + derleme + test + çalıştırma 15 ölçüm).
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
@@ -77,9 +77,11 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   yapay dosyayla (Wine'da `C:\Users\PC\...` yaşamıyor). Onun 43 referanslı
   montajında gizlenen satırların kaçının "kök dışında"ya dönüştüğü ve
   panelin okunur kalıp kalmadığı ancak orada görülür; kalabalıksa tek
-  dosyalık iş — gizlemeye çevrilir. Ölü sunucu adı yazan bir referans ilk
-  bakışta paneli saniyelerce bekletebilir (`File.Exists` ağda bekler;
-  cevap önbellekleniyor, aynı yol ikinci kez sormaz) — görülürse söylesin.
+  dosyalık iş — gizlemeye çevrilir.
+  **İlk sürüm onun makinesinde DONDU** (30.08.2026): `File.Exists` seçim
+  anında, arayüz iş parçacığında koşuyordu (CLAUDE.md §4'e yazıldı).
+  Yoklama taramaya taşındı; **donmanın gittiği ve ilk taramanın süresi**
+  onun makinesinde ölçülecek — tarama cümlesi süreyi zaten yazıyor.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace SwPdm.Cekirdek;
 
@@ -63,7 +65,12 @@ public sealed class ReferansIndeksi
 
     private Dictionary<string, List<string>>? _adaGore;
     private Dictionary<string, List<string>>? _kullananlar;
-    private readonly Dictionary<string, bool> _diskteVar = new(StringComparer.OrdinalIgnoreCase);
+
+    // "Yazili yol diskte var mi" cevaplari. ConcurrentDictionary: arka plan
+    // taramasi yazarken arayuz okuyor.
+    private readonly ConcurrentDictionary<string, bool> _diskteVar
+        = new(StringComparer.OrdinalIgnoreCase);
+
     private int? _okunamayan;
 
     /// <summary>Yeni, bos indeks.</summary>
@@ -157,6 +164,10 @@ public sealed class ReferansIndeksi
     /// Yalnizca MUTLAK yol diskte aranir: goreli bir yol calisma klasorune
     /// gore bakilirdi ve o cevap yalan olurdu. Kokun ALTINDAKI ama indekste
     /// olmayan dosya da "kok disinda" SAYILMAZ - orasi taramanin isi.
+    ///
+    /// BU METOT DISKE HIC DOKUNMAZ - yalnizca <see cref="DiskiYokla"/>'nin
+    /// doldurdugu onbellegi okur. Sebebi asagida, o metodun belgesinde:
+    /// Erkan'in makinesinde arayuz DONDU (30.08.2026).
     /// </summary>
     public Cozum Coz(IndeksKaydi kaynak, string yazilanYol)
     {
@@ -179,25 +190,63 @@ public sealed class ReferansIndeksi
     private static bool MutlakMi(string yol)
         => yol.Length >= 2 && (yol[1] == ':' || WindowsYolu.AyiriciMi(yol[0]));
 
-    /// <summary>
-    /// Yazili yol diskte var mi - ONBELLEKLI.
-    ///
-    /// NEDEN ONBELLEK: bu soru her cozumde sorulur ve cevabi bir disk
-    /// dokunusu; ag surucusundeki OLU bir sunucu adi saniyeler bekletebilir.
-    /// Onbellek ayni yolu bir indeks nesli boyunca BIR kez sorar; kayit
-    /// degisince oteki turetilmis dizinlerle birlikte duser. Bayatlama
-    /// penceresi indeksin kendisiyle ayni - daha taze bir iddia yalan olurdu.
-    /// </summary>
-    private bool DiskteVar(string yol)
-    {
-        if (_diskteVar.TryGetValue(yol, out bool var))
-        {
-            return var;
-        }
+    /// <summary>Onbellekteki cevap; hic bakilmamis yol "yok" sayilir.</summary>
+    private bool DiskteVar(string yol) => _diskteVar.TryGetValue(yol, out bool var) && var;
 
-        var = File.Exists(yol);
-        _diskteVar[yol] = var;
-        return var;
+    /// <summary>
+    /// "Kok disinda" sorusunun DISK YOKLAMASI - ARKA PLANDA cagrilmali;
+    /// tarama kendi sonunda cagiriyor.
+    ///
+    /// NEDEN COZUMDE DEGIL - ERKAN'IN MAKINESINDE OLCULDU (30.08.2026):
+    /// ilk hal File.Exists'i cozum aninda cagiriyordu. Ilk secimde ters
+    /// dizin kurulurken BUTUN indeksin cozulemeyen yollari arayuz is
+    /// parcaciginda tek tek yoklandi ve olu/erisilemez yollarda uygulama
+    /// DONDU - "boyle kaldi". O yuzden cozum yalnizca onbellegi okur;
+    /// diske dokunan tek yer burasi ve tarama gibi arka planda kosar.
+    ///
+    /// HENUZ BAKILMAMIS yol "bulunamadi" sayilir - yanlis yonde degil:
+    /// dosya taranan agacta gercekten yok, yalnizca "kok disinda" incelmesi
+    /// bir tarama gec gelir ve satir o zamana kadar gizli kalir.
+    ///
+    /// AYNI YOL IKINCI KEZ YOKLANMAZ (bu indeks nesli boyunca): olu bir
+    /// sunucu adi her taramada yeniden dakikalar yedirirdi. Bedeli durustce
+    /// soylenen bir bayatlik: kok disindaki dosya sonradan silinirse cevap
+    /// kok yeniden acilana kadar eski kalir - kok disini zaten hicbir sey
+    /// izlemiyor, indeksin oradaki bilgisi her turlu "en son bakildiginda".
+    /// </summary>
+    public void DiskiYokla(CancellationToken belirtec = default)
+    {
+        // Kopya uzerinde geziliyor: yoklama surerken baska bir is parcacigi
+        // Koy/Sil cagirirsa numaralandirma patlardi (dusen-kayit dongusuyle
+        // ayni kalip).
+        foreach (IndeksKaydi kayit in new List<IndeksKaydi>(_kayitlar.Values))
+        {
+            foreach (string yazilan in kayit.YazilanYollar)
+            {
+                if (belirtec.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (_diskteVar.ContainsKey(yazilan)
+                    || !MutlakMi(yazilan)
+                    || WindowsYolu.AltindaMi(yazilan, Kok))
+                {
+                    continue;
+                }
+
+                // Adaylari olan yol zaten cozuluyor; diske sormaya deger
+                // olan yalniz COZULEMEYEN.
+                Cozum cozum = ReferansCozucu.Coz(
+                    yazilan, kayit.Yol, AdaGoreAdaylar(WindowsYolu.DosyaAdi(yazilan)));
+                if (cozum.Durum != CozumDurumu.Bulunamadi)
+                {
+                    continue;
+                }
+
+                _diskteVar[yazilan] = File.Exists(yazilan);
+            }
+        }
     }
 
     /// <summary>
@@ -414,12 +463,14 @@ public sealed class ReferansIndeksi
         return false;
     }
 
+    // _diskteVar burada TEMIZLENMIYOR: o kayitlardan degil DISKTEN turuyor
+    // ve yeniden doldurmasi pahali (DiskiYokla belgesi). Kayit degisimi
+    // diskteki dis dosyalar hakkinda yeni bir sey soylemez.
     private void Bozuldu()
     {
         _adaGore = null;
         _kullananlar = null;
         _okunamayan = null;
-        _diskteVar.Clear();
     }
 
     /// <summary>
