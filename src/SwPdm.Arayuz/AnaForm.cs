@@ -163,8 +163,10 @@ internal sealed partial class AnaForm : Form
             }
         };
 
-        // --- arama
+        // --- arama. Ozellik sorgusu ("malzeme: pirinç") indeksten kosuyor;
+        // surucuye indeksi lambda ile veriyoruz (kok degisince guncel kalir).
         _arama = new AramaSurucusu(_araKutusu, this);
+        _arama.IndeksKaynagi = () => _referansSurucusu.Indeks;
         _arama.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _arama.Mesgul += (_, mesgul) => _agac.Enabled = !mesgul;
         _arama.Bitti += (_, sonuc) => _doldurucu.AramaSonucunuGoster(sonuc.Metin, sonuc.Sonuc);

@@ -8,10 +8,11 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 313 test · 308 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma 16 ölçüm).
-> Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
-> varsayılan 2B; burada hiç ölçülemedi, Erkan'da ölçülecek (aşağıda).
+> 327 test · 322 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> (harita + boyut + derleme + test + çalıştırma 17 ölçüm).
+> Yeni (30.08.2026): **3B önizleme (eDrawings)** — Erkan denedi, "harika
+> çalıştı" — ve **özelliğe göre arama** (`malzeme: pirinç`, arama kutusuna
+> sözdizimi; ilk taramanın göç süresi Erkan'da ölçülecek).
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -75,12 +76,15 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   bu da çalışır.
 - **Yol çubuğundaki `…` tıklaması.** Dar pencerede kırpma oluşması gerekiyor;
   kapıdaki pencere boyutunda kırpma çıkmıyor.
-- **3B önizlemenin TAMAMI.** eDrawings burada yok; Wine'da ölçülen tek şey
-  "eDrawings'siz çökmüyor + sebep yazıp 2B'ye düşüyor" (16. ölçüm).
-  Erkan'da ölçülecek: 3B görünüm geliyor mu · döndürme · büyük montajda
-  ilk açılış süresi · 3B açıkken taşıma/ad değiştirme (belge kilidi işlem
-  öncesi bırakılıyor; `OpenDoc` imzası bir sürümde farklıysa durum
-  çubuğundaki hata metni gelsin, ikinci turda düzeltilir).
+- **3B önizlemenin kalanı.** Temel akış Erkan'da DOĞRULANDI (30.08.2026:
+  "harika çalıştı" — görünüm + döndürme çalışıyor). Hâlâ ölçülmeyen:
+  büyük montajda ilk açılış süresi · 3B açıkken taşıma/ad değiştirme
+  (belge kilidi işlem öncesi bırakılıyor — engel çıkarsa söylesin).
+  Wine'da ölçülen tek şey "eDrawings'siz çökmüyor" (kapı ölçümü).
+- **Özellik aramasının göç taraması Erkan'ın verisinde.** İlk
+  `Ctrl+Shift+R` bütün dosyaları bir kez yeniden okuyacak (özellikler
+  indekse giriyor); süresi tarama cümlesinde yazacak — o sayı gelirse
+  "tek geçiş" iyileştirmesine gerek var mı ölçülmüş olur (B2'deki madde).
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 
@@ -134,10 +138,12 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   parçacığı, süresinde dönmezse "bilinmiyor"), sunucu adına "ölü" damgası,
   ve/veya yalnız seçili dosyanın yolları istek üzerine.
 
-- **Özelliklere göre süzme/arama.** Özellikler (Malzeme, Ağırlık, Revizyon)
-  şu an yalnızca **seçili dosyada** görünüyor. İndekse alınırsa
-  *"Malzeme = Pirinç olanlar"* gibi süzme olur. `SwBelgeBilgisi.Oku` hazır;
-  iş indekse bir alan eklemek ve süzgeci kurmak.
+- **Tarama tek geçişe indirilebilir.** `SwReferans.Oku` ile
+  `SwBelgeBilgisi.Oku` aynı dosyayı **iki kez** açıyor (her açılış ~66 KB,
+  ölçülü ve boyuttan bağımsız). Özellik indekslemesi eklenince (30.08.2026)
+  bu bilinçli bırakıldı; tarama süresi Erkan'ın verisinde rahatsız ederse
+  iki okuyucuya `SwPaket` alan bir aşırı yükleme yazılır — imza değişikliği
+  iki çekirdek dosyaya dokunur, o yüzden ancak ölçülmüş bir gerekçeyle.
 - **Pack and Go.** Bir montajı kullandıklarıyla birlikte başka klasöre
   kopyala, kopyadaki referanslar doğru olsun. Parçalar zaten var:
   `ReferansIndeksi.ZincirdekiEksikler` + `YolBaglama.Bagla`.

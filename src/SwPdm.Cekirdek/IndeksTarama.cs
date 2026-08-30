@@ -123,10 +123,17 @@ public static class IndeksTarama
             }
 
             // ARTIMLILIK: boyut ve tarih aynysa dosya ACILMAZ.
+            //
+            // GOC ISTISNASI: kayit okunmus ama OZELLIKLERI hic okunmamissa
+            // (eski surumun indeksi) dosya bir kez daha okunur - yoksa
+            // "malzeme: pirinç" aramasi eski indekste sessizce bos donerdi
+            // (CLAUDE.md 3). Bedeli ilk taramada bir tam okuma; suresi
+            // tarama cumlesinde olculmus gorunur.
             IndeksKaydi? eski = indeks.Kayit(yol);
             if (eski is not null
                 && eski.Boyut == aday.Boyut
-                && eski.Degistirme == aday.Degistirme)
+                && eski.Degistirme == aday.Degistirme
+                && !(eski.Okundu && eski.Ozellikler is null))
             {
                 atlanan++;
                 if (!eski.Okundu)
@@ -227,10 +234,57 @@ public static class IndeksTarama
     private static IndeksKaydi Kayit(string yol, long boyut, DateTime degistirme)
     {
         SwReferanslar r = SwReferans.Oku(yol);
-        return new IndeksKaydi(yol, boyut, degistirme, r.Dogrudan, r.KendiYolu, r.Okundu, r.Sebep);
+        return new IndeksKaydi(
+            yol, boyut, degistirme, r.Dogrudan, r.KendiYolu, r.Okundu, r.Sebep,
+            Ozellikleri(yol));
     }
 
-    /// <summary>Dosya bilgisi bile okunamayan kayit.</summary>
+    /// <summary>
+    /// Belgenin ozellikleri - OZELLIK ARAMASI icin ("malzeme: pirinç").
+    ///
+    /// Dosya burada IKINCI kez aciliyor (SwReferans ayrica acti) ve bu
+    /// bilincli: SwPaket'in maliyeti dosya boyutundan bagimsiz ~66 KB
+    /// (olculdu, CLAUDE.md 5); iki okuyucuyu tek gecise baglamak iki
+    /// cekirdek dosyanin imzasini degistirirdi. Tarama suresi rahatsiz
+    /// ederse iyilestirme SIRADAKI'de.
+    ///
+    /// Kaydeden ve Yapilandirma da aranabilir diye listeye ekleniyor -
+    /// ama kullanicinin AYNI ADLA kendi ozelligi varsa onunki kalir.
+    /// </summary>
+    private static IReadOnlyList<KeyValuePair<string, string>>? Ozellikleri(string yol)
+    {
+        SwBelgeBilgileri bilgi = SwBelgeBilgisi.Oku(yol);
+        if (!bilgi.Okundu)
+        {
+            return null;   // "okunamadi" ile "ozelligi yok" ayni sey degil
+        }
+
+        var liste = new List<KeyValuePair<string, string>>(bilgi.Ozel);
+        EkleYoksa(liste, "Kaydeden", bilgi.SonKaydeden);
+        EkleYoksa(liste, "Yapılandırma", bilgi.Yapilandirma);
+        return liste;
+    }
+
+    private static void EkleYoksa(
+        List<KeyValuePair<string, string>> liste, string ad, string? deger)
+    {
+        if (deger is null)
+        {
+            return;
+        }
+
+        foreach (KeyValuePair<string, string> o in liste)
+        {
+            if (string.Equals(o.Key, ad, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+        }
+
+        liste.Add(new KeyValuePair<string, string>(ad, deger));
+    }
+
+    /// <summary>Dosya bilgisi bile okunamayan kayit (ozellikler de null).</summary>
     private static IndeksKaydi Okunamadi(string yol)
         => new(yol, 0, default, [], null, Okundu: false, "Dosya bilgisi okunamadı.");
 

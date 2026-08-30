@@ -559,7 +559,12 @@ internal sealed class AgacDoldurucu
             ? $"{gosterilen} eşleşme"
             : $"{gosterilen} / {sonuc.Bulunanlar.Count} eşleşme (süzgeç açık)";
 
-        ozet += $" · {sonuc.TarananKlasor} klasör tarandı";
+        // Ozellik aramasi diskte gezmiyor; "0 klasör tarandı" yazmak yalan
+        // olurdu. Cumlenin indeks kismini OzellikAramasi uretir (eksiklik
+        // dahil) - burasi yalnizca yerine koyar.
+        ozet += sonuc.IndeksOzeti is string indeksten
+            ? " · " + indeksten
+            : $" · {sonuc.TarananKlasor} klasör tarandı";
 
         // Sessiz kirpma "hepsini kapsadim" gibi okunur (CLAUDE.md 9).
         if (sonuc.Iptal)

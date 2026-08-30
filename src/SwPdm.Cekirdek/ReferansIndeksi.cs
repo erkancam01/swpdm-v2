@@ -11,6 +11,12 @@ namespace SwPdm.Cekirdek;
 /// <param name="KendiYolu">Dosyanin en son kaydedildigi yol; bilinmiyorsa null.</param>
 /// <param name="Okundu">Referanslar okunabildi mi.</param>
 /// <param name="Sebep">Okunamadiysa sebep.</param>
+/// <param name="Ozellikler">
+/// Belgenin ozellikleri (Malzeme, Kaydeden...) - ozellik aramasi icin.
+/// <b>null = HIC OKUNMADI</b> (eski surumun indeksi ya da dosya okunamadi),
+/// bos liste = okundu ve ozellik yok. Ayrim sart (CLAUDE.md 3): eski indeksi
+/// "ozelligi yok" saymak, aramayi sessizce bos dondururdu.
+/// </param>
 public sealed record IndeksKaydi(
     string Yol,
     long Boyut,
@@ -18,7 +24,8 @@ public sealed record IndeksKaydi(
     IReadOnlyList<string> YazilanYollar,
     string? KendiYolu,
     bool Okundu,
-    string? Sebep);
+    string? Sebep,
+    IReadOnlyList<KeyValuePair<string, string>>? Ozellikler = null);
 
 /// <summary>Panelde gosterilecek referans satirlari ve gizlenenlerin sayisi.</summary>
 /// <param name="Gosterilecekler">Cozulmus ya da belirsiz satirlar.</param>

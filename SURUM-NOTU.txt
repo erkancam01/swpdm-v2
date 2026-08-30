@@ -1,4 +1,40 @@
-BU SURUMDE YENI - 3B ONIZLEME (eDrawings), AYARLAR'DAN SECILIR
+BU SURUMDE YENI - OZELLIGE GORE ARAMA: "malzeme: pirinç"
+
+  Senin sectigin is; UX kararin "ayni arama kutusuna sozdizimi". Yapildi:
+
+  - Arama kutusuna "anahtar: deger" yaz: icinde ':' olan metin dosya
+    ADINI degil BELGE OZELLIGINI arar.
+      malzeme: pirinç        -> Malzeme'sinde "pirinç" gecenler
+      kaydeden: erkan        -> son kaydedeni erkan olanlar
+      yapılandırma: hareketli
+      çizen:                 -> Çizen ozelligi OLAN herkes (bos girilmis
+                                olanlar dahil - "deger yok" da bir bilgi)
+  - Duz metin eskisi gibi AD arar; hicbir sey degismedi.
+  - Anahtar tam, deger "iceriyor" esleşir; ikisi de harf duyarsiz.
+    Sonuclar ayni arama ekraninda, klasorlere gruplu; tur suzgeci ve Esc
+    aynen calisir.
+
+  MOTOR INDEKS - VE DURUSTLUK KURALLARI
+    - Sorgu diski gezmez; referans indeksinden ANLIK cevap verir.
+      Ozellikler artik tarama sirasinda indekse aliniyor.
+    - Tarama yapilmadiysa arama KOSMAZ: "once referans taramasi gerekli -
+      Ctrl+Shift+R" yazar. Bos sonuc gosterip "boyle dosya yok" dedirtmek
+      bu uygulamada dosya sildirir; o yuzden red, sessiz bosluktan iyi.
+    - Ozet cumlesi "indeksten" der; okunamayan/taranmamis dosya varsa
+      "eksik olabilir" diye ekler.
+
+  ILK TARAMA BIR KEZ UZUN SURECEK (GOC)
+    Eski indeksinde ozellikler yok; bir sonraki Ctrl+Shift+R BUTUN
+    dosyalari bir kez yeniden okuyup ozellikleri alir. Suresi durum
+    cubugundaki tarama cumlesinde olculmus yazar - o sayiyi gonderirsen
+    gercek bedeli ogreniriz. Sonraki taramalar yine bedava (artimli).
+
+  BILINEN SINIR (olculdu, CLAUDE.md 5)
+    Denkleme bagli ozellik (kutleden gelen Ağırlık gibi) dosyada EN SON
+    HESAPLANAN degerdir; model degisip kaydedilmediyse bayat olabilir.
+    Arama dosyada yazana bakar.
+
+ONCEKI SURUMDE - 3B ONIZLEME (eDrawings), AYARLAR'DAN SECILIR
 
   Senin istegin: "ayarlarda secenek olsun; kullanici ister 2B ister 3B
   onizleme kullansin." Yapildi:

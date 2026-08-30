@@ -33,12 +33,17 @@ public sealed record KlasorIcerigi(
     string? Hata);
 
 /// <summary>Arama sonucu. Kesilme ve sinir asimi GIZLENMEZ.</summary>
+/// <param name="IndeksOzeti">
+/// Doluysa arama diskten degil INDEKSTEN geldi (ozellik aramasi) ve ozet
+/// cumlenin indeks kismi budur; ad aramasi null birakir.
+/// </param>
 public sealed record AramaSonucu(
     IReadOnlyList<DosyaOgesi> Bulunanlar,
     int TarananKlasor,
     bool SinirAsildi,
     bool Iptal,
-    IReadOnlyList<string> OkunamayanKlasorler);
+    IReadOnlyList<string> OkunamayanKlasorler,
+    string? IndeksOzeti = null);
 
 /// <summary>
 /// Diski okur. ARAYUZ BILMEZ - CLAUDE.md 7: bir arayuz sinifi hem ekran hem
