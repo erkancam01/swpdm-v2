@@ -69,11 +69,11 @@ internal sealed partial class Onizleme : IDisposable
     private string? _beklenenYol;
 
     /// <summary>
-    /// CIPA: agacta secili dosya ve onun referans metinleri. Referans
-    /// satirina tiklamak GECICI bir gosterimdir; cipa degismez ve basliga
-    /// tiklaninca buraya donulur. Klasor/coklu secim/temizlik cipayi siler.
+    /// CIPA: agacta secili dosya. Referans satirina tiklamak GECICI bir
+    /// gosterimdir; cipa degismez ve basliga tiklaninca buraya donulur.
+    /// Klasor/coklu secim/temizlik cipayi siler.
     /// </summary>
-    private (DosyaOgesi Dosya, string Kullandigi, string Kullanan)? _capa;
+    private DosyaOgesi? _capa;
     private volatile bool _duruyor;
 
     internal Onizleme(OnizlemePaneli panel, Control arayuz, Func<bool> ucBoyutluMu)
@@ -97,37 +97,16 @@ internal sealed partial class Onizleme : IDisposable
     }
 
     /// <summary>
-    /// Bir dosyanin ust bilgisini yazar ve onizlemesini ister.
-    ///
-    /// <paramref name="referans"/> DISARIDAN geliyor cunku cevabi referans
-    /// indeksi biliyor; onizleme onu uretmez, yalnizca yazar.
+    /// Agacta secilen dosyayi gosterir: baslikta ADI, kutuda onizlemesi.
+    /// Bu dosya ayni zamanda CIPA olur (bkz. <see cref="KomsuGoster"/>).
     /// </summary>
-    internal void Goster(DosyaOgesi dosya, string kullandigi, string kullanan)
+    internal void Goster(DosyaOgesi dosya)
     {
-        _capa = (dosya, kullandigi, kullanan);
+        _capa = dosya;
         _beklenenYol = dosya.Yol;
 
-        // Cipadayken baslik tiklanmaz - donulecek baska yer yok.
+        // Cipadayken geri donulecek baska yer yok - ok isareti cikmaz.
         _panel.BasligiYaz(dosya.Ad, geriDonulebilir: false);
-
-        _panel.UstBilgiyiYaz(
-            ad: dosya.Ad,
-            tur: DosyaTurleri.Adi(dosya.Tur),
-            boyut: Boyut.Yaz(dosya.Boyut),
-            degistirme: Zaman.Yaz(dosya.Degistirme),
-
-            // CLAUDE.md 3'un EN SERT kurali burada: "0" yazmak "bu parcayi
-            // kimse kullanmiyor" demektir ve v1'de tam bu SAGLAM DOSYA
-            // SILDIRIYORDU. Indeks taranmamissa buraya sayi degil "taranmadı"
-            // geliyor - ayrimi ReferansSurucusu yapiyor. Iki yon iki ayri
-            // satir: "Kullandığı" asagi, "Kullanan" yukari.
-            //
-            // DUZ METIN ALINIYOR, ReferansOzeti tipi DEGIL (29.08.2026):
-            // once o tip buradan geciyordu ve iki OZELLIK birbirine
-            // kilitleniyordu - referans panelini kaldirmak onizlemeyi de
-            // degistirtirdi (CLAUDE.md 1b).
-            kullandigi: kullandigi,
-            kullanan: kullanan);
 
         // 3B KIP (Ayarlar): SOLIDWORKS dosyasi eDrawings'te acilir; 2B boru
         // hatti hic kosmaz. Kurulamaz/acamazsa sebep soylenir ve 2B devam.
@@ -154,31 +133,22 @@ internal sealed partial class Onizleme : IDisposable
     }
 
     /// <summary>
-    /// KOMSU GOSTERIMI: referans panelinde tiklanan dosyanin onizlemesi ve
-    /// bilgileri - agactaki secim (cipa) DEGISMEDEN. Baslik cipanin adini
-    /// tasir ve tiklaninca cipaya donulur.
+    /// KOMSU GOSTERIMI: referans panelinde tiklanan dosyanin onizlemesi -
+    /// agactaki secim (cipa) DEGISMEDEN.
+    ///
+    /// BASLIK KOMSUNUN ADINI TASIR: bilgi blogu kalkinca (30.08.2026)
+    /// "neye bakiyorsun" sorusunun cevabi yalniz burada kaldi. Basa konan
+    /// "◂" geri isareti; tiklaninca cipaya donulur.
     ///
     /// NEDEN VAR (Erkan, 29.08.2026): "kullananlar listesindeki 13 dosyanin
     /// resmine bakmak icin 13 kez gidip donmek" gerekiyordu.
     /// </summary>
-    internal void KomsuGoster(string yol, string kullandigi, string kullanan)
+    internal void KomsuGoster(string yol)
     {
         _beklenenYol = yol;
-
         _panel.BasligiYaz(
-            _capa is { } c ? c.Dosya.Ad : WindowsYolu.DosyaAdi(yol),
+            WindowsYolu.DosyaAdi(yol),
             geriDonulebilir: _capa is not null);
-
-        // Bilgiler diskten TEK kapidan okunur (DosyaIslemleri.Ozet);
-        // okunamayan alan "—" olur, uydurma deger yazilmaz (CLAUDE.md 3).
-        DosyaIslemleri.YolOzeti ozet = DosyaIslemleri.Ozet(yol);
-        _panel.UstBilgiyiYaz(
-            ad: WindowsYolu.DosyaAdi(yol),
-            tur: DosyaTurleri.Adi(DosyaTurleri.Tani(WindowsYolu.DosyaAdi(yol))),
-            boyut: ozet.Boyut is long b ? Boyut.Yaz(b) : "—",
-            degistirme: ozet.Degistirme is DateTime z ? Zaman.Yaz(z) : "—",
-            kullandigi: kullandigi,
-            kullanan: kullanan);
 
         if (UcBoyutluDene(yol))
         {
@@ -203,13 +173,13 @@ internal sealed partial class Onizleme : IDisposable
     /// <summary>Basliga tiklandi: cipaya (agacta secili dosyaya) don.</summary>
     private void CipayaDon()
     {
-        if (_capa is { } c)
+        if (_capa is DosyaOgesi dosya)
         {
-            Goster(c.Dosya, c.Kullandigi, c.Kullanan);
+            Goster(dosya);
         }
     }
 
-    /// <summary>Klasor secilince: onizleme aranmaz, ust bilgi yine de yazilir.</summary>
+    /// <summary>Klasor secilince: onizleme aranmaz; baslikta klasorun adi.</summary>
     internal void Goster(KlasorOgesi klasor)
     {
         _capa = null;
@@ -217,16 +187,6 @@ internal sealed partial class Onizleme : IDisposable
         _panel.BasligiYaz(klasor.Ad, geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster("Klasör");
-        _panel.UstBilgiyiYaz(
-            ad: klasor.Ad,
-            tur: "Klasör",
-            boyut: "—",
-            degistirme: "—",
-
-            // Klasorun "kullanani" olmaz; "taranmadı" yazmak taranınca bir
-            // sey cikacagini ima ederdi.
-            kullandigi: "—",
-            kullanan: "—");
     }
 
     /// <summary>
@@ -240,13 +200,6 @@ internal sealed partial class Onizleme : IDisposable
         _panel.BasligiYaz(ozet.Yaz(), geriDonulebilir: false);
         _beklenenYol = null;
         _panel.MesajGoster($"{ozet.Toplam} öğe seçildi");
-        _panel.UstBilgiyiYaz(
-            ad: ozet.Yaz(),
-            tur: "Çoklu seçim",
-            boyut: ozet.DosyaSayisi > 0 && ozet.BoyutTam ? Boyut.Yaz(ozet.ToplamBoyut) : "—",
-            degistirme: "—",
-            kullandigi: "—",
-            kullanan: "—");
     }
 
     /// <summary>Secim yokken paneli bosaltir.</summary>

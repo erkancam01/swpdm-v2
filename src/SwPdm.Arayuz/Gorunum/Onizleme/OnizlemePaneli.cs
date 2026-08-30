@@ -6,36 +6,33 @@ using System.Windows.Forms;
 namespace SwPdm.Arayuz.Gorunum;
 
 /// <summary>
-/// Sol alt panel: onizleme resmi ve altinda dosya ust bilgisi.
+/// Sol alt panel: ustte ONIZLENEN dosyanin adi, altinda onizleme resmi.
 /// Yalnizca GORUNUM; hicbir dosya okumaz.
+///
+/// SADELESTI (Erkan, 30.08.2026): altta duran bilgi blogu (Tur, Boyut,
+/// Tarih, Kullandigi, Kullanan) KALDIRILDI - "gerek yok". Ayni bilgiler
+/// zaten durum cubugunda ve referans panelinin bolum basliklarinda.
 /// </summary>
 internal sealed class OnizlemePaneli : TableLayoutPanel
 {
     private readonly PictureBox _resim;
     private readonly Panel _yuva;
     private readonly Label _baslik;
-    private readonly Label _ad;
-    private readonly Label _tur;
-    private readonly Label _boyut;
-    private readonly Label _degistirme;
-    private readonly Label _kullandigi;
-    private readonly Label _kullanan;
 
     internal OnizlemePaneli()
     {
         ColumnCount = 1;
-        RowCount = 3;
+        RowCount = 2;
         Dock = DockStyle.Fill;
         BackColor = Renkler.GovdeArkaPlan;
         Padding = new Padding(8, 4, 8, 4);
         ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
         RowStyles.Add(new RowStyle(SizeType.AutoSize));
         RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
-        RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        // BASLIK: kimin onizlemesine bakildigi. Referans satirina tiklayip
-        // KOMSU bir dosyaya bakarken cipanin (agacta secili dosyanin) adi
-        // burada durur ve TIKLANABILIR olur - tiklaninca cipaya donulur.
+        // BASLIK: NEYE BAKTIGIN. Bilgi blogu kalkinca onizlenen dosyanin
+        // adini yazan tek yer burasi kaldi - o yuzden komsu gosteriminde de
+        // KOMSUNUN adini tasiyor, cipanin degil.
         // ToolTip BILEREK yok: Wine'da tiklamayi yiyor (CLAUDE.md 6).
         _baslik = new Label
         {
@@ -74,28 +71,8 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         };
         _yuva.Controls.Add(_resim);
 
-        var bilgi = new FlowLayoutPanel
-        {
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Dock = DockStyle.Fill,
-            Margin = Padding.Empty,
-        };
-
-        _ad = BilgiEtiketi();
-        _tur = BilgiEtiketi();
-        _boyut = BilgiEtiketi();
-        _degistirme = BilgiEtiketi();
-        _kullandigi = BilgiEtiketi();
-        _kullanan = BilgiEtiketi();
-        bilgi.Controls.AddRange(
-            [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan]);
-
         Controls.Add(_baslik, 0, 0);
         Controls.Add(_yuva, 0, 1);
-        Controls.Add(bilgi, 0, 2);
     }
 
     /// <summary>
@@ -133,9 +110,10 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
     private bool _geriDonulebilir;
 
     /// <summary>
-    /// Basligi yazar. <paramref name="geriDonulebilir"/> true ise bu bir
-    /// KOMSU gosterimidir: baslik cipanin adini "◂" ile tasir, el imleci ve
-    /// vurgu rengi alir; tiklaninca <see cref="BasligaTiklandi"/> atesler.
+    /// Basligi yazar - <paramref name="ad"/> HER ZAMAN o an ONIZLENEN
+    /// dosyanindir. <paramref name="geriDonulebilir"/> true ise bu bir KOMSU
+    /// gosterimidir: basa "◂" konur, el imleci ve vurgu rengi gelir;
+    /// tiklaninca <see cref="BasligaTiklandi"/> atesler ve cipaya donulur.
     /// </summary>
     internal void BasligiYaz(string ad, bool geriDonulebilir)
     {
@@ -194,47 +172,10 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         Onizleme = bmp;
     }
 
-    /// <summary>
-    /// Ust bilgi satirlarini yazar.
-    ///
-    /// IKI REFERANS SATIRI, IKI AYRI SORU:
-    ///   Kullandığı: bu dosyanin ICINDEKILER (asagi yon)
-    ///   Kullanan:   bu dosyayi KIM KULLANIYOR (yukari yon)
-    /// Tek satir olduklarinda kullanicinin gordugu tek sayi ters yondekiydi
-    /// ve asagi yon hic gorunmuyordu.
-    ///
-    /// DIKKAT - CLAUDE.md 3: ikisi de bilerek METIN, sayi degil. Tarama
-    /// yapilmadiysa buraya "0" YAZILMAZ; "taranmadı" yazilir. Bos liste
-    /// "yok" demek degildir ve v1'de bu ayrim saglam dosya sildirebiliyordu.
-    /// </summary>
-    internal void UstBilgiyiYaz(
-        string ad, string tur, string boyut, string degistirme,
-        string kullandigi, string kullanan)
-    {
-        _ad.Text = ad;
-        _tur.Text = "Tür: " + tur;
-        _boyut.Text = "Boyut: " + boyut;
-        _degistirme.Text = "Değiştirme: " + degistirme;
-        _kullandigi.Text = "Kullandığı: " + kullandigi;
-        _kullanan.Text = "Kullanan: " + kullanan;
-    }
-
     /// <summary>Secim yokken paneli bosaltir; uydurma deger birakmaz.</summary>
     internal void Temizle()
     {
         _resim.Image = null;
-        _ad.Text = string.Empty;
-        _tur.Text = string.Empty;
-        _boyut.Text = string.Empty;
-        _degistirme.Text = string.Empty;
-        _kullandigi.Text = string.Empty;
-        _kullanan.Text = string.Empty;
+        _baslik.Text = string.Empty;
     }
-
-    private static Label BilgiEtiketi() => new()
-    {
-        AutoSize = true,
-        ForeColor = Renkler.UstBilgiYazi,
-        Margin = new Padding(0, 0, 0, 1),
-    };
 }

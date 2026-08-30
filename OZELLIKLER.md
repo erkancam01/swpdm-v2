@@ -133,7 +133,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 10. Önizleme paneli (sol alt)
 
-- **Üstteki ad** → kimin önizlemesine bakıldığı. Referans satırına tıklayıp komşu bir dosyaya bakarken `◂ <seçili dosya>` olur ve **tıklayınca seçili dosyaya döner**.
+- **Üstteki ad** → **o an önizlenen dosyanın adı.** Referans satırına tıklayıp komşu bir dosyaya bakarken başa `◂` gelir ve **tıklayınca ağaçta seçili dosyaya döner**. Panelde başka bilgi satırı yok (30.08.2026: gerek görülmedi) — tür, boyut, tarih durum çubuğunda; referans sayıları sağdaki bölüm başlıklarında.
 - **Resim (2B — varsayılan)** → sırayla üç kaynaktan denenir: Windows kabuğu (Gezgin ne gösteriyorsa) → SOLIDWORKS dosyasının içindeki önizleme → eski sürümlerin gömülü önizlemesi.
 - **3B kip (Ayarlar'dan açılır)** → SOLIDWORKS dosyaları **eDrawings** ile açılır: döndür, yakınlaş, kaydır. PDF ve öteki türler yine 2B yoldan gösterilir. eDrawings kurulu değilse ya da dosyayı açamazsa **sebep durum çubuğuna yazılır** ve 2B'ye dönülür.
 - **3B kipte hız** → dosya gerçekten açılır: parça hızlı, büyük montaj bekletebilir (eDrawings kendi ilerlemesini gösterir).
@@ -143,31 +143,25 @@ olmayan hiçbir şey buraya yazılmadı.
 - **PDF'te önizleme yoksa** → PDF okuyucunun Gezgin küçük resim ayarını açmayı anlatan yönlendirme çıkar.
 - **Klasör seçilince** → "Klasör" yazar.
 - **Çoklu seçimde** → "N öğe seçildi" yazar.
-- **Ad** → dosya adı.
-- **Tür** → Montaj / Parça / Teknik resim / PDF / Dosya / Klasör / **Çoklu seçim**.
-- **Boyut** → dosya boyutu; **çoklu seçimde seçilenlerin toplamı**, klasörde `—`.
-- **Değiştirme** → son değiştirme tarihi.
-- **Kullandığı** → bu dosyanın içinden referans verdiği dosya sayısı; `taranmadı` / `okunamadı` / `yok` / `N dosya`.
-- **Kullanan** → bu dosyayı kullanan dosya sayısı; taranmadıysa sayı yerine `taranmadı`, eksikse "(liste eksik olabilir)".
 
 ---
 
 ## 11. Referans paneli (sağ alt)
 
-- **▼ KULLANDIKLARI** → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
-- **▲ KULLANANLAR** → bu dosyayı kullanan dosyalar (yukarı yön).
-- **Bölüm başlığı** → solda başlık, sağda sayı ("9 dosya", "taranmadı").
+- **▼ İÇİNDEKİLER** → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
+- **▲ KULLANILDIĞI YERLER** → bu dosyayı kullanan dosyalar (yukarı yön).
+- **Bölüm başlığı** → solda başlık, sağda sayı ve eksiklik: "9 dosya", "taranmadı", "2 dosya · eksik".
 - **`içinde`** → referans çözüldü, dosya bulundu.
 - **`içinde? N aday`** → aynı adda birden çok dosya var, hangisi olduğu kesin değil (uydurulmuyor).
 - **`yol BAYAT`** → dosya duruyor ama belgenin içindeki yol başka yeri gösteriyor → SOLIDWORKS açamaz.
 - **`kullanan`** → üst bölümde, bu dosyayı kullanan belge.
 - **"N referans taranan klasörde yok — gizlendi"** → çözülemeyen satırlar listeden çıkarıldı; hepsi `Ctrl+Shift+D` raporlarında duruyor.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
-- **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme ve bilgiler **o satırdaki dosyaya** döner; ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
+- **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme **o satırdaki dosyaya** döner (üstteki başlık da o dosyanın adını yazar); ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
 - **Ctrl+Shift+L (panel odaktayken)** → seçili dosyanın referansını elle bağlama akışını başlatır.
-- **Boş bölüm** → sebebini yazar ("Bu dosya başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı.").
+- **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Bunu kullanan dosya yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz; eksiklik bölüm başlığındaki "· eksik" ile ve durum çubuğundaki tarama cümlesiyle söylenir.
 - **Klasör, çoklu seçim ya da SOLIDWORKS olmayan dosya** → panel boş kalmaz, **neden boş olduğunu** yazar ("SOLIDWORKS dosyası değil" · "Seçim yok" · "taranmadı").
 
 ---

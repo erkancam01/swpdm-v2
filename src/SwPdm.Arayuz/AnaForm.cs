@@ -158,8 +158,7 @@ internal sealed partial class AnaForm : Form
         {
             if (_referanslar.SeciliHedef is string hedef)
             {
-                ReferansOzeti komsu = _referansSurucusu.Ozet(hedef);
-                _onizleme.KomsuGoster(hedef, komsu.Kullandigi, komsu.Kullanan);
+                _onizleme.KomsuGoster(hedef);
             }
         };
 
@@ -470,8 +469,7 @@ internal sealed partial class AnaForm : Form
         switch (AgacDoldurucu.Etiket(secililer.Count == 1 ? secililer[0] : null))
         {
             case DosyaOgesi dosya:
-                ReferansOzeti ozet = _referansSurucusu.Ozet(dosya.Yol);
-                _onizleme.Goster(dosya, ozet.Kullandigi, ozet.Kullanan);
+                _onizleme.Goster(dosya);
                 _referansSurucusu.Doldur(_referanslar, dosya.Yol);
                 _durum.Secildi(dosya);
                 _yol.Goster(WindowsYolu.Klasor(dosya.Yol));

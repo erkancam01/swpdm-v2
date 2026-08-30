@@ -6,11 +6,6 @@ using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
-/// <summary>Onizleme panelindeki iki referans satiri - ikisi de METIN, sayi degil.</summary>
-/// <param name="Kullandigi">Bu dosyanin ICINDEKILER icin ozet ("9 dosya").</param>
-/// <param name="Kullanan">Bu dosyayi KULLANANLAR icin ozet ("taranmadı").</param>
-internal readonly record struct ReferansOzeti(string Kullandigi, string Kullanan);
-
 /// <summary>
 /// REFERANS BILGISININ ARAYUZDEKI TEK KAPISI.
 ///
@@ -40,8 +35,8 @@ internal readonly record struct ReferansOzeti(string Kullandigi, string Kullanan
 /// </summary>
 internal sealed class ReferansSurucusu
 {
-    private const string AsagiBaslik = "▼ KULLANDIKLARI";
-    private const string YukariBaslik = "▲ KULLANANLAR";
+    private const string AsagiBaslik = "▼ İÇİNDEKİLER";
+    private const string YukariBaslik = "▲ KULLANILDIĞI YERLER";
 
     /// <summary>Referans tasimayan bir dosyada (PDF, resim...) yazilan.</summary>
     private const string Ilgisiz = "—";
@@ -194,15 +189,6 @@ internal sealed class ReferansSurucusu
             IndeksTarama.Tazele(_indeks, yol);
         }
     }
-
-    /// <summary>
-    /// Onizleme panelindeki iki satir: "Kullandığı:" ve "Kullanan:".
-    ///
-    /// IKISI AYRI SATIR cunku iki ayri soru ve iki ayri guvenilirlik.
-    /// Once yalnizca "Kullanan:" yaziyordu; kullanicinin gordugu tek sayi
-    /// ters yondekiydi ve asagi yon hic gorunmuyordu.
-    /// </summary>
-    internal ReferansOzeti Ozet(string? yol) => new(KullandigiMetni(yol), KullananMetni(yol));
 
     /// <summary>
     /// "Kullandığı:" satiri - ASAGI yon.
@@ -373,8 +359,11 @@ internal sealed class ReferansSurucusu
 
         if (kayit.YazilanYollar.Count == 0)
         {
+            // KISA CUMLE SART: ad sutunu dar ve uzun cumle KIRPILIYOR -
+            // "Bu dosya başka dosya kull..." ekranda tam TERSI anlama
+            // ("kullanıyor") okunabiliyordu (olculdu, 30.08.2026).
             Aciklama(
-                liste, "Bu dosya başka dosya kullanmıyor.", Ilgisiz, Renkler.ReferansAsagiYazi);
+                liste, "Başka dosya kullanmıyor.", Ilgisiz, Renkler.ReferansAsagiYazi);
             return;
         }
 
@@ -426,21 +415,26 @@ internal sealed class ReferansSurucusu
                 Renkler.ReferansYukariYazi, kullanan, kullanan);
         }
 
-        // GUVENILIR DEGILSE SEBEP HER ZAMAN YAZILIR - liste dolu olsa bile.
-        // "5 dosya" gorup listeyi eksiksiz sanmak, eksik uyarmanin ta kendisi;
-        // ve eksik uyarmak bu uygulamada dosya sildirir (CLAUDE.md 1a, 3).
-        if (!sonuc.Guvenilir)
+        // SEBEP SATIRI YALNIZCA LISTE BOSKEN - Erkan, 30.08.2026: dolu bir
+        // listenin altindaki "17 dosya okunamadı" satiri "gerek yok".
+        // KALDIRMAK NEDEN GUVENLI: eksiklik isareti KAYBOLMUYOR - bolum
+        // basliginin sag sutunu zaten "2 dosya · eksik" / "taranmadı"
+        // yaziyor (YukariMetni) ve ayrinti durum cubugundaki tarama
+        // cumlesinde duruyor ("EKSİK — 17 dosya okunamadı").
+        //
+        // LISTE BOSKEN SATIR SART (CLAUDE.md 3): guvenilir olmayan bos bir
+        // listeye "Bunu kullanan dosya yok." yazmak, taranmamis kokte
+        // "bu parcayi kimse kullanmiyor" demektir ve SAGLAM DOSYA SILDIRIR.
+        if (sonuc.Kullananlar.Count > 0)
         {
-            Aciklama(
-                liste, sonuc.Sebep ?? "Liste eksik olabilir.", "eksik",
-                Renkler.ReferansYukariYazi);
             return;
         }
 
-        if (sonuc.Kullananlar.Count == 0)
-        {
-            Aciklama(liste, "Bunu kullanan dosya yok.", Ilgisiz, Renkler.ReferansYukariYazi);
-        }
+        Aciklama(
+            liste,
+            sonuc.Guvenilir ? "Bunu kullanan dosya yok." : sonuc.Sebep ?? "Liste eksik olabilir.",
+            sonuc.Guvenilir ? Ilgisiz : "eksik",
+            Renkler.ReferansYukariYazi);
     }
 
     /// <summary>

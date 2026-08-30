@@ -1,4 +1,41 @@
-BU SURUMDE - OZELLIK TARAFI GERI CEKILDI
+BU SURUMDE - PANEL SADELESTI, BASLIKLAR ANLASILIR OLDU
+
+  Sen (gorseldeki iki kirmizi kutu): "gorseldeki kirmizi kutu icindeki
+  alanlari kaldir, gerek yok. ayrica KULLANDIKLARI yazisini KULLANANLAR
+  yazisini da daha sade mantikli bir baslik ile degistirelim." Yapildi:
+
+  - SOL ALT BILGI BLOGU KALKTI. Onizlemenin altindaki Ad / Tur / Boyut /
+    Degistirme / Kullandigi / Kullanan satirlari yok. Panelde artik
+    resim + tek satir baslik var; resim kutusu bosalan yeri aldi.
+  - USTTEKI BASLIK ARTIK ONIZLENEN DOSYANIN ADI. Onceden secili dosyanin
+    adini yaziyordu; referans satirina tiklayip komsuya bakinca baslik
+    degismiyordu. Simdi "neye bakiyorsun" sorusuna cevap veriyor:
+    komsudayken "◂ <komsunun adi>" yazar, tiklayinca secili dosyaya doner.
+  - BOLUM BASLIKLARI YENI AD:
+      KULLANDIKLARI  ->  ▼ İÇİNDEKİLER
+      KULLANANLAR    ->  ▲ KULLANILDIĞI YERLER
+    Sag sutundaki sayi ("9 dosya", "1 dosya · eksik") aynen duruyor.
+  - "17 dosya okunamadi; liste eksik olabilir." satiri, liste DOLUYKEN
+    artik cikmiyor.
+
+  BIR SEY BILEREK KALDI (CLAUDE.md 3 - dogruluk)
+    O uyari satiri liste BOSKEN duruyor. Sebebi: tarama eksikse ve liste
+    bossa, altina "Bunu kullanan dosya yok." yazmak "bu parcayi kimse
+    kullanmiyor" demektir - ve bu uygulamada saglam dosya sildirir.
+    Eksiklik isareti zaten kaybolmuyor: bolum basliginin saginda
+    "· eksik", durum cubugunda "EKSIK - 17 dosya okunamadi" yaziyor.
+
+  YOLDA CIKAN BIR KUSUR DA DUZELDI
+    Bos bolumun cumlesi dar sutunda kirpiliyordu:
+    "Bu dosya baska dosya kull..." - ekranda TAM TERSI anlama
+    ("kullaniyor") okunabiliyordu. Cumle kisaltildi:
+    "Baska dosya kullanmiyor." - artik tam siginiyor (olculdu).
+
+  SENDE BAKILACAK
+    Yeni baslik adlari gercek verinde de anlasilir mi; degilse soyle,
+    tek satirlik degisiklik.
+
+ONCEKI SURUMDE - OZELLIK TARAFI GERI CEKILDI
 
   Sen: "bu sekilde hic kullanisli degil, baska bir sey yapmak lazim" ->
   "bu ozelligi kaldir simdilik hem kodda hem arayuzden." Kaldirildi:

@@ -1123,8 +1123,8 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > → başlıklar silinince **YAKALADI** (0 bant) → geri konunca TEMİZ.
 >
 > **Başlıktaki sayı sağ sütuna alındı — bu da ölçülerek.** Önce başlık tek
-> metindi (`▼ KULLANDIKLARI — 9 dosya`); dar pencerede tam da **sayı**
-> kırpılıyordu: `▼ KULLANDIKLARI …`. Ad sütunu solda, sayı sağ sütunda
+> metindi (`▼ İÇİNDEKİLER — 9 dosya`); dar pencerede tam da **sayı**
+> kırpılıyordu: `▼ İÇİNDEKİLER …`. Ad sütunu solda, sayı sağ sütunda
 > durunca her genişlikte görünüyor.
 
 > **On üçüncüsü neden var (kilit dosyaları):** SOLIDWORKS her açtığı belge

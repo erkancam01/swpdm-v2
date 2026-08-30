@@ -15,6 +15,9 @@
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
 > Erkan gerçek veride *"hiç kullanışlı değil"* dedi; C listesinde yerine
 > ne konacağı duruyor.
+> Aynı gün **panel sadeleşti**: önizlemenin altındaki bilgi bloğu kalktı,
+> üstteki başlık artık **önizlenen** dosyanın adı, bölüm başlıkları
+> `▼ İÇİNDEKİLER` / `▲ KULLANILDIĞI YERLER` oldu (Erkan'ın kararı).
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -155,6 +158,12 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   · **Excel/CSV parça listesi** (BOM/teklif için doğrudan kullanılır)
   · **özellik DÜZENLEME**: seçili dosyaların özelliğini toplu değiştirmek
     (dosyaya yazma altyapısı `SwYazici` ile hazır)
+- **Bilgi bloğunun yerine ne konacak — AÇIK SORU.** Blok kalktı (Erkan:
+  *"gerek yok"*), ama Tür/Boyut/Tarih artık yalnızca durum çubuğunda ve
+  ağaçtaki sütunlarda. Gerçek veride bir eksiklik hissedilirse seçenek:
+  önizleme başlığının sağına **tek satır** özet (boyut · tarih) koymak —
+  panelin sadeliğini bozmadan. Erkan söylemeden yapılmayacak.
+
 - **Pack and Go.** Bir montajı kullandıklarıyla birlikte başka klasöre
   kopyala, kopyadaki referanslar doğru olsun. Parçalar zaten var:
   `ReferansIndeksi.ZincirdekiEksikler` + `YolBaglama.Bagla`.
