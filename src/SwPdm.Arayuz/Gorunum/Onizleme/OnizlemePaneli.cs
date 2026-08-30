@@ -20,7 +20,6 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
     private readonly Label _degistirme;
     private readonly Label _kullandigi;
     private readonly Label _kullanan;
-    private readonly Label _ozellikler;
 
     internal OnizlemePaneli()
     {
@@ -91,9 +90,8 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         _degistirme = BilgiEtiketi();
         _kullandigi = BilgiEtiketi();
         _kullanan = BilgiEtiketi();
-        _ozellikler = BilgiEtiketi();
         bilgi.Controls.AddRange(
-            [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan, _ozellikler]);
+            [_ad, _tur, _boyut, _degistirme, _kullandigi, _kullanan]);
 
         Controls.Add(_baslik, 0, 0);
         Controls.Add(_yuva, 0, 1);
@@ -219,18 +217,7 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         _degistirme.Text = "Değiştirme: " + degistirme;
         _kullandigi.Text = "Kullandığı: " + kullandigi;
         _kullanan.Text = "Kullanan: " + kullanan;
-        _ozellikler.Text = string.Empty;
     }
-
-    /// <summary>
-    /// Belgenin icindeki ozellikler (Malzeme, Ağırlık...). Dosya okundugu icin
-    /// ARKA PLANDAN gelir; bos verilirse satir hic gorunmez.
-    ///
-    /// CLAUDE.md 3: burada "-" ya da "yok" YAZILMAZ. Bir dosyanin ozelligi
-    /// olmamasi ile ozelliklerinin OKUNAMAMASI ayri seylerdir; ikisini ayni
-    /// gostermemek icin satir yalnizca GERCEK bir sey varken cikiyor.
-    /// </summary>
-    internal void OzellikleriYaz(string metin) => _ozellikler.Text = metin;
 
     /// <summary>Secim yokken paneli bosaltir; uydurma deger birakmaz.</summary>
     internal void Temizle()
@@ -242,7 +229,6 @@ internal sealed class OnizlemePaneli : TableLayoutPanel
         _degistirme.Text = string.Empty;
         _kullandigi.Text = string.Empty;
         _kullanan.Text = string.Empty;
-        _ozellikler.Text = string.Empty;
     }
 
     private static Label BilgiEtiketi() => new()

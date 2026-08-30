@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=17
+OLCUM_TOPLAM=16
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -266,10 +266,6 @@ cp "$KOK/araclar/ornek-veri/ornek.pdf" "$ORNEK/katalog.pdf"
 : > "$ORNEK/1/Parca3.SLDPRT"
 : > "$ORNEK/1/Montaj1.SLDASM"
 : > "$ORNEK/2/Parca1.SLDPRT"
-# OZELLIK ARAMASI OLCUMU icin gercek ozellikli dosya (Malzeme="Pirinç").
-# BILEREK kapali bir alt klasorde: kok seviyesinin satir sayisi degismesin,
-# 5/6/8/9/11. olcumlerin tabanlari kaymasin.
-cp "$KOK/araclar/ornek-veri/ozellikli/Parça1.SLDPRT" "$ORNEK/2/Ozellikli.SLDPRT"
 : > "$ORNEK/33/Montaj2.SLDASM"
 : > "$ORNEK/33/Parca2.SLDDRW"
 : > "$ORNEK/33/Parca2.SLDPRT"
@@ -845,48 +841,7 @@ else
   SORUN=1
 fi
 
-# 16) OZELLIK ARAMASI: "malzeme: pirin" indeksten dogru dosyayi buluyor mu
-#
-# NEDEN VAR: ozellik sorgusu (icinde ':' olan metin) ad aramasindan ayri bir
-# yola sapiyor (OzellikAramasi + indeks). O sapak bir tani temizliginde
-# sessizce silinirse arama ad aramasina duser ve 0 eslesme gosterir - bunu
-# yalnizca bu olcum gorur. Indeks 11. olcumun Ctrl+Shift+R'iyla zaten dolu;
-# 2/Ozellikli.SLDPRT'nin Malzeme'si "Pirinç" (gercek dosya, testlerdekiyle
-# ayni). Sorgu BILEREK ASCII ("pirin" icerir-eslesir): xdotool ile Turkce
-# karakter basmak ayri bir olcum belirsizligi olurdu.
-#
-# Beklenen: arama kipinde 3 satir (kok ozeti + klasor grubu + dosya),
-# Esc ile taban satir sayisina donus.
-if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  import -window root "$CALISMA/ozellik-once.png" > /dev/null 2>&1
-  OZ_TABAN="$(agac_satir_say "$CALISMA/ozellik-once.png" "$PENCERE_X" "$PENCERE_Y")"
-
-  xdotool mousemove "$(( PENCERE_X + ARAMA_X ))" "$(( PENCERE_Y + ARAMA_Y ))" \
-    click 1 > /dev/null 2>&1
-  sleep 1
-  xdotool type --clearmodifiers "malzeme: pirin" > /dev/null 2>&1
-  xdotool key --clearmodifiers Return > /dev/null 2>&1
-  sleep 4
-  import -window root "$CALISMA/ozellik-arama.png" > /dev/null 2>&1
-  OZ_ARAMA="$(agac_satir_say "$CALISMA/ozellik-arama.png" "$PENCERE_X" "$PENCERE_Y")"
-
-  xdotool key --clearmodifiers Escape > /dev/null 2>&1
-  sleep 3
-  import -window root "$CALISMA/ozellik-sonra.png" > /dev/null 2>&1
-  OZ_SONRA="$(agac_satir_say "$CALISMA/ozellik-sonra.png" "$PENCERE_X" "$PENCERE_Y")"
-
-  if [ "${OZ_ARAMA:-0}" -eq 3 ] && [ "${OZ_SONRA:-0}" -eq "${OZ_TABAN:-0}" ]; then
-    olcum "ozellik aramasi ......." "EVET ($OZ_TABAN -> $OZ_ARAMA -> $OZ_SONRA)"
-  else
-    olcum "ozellik aramasi ......." "HAYIR ($OZ_TABAN -> $OZ_ARAMA -> $OZ_SONRA; 3 bekleniyordu)"
-    SORUN=1
-  fi
-else
-  olcum "ozellik aramasi ......." "OLCULEMEDI (pencere yok)"
-  SORUN=1
-fi
-
-# 17) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 16) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey

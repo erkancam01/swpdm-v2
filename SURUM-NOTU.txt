@@ -1,38 +1,34 @@
-BU SURUMDE YENI - OZELLIGE GORE ARAMA: "malzeme: pirinç"
+BU SURUMDE - OZELLIK TARAFI GERI CEKILDI
 
-  Senin sectigin is; UX kararin "ayni arama kutusuna sozdizimi". Yapildi:
+  Sen: "bu sekilde hic kullanisli degil, baska bir sey yapmak lazim" ->
+  "bu ozelligi kaldir simdilik hem kodda hem arayuzden." Kaldirildi:
 
-  - Arama kutusuna "anahtar: deger" yaz: icinde ':' olan metin dosya
-    ADINI degil BELGE OZELLIGINI arar.
-      malzeme: pirinç        -> Malzeme'sinde "pirinç" gecenler
-      kaydeden: erkan        -> son kaydedeni erkan olanlar
-      yapılandırma: hareketli
-      çizen:                 -> Çizen ozelligi OLAN herkes (bos girilmis
-                                olanlar dahil - "deger yok" da bir bilgi)
-  - Duz metin eskisi gibi AD arar; hicbir sey degismedi.
-  - Anahtar tam, deger "iceriyor" esleşir; ikisi de harf duyarsiz.
-    Sonuclar ayni arama ekraninda, klasorlere gruplu; tur suzgeci ve Esc
-    aynen calisir.
+  - Arama kutusundaki "malzeme: pirinc" sozdizimi (bir onceki surumde
+    gelmisti) - arama yine YALNIZCA dosya adi ariyor.
+  - Onizleme panelinin altindaki OZELLIKLER satiri (Kaydeden,
+    Yapilandirma, Malzeme...). Panelde kalanlar: Ad, Tur, Boyut,
+    Degistirme, Kullandigi, Kullanan.
+  - Tarama artik ozellik okumuyor -> her dosya bir kez daha acilmiyor;
+    Ctrl+Shift+R eskisi gibi.
 
-  MOTOR INDEKS - VE DURUSTLUK KURALLARI
-    - Sorgu diski gezmez; referans indeksinden ANLIK cevap verir.
-      Ozellikler artik tarama sirasinda indekse aliniyor.
-    - Tarama yapilmadiysa arama KOSMAZ: "once referans taramasi gerekli -
-      Ctrl+Shift+R" yazar. Bos sonuc gosterip "boyle dosya yok" dedirtmek
-      bu uygulamada dosya sildirir; o yuzden red, sessiz bosluktan iyi.
-    - Ozet cumlesi "indeksten" der; okunamayan/taranmamis dosya varsa
-      "eksik olabilir" diye ekler.
+  NEDEN (senin gerekcen, kayda gecti)
+    Yazarak arama, anahtari EZBERE bilmeyi gerektiriyordu - hangi ozellik
+    var, hangi degerler var hicbir yerde gorunmuyordu. Gosterim de yalniz
+    TEK secili dosyada ve uc satira kirpilmisti. Ikisi birlikte "ozellikle
+    calisma" hissi vermiyor.
 
-  ILK TARAMA BIR KEZ UZUN SURECEK (GOC)
-    Eski indeksinde ozellikler yok; bir sonraki Ctrl+Shift+R BUTUN
-    dosyalari bir kez yeniden okuyup ozellikleri alir. Suresi durum
-    cubugundaki tarama cumlesinde olculmus yazar - o sayiyi gonderirsen
-    gercek bedeli ogreniriz. Sonraki taramalar yine bedava (artimli).
+  DOKUNULMAYANLAR (hepsi yerinde)
+    3B onizleme (eDrawings) - senin "harika calisti" dedigin - komsu
+    onizleme, referans paneli, referans onarimi, raporlar, cop kutusu.
 
-  BILINEN SINIR (olculdu, CLAUDE.md 5)
-    Denkleme bagli ozellik (kutleden gelen Ağırlık gibi) dosyada EN SON
-    HESAPLANAN degerdir; model degisip kaydedilmediyse bayat olabilir.
-    Arama dosyada yazana bakar.
+  ESKI INDEKSIN SORUNU YOK
+    Onceki surumun yazdigi indeks dosyalarinda ozellik satirlari var;
+    okuyucu tanimadigi satiri ATLIYOR (olculu). Bir sey silmene gerek yok.
+
+  SIRADAKI ADIM SANA BAGLI - ozellik isi geri gelecekse su dordu
+  konusuldu: sutunlu tablo gorunumu (Ad-Malzeme-Agirlik, basliga tikla
+  sirala) · tikla-suz (acilir listede GERCEK degerler, yazmak yok) ·
+  Excel/CSV parca listesi · ozellikleri toplu DUZENLEME.
 
 ONCEKI SURUMDE - 3B ONIZLEME (eDrawings), AYARLAR'DAN SECILIR
 

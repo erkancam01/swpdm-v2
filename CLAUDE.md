@@ -941,7 +941,7 @@ dosyasında** duruyor:
 | yazma deneyi paketi | `araclar/DeneyUretici/` |
 | belgenin **doğrudan referansları** | `Cekirdek/SwReferans.cs` |
 | belgenin içindeki önizleme | `Cekirdek/SwOnizleme.cs` |
-| belge özellikleri (Malzeme, Kaydeden…) | `Cekirdek/SwBelgeBilgisi.cs` |
+| belge özellikleri (Malzeme, Kaydeden…) — **arayüzde kullanılmıyor** (30.08.2026: özellik tarafı geri çekildi); duruyor çünkü `SwYaziciTestleri` onu yazıcının regresyon kapısı olarak kullanıyor | `Cekirdek/SwBelgeBilgisi.cs` |
 | **yazılı yol hangi gerçek dosya** | `Cekirdek/ReferansCozucu.cs` |
 | referans indeksi (veri + sorgu) | `Cekirdek/ReferansIndeksi.cs` |
 | indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
@@ -965,7 +965,6 @@ dosyasında** duruyor:
 | çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Tema/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
 | **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/WindowsYolu.cs` |
 | klasör tarama + arama motoru | `Cekirdek/KlasorTarayici.cs` |
-| **özelliğe göre arama** (`malzeme: pirinç` — sözdizimi + eşleşme + özet) | `Cekirdek/OzellikAramasi.cs` |
 | işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/IslemRaporu.cs` |
 | boyut biçimi · tarih biçimi · doğal sıralama | `Cekirdek/Boyut.cs` · `Zaman.cs` · `DogalKarsilastirici.cs` |
 | çoklu seçim özeti | `Cekirdek/SecimOzeti.cs` |
@@ -1050,7 +1049,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on yedi şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı on altı şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1060,7 +1059,6 @@ mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu*
 **referanslarda yön ayrımı duruyor mu** · **`~$` kilit dosyaları gizlenip
 sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
-**`malzeme: pirin` özellik sorgusu indeksten doğru dosyayı buluyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 

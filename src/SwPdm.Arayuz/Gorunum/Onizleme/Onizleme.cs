@@ -56,9 +56,6 @@ internal sealed partial class Onizleme : IDisposable
         + "seçeneğini açarsanız önizleme burada da görünür.\n\n"
         + "get.adobe.com/tr/reader";
 
-    /// <summary>Panelde gosterilecek en fazla ozel ozellik.</summary>
-    private const int EnFazlaOzellik = 3;
-
     /// <summary>Kabuktan istenecek en kucuk olcu; kutu daha kucukse bile net kalsin.</summary>
     private static readonly Size EnKucukIstek = new(256, 256);
 
@@ -68,7 +65,7 @@ internal sealed partial class Onizleme : IDisposable
     private readonly SemaphoreSlim _uyandir = new(0);
     private readonly object _kilit = new();
 
-    private (string Yol, Size Boyut, bool YalnizBilgi)? _bekleyen;
+    private (string Yol, Size Boyut)? _bekleyen;
     private string? _beklenenYol;
 
     /// <summary>
@@ -136,7 +133,6 @@ internal sealed partial class Onizleme : IDisposable
         // hatti hic kosmaz. Kurulamaz/acamazsa sebep soylenir ve 2B devam.
         if (UcBoyutluDene(dosya.Yol))
         {
-            OzellikleriIste(dosya.Yol);
             return;
         }
 
@@ -151,7 +147,7 @@ internal sealed partial class Onizleme : IDisposable
 
         lock (_kilit)
         {
-            _bekleyen = (dosya.Yol, istenen, false);   // SON ISTEK KAZANIR
+            _bekleyen = (dosya.Yol, istenen);   // SON ISTEK KAZANIR
         }
 
         _uyandir.Release();
@@ -186,7 +182,6 @@ internal sealed partial class Onizleme : IDisposable
 
         if (UcBoyutluDene(yol))
         {
-            OzellikleriIste(yol);
             return;
         }
 
@@ -199,7 +194,7 @@ internal sealed partial class Onizleme : IDisposable
 
         lock (_kilit)
         {
-            _bekleyen = (yol, istenen, false);   // SON ISTEK KAZANIR
+            _bekleyen = (yol, istenen);   // SON ISTEK KAZANIR
         }
 
         _uyandir.Release();
@@ -286,7 +281,7 @@ internal sealed partial class Onizleme : IDisposable
                 return;
             }
 
-            (string Yol, Size Boyut, bool YalnizBilgi)? istek;
+            (string Yol, Size Boyut)? istek;
             lock (_kilit)
             {
                 istek = _bekleyen;
@@ -298,96 +293,8 @@ internal sealed partial class Onizleme : IDisposable
                 continue;   // daha yeni bir istek zaten aldi
             }
 
-            if (istek.Value.YalnizBilgi)
-            {
-                // 3B kip: resim eDrawings'ten geliyor, buradan yalnizca
-                // ozellik satiri gecer.
-                BilgiSonucu(istek.Value.Yol, Ozellikleri(istek.Value.Yol));
-                continue;
-            }
-
-            Sonucu(Yukle(istek.Value.Yol, istek.Value.Boyut), Ozellikleri(istek.Value.Yol));
+            Sonucu(Yukle(istek.Value.Yol, istek.Value.Boyut));
         }
-    }
-
-    /// <summary>Yalnizca ozellik satirini yazar (3B kip); bayat sonuc elenir.</summary>
-    private void BilgiSonucu(string yol, string ozellikler)
-    {
-        if (_arayuz.IsDisposed || !_arayuz.IsHandleCreated)
-        {
-            return;
-        }
-
-        try
-        {
-            _arayuz.BeginInvoke(() =>
-            {
-                if (string.Equals(_beklenenYol, yol, StringComparison.OrdinalIgnoreCase))
-                {
-                    _panel.OzellikleriYaz(ozellikler);
-                }
-            });
-        }
-        catch (Exception hata) when (hata is ObjectDisposedException or InvalidOperationException)
-        {
-            // Pencere tam bu sirada kapandi; yazilacak yer kalmadi.
-        }
-    }
-
-    /// <summary>
-    /// Belgenin icindeki ozellikleri tek satira dizer.
-    ///
-    /// ARKA PLANDA cagriliyor cunku dosya aciliyor - olculdu: dosya basina
-    /// ~66 KB ve birkac ms, ama ag surucusunde her tiklamada arayuzu
-    /// bekletmek kabul edilemez.
-    ///
-    /// EN COK <see cref="EnFazlaOzellik"/> tane gosteriliyor: bir parcada
-    /// onlarca ozellik olabilir ve panel iki satirlik bir yer. Kirpildiysa
-    /// bu SOYLENIYOR ("+3 daha") - sessizce kirpmak, kullanicinin gormedigi
-    /// bir ozelligi yok saymasina yol acardi (CLAUDE.md 3).
-    /// </summary>
-    private static string Ozellikleri(string yol)
-    {
-        if (!SwReferans.TasiyabilirMi(yol))
-        {
-            return string.Empty;
-        }
-
-        SwBelgeBilgileri bilgi = SwBelgeBilgisi.Oku(yol);
-        if (!bilgi.Okundu)
-        {
-            // "OZELLIGI YOK" ILE "OKUNAMADI" AYRI SEY - ve cekirdek bu ayrimi
-            // zaten yapiyor (SwBelgeBilgileri.Sebep). Burasi ikisini de bos
-            // metne cevirip sebebi yutuyordu; referans paneli ayni ayrimi
-            // titizlikle yapiyor, onizleme geride kalmisti (CLAUDE.md 3).
-            return "Özellikler okunamadı: " + (bilgi.Sebep ?? "sebep bilinmiyor");
-        }
-
-        var parcalar = new System.Collections.Generic.List<string>();
-        if (bilgi.SonKaydeden is string kim)
-        {
-            parcalar.Add("Kaydeden: " + kim);
-        }
-
-        if (bilgi.Yapilandirma is string yapi)
-        {
-            parcalar.Add("Yapılandırma: " + yapi);
-        }
-
-        int sayi = 0;
-        foreach (System.Collections.Generic.KeyValuePair<string, string> o in bilgi.Ozel)
-        {
-            if (sayi == EnFazlaOzellik)
-            {
-                parcalar.Add($"+{bilgi.Ozel.Count - EnFazlaOzellik} daha");
-                break;
-            }
-
-            parcalar.Add($"{o.Key}: {(o.Value.Length == 0 ? "—" : o.Value)}");
-            sayi++;
-        }
-
-        return string.Join("  ·  ", parcalar);
     }
 
     /// <summary>
@@ -481,7 +388,7 @@ internal sealed partial class Onizleme : IDisposable
         return (yol, null, sebep);
     }
 
-    private void Sonucu((string Yol, Image? Resim, string? Sebep) sonuc, string ozellikler)
+    private void Sonucu((string Yol, Image? Resim, string? Sebep) sonuc)
     {
         if (_arayuz.IsDisposed || !_arayuz.IsHandleCreated)
         {
@@ -501,8 +408,6 @@ internal sealed partial class Onizleme : IDisposable
                     sonuc.Resim?.Dispose();
                     return;
                 }
-
-                _panel.OzellikleriYaz(ozellikler);
 
                 if (sonuc.Resim is not null)
                 {

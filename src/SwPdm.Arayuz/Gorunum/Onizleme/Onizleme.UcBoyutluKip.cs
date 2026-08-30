@@ -80,19 +80,4 @@ internal sealed partial class Onizleme
             _ucBoyutlu.BelgeyiKapat();
         }
     }
-
-    /// <summary>
-    /// Yalnizca OZELLIK satirini arka planda ister - 3B kipte resim boru
-    /// hatti kosmaz ama belge ozellikleri (Malzeme, Kaydeden...) yine
-    /// gorunmeli; 2B'de vardi, 3B'ye gecince kaybolmasi gerileme olurdu.
-    /// </summary>
-    private void OzellikleriIste(string yol)
-    {
-        lock (_kilit)
-        {
-            _bekleyen = (yol, Size.Empty, true);
-        }
-
-        _uyandir.Release();
-    }
 }

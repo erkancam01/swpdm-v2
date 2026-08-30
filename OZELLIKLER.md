@@ -121,10 +121,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 - **Kutuya yazmak** → son tuştan 350 ms sonra arama başlar.
 - **Enter** → beklemeden hemen arar.
-- **Ne aranır** → **dosya adı** (büyük/küçük harf ayrımı yok, "içeriyor" eşleşmesi) — ya da aşağıdaki özellik sorgusu.
-- **Özellik sorgusu: `anahtar: değer`** → içinde `:` olan metin dosya adını değil **belge özelliğini** arar: `malzeme: pirinç` · `kaydeden: erkan` · `yapılandırma: hareketli`. Anahtar tam, değer "içeriyor" eşleşir; ikisi de harf duyarsız. (Dosya adında `:` olamaz — çakışma yok.)
-- **`anahtar:` (değeri boş)** → o özelliği **taşıyan** her dosyayı bulur — değeri boş girilmişler dahil (örn. `çizen:`).
-- **Özellik sorgusunun motoru indeks** → sonuç diskten değil referans indeksinden gelir, anlıktır. Tarama yapılmadıysa arama **koşmaz** ve "önce referans taraması gerekli — Ctrl+Shift+R" yazar; özet cümlesi "indeksten" der ve eksik varsa (okunamayan/taranmamış dosyalar) **söyler**.
+- **Ne aranır** → yalnızca **dosya adı** (büyük/küçük harf ayrımı yok, "içeriyor" eşleşmesi).
 - **Sonuç** → ağaç arama kipine geçer: kökte `— "metin": N eşleşme`, altında klasör klasör gruplanmış eşleşmeler.
 - **Süzgeç açıkken** → sonuç da süzülür, özet "N / M eşleşme (süzgeç açık)" der.
 - **Sınır** → 2000 eşleşme; sınıra ulaşılırsa durum çubuğunda söylenir.
@@ -149,12 +146,9 @@ olmayan hiçbir şey buraya yazılmadı.
 - **Ad** → dosya adı.
 - **Tür** → Montaj / Parça / Teknik resim / PDF / Dosya / Klasör / **Çoklu seçim**.
 - **Boyut** → dosya boyutu; **çoklu seçimde seçilenlerin toplamı**, klasörde `—`.
-- **Özellikler satırında 3'ten fazlası varsa** → sonuna "+N daha" eklenir.
 - **Değiştirme** → son değiştirme tarihi.
 - **Kullandığı** → bu dosyanın içinden referans verdiği dosya sayısı; `taranmadı` / `okunamadı` / `yok` / `N dosya`.
 - **Kullanan** → bu dosyayı kullanan dosya sayısı; taranmadıysa sayı yerine `taranmadı`, eksikse "(liste eksik olabilir)".
-- **Özellikler** → belgenin içinden: Kaydeden, Yapılandırma ve en fazla 3 özel özellik; gerçek bir şey yoksa satır hiç görünmez.
-- **Özellikler okunamazsa** → "Özellikler okunamadı: <sebep>" yazar; "özelliği yok" ile karıştırılmaz.
 
 ---
 
@@ -326,6 +320,5 @@ olmayan hiçbir şey buraya yazılmadı.
 - **`Ctrl+Z` uzun sürerse pencere donar** → geri alma arayüz iş parçacığında koşuyor; ileri yön (taşıma/kopyalama) arka planda ve iptal edilebilir, geri yön değil.
 - **Çöp kutusunda iptal yok** → toplu geri yükleme/silme başlayınca pencere iş bitene kadar cevap vermez; ilerleme yazılır.
 - **Kök değişince pano ve geri alma listesi boşalır** → eski kökün yolları yeni ağaçta yanlış yere dokunurdu.
-- **Özellik değerleri dosyada EN SON HESAPLANAN değerdir** → denkleme bağlı bir özellik (örn. kütleden gelen Ağırlık) model değişip yeniden kaydedilmediyse **bayat** olabilir; arama dosyada yazana bakar (ölçülü SOLIDWORKS davranışı).
 - **3B önizleme yalnızca eDrawings kuruluysa çalışır** → kurulu değilse sebep yazılır, 2B devam eder. eDrawings büyük montajı geç açar ve açık belgeyi kilitli tutabilir (işlem başlarken bırakılır). Bu özellik geliştirme ortamında ölçülemedi (eDrawings yok); ilk gerçek ölçüm senin makinende.
 - **Boş liste asla "yok" demek değildir** → tarama yapılmadıysa panel sayı yerine "taranmadı" yazar; bu bilerek böyle.

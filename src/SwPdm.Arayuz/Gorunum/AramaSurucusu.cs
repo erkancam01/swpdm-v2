@@ -63,12 +63,6 @@ internal sealed class AramaSurucusu : IDisposable
     /// <summary>Icinde arama yapilacak kok. null ise arama yapilmaz.</summary>
     internal string? Kok { get; set; }
 
-    /// <summary>
-    /// Ozellik aramasinin motoru olan indeks. Lambda: kok degisince
-    /// ReferansSurucusu yenisini kurar, biz hep gunceli okuruz.
-    /// </summary>
-    internal Func<ReferansIndeksi?>? IndeksKaynagi { get; set; }
-
     /// <summary>Kutuyu KOD ile bosaltir; arama tetiklenmez.</summary>
     internal void MetniTemizle()
     {
@@ -182,15 +176,6 @@ internal sealed class AramaSurucusu : IDisposable
             return;
         }
 
-        // OZELLIK SORGUSU ("malzeme: pirinç") indeksten ve ESZAMANLI kosar:
-        // bellekte, anlik - ve bilerek Task.Run YOK. Indeks arayuz is
-        // parcaciginin nesnesi; arka plandan okumak tarama ile yaris olurdu.
-        if (OzellikAramasi.Coz(metin) is OzellikSorgusu sorgu)
-        {
-            OzellikleAra(metin, sorgu);
-            return;
-        }
-
         var kaynak = new CancellationTokenSource();
         _iptal = kaynak;
         CancellationToken belirtec = kaynak.Token;
@@ -203,34 +188,6 @@ internal sealed class AramaSurucusu : IDisposable
                 (klasor, eslesme) => Ilerleme(belirtec, klasor, eslesme)),
             belirtec)
             .ContinueWith(is_ => Sonuclandi(is_, metin, belirtec), TaskScheduler.Default);
-    }
-
-    /// <summary>
-    /// Ozellik sorgusunu kosturur. INDEKS SARTI (CLAUDE.md 3): taranmamis
-    /// indekste arama KOSMAZ ve sebep soylenir - bos sonuc gostermek
-    /// "boyle dosya yok" diye okunur ve o yanlis, dosya sildirir.
-    /// </summary>
-    private void OzellikleAra(string metin, OzellikSorgusu sorgu)
-    {
-        _iptal = null;
-        Mesgul?.Invoke(this, false);
-
-        ReferansIndeksi? indeks = IndeksKaynagi?.Invoke();
-        if (indeks is null || indeks.TaramaZamani is null)
-        {
-            Durum?.Invoke(
-                this, "Özellik araması için önce referans taraması gerekli — Ctrl+Shift+R.");
-            return;
-        }
-
-        OzellikAramaSonucu sonuc = OzellikAramasi.Ara(indeks, sorgu, Sinir);
-        Bitti?.Invoke(this, (metin, new AramaSonucu(
-            sonuc.Bulunanlar,
-            TarananKlasor: 0,
-            sonuc.SinirAsildi,
-            Iptal: false,
-            OkunamayanKlasorler: [],
-            sonuc.IndeksOzeti)));
     }
 
     private void Ilerleme(CancellationToken belirtec, int taranan, int eslesme)

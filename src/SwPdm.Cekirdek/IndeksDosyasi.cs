@@ -68,7 +68,6 @@ public static class IndeksDosyasi
         string? kendi = null;
         string? sebep = null;
         var referanslar = new List<string>();
-        List<KeyValuePair<string, string>>? ozellikler = null;
         DateTime? zaman = null;
         bool tam = false;
 
@@ -77,8 +76,7 @@ public static class IndeksDosyasi
             if (suanYol is not null)
             {
                 indeks.Koy(new IndeksKaydi(
-                    suanYol, boyut, degistirme, referanslar.ToArray(), kendi, okundu, sebep,
-                    ozellikler));
+                    suanYol, boyut, degistirme, referanslar.ToArray(), kendi, okundu, sebep));
             }
         }
 
@@ -116,7 +114,6 @@ public static class IndeksDosyasi
                     kendi = null;
                     sebep = null;
                     referanslar = [];
-                    ozellikler = null;
                     break;
 
                 case "boyut":
@@ -147,33 +144,6 @@ public static class IndeksDosyasi
                     if (suanYol is not null && deger.Length > 0)
                     {
                         referanslar.Add(deger);
-                    }
-
-                    break;
-
-                // OZELLIKLER: "ozellikler=1" isaretcisi "okundu" demek;
-                // isaretcisiz eski kayit null kalir ve tarama o dosyayi
-                // bir kez yeniden okur (IndeksTarama'daki goc istisnasi).
-                case "ozellikler":
-                    if (deger == "1")
-                    {
-                        ozellikler = [];
-                    }
-
-                    break;
-
-                case "ozellik":
-                    // Bicim: ad<TAB>deger. Ad '=' icerebildigi icin ikinci
-                    // bir '='den bolmek guvenli degildi; TAB yazarken
-                    // boslukla duzlestiriliyor.
-                    if (ozellikler is not null)
-                    {
-                        int tab = deger.IndexOf('\t', StringComparison.Ordinal);
-                        if (tab > 0)
-                        {
-                            ozellikler.Add(new KeyValuePair<string, string>(
-                                deger[..tab], deger[(tab + 1)..]));
-                        }
                     }
 
                     break;
@@ -229,15 +199,6 @@ public static class IndeksDosyasi
             {
                 satirlar.Add("ref=" + Tek(r));
             }
-
-            if (k.Ozellikler is not null)
-            {
-                satirlar.Add("ozellikler=1");
-                foreach (KeyValuePair<string, string> o in k.Ozellikler)
-                {
-                    satirlar.Add("ozellik=" + TekParca(o.Key) + "\t" + TekParca(o.Value));
-                }
-            }
         }
 
         try
@@ -260,14 +221,6 @@ public static class IndeksDosyasi
     /// <summary>Satir sonu iceren bir deger dosya bicimini bozar; tek satira indirilir.</summary>
     private static string Tek(string deger)
         => deger.Replace('\r', ' ').Replace('\n', ' ');
-
-    /// <summary>
-    /// "ozellik=" satirinda ad ile deger TAB ile ayriliyor; icerdeki TAB da
-    /// duzlestirilmeli - yoksa bicim bozulur. Kayip zararsiz: arama "iceriyor"
-    /// esleşmesi yapiyor, bosluk fark yaratmaz.
-    /// </summary>
-    private static string TekParca(string deger)
-        => Tek(deger).Replace('\t', ' ');
 
     private static string Ozet(string kok)
     {
