@@ -959,6 +959,7 @@ dosyasında** duruyor:
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
+| **versiyonu açılabilir kılma** (görüntüleme kopyası) | `Cekirdek/Surumler.Goruntuleme.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |

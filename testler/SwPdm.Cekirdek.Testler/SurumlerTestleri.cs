@@ -9,7 +9,7 @@ namespace SwPdm.Cekirdek.Testler;
 /// hicbir icerik hicbir islemle kaybolmamali - "don" bile once bugunku hali
 /// arsivlemeli. Kaybolursa uygulama, kullanicinin PARCASINI kaybettirir.
 /// </summary>
-public class SurumlerTestleri : IDisposable
+public partial class SurumlerTestleri : IDisposable
 {
     private readonly string _kok;
 

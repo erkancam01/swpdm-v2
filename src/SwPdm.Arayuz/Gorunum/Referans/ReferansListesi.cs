@@ -110,6 +110,13 @@ internal sealed class ReferansListesi : ListView
         => (GetItemAt(nokta.X, nokta.Y)?.Tag as Satir)?.Hedef;
 
     /// <summary>
+    /// Cift tiklanan satirin SIRASI; satir yoksa -1. Hedef yolu yetmedigi
+    /// yerde gerekiyor: VERSIYONLAR'da satirin KAYDI (numara, not) lazim ve
+    /// onu sira numarasindan SurumBolumu buluyor.
+    /// </summary>
+    internal int TiklananSira(Point nokta) => GetItemAt(nokta.X, nokta.Y)?.Index ?? -1;
+
+    /// <summary>
     /// Secim degisti - fareyle TEK TIK ya da klavyeyle ok. Panele bakan
     /// (onizleme gibi) taraflar bunu dinler; cift tik "oraya git" olarak
     /// ayri yasamaya devam eder.

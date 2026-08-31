@@ -1,3 +1,48 @@
+BU SURUMDE - MONTAJ VE TEKNIK RESIM VERSIYONLARI ARTIK ACILIYOR
+
+  Senin bildirdigin (31.08.2026): "part dosyasinin versiyonlarini
+  acabiliyorum ama montaj ve teknik resim dosyalarinin versiyonlarini
+  acamiyorum" - SOLIDWORKS "dosya bozuk ve acilmiyor" diyordu.
+
+  DOSYALARIN BOZUK DEGIL. Sen de dogruladin: agactaki GUNCEL montaj ve
+  teknik resim normal aciliyor. Sebep yapisal: arsiv kopyasi
+  .SwPdmSurum\<dosya>\v3.SLDASM icinde TEK BASINA duruyor - parcalari
+  yaninda degil. SOLIDWORKS once ebeveynin yanina bakiyor, orada bir sey
+  bulamiyor. Parcada gorulmemesinin sebebi de bu: parcanin cocugu yok.
+
+  ONARIM: cocugu olan bir versiyona cift tiklayinca arsiv kopyasi once
+  OZGUN DOSYANIN KENDI KLASORUNE cikariliyor ve o aciliyor:
+
+      Montaj1 ~v3.SLDASM      <- gecici goruntuleme kopyasi
+
+  Parcalar yaninda oldugu icin SOLIDWORKS onlari buluyor. Kopya
+  SALT-OKUNUR (gecmisin ustune kaza ile kaydedilemez), agacta GORUNUR
+  (gizlemiyoruz - diske yazdigimiz her seyi gormelisin) ve SILMEK SERBEST.
+  Ayni versiyona ikinci kez tiklarsan yeni dosya uretilmez.
+
+  KARAR TIPE GORE DEGIL OLCUME GORE: "montajsa kopyala" demedik - turetilmis
+  bir PARCANIN da dis referansi olabilir. Belgenin dogrudan referansi var mi,
+  ona bakiliyor. Cocugu olmayan versiyon eskisi gibi dogrudan aciliyor,
+  gereksiz dosya uretilmiyor.
+
+  SINIR (soylemek zorundayim): arsivdeki icerik O GUNKU yollari tasir.
+  Aradan gecen ad/klasor degisiklikleri arsiv kopyasinda onarilmaz - eski
+  bir montaj versiyonu, o gunden beri adi degismis bir parcayi bulamayabilir.
+  Versiyonu TAM gormek icin Enter = "bu versiyona don" (bugunku hal once
+  otomatik arsivlenir, sonra istersen geri donersin).
+
+  OLCULDU: 5 yeni birim test (kopya ozgun klasorde ve birebir · ikinci
+  cagri dosya yigmiyor · ayni adda YABANCI dosya varsa ustune yazilmiyor,
+  numarali ada dusuluyor · cocugu olmayan belge dogrudan aciliyor · arsiv
+  yoksa sebep donuyor) - 349 test, 344 gecti / 5 Windows'a ozel.
+
+  KAPIYA YENI OLCUM EKLENMEDI ve sebebi acik: Wine'da SOLIDWORKS yok, yani
+  "aciliyor mu" burada olculemez; cift tik kabuk cagrisini da tetikledigi
+  icin oradaki hata sonraki olcumlerin tabanini kaydiriyor. Cekirdek 5
+  testle kapali, arayuz tarafi tek dallanma. GERCEK OLCUM SENDE: montaj
+  versiyonuna cift tik -> "Montaj1 ~v0.SLDASM" olusmali ve SOLIDWORKS'te
+  PARCALARIYLA acilmali.
+
 BU SURUMDE - AD/KLASOR DEGISINCE VERSIYONLAR ARTIK KAYBOLMUYOR
 
   Senin bildirdigin (31.08.2026): "parçanın adını veya bağlı bulunduğu
