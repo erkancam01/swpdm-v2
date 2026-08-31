@@ -30,11 +30,15 @@ public sealed record AgacDugumu(
 /// <summary>
 /// BELGE AGACINI YURUR - "bu montaj neleri kullaniyor", torunlara kadar.
 ///
-/// NEDEN AYRI DOSYA (CLAUDE.md 8): ayni yuruyus iki ozelligin altinda
-/// duruyor - versiyon arsivi (o gunku cocuklar) ve parca listesi (BOM).
-/// Ikinci bir kopya yazmak, SOLIDWORKS'un cozme kuralini iki yerde tutmak
-/// olurdu; biri duzeltilir oteki kalirdi. Burada TEK kopya var ve iki
-/// ozellik de bunu cagiriyor - biri silinince oteki calismaya devam eder.
+/// TEK CAGIRANI VAR: <see cref="Surumler.Cocuklari"/> - versiyona girecek
+/// dosyalari bu yuruyusten cikariyor. Yine de ayri dosya, cunku burasi bir
+/// OZELLIK degil ORTAK ARAC (CLAUDE.md 1b): SOLIDWORKS'un cozme kurali.
+/// Versiyon arsivi bir gun kaldirilsa bile kural burada kalir.
+///
+/// (Once ikinci bir cagirani daha vardi - parca listesi/BOM. Erkan
+/// 31.08.2026'da onu kaldirtti: "solidworkun icinde var zaten." Yuruyus
+/// KALDI, cunku asagidaki 3. adim versiyon arsivinin gercek bir hatasini
+/// kapatiyor.)
 ///
 /// COZUMLEME SOLIDWORKS'UN KENDI KURALIYLA (CLAUDE.md 5'te olculdu):
 ///   1. EBEVEYNIN YANINDAKI ayni adli dosya kazanir - yazili mutlak yolun

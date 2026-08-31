@@ -18,10 +18,9 @@ public sealed record CocukKumesi(IReadOnlyList<string> Yollar, int Cozulemeyen);
 /// SOLIDWORKS onu acamiyordu. Cozum, versiyonu kendi kendine yeter yapmak:
 /// montajla birlikte o gunku cocuklari da arsivlenir.
 ///
-/// AGACI YURUYEN KOD BURADA DEGIL: <see cref="BelgeAgaci"/>. Ayni yuruyus
-/// parca listesinin (BOM) de altinda; iki kopya tutmak SOLIDWORKS'un cozme
-/// kuralini iki yerde tutmak olurdu (CLAUDE.md 8). Burada kalan tek sey, o
-/// agaci "arsivlenecek dosya listesi"ne cevirmek.
+/// AGACI YURUYEN KOD BURADA DEGIL: <see cref="BelgeAgaci"/>. Orasi ORTAK
+/// ARAC - SOLIDWORKS'un cozme kurali (CLAUDE.md 1b); burada kalan tek sey,
+/// o agaci "arsivlenecek dosya listesi"ne cevirmek.
 /// </summary>
 public static partial class Surumler
 {

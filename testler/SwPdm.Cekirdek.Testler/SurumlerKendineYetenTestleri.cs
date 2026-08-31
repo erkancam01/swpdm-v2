@@ -32,6 +32,21 @@ public partial class SurumlerTestleri
         return yol;
     }
 
+    /// <summary>
+    /// Ornegi kokun ALTINDAKI bir klasore koyar - ornek verideki klasor
+    /// yapisi birebir korunarak. ADIM ADIM birlestiriliyor: Birlestir'in
+    /// ayiricisi SOLDAKI yola bakiyor, adin icine ayirici gomulmus bir parca
+    /// Linux'ta TEK dosya adi olurdu (CLAUDE.md 4).
+    /// </summary>
+    private string OrnegiAlta(string kaynakAltYol, string klasor)
+    {
+        string hedefKlasor = WindowsYolu.Birlestir(_kok, klasor);
+        Directory.CreateDirectory(hedefKlasor);
+        string yol = WindowsYolu.Birlestir(hedefKlasor, Path.GetFileName(kaynakAltYol));
+        File.Copy(Path.Combine(OrnekVeri, kaynakAltYol.Replace('/', Path.DirectorySeparatorChar)), yol);
+        return yol;
+    }
+
     [Fact]
     public void MONTAJ_versiyonunda_COCUKLARI_da_YANINDA()
     {
@@ -355,6 +370,44 @@ public partial class SurumlerTestleri
 
         File.AppendAllText(parca, "degisiklik");
         Assert.True(Surumler.DonusListesi(_kok, montaj, 0)[0].Farkli);
+    }
+
+    [Fact]
+    public void ALT_KLASORDEKI_cocuk_BAYAT_MUTLAK_yola_ragmen_ARSIVLENIR()
+    {
+        // OLCULDU 31.08.2026 (o gun kisa sure duran parca listesi ozelliginin
+        // kapisi gosterdi, ama hata BURAYA aitti): Montaj1'in icinde
+        // "C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT"
+        // yaziyor - BASKA BIR MAKINENIN yolu. Parca gercekte montajin
+        // yanindaki "Yeni klasör" altinda duruyor ama komsuluk kurali yalniz
+        // dosya ADINA baktigi icin ALT KLASORDEKINI gormuyordu: cocuk
+        // "cozulemedi" sayiliyor, arsive HIC girmiyor ve montajin versiyonu
+        // SOLIDWORKS'te acilmiyordu (CLAUDE.md 1a).
+        //
+        // Onarim BelgeAgaci.SonEkiDene: yazili yolun son ekleri ebeveyne gore
+        // denenir (en uzun ek once) ve bir yol ancak DISKTE VARSA kabul
+        // edilir - uydurma yok.
+        OrnegiKoy("Parça1.SLDPRT");
+        string parca2 = OrnegiAlta("Yeni klasör/Parça2.SLDPRT", "Yeni klasör");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+
+        CocukKumesi cocuklar = Surumler.Cocuklari(montaj);
+
+        Assert.Equal(0, cocuklar.Cozulemeyen);
+        Assert.Contains(parca2, cocuklar.Yollar);
+
+        // ASIL SINAV: kopya gercekten arsive giriyor mu - yoksa montajin
+        // versiyonu yine acilmaz.
+        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+
+        // Arsivde cocuklar DUZ duruyor (montajin yaninda, gercek adlariyla):
+        // SOLIDWORKS once ebeveynin yanina bakiyor, klasor yapisini
+        // tasimaya gerek yok (CLAUDE.md 5).
+        string v0 = WindowsYolu.Klasor(rapor.YeniYol!);
+        Assert.True(
+            File.Exists(WindowsYolu.Birlestir(v0, "Parça2.SLDPRT")),
+            "alt klasordeki parca v0'a girmedi");
     }
 
     [Fact]

@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=22
+OLCUM_TOPLAM=21
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -86,11 +86,6 @@ ONIZLEME_BASLIK_X=60                             # onizleme panelinin ustundeki 
 ONIZLEME_BASLIK_Y=463
 ONIZLEME_BASLIK_KIRP="200x16+15+456"            # basligin kendisi (iz icin)
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
-# PARCA LISTESI (BOM) PENCERESI - kendi kosusunda, kendi ornek klasoruyle.
-# Pencere ici: ustte 46 piksel bilgi etiketi, altinda ListView'in sutun
-# basligi (~17); satirlar bunun altinda basliyor.
-BOM_LISTE_KIRP="840x150+20+66"                  # BOM penceresi ici: SATIRLAR
-BOM_AGAC_SATIRI=2                               # BOM klasorunde Montaj1.SLDASM'in satiri
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -330,23 +325,15 @@ secili_satir_say() {
 # cunku olcum hep Ctrl+A'dan SONRA aliniyordu: secim boyasi noktali
 # cizgileri ortuyordu. Yani sayi dogru degildi, sadece dogru gorunuyordu.
 # Metin satirlari ~9 piksel; noktalar 1 piksel - esik ikisini ayiriyor.
-# metin_bant_say <goruntu> <kirpma> <px> <py>
-# ISTENEN KIRPMADA kac ayri METIN SATIRI var. agac_satir_say bunun AGAC
-# kirpmasiyla cagrilmis hali - ikinci bir kopya yazilmiyor (CLAUDE.md 8);
-# BOM penceresi de ayni sayaci kullaniyor.
-metin_bant_say() {
-  local boyut="${2%%+*}" kalan="${2#*+}"
+agac_satir_say() {
+  local boyut="${AGAC_KIRP%%+*}" kalan="${AGAC_KIRP#*+}"
   local kx="${kalan%%+*}" ky="${kalan#*+}"
-  convert "$1" -crop "${boyut}+$(( $3 + kx ))+$(( $4 + ky ))" +repage txt:- 2>/dev/null \
+  convert "$1" -crop "${boyut}+$(( $2 + kx ))+$(( $3 + ky ))" +repage txt:- 2>/dev/null \
     | grep -v '#FFFFFF' | grep -o '^[0-9]*,[0-9]*:' \
     | cut -d, -f2 | cut -d: -f1 | sort -n | uniq \
     | awk 'NR==1{bas=$1; onceki=$1; next}
            {if ($1-onceki>1) {if (onceki-bas>=3) bant++; bas=$1} onceki=$1}
            END{if (NR>0 && onceki-bas>=3) bant++; print bant+0}'
-}
-
-agac_satir_say() {
-  metin_bant_say "$1" "$AGAC_KIRP" "$2" "$3"
 }
 
 # DOSYA SATIRLARININ PARMAK IZI. Siralama satir SAYISINI degistirmiyor,
@@ -1277,80 +1264,6 @@ if [ -n "$AYAR_KLASORU" ]; then
   fi
 else
   olcum "3B ayariyla acilis ...." "OLCULEMEDI (wine kullanici klasoru yok)"
-  SORUN=1
-fi
-
-# 22) PARCA LISTESI (BOM): Ctrl+Shift+M butun agaci tabloya cikarmali
-#
-# NEDEN VAR: bu liste TEKLIFE donusuyor. Sessizce bos ya da eksik cikarsa
-# kullanici olmayan bir parcayi fiyatlamaz ve BUNU HIC GORMEZ (CLAUDE.md 3).
-# Cekirdek birim testli; burada olculen KISAYOL -> PENCERE -> SATIR zinciri.
-#
-# NEDEN AYRI KOSU: yukaridaki olcumler ornek klasordeki dosyalari yeniden
-# ADLANDIRIYOR (PanelAdi..., VParca1...) ve agactaki satir sirasi kayiyor.
-# BOM'un olcusu "agaci gercekten yurudu mu" oldugu icin GERCEK bir montaj
-# ve onun iki parcasi gerekiyor; kendi klasorunde kurmak, olcumu oteki
-# olcumlerin sirasina bagimli olmaktan cikariyor.
-BOM_ORNEK="$CALISMA/bom-klasor/BOM"
-rm -rf "$CALISMA/bom-klasor"
-mkdir -p "$BOM_ORNEK/Yeni klasör"
-cp "$KOK/araclar/ornek-veri/tertemiz/Montaj1.SLDASM" "$BOM_ORNEK/"
-cp "$KOK/araclar/ornek-veri/tertemiz/Parça1.SLDPRT" "$BOM_ORNEK/"
-cp "$KOK/araclar/ornek-veri/tertemiz/Yeni klasör/Parça2.SLDPRT" "$BOM_ORNEK/Yeni klasör/"
-BOM_WIN="Z:$(echo "$BOM_ORNEK" | tr '/' '\\')"
-
-BOM_LOG="$CALISMA/uygulama-bom.log"
-: > "$BOM_LOG"
-kill "$UYG_PID" > /dev/null 2>&1
-sleep 2
-
-( cd "$YAYIN" && "$WINE" "./$AD.exe" --klasor "$BOM_WIN" >> "$BOM_LOG" 2>&1 ) &
-UYG_PID=$!
-sleep 18
-
-P3="$(xwininfo -root -children 2>/dev/null)"
-K3="$(echo "$P3" | grep -i "(\"${AD,,}.exe\"" \
-      | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' \
-      | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $3" "$4; exit}')"
-
-if [ -n "$K3" ]; then
-  # shellcheck disable=SC2086
-  set -- $K3
-  BOM_X="$1"
-  BOM_Y="$2"
-
-  # Kokte: "Yeni klasör" (1), Montaj1.SLDASM (2), Parça1.SLDPRT (3).
-  xdotool mousemove "$(( BOM_X + AGAC_TIK_X ))" \
-    "$(( BOM_Y + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * BOM_AGAC_SATIRI ))" \
-    click 1 > /dev/null 2>&1
-  sleep 4
-  xdotool key --clearmodifiers ctrl+shift+m > /dev/null 2>&1
-  sleep 8
-  import -window root "$CALISMA/bom.png" > /dev/null 2>&1
-
-  # Pencerenin KENDISI aranir: basligi "Parça listesi — ..." ile basliyor.
-  BOM_PENCERE="$(xwininfo -root -children 2>/dev/null | grep -i 'listesi' \
-                 | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' | head -1)"
-
-  if [ -z "$BOM_PENCERE" ]; then
-    olcum "parca listesi (BOM) ..." "HAYIR (pencere hic acilmadi)"
-    SORUN=1
-  else
-    BOM_PX="$(echo "$BOM_PENCERE" | awk -F'[x+]' '{print $3}')"
-    BOM_PY="$(echo "$BOM_PENCERE" | awk -F'[x+]' '{print $4}')"
-    BOM_SATIR="$(metin_bant_say "$CALISMA/bom.png" "$BOM_LISTE_KIRP" "$BOM_PX" "$BOM_PY")"
-
-    # UC SATIR BEKLENIYOR: montaj + iki parcasi. Ikiden azi, agacin
-    # yurunmedigi demektir - tam da sessizce eksik liste tehlikesi.
-    if [ "${BOM_SATIR:-0}" -ge 3 ]; then
-      olcum "parca listesi (BOM) ..." "EVET (pencere acildi, $BOM_SATIR satir cizildi)"
-    else
-      olcum "parca listesi (BOM) ..." "HAYIR (pencere acildi ama $BOM_SATIR satir - agac yurunmedi)"
-      SORUN=1
-    fi
-  fi
-else
-  olcum "parca listesi (BOM) ..." "HAYIR (BOM kosusunda pencere dogmadi)"
   SORUN=1
 fi
 

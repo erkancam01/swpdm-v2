@@ -387,14 +387,40 @@ kullanıyor; yani "iki kez kullanılan bir parça iki kez yazılır mı" sorusu
 bu örnekle **ayrışamıyor**. Yazılanın "kullanılan BELGE" olduğunu
 *düşündürüyor* ama kanıtlamıyor.
 
-→ **Adet sütunu açılmadı** (§3: uydurma sayı, teklifte yanlış fiyat). Yerine
-`ParcaListesi` **"kaç yerde geçiyor"** veriyor: ağaçta kaç ayrı ebeveynin
-altında görüldüğü — dar ama doğru tanımlı. Sütun ancak **iki kez kullanılmış
-gerçek bir parçayla** ölçüldükten sonra açılır.
+→ **Adet sütunu hiç açılmadı** (§3: uydurma sayı, teklifte yanlış fiyat).
+Ölçüm burada duruyor çünkü **soru yine sorulacak**: bir gün adet gerekirse
+başlangıç noktası bu — ve cevabı ancak **iki kez kullanılmış gerçek bir
+parça** verebilir.
+
+> Bu ölçümü isteyen parça listesi (BOM) özelliği **aynı gün kaldırıldı**
+> (Erkan: *"solidworkun içinde var zaten"*). Ölçüm atılmadı (§1c): bulunan
+> yazılır, yoksa bir sonraki tur aynı yolu baştan yürür.
 
 > **ÖLÇÜLMEDİ:** 100 MB+ bir montajda akış *sayısı* artıyor mu; eski
 > SOLIDWORKS sürümlerinin biçimi (2015 öncesi büyük ihtimalle OLE, o yüzden
 > `BilesikDosya` duruyor); 254 karakterden uzun yolların MFC kaçış biçimi.
+
+### ALT KLASÖRDEKİ ÇOCUK — ada bakmak YETMİYOR (31.08.2026)
+
+`Montaj1.SLDASM`'ın içinde `C:\Users\PC\Desktop\tertemiz\Yeni
+klasör\Parça2.SLDPRT` yazıyor — **başka bir makinenin** yolu. Parça gerçekte
+montajın yanındaki `Yeni klasör` altında duruyor. Komşuluk kuralı yalnız
+**dosya adına** baktığı için (`<ebeveyn>\Parça2.SLDPRT`) onu bulamıyordu ve
+mutlak yol da geçersizdi.
+
+Sonucu sessiz değildi ama **tehlikeliydi**: çocuk "çözülemedi" sayılıyor,
+versiyon arşivine **hiç girmiyor** ve montajın versiyonu SOLIDWORKS'te
+açılmıyordu (§1a).
+
+→ `BelgeAgaci.Coz` üçüncü bir adım aldı: yazılı yolun **son ekleri** ebeveyne
+göre denenir — en **uzun** ek önce, yani en özgül eşleşme kazanır — ve bir yol
+ancak **diskte varsa** kabul edilir. Uydurma yok; komşuluk kuralı hâlâ önce
+geliyor. `SurumlerTestleri.ALT_KLASORDEKI_cocuk_...` kilitliyor: adım
+kesilince test kırılıyor.
+
+> Bunu, aynı gün gelip aynı gün kaldırılan parça listesi (BOM) özelliğinin
+> kapısı gösterdi. Özellik gitti, **ölçüm ve onarım kaldı** — hata baştan
+> versiyon arşivinindi.
 
 ### DOSYAYA YAZMA — ölçüldü (28.08.2026), yeniden kurma DEĞİL YERİNDE yama
 
@@ -1011,10 +1037,6 @@ dosyasında** duruyor:
 | dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
-| **parça listesi / BOM** (satırlar, türetilen sütunlar) | `Cekirdek/ParcaListesi.cs` |
-| BOM'un CSV'ye aktarılması (ayraç, BOM, kaçışlama) | `Cekirdek/ParcaListesiCsv.cs` |
-| parça listesi işlemi (`Ctrl+Shift+M`, arka plan) | `Arayuz/Gorunum/Islemler/ParcaListesiIslemi.cs` |
-| parça listesi penceresi (tablo + CSV'ye aktar) | `Arayuz/Gorunum/Islemler/ParcaListesiPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
@@ -1114,7 +1136,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi iki şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi bir şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1129,9 +1151,7 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **ad değişince versiyon arşivi de taşınıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu** ·
-**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
-**`Ctrl+Shift+M` parça listesini açıp satır çiziyor mu** (üçüncü kısa koşu,
-kendi örnek klasörü).
+**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1396,31 +1416,6 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > düşüyor**; `Enter` o yüzden "bu satırda gidilecek bir dosya yok" dedi.
 > Sebep tahminle değil **durum çubuğundan** okundu (ekran görüntüsü).
 > Ölçüm artık tazelemeyi bekliyor.
-
-> **Yirmi ikincisi neden var (parça listesi):** bu liste **teklife**
-> dönüşüyor. Sessizce boş ya da eksik çıkarsa kullanıcı olmayan bir parçayı
-> fiyatlamaz ve **bunu hiç görmez** (§3). Menüsü Wine'da açılamıyor, o yüzden
-> aynı kodu çağıran `Ctrl+Shift+M` ölçülüyor: pencere doğdu mu ve **satır
-> çizdi mi** (metin bantları sayılıyor). §9 döngüsü: TEMİZ (3 satır) →
-> satır üretimi kesilince **YAKALADI** (0 satır) → geri konunca TEMİZ.
->
-> **KENDİ KOŞUSU VAR — bilerek.** Yukarıdaki ölçümler örnek klasördeki
-> dosyaları yeniden adlandırıyor (`PanelAdi…`, `VParca1…`) ve ağaçtaki satır
-> sırası kayıyor. BOM'un ölçüsü *"ağacı gerçekten yürüdü mü"* olduğu için
-> gerçek bir montaj ve iki parçası gerekiyor; kendi klasöründe kurmak ölçümü
-> ötekilerin sırasına bağımlı olmaktan çıkarıyor. Bedeli bir uygulama açılışı
-> (~20 sn), karşılığı sıfır sıra bağımlılığı.
->
-> **VE İLK KOŞUSUNDA GERÇEK BİR HATA YAKALADI.** Ekranda `Parça2.SLDPRT`
-> *"Diskte bulunamadı"* çıktı — oysa dosya oradaydı. Sebep: montajın içinde
-> **başka bir makinenin mutlak yolu** yazıyor
-> (`C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT`), komşuluk
-> kuralı ise yalnız **dosya adına** baktığı için **alt klasördekini**
-> görmüyordu. Çözüm `BelgeAgaci.SonEkiDene`: yazılı yolun son ekleri ebeveyne
-> göre denenir (en uzun ek önce), yalnızca **diskte varsa** kabul edilir.
-> Aynı delik **versiyon arşivinde de** vardı — o parça arşive hiç girmiyordu
-> ve montajın versiyonu SOLIDWORKS'te açılmazdı; iki özellik de aynı
-> yürüyüşü kullandığı için tek düzeltmeyle kapandı (§8).
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

@@ -1,74 +1,34 @@
-BU SURUMDE - PARCA LISTESI (BOM): MONTAJIN BUTUN AGACI TEK TABLODA
+BU SURUMDE - PARCA LISTESI (BOM) KALDIRILDI
 
-  Yeni ozellik. Agacta bir SOLIDWORKS dosyasi sec, CTRL+SHIFT+M. Acilan
-  pencere o belgenin BUTUN agacini gosteriyor - torunlar dahil, seviye
-  seviye girintili - ve alttaki "CSV'ye aktar" ile Excel'e cikiyor.
+  Senin karariniz (31.08.2026): "bom ozelligini komple kaldir, solidworkun
+  icinde var zaten." Kaldirildi - Ctrl+Shift+M yok, menude o satir yok,
+  pencere yok. Dort dosya silindi, sag tik listesinden BIR satir kesildi;
+  baska hicbir arayuz dosyasi degismedi.
 
-  SUTUNLAR: Ad · Tur · KAC YERDE GECIYOR · Yapilandirma · dosyada BULUNAN
-  ozel ozellikler (Malzeme, Agirlik, Cizen... - sabit liste yok, dosyada ne
-  varsa o sutun aciliyor) · Durum · Yol.
+  KALDIRMANIN BEDELI BUYDU VE OLCULDU: bir ozelligi silmek dort dosya + bir
+  satir. Ozellikler bu yuzden kendi dosyalarinda yasiyor.
 
-  Satira cift tik ya da Enter: pencere kapanir, o dosya agacta secilir.
-  Uzun montajda arka planda kosuyor, alttaki cubuk ilerliyor, Esc iptal eder.
+BU SURUMDE KALAN TEK SEY - ALT KLASORDEKI PARCA ARTIK BULUNUYOR
 
-  "ADET" SUTUNU YOK - VE BU BILEREK. Bir parcanin montajda kac KEZ
-  kullanildigi dosyadan okunabiliyor mu OLCULEMEDI: elimdeki ornek montajda
-  her parca birer kez geciyor, yani soru ornekten cevaplanamiyor. Olctugum
-  sey su - Montaj1'in dort akisinda da her yol TAM BIR KEZ yaziyor; bu,
-  bicimin "kullanilan BELGE" yazdigini dusundurur ama KANITLAMAZ. Uydurma
-  bir adet teklifte yanlis fiyat demek, o yuzden sutun acilmadi. Yerine
-  "KAC YERDE GECIYOR" var: agacta kac ayri ebeveynin altinda gorundugu.
-  Dar ama dogru.
+  BOM'un kapisi giderken ardinda GERCEK bir hata birakti ve o hata BOM'un
+  degil, VERSIYON ARSIVININ hatasiydi - o yuzden onarim duruyor.
 
-  SENDE OLCULECEK - ADET: iki kez kullandigin gercek bir parcasi olan bir
-  montajda listeyi cikar. O parca iki satir cikiyorsa (ya da "kac yerde"
-  2 diyorsa) adet sutununu acabilirim; tek satir cikiyorsa bicim adedi
-  yazmiyor demektir ve sutun hic acilmaz.
-
-  AGIRLIK VE OTEKI OZEL DEGERLER BAYAT OLABILIR: dosyada duran sey son
-  HESAPLANMIS sonuc. Bu uyari pencerenin basinda ve CSV'nin ilk satirinda
-  yaziyor - yeniden hesaplamiyoruz, uydurma sayi gostermektense dosyada
-  yazani gosteriyoruz.
-
-  BULUNAMAYAN PARCA LISTEDEN DUSMEZ: satiri kalir, "Durum" sutununda sebebi
-  ve dosyada YAZAN yol gorunur. Dusseydi o parcayi hic fiyatlamazdin.
-
-  CSV: ayrac ";" ve UTF-8 BOM. Sebebi Turkce Windows: Excel virgullu bir
-  CSV'yi TEK SUTUN okur, BOM'suz UTF-8'de de "Parça" bozulur.
-  SENDE OLCULECEK: CSV'yi Excel'de ac - sutunlar ayrismali ve Turkce
-  karakterler bozulmamali. Ayrismazsa soyle, ayraci degistiririm.
-
-BU SURUMDE - ALT KLASORDEKI PARCA ARTIK BULUNUYOR (kapinin yakaladigi hata)
-
-  Parca listesinin ilk kosusunda kapi gercek bir hata gosterdi: ornek
-  montajin parcasi "Yeni klasör" altinda duruyordu ve liste ona
-  "Diskte bulunamadi" dedi - oysa dosya oradaydi.
-
-  SEBEP: montajin icinde BASKA BIR MAKINENIN mutlak yolu yaziyor
-  (C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT) ve
-  "ebeveynin yanina bak" kurali yalnizca DOSYA ADINA bakiyordu; alt
-  klasordekini gormuyordu.
+  HATA: montajin icinde baska bir makinenin mutlak yolu yaziyor
+  (C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT) ve "ebeveynin
+  yanina bak" kurali yalnizca DOSYA ADINA bakiyordu. Parca ALT KLASORDE
+  duruyorsa bulunamiyordu -> arsive HIC girmiyordu -> montajin versiyonu
+  SOLIDWORKS'te acilmiyordu. Sessiz degildi ama gozden kacacak yerdeydi.
 
   DUZELTME: yazili yolun SON EKLERI artik ebeveyne gore deneniyor (en uzun
   ek once) ve bir yol ancak DISKTE VARSA kabul ediliyor - uydurma yok.
 
-  BU AYNI DELIK VERSIYON ARSIVINDE DE VARDI: alt klasordeki parca arsive
-  HIC girmiyordu, yani montajin versiyonu SOLIDWORKS'te acilmazdi. Iki
-  ozellik de ayni agac yuruyusunu kullandigi icin tek duzeltmeyle kapandi.
+  SENDE OLCULECEK: parcalari ALT KLASORLERDE duran bir montajda yeni bir
+  versiyon olustur. Kutu "N dosya arsivlenecek" demeli (N > 0) ve cift
+  tiklayinca montaj parcalariyla acilmali.
 
-  SENDE OLCULECEK: parcalari alt klasorlerde duran bir montajda hem parca
-  listesini cikar hem yeni bir versiyon olustur - listede "bulunamadi"
-  kalmamali, versiyon kutusu da "N dosya arsivlenecek" demeli.
-
-  OLCULDU: 9 yeni birim test (agac seviye seviye · alt klasordeki parca ·
-  cozulemeyen satirda kaliyor · ozellikler sutuna giriyor · sutunlar
-  turetiliyor · kac yerde geciyor = 2 · CSV ayraci · CSV kacislama ·
-  CSV BOM). 372 test, 367 gecti / 5 Windows'a ozel.
-
-  KAPIYA 22. OLCUM EKLENDI: Ctrl+Shift+M penceresi acilip SATIR cizmeli.
-  Kendi ornek klasorunde kosuyor (oteki olcumler dosyalari adlandiriyor ve
-  satir sirasi kaydiriyor). Satir uretimi kesilince kapi YAKALADI (0 satir),
-  geri konunca TEMIZ. Bes kapi TEMIZ, calistirma 22/22.
+  OLCULDU: onarimi kilitleyen test SurumlerTestleri'ne tasindi; onarim
+  kesilince kiriliyor, geri konunca geciyor. 364 test, 359 gecti /
+  5 Windows'a ozel. Bes kapi TEMIZ, calistirma 21/21.
 
 BU SURUMDE - MONTAJDA VERSIYON SECME (ilk istegindeki 3. madde)
 

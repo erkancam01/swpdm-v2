@@ -8,8 +8,8 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 372 test · 367 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma **22** ölçüm).
+> 364 test · 359 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> (harita + boyut + derleme + test + çalıştırma **21** ölçüm).
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -25,12 +25,12 @@
 > aynı gün sadeleşti: sekmedeki sayı = o sekmedeki satır, "· eksik" kalktı.
 > 31.08.2026: **VERSİYONLAR** geldi (Aşama 1) — `Surumler.cs`, dördüncü
 > sekme, `Ctrl+Shift+U`, Enter = dön. Aşama 2-3 aşağıda AÇIK İŞ.
-> 31.08.2026: **PARÇA LİSTESİ (BOM)** geldi — `Ctrl+Shift+M`, bütün ağaç
-> tek tabloda, CSV'ye aktarılıyor (`ParcaListesi.cs` · `ParcaListesiCsv.cs`).
-> Ağaç yürüyüşü `BelgeAgaci.cs`'e çıktı: versiyon arşivi de aynı kopyayı
-> kullanıyor. Kapı 22. ölçümde **gerçek bir hata yakaladı** — alt klasördeki
-> parça "bulunamadı" görünüyordu; onarıldı (aynı delik versiyon arşivinde
-> de vardı).
+> 31.08.2026: **PARÇA LİSTESİ (BOM) geldi ve AYNI GÜN KALDIRILDI** —
+> Erkan: *"solidworkun içinde var zaten."* Dört dosya silindi, bir satır
+> kesildi (§1b'nin sınavı geçti). Ondan **kalanlar**: ağaç yürüyüşü
+> `BelgeAgaci.cs`'te (versiyon arşivinin çekirdeği) ve kapısının yakaladığı
+> **gerçek hata** — alt klasördeki parça hiç bulunamıyordu, arşive girmiyordu
+> ve montajın versiyonu SOLIDWORKS'te açılmıyordu; onarıldı ve testle kilitli.
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -69,15 +69,6 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
 
 ## A — YAPILDI ama ÖLÇÜLEMEDİ (hepsi Erkan'ın makinesinde ölçülebilir)
 
-- **ADET: bir parça montajda kaç KEZ kullanılıyor — ÖLÇÜLEMEDİ.** Örnek
-  montajda her parça birer kez geçiyor, yani "iki kez kullanılan parça iki
-  kez yazılır mı" sorusu ayrışmıyor (ayrıntı CLAUDE.md §5). Parça listesinde
-  **adet sütunu yok**, yerine "kaç yerde geçiyor" var. Erkan'da ölçülür:
-  iki kez kullanılmış gerçek bir parçası olan montajda liste çıkarılır —
-  o parça iki satır çıkıyorsa (ya da "kaç yerde" 2 diyorsa) sütun açılabilir.
-- **CSV'nin Excel'de açılışı.** Ayraç `;` + UTF-8 BOM seçildi (Türkçe
-  Windows'ta yaygın davranış), ama Erkan'ın Excel'inde **ölçülmedi**.
-  Sütunlar ayrışmazsa ayraç değişir.
 - **Ağ sürücüsünde ilk taramanın süresi.** Buradaki 0,1 sn yerel diskte
   7 dosya. Uygulama kendi hızını durum çubuğuna yazıyor; Erkan'dan o
   satır gelirse gerçek sayı öğrenilir.
@@ -232,7 +223,9 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
     tıkla-sırala) — "toplu görme" sorununu çözer
   · **tıkla-süz**: süzgeç şeridinde "Malzeme ▾" → indeksten gelen GERÇEK
     değerler ve her birinin kaç dosyada olduğu; yazmak yok
-  · ~~**Excel/CSV parça listesi**~~ — **YAPILDI (31.08.2026)**, `Ctrl+Shift+M`
+  · ~~**Excel/CSV parça listesi (BOM)**~~ — **REDDEDİLDİ (31.08.2026).**
+    Yazıldı, denendi, aynı gün kaldırıldı; Erkan: *"solidworkun içinde var
+    zaten."* Bir daha önerilmeyecek.
   · **özellik DÜZENLEME**: seçili dosyaların özelliğini toplu değiştirmek
     (dosyaya yazma altyapısı `SwYazici` ile hazır)
 - **Bilgi bloğunun yerine ne konacak — AÇIK SORU.** Blok kalktı (Erkan:
