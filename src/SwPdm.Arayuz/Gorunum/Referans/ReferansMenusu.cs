@@ -134,7 +134,7 @@ internal sealed class ReferansMenusu
         // eslesmesi kirilir ve versiyon "kayip" gorunur.
         if (ArsivdeMi(yol))
         {
-            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz");
+            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz; Enter: bu versiyona dön");
         }
 
         if (KlasorTarayici.DosyayiOku(yol) is not DosyaOgesi dosya)

@@ -101,7 +101,8 @@ internal sealed class SurumBolumu
         }
 
         return KlasorTarayici.DosyayiOku(arsivYolu) is DosyaOgesi dosya
-            ? DosyaAcici.Ac(sahip, dosya) + "  (salt-okunur arşiv kopyası)"
+            ? DosyaAcici.Ac(sahip, dosya)
+                + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
             : "Arşiv kopyası okunamadı: " + arsivYolu;
     }
 
