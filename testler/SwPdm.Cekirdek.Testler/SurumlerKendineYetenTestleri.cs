@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Xunit;
 
@@ -257,5 +258,115 @@ public partial class SurumlerTestleri
 
         Assert.Single(durum.Ogeler);
         Assert.Equal("eski kayit", durum.Ogeler[0].Not);
+    }
+
+    // ---------------------------------------------------------------------
+    // MONTAJDA VERSIYON SECME (Erkan'in ilk versiyon isteginin 3. maddesi):
+    // "montajın içinde parçayı seçtiğimde istediğim versiyona göre
+    // güncelleyebilmeliyim". Versiyon kendi kendine yettigi icin o gunku
+    // cocuk kopyalari arsivde hazir.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void COCUKLA_BIRLIKTE_DONUS_parcayi_da_geri_yazar()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        byte[] ilkParca = File.ReadAllBytes(parca);
+
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        // Parca DEGISTI (bugunku hal), montaj da.
+        File.AppendAllText(parca, "sonradan eklendi");
+        File.AppendAllText(montaj, "sonradan eklendi");
+
+        IslemRaporu rapor = Surumler.Don(_kok, montaj, 0, [parca]);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal(ilkParca, File.ReadAllBytes(parca));      // PARCA da dondu
+        Assert.Contains("çocuk geri yazıldı", rapor.Sebep!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void COCUGUN_BUGUNKU_HALI_de_ARSIVLENIR_kaybolmaz()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        File.AppendAllText(parca, "bugunku hal");
+        long bugunku = new FileInfo(parca).Length;
+
+        Assert.True(Surumler.Don(_kok, montaj, 0, [parca]).Oldu);
+
+        // Parcanin KENDI yuvasinda bugunku hali durmali (1a: kaybolan yok).
+        SurumDurumu parcaninki = Surumler.Listele(_kok, parca);
+        Assert.NotEmpty(parcaninki.Ogeler);
+        Assert.Equal(bugunku, new FileInfo(parcaninki.Ogeler[0].ArsivYolu).Length);
+    }
+
+    [Fact]
+    public void SECILMEYEN_cocuga_DOKUNULMAZ()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        File.AppendAllText(parca, "degisiklik");
+        byte[] once = File.ReadAllBytes(parca);
+
+        // Cocuk verilmiyor: eski davranis - yalniz asil dosya doner.
+        Assert.True(Surumler.Don(_kok, montaj, 0).Oldu);
+
+        Assert.Equal(once, File.ReadAllBytes(parca));
+    }
+
+    [Fact]
+    public void ACIK_cocuk_ATLANIR_ve_SEBEBI_yazilir()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        File.AppendAllText(parca, "degisiklik");
+        byte[] once = File.ReadAllBytes(parca);
+        File.WriteAllBytes(WindowsYolu.Birlestir(_kok, "~$Parça1.SLDPRT"), new byte[4]);
+
+        IslemRaporu rapor = Surumler.Don(_kok, montaj, 0, [parca]);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal(once, File.ReadAllBytes(parca));          // DOKUNULMADI
+        Assert.Contains("açık", rapor.Sebep!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DONUS_LISTESI_farki_ve_engeli_SOYLER()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        IReadOnlyList<DonusOgesi> liste = Surumler.DonusListesi(_kok, montaj, 0);
+
+        DonusOgesi oge = Assert.Single(liste);                 // asil dosya listede YOK
+        Assert.Equal(parca, oge.CanliYol);
+        Assert.Null(oge.Engel);
+        Assert.False(oge.Farkli);                              // henuz degismedi
+
+        File.AppendAllText(parca, "degisiklik");
+        Assert.True(Surumler.DonusListesi(_kok, montaj, 0)[0].Farkli);
+    }
+
+    [Fact]
+    public void AYNI_ICERIKLI_cocuk_icin_GEREKSIZ_ARSIV_olusmaz()
+    {
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        // Parca DEGISMEDI: geri yazmaya da arsivlemeye de gerek yok.
+        Assert.True(Surumler.Don(_kok, montaj, 0, [parca]).Oldu);
+
+        Assert.Empty(Surumler.Listele(_kok, parca).Ogeler);
     }
 }

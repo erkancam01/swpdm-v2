@@ -1,3 +1,36 @@
+BU SURUMDE - MONTAJDA VERSIYON SECME (ilk istegindeki 3. madde)
+
+  "montajın içinde parçayı seçtiğimde istediğim versiyona göre
+  güncelleyebilmeliyim" - bu tur onu getiriyor. Artik mumkun, cunku versiyon
+  kendi kendine yetiyor: v3 klasorunde montajla birlikte O GUNKU parcalar da
+  duruyor.
+
+  NASIL: VERSIYONLAR sekmesinde satiri sec, ENTER. Kutu artik sormakla
+  kalmiyor, LISTELIYOR:
+    - o versiyonun kullandigi dosyalar tek tek yaziyor,
+    - BUGUNKUNDEN FARKLI olanlar isaretli geliyor (degismemise dokunmuyoruz),
+    - SOLIDWORKS'te ACIK ya da bugun yerinde olmayan dosya isaretlenemiyor
+      ve sebebi yaninda yaziyor.
+  Isaretlileri geri yazar; hicbirini isaretlemezsen yalniz asil dosya doner
+  (eski davranis).
+
+  HICBIR ICERIK KAYBOLMAZ: geri yazilan HER dosyanin bugunku hali once KENDI
+  arsivine aliniyor ("vN'e donmeden once" notuyla). Durum cubugu kac cocugun
+  yazildigini ve atlananlarin sebebini soyluyor.
+
+  OLCULDU: 6 yeni birim test (cocuk geri yaziliyor · bugunku hali arsivleniyor
+  · secilmeyene dokunulmuyor · acik cocuk atlaniyor ve sebebi yaziliyor ·
+  cocuksuz cagri eski davranis · ayni icerik icin gereksiz arsiv olusmuyor).
+  363 test, 358 gecti / 5 Windows'a ozel.
+
+  KAPIYA 20. OLCUM EKLENDI: "don" bugune kadar HIC olculmuyordu - oysa
+  dosyanin UZERINE yazan tek islem o. Artik dosya bilerek bozuluyor, Enter
+  ile v0'a donuluyor ve diskten cmp ile dogrulaniyor. File.Replace kesilince
+  kapi YAKALADI, geri konunca TEMIZ. Bes kapi TEMIZ, calistirma 21/21.
+
+  SENDE OLCULECEK: montaji eski bir versiyona dondur, kutuda parcalari da
+  isaretle - SOLIDWORKS'te actiginda montaj O GUNKU parcalariyla gelmeli.
+
 BU SURUMDE - "ONARILAMADI" KUTUSU: CIPLAK ADLA YAZAN REFERANS
 
   Senin ekranin (31.08.2026): klasor adlandirma CALISTI ama bir dosya icin

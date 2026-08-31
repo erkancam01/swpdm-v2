@@ -984,7 +984,8 @@ dosyasında** duruyor:
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
 | **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surumler.Cocuklar.cs` |
-| **"bu versiyona dön"** (çekirdek) | `Cekirdek/Surumler.Donus.cs` |
+| **"bu versiyona dön"** (çekirdek + çocuklar) | `Cekirdek/Surumler.Donus.cs` |
+| dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
@@ -1086,7 +1087,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi bir şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1100,6 +1101,7 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **`Ctrl+Shift+U` versiyonu gerçekten arşivliyor mu (diskten, birebir)** ·
 **ad değişince versiyon arşivi de taşınıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
+**`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
@@ -1351,6 +1353,20 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > (kesince yakalıyor, geri konunca temiz). Kapıyı çocuklu bir dosyaya
 > çevirmek üç ölçümü birden yeniden kurmak demekti; ölçülen değer kadar
 > maliyeti de yazılı duruyor.
+
+> **Yirmincisi neden var (versiyona dön):** "dön" dosyanın **üzerine yazan**
+> tek işlem ve bugüne kadar **hiç ölçülmüyordu**. Sessizce yanlış yazarsa
+> kullanıcı "eski versiyona döndüm" sanıp çalışmaya devam eder ve bugünkü
+> hâlini kaybeder (§1a). Ölçüm ekrandan değil **diskten**: dosya bilerek
+> bozulur, `Enter` ile v0'a dönülür, `cmp` ile arşiv kopyasıyla birebir
+> olmalı. §9 döngüsü: TEMİZ → `File.Replace` kesilince **YAKALADI** → geri
+> konunca TEMİZ.
+>
+> **İLK KOŞU HAYIR DEDİ ve sebep ölçümdeydi:** dosyayı **dışarıdan** bozmak
+> `DiskIzleyici`'yi tetikliyor, panel yeniden doluyor ve **satır seçimi
+> düşüyor**; `Enter` o yüzden "bu satırda gidilecek bir dosya yok" dedi.
+> Sebep tahminle değil **durum çubuğundan** okundu (ekran görüntüsü).
+> Ölçüm artık tazelemeyi bekliyor.
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

@@ -126,11 +126,6 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   `kayit.txt`'e çocukların o günkü versiyon numaraları yazılır (referans
   indeksi biliyor, kopya değil ucuz); dönüşte "yalnız montaj / o günkü
   çocuk versiyonlarıyla" seçimi. Karar verildi, kurulmadı.
-- **Aşama 3 artık MÜMKÜN: çocuklar arşivde.** Versiyon kendi kendine
-  yettiği için "montajı çocuklarıyla birlikte eski versiyona döndür" akışı
-  kurulabilir — dönerken çocukların o günkü kopyaları arşivde hazır duruyor.
-  Karar verilmedi: dönerken çocukların üstüne yazmak tehlikeli, önce onların
-  da bugünkü hâli arşivlenmeli.
 - **Arşiv artık dosyayla birlikte TAŞINIYOR (31.08.2026).** Kanca çekirdekte
   (`DosyaIslemleri.YenidenAdlandir` · `.Tasi` · `ReferansOnarimi`'nin ad
   değiştirmesi), yani adlandırma · taşıma · sürükle-bırak · geri/ileri alma

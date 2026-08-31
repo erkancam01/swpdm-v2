@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using SwPdm.Cekirdek;
 
@@ -47,15 +48,16 @@ internal static class SurumeDonusu
             return true;
         }
 
-        bool onay = OnayKutusu.Sor(
-            sahip,
-            "Versiyona dön",
-            $"\"{dosya.Ad}\" v{kayit.No} içeriğine dönecek.\n\n"
-            + "Bugünkü hâl önce otomatik arşivlenir — hiçbir içerik kaybolmaz.\n"
-            + "Bu dosyayı kullanan BÜTÜN montajlar dönülen içeriği görür.",
-            tehlikeli: true);
+        // MONTAJDA VERSIYON SECME (Erkan'in ilk isteginin 3. maddesi):
+        // versiyon artik o gunku COCUKLARI da tasiyor. Kutu, hangilerinin
+        // geri yazilacagini SORUYOR - yalniz montaji yazmak "eski versiyona
+        // dondum" sanisi yaratirdi, oysa parcalar bugunku halinde kalirdi
+        // (CLAUDE.md 3). Karar kullanicinin; kutunun kendisi kendi dosyasinda.
+        IReadOnlyList<string>? cocuklar = DonusSecimKutusu.Sor(
+            sahip, dosya.Ad, kayit.No,
+            Surumler.DonusListesi(kok, dosya.Yol, kayit.No));
 
-        if (!onay)
+        if (cocuklar is null)
         {
             bildir("Versiyona dönme iptal edildi.");
             return true;
@@ -65,7 +67,7 @@ internal static class SurumeDonusu
         // birakilir - AgacMenusu.IslemOncesi'nin buradaki karsiligi.
         belgeyiBirak();
 
-        IslemRaporu rapor = Surumler.Don(kok, dosya.Yol, kayit.No);
+        IslemRaporu rapor = Surumler.Don(kok, dosya.Yol, kayit.No, cocuklar);
 
         if (!rapor.Oldu)
         {

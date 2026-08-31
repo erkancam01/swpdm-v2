@@ -196,7 +196,8 @@ referanslar kendiliğinden sağlam kalır.
 - **Eski versiyonlar okunmaya devam eder** (31.08.2026 öncesi tek dosyalık arşivler): listelenir, dönülür, silinir. Ama onlar tek dosya olduğu için eski **montaj** versiyonları hâlâ parçasız açılır; yeni oluşturduğunda çocuklar da arşive girer.
 
 - **Versiyon satırına sağ tık** → dosya işlemleri uygulanmaz (gri + sebep): F2/Sil arşive gitseydi kayıt ile kopya eşleşmesi kırılırdı.
-- **Bu versiyona dön** → sekmede satırı seç, **Enter**. Onay kutusu iki şeyi açıkça söyler: **bugünkü hâl önce otomatik arşivlenir** (dönüş de bir versiyondur — hiçbir içerik hiçbir işlemle kaybolmaz) ve bu dosyayı kullanan **bütün montajlar** dönülen içeriği görür.
+- **Bu versiyona dön** → sekmede satırı seç, **Enter**. Kutu, o versiyonun **kullandığı dosyaları** listeler: hangileri de geri yazılsın, sen seçersin. Bugünküyle **farklı** olanlar işaretli gelir; değişmemişe dokunulmaz. SOLIDWORKS'te açık ya da bugün yerinde olmayan dosya işaretlenemez, sebebi yanında yazar.
+- **Hiçbir içerik kaybolmaz:** geri yazılan **her** dosyanın bugünkü hâli önce kendi arşivine alınır (dönüş de bir versiyondur). Durum çubuğu kaç çocuğun yazıldığını ve atlananların sebebini söyler.
 - **Notu düzelt** → sekmede satırı seç, **`F2`**. Kutuda eski not hazır gelir; boş bırakırsan not silinir. İçeriğe, numaraya, tarihe dokunulmaz.
 - **Versiyonu sil** → sekmede satırı seç, **`Delete`**. Onay kutusu açıkça söyler: **kalıcıdır, çöp kutusuna gitmez, geri alınamaz** — ama **dosyanın kendisine dokunulmaz**, yalnız o versiyon kaydı ve arşiv kopyası gider.
 - **Her işlemden sonra satır seçimi düşer** (bilinçli): liste yeniden çizilince satırlar kayabilir, gözle seçilmemiş bir satıra `Delete` gitmesin diye. Yeni işlem için satıra yeniden tıkla.

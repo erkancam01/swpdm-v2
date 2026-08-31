@@ -1,7 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace SwPdm.Cekirdek;
+
+/// <summary>Bir versiyona donerken geri yazilabilecek COCUK.</summary>
+/// <param name="ArsivYolu">O gunku kopyanin arsivdeki yolu.</param>
+/// <param name="CanliYol">Bugunku dosyanin yolu (olmayabilir).</param>
+/// <param name="Farkli">Bugunku icerik arsivdekinden farkli mi.</param>
+/// <param name="Engel">Geri yazmaya engel; yoksa null.</param>
+public sealed record DonusOgesi(string ArsivYolu, string CanliYol, bool Farkli, string? Engel);
 
 /// <summary>
 /// VERSIYONA DONUS - "bu versiyona don" akisinin cekirdegi.
@@ -21,7 +29,15 @@ public static partial class Surumler
     ///   3. Eski icerik ayni klasorde geciciye kopyalanir, boyutu dogrulanir,
     ///      File.Replace ile oturur - yarim yazma dosyayi bozamaz.
     /// </summary>
-    public static IslemRaporu Don(string kok, string yol, int no)
+    /// <param name="cocukYollari">
+    /// Ayrica geri yazilacak COCUKLARIN canli yollari; null ya da bos ise
+    /// yalnizca asil dosya doner (31.08.2026 oncesi davranis). Erkan'in ilk
+    /// versiyon isteginin 3. maddesi: "montajin icinde parcayi sectigimde
+    /// istedigim versiyona gore guncelleyebilmeliyim" - versiyon kendi
+    /// kendine yettigi icin o gunku cocuk kopyalari arsivde hazir duruyor.
+    /// </param>
+    public static IslemRaporu Don(
+        string kok, string yol, int no, IReadOnlyList<string>? cocukYollari = null)
     {
         if (Kilit.AcikMi(yol))
         {
@@ -75,12 +91,95 @@ public static partial class Surumler
             }
         }
 
-        string gecici = yol + ".swpdm-don";
         long arsivBoyutu;
         try
         {
             arsivBoyutu = new FileInfo(hedef.ArsivYolu).Length;
-            File.Copy(hedef.ArsivYolu, gecici, overwrite: true);
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            return IslemSonuclari.HatayiCevir(hata);
+        }
+
+        string? yazmaHatasi = GeriYaz(hedef.ArsivYolu, yol);
+        if (yazmaHatasi is not null)
+        {
+            return new IslemRaporu(IslemSonucu.Bilinmeyen, null, yazmaHatasi);
+        }
+
+        // ---- COCUKLAR. Her biri KENDI icinde hepsi-ya-hicbiri: biri
+        // arsivlenemez ya da kilitliyse ATLANIR ve sebebi yazilir; otekiler
+        // durmaz. Yarim donen bir montaj, hic donmemis bir montajdan daha
+        // kotu degil - ama SESSIZ kalmak yalan olurdu (CLAUDE.md 3).
+        int yazilanCocuk = 0;
+        var atlananlar = new List<string>();
+
+        foreach (string cocuk in cocukYollari ?? [])
+        {
+            string? arsivdeki = ArsivdekiEsi(hedef.ArsivYolu, cocuk);
+            if (arsivdeki is null)
+            {
+                atlananlar.Add(WindowsYolu.DosyaAdi(cocuk) + " (arşivde yok)");
+                continue;
+            }
+
+            if (Kilit.AcikMi(cocuk))
+            {
+                atlananlar.Add(WindowsYolu.DosyaAdi(cocuk) + " (SOLIDWORKS'te açık)");
+                continue;
+            }
+
+            // ONCE BUGUNKU HALI ARSIVLE - cocugun KENDI yuvasina. Bu olmadan
+            // geri yazmak, cocugun bugunku halini geri donussuz silerdi (1a).
+            if (!AyniIcerik(cocuk, arsivdeki))
+            {
+                IslemRaporu guvence = Olustur(kok, cocuk, $"v{no}'a dönmeden önce", out int _);
+                if (!guvence.Oldu)
+                {
+                    atlananlar.Add(
+                        WindowsYolu.DosyaAdi(cocuk) + " (bugünkü hâli arşivlenemedi)");
+                    continue;
+                }
+
+                if (GeriYaz(arsivdeki, cocuk) is string cocukHatasi)
+                {
+                    atlananlar.Add(WindowsYolu.DosyaAdi(cocuk) + " — " + cocukHatasi);
+                    continue;
+                }
+            }
+
+            yazilanCocuk++;
+        }
+
+        string? kayitNotu = arsivBoyutu == hedef.Boyut
+            ? null
+            : $" (not: kayıt {hedef.Boyut} bayt diyordu, arşiv {arsivBoyutu} — arşivdeki içerik esas alındı)";
+
+        string cocukNotu = yazilanCocuk > 0 ? $" · {yazilanCocuk} çocuk geri yazıldı" : "";
+        string atlamaNotu = atlananlar.Count > 0
+            ? " · atlandı: " + string.Join(", ", atlananlar)
+            : "";
+
+        return new IslemRaporu(
+            IslemSonucu.Tamam, yol,
+            (guardNotu ?? "") + (kayitNotu ?? "") + cocukNotu + atlamaNotu);
+    }
+
+    /// <summary>
+    /// Arsivdeki bir kopyayi canli dosyanin uzerine oturtur:
+    /// KOPYALA -> DOGRULA -> Replace. Doner: hata sebebi, olduysa null.
+    ///
+    /// TEK KOPYA (CLAUDE.md 8): ayni sira hem asil dosya hem cocuklar icin
+    /// gecerli; ikinci bir yazma yolu acmak, birinin dogrulamasiz kalmasi
+    /// demekti.
+    /// </summary>
+    private static string? GeriYaz(string arsivYolu, string canliYol)
+    {
+        string gecici = canliYol + ".swpdm-don";
+        try
+        {
+            long kaynak = new FileInfo(arsivYolu).Length;
+            File.Copy(arsivYolu, gecici, overwrite: true);
 
             // File.Copy OZNITELIGI DE kopyaliyor: arsiv salt-okunur, gecici
             // de salt-okunur dogar. Temizlenmezse Replace sonrasi CANLI
@@ -94,26 +193,91 @@ public static partial class Surumler
             // sadakati kopyalanan KAYNAGA gore olculur; kayit farki ise
             // gizlenmez, asagida cumleye yazilir (CLAUDE.md 3).
             long kopya = new FileInfo(gecici).Length;
-            if (kopya != arsivBoyutu)
+            if (kopya != kaynak)
             {
                 File.Delete(gecici);
-                return new IslemRaporu(
-                    IslemSonucu.Bilinmeyen, null,
-                    $"Kopya doğrulanamadı ({kopya} ≠ {arsivBoyutu} bayt) — dosyaya dokunulmadı.");
+                return $"Kopya doğrulanamadı ({kopya} ≠ {kaynak} bayt) — dosyaya dokunulmadı.";
             }
 
-            File.Replace(gecici, yol, destinationBackupFileName: null);
+            File.Replace(gecici, canliYol, destinationBackupFileName: null);
+            return null;
         }
         catch (Exception hata)
         {
             TemizlemeyeCalis(gecici);
-            return IslemSonuclari.HatayiCevir(hata);
+            return IslemSonuclari.HatayiCevir(hata).Sebebi;
+        }
+    }
+
+    /// <summary>
+    /// Canli bir cocugun ARSIVDEKI esi: ayni versiyon klasorunde AYNI ADLA
+    /// duran kopya. Ad esitligi yeter - cocuklar arsive gercek adlariyla,
+    /// duz olarak konuyor (bkz. Olustur).
+    /// </summary>
+    private static string? ArsivdekiEsi(string asilArsivYolu, string canliCocuk)
+    {
+        string klasor = WindowsYolu.Klasor(asilArsivYolu);
+        string aday = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(canliCocuk));
+        return File.Exists(aday) ? aday : null;
+    }
+
+    /// <summary>
+    /// Bir versiyona donerken GERI YAZILABILECEK cocuklarin listesi.
+    ///
+    /// Kullanicinin karar verebilmesi icin her satir uc seyi soyluyor:
+    /// bugunku dosya NEREDE, arsivdekiyle FARKLI mi, ve bir ENGEL var mi.
+    /// Karari arayuz veriyor; cekirdek yalniz olcuyor (CLAUDE.md 1b).
+    /// </summary>
+    public static IReadOnlyList<DonusOgesi> DonusListesi(string kok, string yol, int no)
+    {
+        var liste = new List<DonusOgesi>();
+
+        SurumDurumu durum = Listele(kok, yol);
+        SurumKaydi? hedef = null;
+        foreach (SurumKaydi kayit in durum.Ogeler)
+        {
+            if (kayit.No == no)
+            {
+                hedef = kayit;
+                break;
+            }
         }
 
-        string? kayitNotu = arsivBoyutu == hedef.Boyut
-            ? null
-            : $" (not: kayıt {hedef.Boyut} bayt diyordu, arşiv {arsivBoyutu} — arşivdeki içerik esas alındı)";
+        if (hedef is null)
+        {
+            return liste;
+        }
 
-        return new IslemRaporu(IslemSonucu.Tamam, yol, (guardNotu ?? "") + (kayitNotu ?? ""));
+        string asilAdi = WindowsYolu.DosyaAdi(hedef.ArsivYolu);
+        string canliKlasor = WindowsYolu.Klasor(yol);
+
+        try
+        {
+            foreach (string arsivdeki in Directory.GetFiles(WindowsYolu.Klasor(hedef.ArsivYolu)))
+            {
+                string ad = WindowsYolu.DosyaAdi(arsivdeki);
+                if (string.Equals(ad, asilAdi, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;   // asil dosya listede degil; o zaten donuyor
+                }
+
+                // BUGUNKU KARSILIGI: once ebeveynin yani (SOLIDWORKS'un
+                // kurali, CLAUDE.md 5), sonra kokun altinda ayni ad.
+                string canli = WindowsYolu.Birlestir(canliKlasor, ad);
+                string? engel = File.Exists(canli)
+                    ? (Kilit.AcikMi(canli) ? "SOLIDWORKS'te açık" : null)
+                    : "bugün bu klasörde yok";
+
+                liste.Add(new DonusOgesi(
+                    arsivdeki, canli, engel is null && !AyniIcerik(canli, arsivdeki), engel));
+            }
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            // Arsiv okunamiyorsa liste bos doner; "dön" yine asil dosyayi
+            // yazar - eksigi arayuz soyler.
+        }
+
+        return liste;
     }
 }

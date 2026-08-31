@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=20
+OLCUM_TOPLAM=21
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -1153,7 +1153,65 @@ else
   SORUN=1
 fi
 
-# 20) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 20) BU VERSIYONA DON: dosya GERCEKTEN eski icerige donmeli
+#
+# NEDEN VAR: "don" bugune kadar HIC olculmuyordu - oysa dosyanin UZERINE
+# yazan tek islem o. Sessizce yanlis yazarsa kullanici "eski versiyona
+# dondum" sanip calismaya devam eder ve bugunku hali kaybeder (CLAUDE.md 1a).
+# Cekirdek birim testli; burada olculen KISAYOL -> KUTU -> DISK zinciri.
+#
+# Olcum EKRANDAN degil DISKTEN: dosya bozulur (icerigi degistirilir), sonra
+# v0'a donulur ve dosya v0 kopyasiyla BIREBIR ayni olmali (cmp).
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # 19'dan devir: VERSIYONLAR sekmesi acik, ama v0 SILINDI. Yeni bir
+  # versiyon uretilir (agacta secili dosya hala ayni).
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers ctrl+shift+u > /dev/null 2>&1
+  sleep 3
+  xdotool key Return > /dev/null 2>&1
+  sleep 4
+
+  DON_DOSYA="$(find "$ORNEK" -maxdepth 1 -name "VParca1*.SLDPRT" | head -1)"
+  DON_ARSIV="$(find "$ORNEK/.SwPdmSurum" -path "*VParca1*/v0/*" -name "*.SLDPRT" | head -1)"
+
+  if [ -n "$DON_DOSYA" ] && [ -n "$DON_ARSIV" ]; then
+    # Dosyayi BOZ: donusun gercekten yazdigini boyle olcebiliyoruz.
+    printf 'BOZULDU' >> "$DON_DOSYA"
+
+    # DISK IZLEYICININ TAZELEMESI BEKLENIR - OLCULDU (31.08.2026): dosyayi
+    # disaridan bozmak DiskIzleyici'yi tetikliyor, panel yeniden doluyor ve
+    # SATIR SECIMI DUSUYOR. Ilk kosuda Enter bu yuzden "bu satirda gidilecek
+    # bir dosya yok" dedi (durum cubugundan okundu, tahmin degil).
+    sleep 7
+
+    # Panele don ve satira tikla, Enter = "bu versiyona don".
+    xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+      click 1 > /dev/null 2>&1
+    sleep 3
+    import -window root "$CALISMA/don-satir.png" > /dev/null 2>&1
+    xdotool key --clearmodifiers Return > /dev/null 2>&1
+    sleep 4
+    import -window root "$CALISMA/don-kutu.png" > /dev/null 2>&1
+    xdotool key Return > /dev/null 2>&1          # kutuda Evet (odak Evet'te)
+    sleep 6
+
+    if cmp -s "$DON_DOSYA" "$DON_ARSIV"; then
+      olcum "versiyona don ........" "EVET (dosya v0 icerigine dondu, diskten dogrulandi)"
+    else
+      olcum "versiyona don ........" "HAYIR (dosya v0 kopyasiyla ayni degil)"
+      SORUN=1
+    fi
+  else
+    olcum "versiyona don ........" "HAYIR (versiyon uretilemedi)"
+    SORUN=1
+  fi
+else
+  olcum "versiyona don ........" "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 21) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey
