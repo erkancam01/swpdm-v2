@@ -50,7 +50,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 4. Sağ tık menüsü — 14 işlem
+## 4. Sağ tık menüsü — 15 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
@@ -63,6 +63,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar); "Değiştir" ile çöpe giden dosyayı da geri yükler, ad değiştiyse söyler. **En fazla 20 adım** tutulur | Geri alınacak iş yokken |
 | **İleri al** | `Ctrl+Y` | Geri alınan işlemi **yeniden yapar** (menüde adı yazar) | İleri alınacak iş yokken · adımın tersi yoksa |
 | **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
+| **Parça listesi (BOM)** | `Ctrl+Shift+M` | Seçili belgenin **bütün ağacını** tabloya çıkarır (torunlar dahil); CSV'ye aktarılır | Bir liste çıkarılırken · tek SOLIDWORKS dosyası seçili değilken |
 | **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
 | **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
 | **Referans raporları** | `Ctrl+Shift+D` | Rapor penceresini açar | Kök yokken |
@@ -211,6 +212,38 @@ referanslar kendiliğinden sağlam kalır.
 
 ---
 
+## 11b. Parça listesi (BOM) — `Ctrl+Shift+M`
+
+Bir montajın (ya da teknik resmin, parçanın) **bütün ağacını** tek tabloya
+çıkarır: torunlar dahil, seviye seviye.
+
+- **Nasıl** → ağaçta bir SOLIDWORKS dosyası seç, `Ctrl+Shift+M`. Uzun bir
+  montajda arka planda çalışır; alttaki çubuk ilerler ve `Esc` ile iptal
+  edilir.
+- **Sütunlar** → Ad (seviyeye göre girintili) · Tür · **Kaç yerde geçiyor** ·
+  Yapılandırma · **dosyada bulunan özel özellikler** (Malzeme, Ağırlık,
+  Çizen… — sabit liste yok, ne varsa o sütun olur) · Durum · Yol.
+- **Satıra çift tık / `Enter`** → pencere kapanır, o dosya ağaçta seçilir.
+- **"CSV'ye aktar"** → Excel'de açılacak bir dosya yazar. Ayraç `;` ve
+  UTF-8 BOM: Türkçe Windows'ta Excel'in beklediği biçim.
+
+**Ne YAZMIYOR ve neden:**
+
+- **"Adet" sütunu YOK.** Bir parçanın montajda kaç kez kullanıldığı dosyadan
+  okunabiliyor mu **ölçülemedi** — elimizdeki örnek montajda her parça birer
+  kez geçiyor, yani soru cevaplanamıyor. Uydurma bir adet, teklifte yanlış
+  fiyat demek. Yerine **"kaç yerde geçiyor"** var: ağaçta kaç ayrı ebeveynin
+  altında görüldüğü. Dar ama doğru.
+- **Ağırlık ve öteki özel değerler BAYAT OLABİLİR.** Dosyada duran şey son
+  hesaplanmış sonuç; model yeniden oluşturulmadıysa güncel değildir. Bu uyarı
+  pencerenin başında ve CSV'nin ilk satırında yazıyor.
+- **Bulunamayan parça listeden DÜŞMEZ** → satırı kalır, "Durum" sütununda
+  sebebi ve dosyada yazan yol görünür. Düşseydi o parçayı hiç fiyatlamazdın.
+- Aynı dosya iki ayrı yerde geçiyorsa **iki satır** çıkar; alt ağacı bir kez
+  açılır ve ikinci satırda bu yazar.
+
+---
+
 ## 12. Referans onarımı (uygulamanın varlık sebebi)
 
 - **Yeniden adlandırma (F2)** → adı değişen dosyayı kullanan belgelerin **içine** yeni ad yazılır.
@@ -345,6 +378,7 @@ referanslar kendiliğinden sağlam kalır.
 | `Enter` (VERSİYONLAR sekmesinde) | Seçili versiyona dön (önce bugünkü hâl otomatik arşivlenir) |
 | `F2` (VERSİYONLAR sekmesinde) | Seçili versiyonun notunu düzelt |
 | `Delete` (VERSİYONLAR sekmesinde) | Seçili versiyonu KALICI sil (dosyaya dokunmaz) |
+| `Ctrl+Shift+M` | Parça listesi (BOM) — seçili belgenin bütün ağacı |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |

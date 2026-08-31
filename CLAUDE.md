@@ -370,6 +370,28 @@ parçalı montajda uzun sürer mi" sorusunun cevabı bu: montajın kullandığı
 parçaları öğrenmek için parçalar açılmıyor, montajın kendi `Header2`'si
 zaten hepsini yazıyor.
 
+### ADET ÖLÇÜLEMEDİ — "kaç kez kullanıldığı" örnekten çıkmıyor (31.08.2026)
+
+Parça listesi (BOM) yazılırken soruldu: bir parçanın montajda **kaç kez**
+kullanıldığı dosyadan okunabilir mi? Ölçüm, `SwReferans`'ın kendi tekilleme
+kümesini atlayarak yapıldı — her akış açıldı ve `.SLDPRT`/`.SLDASM` biten
+her MFC dizesi **sayıldı**.
+
+Sonuç: `Montaj1.SLDASM`'ın dört akışında da (`Header2` ·
+`Contents/Config-0-ModelHeader` · `Contents/DisplayLists` ·
+`SwDocContentMgr/SwDocContentMgrInfo`) `Parça1.SLDPRT` ve `Parça2.SLDPRT`
+**tam birer kez** yazıyor.
+
+**Bu bir cevap DEĞİL.** Elimizdeki montaj her parçayı zaten bir kez
+kullanıyor; yani "iki kez kullanılan bir parça iki kez yazılır mı" sorusu
+bu örnekle **ayrışamıyor**. Yazılanın "kullanılan BELGE" olduğunu
+*düşündürüyor* ama kanıtlamıyor.
+
+→ **Adet sütunu açılmadı** (§3: uydurma sayı, teklifte yanlış fiyat). Yerine
+`ParcaListesi` **"kaç yerde geçiyor"** veriyor: ağaçta kaç ayrı ebeveynin
+altında görüldüğü — dar ama doğru tanımlı. Sütun ancak **iki kez kullanılmış
+gerçek bir parçayla** ölçüldükten sonra açılır.
+
 > **ÖLÇÜLMEDİ:** 100 MB+ bir montajda akış *sayısı* artıyor mu; eski
 > SOLIDWORKS sürümlerinin biçimi (2015 öncesi büyük ihtimalle OLE, o yüzden
 > `BilesikDosya` duruyor); 254 karakterden uzun yolların MFC kaçış biçimi.
@@ -983,11 +1005,16 @@ dosyasında** duruyor:
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
+| **belge ağacını yürüme** (torunlar dahil, SW'ün çözme kuralı) | `Cekirdek/BelgeAgaci.cs` |
 | **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surumler.Cocuklar.cs` |
 | **"bu versiyona dön"** (çekirdek + çocuklar) | `Cekirdek/Surumler.Donus.cs` |
 | dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
+| **parça listesi / BOM** (satırlar, türetilen sütunlar) | `Cekirdek/ParcaListesi.cs` |
+| BOM'un CSV'ye aktarılması (ayraç, BOM, kaçışlama) | `Cekirdek/ParcaListesiCsv.cs` |
+| parça listesi işlemi (`Ctrl+Shift+M`, arka plan) | `Arayuz/Gorunum/Islemler/ParcaListesiIslemi.cs` |
+| parça listesi penceresi (tablo + CSV'ye aktar) | `Arayuz/Gorunum/Islemler/ParcaListesiPenceresi.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
@@ -1087,7 +1114,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi bir şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi iki şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1102,7 +1129,9 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **ad değişince versiyon arşivi de taşınıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu** ·
-**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
+**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
+**`Ctrl+Shift+M` parça listesini açıp satır çiziyor mu** (üçüncü kısa koşu,
+kendi örnek klasörü).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1367,6 +1396,31 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > düşüyor**; `Enter` o yüzden "bu satırda gidilecek bir dosya yok" dedi.
 > Sebep tahminle değil **durum çubuğundan** okundu (ekran görüntüsü).
 > Ölçüm artık tazelemeyi bekliyor.
+
+> **Yirmi ikincisi neden var (parça listesi):** bu liste **teklife**
+> dönüşüyor. Sessizce boş ya da eksik çıkarsa kullanıcı olmayan bir parçayı
+> fiyatlamaz ve **bunu hiç görmez** (§3). Menüsü Wine'da açılamıyor, o yüzden
+> aynı kodu çağıran `Ctrl+Shift+M` ölçülüyor: pencere doğdu mu ve **satır
+> çizdi mi** (metin bantları sayılıyor). §9 döngüsü: TEMİZ (3 satır) →
+> satır üretimi kesilince **YAKALADI** (0 satır) → geri konunca TEMİZ.
+>
+> **KENDİ KOŞUSU VAR — bilerek.** Yukarıdaki ölçümler örnek klasördeki
+> dosyaları yeniden adlandırıyor (`PanelAdi…`, `VParca1…`) ve ağaçtaki satır
+> sırası kayıyor. BOM'un ölçüsü *"ağacı gerçekten yürüdü mü"* olduğu için
+> gerçek bir montaj ve iki parçası gerekiyor; kendi klasöründe kurmak ölçümü
+> ötekilerin sırasına bağımlı olmaktan çıkarıyor. Bedeli bir uygulama açılışı
+> (~20 sn), karşılığı sıfır sıra bağımlılığı.
+>
+> **VE İLK KOŞUSUNDA GERÇEK BİR HATA YAKALADI.** Ekranda `Parça2.SLDPRT`
+> *"Diskte bulunamadı"* çıktı — oysa dosya oradaydı. Sebep: montajın içinde
+> **başka bir makinenin mutlak yolu** yazıyor
+> (`C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT`), komşuluk
+> kuralı ise yalnız **dosya adına** baktığı için **alt klasördekini**
+> görmüyordu. Çözüm `BelgeAgaci.SonEkiDene`: yazılı yolun son ekleri ebeveyne
+> göre denenir (en uzun ek önce), yalnızca **diskte varsa** kabul edilir.
+> Aynı delik **versiyon arşivinde de** vardı — o parça arşive hiç girmiyordu
+> ve montajın versiyonu SOLIDWORKS'te açılmazdı; iki özellik de aynı
+> yürüyüşü kullandığı için tek düzeltmeyle kapandı (§8).
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve
