@@ -178,29 +178,44 @@ public static partial class Surumler
         }
 
         int yeniNo = durum.EnBuyukNo + 1;
-        string arsiv = WindowsYolu.Birlestir(yuva, ArsivAdi(yeniNo, yol));
+
+        // ============ VERSIYON KENDI KENDINE YETER ============
+        //
+        // Arsiv artik bir KLASOR: "v3\" icinde asil dosya GERCEK ADIYLA ve
+        // o gunku COCUKLARI yaninda duruyor. Erkan'da olculdu (31.08.2026):
+        // tek basina duran bir montaj arsivden ACILMIYOR - SOLIDWORKS once
+        // ebeveynin yanina bakiyor (CLAUDE.md 5) ve parcalari bulamiyor.
+        // Parcada sorun gorulmemesinin sebebi de buydu: parcanin cocugu yok,
+        // yani zaten kendi kendine yetiyordu. Artik montaj/teknik resim de
+        // parcayla AYNI yoldan aciliyor; ayrik dal yok.
+        string klasor = WindowsYolu.Birlestir(yuva, ArsivKlasoru(yeniNo));
+        string arsiv = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(yol));
+
+        CocukKumesi cocuklar = Cocuklari(yol);
 
         long boyut;
         try
         {
-            Directory.CreateDirectory(yuva);
-            File.Copy(yol, arsiv, overwrite: false);
+            Directory.CreateDirectory(klasor);
 
-            boyut = new FileInfo(arsiv).Length;
-            long asil = new FileInfo(yol).Length;
-            if (boyut != asil)
+            boyut = Kopyala(yol, arsiv);
+            foreach (string cocuk in cocuklar.Yollar)
             {
-                // Yarim kopya versiyon DEGILDIR; birakilirsa gunun birinde
-                // "don" ile dosyanin yerine gecer (CLAUDE.md 1a).
-                File.Delete(arsiv);
-                return new IslemRaporu(
-                    IslemSonucu.Bilinmeyen, null,
-                    $"Kopya doğrulanamadı ({boyut} ≠ {asil} bayt) — versiyon oluşturulmadı.");
+                // Cocuklar DUZ, gercek adlariyla yan yana: komsuluk kurali
+                // ancak boyle isler. Ayni ad iki klasorden geliyorsa ilki
+                // kalir - SOLIDWORKS'un actigi da o olurdu.
+                string hedef = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(cocuk));
+                if (!File.Exists(hedef))
+                {
+                    Kopyala(cocuk, hedef);
+                }
             }
         }
         catch (Exception hata)
         {
-            TemizlemeyeCalis(arsiv);
+            // HEPSI YA DA HICBIRI: yarim bir versiyon, "don" dendiginde
+            // dosyanin yerine gecer (CLAUDE.md 1a). Klasorun tamami silinir.
+            KlasoruTemizlemeyeCalis(klasor);
             return IslemSonuclari.HatayiCevir(hata);
         }
 
@@ -213,7 +228,7 @@ public static partial class Surumler
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
             // Kayitta olmayan kopya, Listele'de gorunmez = SESSIZ KAYIP olur.
-            TemizlemeyeCalis(arsiv);
+            KlasoruTemizlemeyeCalis(klasor);
             return new IslemRaporu(
                 IslemSonucu.Bilinmeyen, null,
                 "Versiyon kaydı yazılamadı — arşiv geri alındı: " + hata.Message);
@@ -225,7 +240,10 @@ public static partial class Surumler
         // konuyor ki basarisizlik temizligi (File.Delete) engellenmesin.
         try
         {
-            File.SetAttributes(arsiv, FileAttributes.ReadOnly);
+            foreach (string kopya in Directory.GetFiles(klasor))
+            {
+                File.SetAttributes(kopya, FileAttributes.ReadOnly);
+            }
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
@@ -234,7 +252,14 @@ public static partial class Surumler
         }
 
         no = yeniNo;
-        return IslemRaporu.Basarili(arsiv);
+
+        // COZULEMEYEN COCUK SESSIZ GECILMEZ (CLAUDE.md 3): eksik cocukla
+        // arsivlenen versiyon eksik acilir, kullanici bunu BILMELI.
+        return new IslemRaporu(
+            IslemSonucu.Tamam, arsiv,
+            cocuklar.Cozulemeyen > 0
+                ? $"{cocuklar.Cozulemeyen} referans bulunamadı — versiyon eksik olabilir"
+                : null);
     }
 
     /// <summary>
@@ -414,8 +439,53 @@ public static partial class Surumler
         return WindowsYolu.Birlestir(taban, WindowsYolu.DosyaAdi(yol));
     }
 
-    private static string ArsivAdi(int no, string yol)
-        => "v" + no.ToString(CultureInfo.InvariantCulture) + WindowsYolu.Uzanti(yol);
+    /// <summary>Bir versiyonun arsiv KLASORU: "v3".</summary>
+    private static string ArsivKlasoru(int no)
+        => "v" + no.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Kopyalar ve boyutunu DOGRULAR; tutmazsa atar (yarim kopya versiyon
+    /// degildir - CLAUDE.md 1a). Doner: kopyanin boyutu.
+    /// </summary>
+    private static long Kopyala(string kaynak, string hedef)
+    {
+        File.Copy(kaynak, hedef, overwrite: false);
+
+        long kopya = new FileInfo(hedef).Length;
+        long asil = new FileInfo(kaynak).Length;
+        if (kopya != asil)
+        {
+            throw new IOException(
+                $"Kopya doğrulanamadı ({kopya} ≠ {asil} bayt): "
+                + WindowsYolu.DosyaAdi(kaynak));
+        }
+
+        return kopya;
+    }
+
+    /// <summary>Yarim kalan bir versiyon klasorunu topluca kaldirir.</summary>
+    private static void KlasoruTemizlemeyeCalis(string klasor)
+    {
+        try
+        {
+            if (!Directory.Exists(klasor))
+            {
+                return;
+            }
+
+            foreach (string dosya in Directory.GetFiles(klasor))
+            {
+                // Salt-okunur dosyayi Windows sildirmez (CLAUDE.md 4).
+                File.SetAttributes(dosya, FileAttributes.Normal);
+            }
+
+            Directory.Delete(klasor, recursive: true);
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            // Temizlik en iyi caba; asil hata zaten raporlaniyor.
+        }
+    }
 
     /// <summary>
     /// Kayit satiri: no·zaman·boyut·not, sekmeyle. Not icindeki sekme ve
@@ -454,11 +524,41 @@ public static partial class Surumler
         return arsiv is null ? null : new SurumKaydi(no, zaman, p[3], arsiv, boyut);
     }
 
+    /// <summary>
+    /// Versiyonun ASIL dosyasini bulur. IKI DUZEN de okunur:
+    ///   YENI: "v3\&lt;gercek ad&gt;" - cocuklariyla birlikte, kendi kendine yeter
+    ///   ESKI: "v3.SLDPRT"            - tek dosya (31.08.2026 oncesi arsivler)
+    /// Eskiyi okumaya devam etmek SART: kullanicinin elindeki versiyonlar o
+    /// duzende ve onlari gormemek "versiyonlarim kayboldu" demek olurdu.
+    /// </summary>
     private static string? ArsivBul(string yuva, int no)
     {
         try
         {
             string govde = "v" + no.ToString(CultureInfo.InvariantCulture);
+
+            // YENI DUZEN: klasorun icindeki asil dosya. Cocuklarin arasindan
+            // ASIL olani ad ile bulunur - yuva klasorunun adi zaten dosyanin
+            // TAM adi (Yuvasi boyle kuruyor).
+            string klasor = WindowsYolu.Birlestir(yuva, govde);
+            if (Directory.Exists(klasor))
+            {
+                string asilAd = WindowsYolu.DosyaAdi(yuva);
+                string asil = WindowsYolu.Birlestir(klasor, asilAd);
+                if (File.Exists(asil))
+                {
+                    return asil;
+                }
+
+                // Ad degismis olabilir (arsiv dosyayla birlikte tasindi):
+                // klasorde tek dosya varsa o asildir.
+                string[] icerik = Directory.GetFiles(klasor);
+                if (icerik.Length == 1)
+                {
+                    return icerik[0];
+                }
+            }
+
             foreach (string aday in Directory.GetFiles(yuva))
             {
                 string ad = WindowsYolu.DosyaAdi(aday);

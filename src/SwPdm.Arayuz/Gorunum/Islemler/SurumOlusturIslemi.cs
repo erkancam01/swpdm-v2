@@ -64,10 +64,18 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             return;
         }
 
+        // KAC DOSYA ARSIVLENECEGI KUTUDA YAZIYOR - ayri bir uyari kutusu
+        // DEGIL (CLAUDE.md 6). Versiyon artik kendi kendine yetiyor: montajin
+        // o gunku cocuklari da kopyalaniyor, yani disk maliyeti var ve
+        // kullanicinin gozu onunde olmali (CLAUDE.md 3).
+        CocukKumesi cocuklar = Surumler.Cocuklari(dosya.Yol);
+        string kapsam = cocuklar.Yollar.Count == 0
+            ? $"\"{dosya.Ad}\" şimdiki hâliyle arşivlenecek."
+            : $"\"{dosya.Ad}\" ve kullandığı {cocuklar.Yollar.Count} dosya "
+              + "şimdiki hâlleriyle arşivlenecek.";
+
         string? not = SurumNotuKutusu.Sor(
-            baglam.Sahip,
-            "Yeni versiyon",
-            $"\"{dosya.Ad}\" şimdiki hâliyle arşivlenecek. Not (isteğe bağlı):");
+            baglam.Sahip, "Yeni versiyon", kapsam + " Not (isteğe bağlı):");
 
         if (not is null)
         {
@@ -87,9 +95,13 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
         }
 
         baglam.Bildir(
-            no == 0
+            (no == 0
                 ? $"v0 arşivlendi (ilk versiyon): {dosya.Ad}"
-                : $"v{no} oluşturuldu: {dosya.Ad}");
+                : $"v{no} oluşturuldu: {dosya.Ad}")
+            + (cocuklar.Yollar.Count > 0 ? $" · {cocuklar.Yollar.Count} referansıyla" : "")
+            // Cekirdek "N referans bulunamadi" diyorsa YUTULMAZ: eksik
+            // cocukla arsivlenen versiyon eksik acilir (CLAUDE.md 3).
+            + (rapor.Sebep is { Length: > 0 } uyari ? " · " + uyari : ""));
 
         // Panel tazelensin ki VERSIYONLAR sekmesindeki sayi hemen artsin;
         // yol verilerek secim ayni dosyada kalir.

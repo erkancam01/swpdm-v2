@@ -953,13 +953,13 @@ dosyasında** duruyor:
 | **bölüm seçme şeridi** (`Ctrl+Shift+E`, sayılar) | `Arayuz/Gorunum/Referans/ReferansSeridi.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
-| **versiyon arşivi** (v0 · oluştur · dön · kayıt) | `Cekirdek/Surumler.cs` |
+| **versiyon arşivi** (v0 · oluştur · dön · kayıt · kendi kendine yeten klasör) | `Cekirdek/Surumler.cs` |
 | VERSİYONLAR sekmesinin içeriği | `Arayuz/Gorunum/Referans/SurumBolumu.cs` |
 | yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
-| **versiyonu açılabilir kılma** (görüntüleme kopyası) | `Cekirdek/Surumler.Goruntuleme.cs` |
+| **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surumler.Cocuklar.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |

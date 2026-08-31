@@ -137,10 +137,7 @@ internal sealed partial class AnaForm : Form
             // gizli. Karar SurumBolumu'nde, burasi yalnizca dallaniyor.
             if (_referansSeridi.SeciliBolum == ReferansBolumu.Surumler)
             {
-                _durum.Bilgi(SurumBolumu.Ac(
-                    this,
-                    _referansSurucusu.SurumKaydi(_referanslar.TiklananSira(e.Location)),
-                    SecimBaglamiKur().TekOge is DosyaOgesi secili ? secili.Yol : null));
+                _durum.Bilgi(SurumBolumu.Ac(this, _referanslar.TiklananHedef(e.Location)));
                 return;
             }
 

@@ -44,10 +44,31 @@ public static partial class Surumler
 
         try
         {
+            // YENI DUZENDE ARSIV BIR KLASOR ("v3\" + cocuklari): tamami
+            // gider. ESKI duzende tek dosya - o zaman yalniz o silinir.
+            // Iki duzen de yasiyor (bkz. ArsivBul).
+            string klasor = WindowsYolu.Klasor(hedef!.ArsivYolu);
+            bool klasorArsivi = string.Equals(
+                WindowsYolu.DosyaAdi(klasor),
+                "v" + no.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                StringComparison.OrdinalIgnoreCase);
+
             // Arsiv kopyalari salt-okunur; Windows oznitelik konmus dosyayi
             // sildirmez (CLAUDE.md 4).
-            File.SetAttributes(hedef!.ArsivYolu, FileAttributes.Normal);
-            File.Delete(hedef.ArsivYolu);
+            if (klasorArsivi)
+            {
+                foreach (string dosya in Directory.GetFiles(klasor))
+                {
+                    File.SetAttributes(dosya, FileAttributes.Normal);
+                }
+
+                Directory.Delete(klasor, recursive: true);
+            }
+            else
+            {
+                File.SetAttributes(hedef.ArsivYolu, FileAttributes.Normal);
+                File.Delete(hedef.ArsivYolu);
+            }
         }
         catch (Exception hata)
         {

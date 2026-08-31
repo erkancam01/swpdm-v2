@@ -986,7 +986,9 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/surum-panel2.png" > /dev/null 2>&1
   IZ_S2="$(kirpma_izi "$CALISMA/surum-panel2.png" "$ONIZLEME_BASLIK_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
-  SURUM_ARSIV="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/v0.SLDPRT"
+  # ARSIV ARTIK KLASOR: "v0/<gercek ad>" - versiyon kendi kendine yetiyor
+  # (montajin cocuklari da yaninda arsivleniyor, 31.08.2026).
+  SURUM_ARSIV="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/v0/Parça1.SLDPRT"
   if [ -f "$SURUM_ARSIV" ] && cmp -s "$SURUM_ARSIV" "$ORNEK/Parça1.SLDPRT" \
      && [ "$SURUM_SONRA" = "$SURUM_ONCE" ] \
      && [ "$IZ_S1" != "$IZ_S0" ] && [ "$IZ_S2" = "$IZ_S0" ]; then
@@ -1050,9 +1052,12 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   YENI_YUVA="$ORNEK/.SwPdmSurum/VParca1.SLDPRT"
   ESKI_YUVA="$ORNEK/.SwPdmSurum/Parça1.SLDPRT"
 
-  if [ -f "$YENI_YUVA/v0.SLDPRT" ] && [ ! -d "$ESKI_YUVA" ]; then
+  # Arsivdeki kopya ARSIVLENDIGI GUNKU adiyla durur; yuva yeni ada tasinir.
+  YENI_ARSIV="$(find "$YENI_YUVA/v0" -maxdepth 1 -name "*.SLDPRT" 2>/dev/null | head -1)"
+
+  if [ -n "$YENI_ARSIV" ] && [ ! -d "$ESKI_YUVA" ]; then
     olcum "arsiv adla tasindi ..." "EVET (yuva yeni adda, eski yuva kalmadi)"
-  elif [ -f "$YENI_YUVA/v0.SLDPRT" ]; then
+  elif [ -n "$YENI_ARSIV" ]; then
     olcum "arsiv adla tasindi ..." "HAYIR (yeni yuva var ama ESKISI de duruyor)"
     SORUN=1
   elif [ -d "$ESKI_YUVA" ]; then
@@ -1064,7 +1069,7 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   fi
 
   # SONRAKI OLCUM YENI ADI KULLANIR.
-  SURUM_ARSIV="$YENI_YUVA/v0.SLDPRT"
+  SURUM_ARSIV="$YENI_YUVA/v0"          # 19. olcum KLASORE bakar
 else
   olcum "arsiv adla tasindi ..." "OLCULEMEDI (pencere yok)"
   SORUN=1
@@ -1124,7 +1129,7 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   sleep 3
 
   KOPYA_GITTI=0
-  [ -f "$SURUM_ARSIV" ] || KOPYA_GITTI=1
+  [ -d "$SURUM_ARSIV" ] || KOPYA_GITTI=1   # klasorun TAMAMI gitmeli
 
   SATIR_GITTI=0
   if [ ! -f "$SURUM_KAYIT" ] || ! grep -q "kapi notu" "$SURUM_KAYIT"; then

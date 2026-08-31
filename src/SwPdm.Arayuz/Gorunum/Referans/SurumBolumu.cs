@@ -88,49 +88,30 @@ internal sealed class SurumBolumu
     }
 
     /// <summary>
-    /// Cift tik: versiyonu ACAR. Acilan sey her halde SALT-OKUNUR; SOLIDWORKS
-    /// onu [Read-Only] acar, gecmisin ustune kaza ile kaydedilemez (1a).
+    /// Cift tik: versiyonu ACAR - arsivdeki dosyayi DOGRUDAN.
     ///
-    /// COCUGU OLAN BELGE ARSIVDEN ACILMIYOR - ERKAN'DA OLCULDU (31.08.2026):
-    /// montaj/teknik resim versiyonuna cift tiklayinca SOLIDWORKS "dosya
-    /// bozuk" diyordu. Sebep bozukluk DEGIL - agactaki guncel dosyalar
-    /// sorunsuz aciliyor: arsiv kopyasi kendi klasorunde TEK BASINA duruyor,
-    /// parcalari yaninda degil ve komsuluk kurali (CLAUDE.md 5) bosa cikiyor.
-    /// O yuzden cocugu olan versiyon once OZGUN DOSYANIN YANINA cikariliyor.
-    /// Karar TIPE gore degil OLCUME gore (Surumler.DogrudanAcilir): turetilmis
-    /// bir PARCANIN da dis referansi olabilir.
+    /// ARTIK MONTAJ VE TEKNIK RESIM DE ACILIYOR (Erkan, 31.08.2026: "part
+    /// dosyası eskiden ne güzel versiyon çalışıyordu, diğerleri de öyle
+    /// olamaz mı"): versiyon klasoru artik KENDI KENDINE YETIYOR - asil
+    /// dosya gercek adiyla, o gunku cocuklari yaninda. SOLIDWORKS komsuluk
+    /// kuraliyla (CLAUDE.md 5) parcalari orada buluyor. Burada tur ayrimi
+    /// YOK: parcada ne oluyorsa montajda da o oluyor.
+    ///
+    /// Kopyalar diskte SALT-OKUNUR durur; SOLIDWORKS [Read-Only] acar ve
+    /// gecmisin ustune kaza ile kaydedilemez (CLAUDE.md 1a).
     /// </summary>
     /// <returns>Durum cubuguna yazilacak cumle.</returns>
-    internal static string Ac(
-        System.Windows.Forms.IWin32Window sahip, SurumKaydi? kayit, string? canliYol)
+    internal static string Ac(System.Windows.Forms.IWin32Window sahip, string? arsivYolu)
     {
-        if (kayit is null)
+        if (arsivYolu is null)
         {
             return "Bu satırda açılacak bir versiyon yok.";
         }
 
-        if (Surumler.DogrudanAcilir(kayit.ArsivYolu))
-        {
-            return KlasorTarayici.DosyayiOku(kayit.ArsivYolu) is DosyaOgesi dosya
-                ? DosyaAcici.Ac(sahip, dosya)
-                    + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
-                : "Arşiv kopyası okunamadı: " + kayit.ArsivYolu;
-        }
-
-        (string? kopya, string? sebep) =
-            Surumler.GoruntulemeKopyasi(kayit.ArsivYolu, canliYol, kayit.No);
-
-        if (kopya is null)
-        {
-            // Kullanici cift tikladi; bir cevap almali (CLAUDE.md 3).
-            return $"v{kayit.No} açılamadı — {sebep}";
-        }
-
-        return KlasorTarayici.DosyayiOku(kopya) is DosyaOgesi ogesi
-            ? DosyaAcici.Ac(sahip, ogesi)
-                + $"  (salt-okunur görüntüleme kopyası: {WindowsYolu.DosyaAdi(kopya)}"
-                + " — silmek serbest)"
-            : "Görüntüleme kopyası okunamadı: " + kopya;
+        return KlasorTarayici.DosyayiOku(arsivYolu) is DosyaOgesi dosya
+            ? DosyaAcici.Ac(sahip, dosya)
+                + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
+            : "Arşiv kopyası okunamadı: " + arsivYolu;
     }
 
     /// <summary>Cizilen siradaki versiyon kaydi; sira bir versiyon satiri degilse null.</summary>

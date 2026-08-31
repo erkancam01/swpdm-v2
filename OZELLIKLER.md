@@ -191,9 +191,10 @@ referanslar kendiliğinden sağlam kalır.
 - **`Ctrl+Shift+U` (ya da sağ tık → "Yeni versiyon oluştur…")** → kısa bir not sorar (boş geçilebilir), o anki içeriği arşivler. Dosya yerinde kalır, çalışmaya devam edersin. Yalnız SOLIDWORKS dosyaları.
 - **VERSİYONLAR sekmesi** → v0…vN listesi (en yeni üstte): solda `v3 — not`, sağda tarih. Fareyle üstüne gelince (ve `Ctrl+C` ile) **arşiv kopyasının tam yolu**.
 - **Tek tık** → soldaki önizleme **o versiyonun** resmine döner; başlıkta `◂ v3.SLDPRT` yazar, başlığa tıklayınca bugünkü dosyaya dönülür. (3B kip açıksa versiyon eDrawings'te döndürülerek de incelenir.)
-- **Çift tık** → o versiyonu **açar**, salt-okunur. Parça gibi **çocuğu olmayan** belgede arşiv kopyası doğrudan açılır. **Montaj/teknik resim** (çocuğu olan belge) ise önce dosyanın **kendi klasörüne** `Montaj1 ~v3.SLDASM` adıyla çıkarılır ve o açılır — parçalar yanında olduğu için SOLIDWORKS bulur. Bu kopya salt-okunur, ağaçta görünür ve **silmek serbesttir**.
-  - Neden gerekliydi: arşiv kopyası kendi klasöründe tek başına durur, parçaları yanında değildir; doğrudan açınca SOLIDWORKS *"dosya bozuk"* diyordu (ölçüldü — dosyalar sağlamdı).
-  - **Sınır:** arşivdeki içerik o günkü yolları taşır; aradan geçen ad/klasör değişiklikleri arşiv kopyasında onarılmaz. Versiyonu tam görmek için `Enter` = **bu versiyona dön**.
+- **Çift tık** → o versiyonu **açar** (salt-okunur). Montaj ve teknik resim de açılır: her versiyon **kendi kendine yeter** — arşivde asıl dosya gerçek adıyla durur ve **o günkü çocukları** (parçalar, alt montajlar) yanındadır, SOLIDWORKS onları orada bulur. Hiçbir yere geçici dosya çıkmaz.
+- **Versiyon = o günkü hâl.** "Yeni versiyon" kutusu kaç dosyanın arşivleneceğini yazar (*"Montaj1.SLDASM ve 12 dosya"*); disk maliyeti gözünün önündedir. Çözülemeyen referans varsa sayısı söylenir — eksik arşivlenen versiyon eksik açılır, bunu bilmelisin.
+- **Eski versiyonlar okunmaya devam eder** (31.08.2026 öncesi tek dosyalık arşivler): listelenir, dönülür, silinir. Ama onlar tek dosya olduğu için eski **montaj** versiyonları hâlâ parçasız açılır; yeni oluşturduğunda çocuklar da arşive girer.
+
 - **Versiyon satırına sağ tık** → dosya işlemleri uygulanmaz (gri + sebep): F2/Sil arşive gitseydi kayıt ile kopya eşleşmesi kırılırdı.
 - **Bu versiyona dön** → sekmede satırı seç, **Enter**. Onay kutusu iki şeyi açıkça söyler: **bugünkü hâl önce otomatik arşivlenir** (dönüş de bir versiyondur — hiçbir içerik hiçbir işlemle kaybolmaz) ve bu dosyayı kullanan **bütün montajlar** dönülen içeriği görür.
 - **Notu düzelt** → sekmede satırı seç, **`F2`**. Kutuda eski not hazır gelir; boş bırakırsan not silinir. İçeriğe, numaraya, tarihe dokunulmaz.

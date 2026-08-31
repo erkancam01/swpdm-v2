@@ -1,3 +1,52 @@
+BU SURUMDE - VERSIYON ARTIK KENDI KENDINE YETIYOR
+
+  Senin sozun (31.08.2026): "hayır geçici çözüm olmaz, part dosyası eskiden
+  ne güzel versiyon çalışıyordu, diğerleri de öyle olamaz mı."
+
+  HAKLIYDIN. Bir onceki surumdeki "dosyanin yanina gecici kopya cikarma"
+  cozumu GERI CEKILDI (agaca dosya ekliyordu ve gecici bir yamaydi).
+
+  ASIL SEBEP TEK CUMLE: arsivde montajin PARCALARI YOKTU. Arsiv "v0.SLDASM"
+  diye tek bir dosyaydi; SOLIDWORKS once ebeveynin yanina bakiyor ve orada
+  hicbir sey bulamiyordu. Parcada sorun gorulmemesinin sebebi de buydu:
+  parcanin cocugu yok, yani arsivde ZATEN kendi kendine yetiyordu.
+
+  YENI DUZEN - her versiyon kendi kendine yeter:
+
+      .SwPdmSurum\Montaj1.SLDASM\
+          kayit.txt
+          v0\Montaj1.SLDASM     <- asil dosya, GERCEK adiyla
+          v0\Parça1.SLDPRT      <- o gunku cocuklari, gercek adlariyla
+          v0\Parça2.SLDPRT
+          v1\...
+
+  Artik montaj ve teknik resim versiyonu, parcayla AYNI yoldan aciliyor:
+  cift tik -> arsivdeki dosya dogrudan acilir, komsulari yaninda. Hicbir
+  yere gecici dosya cikmiyor, agaca hicbir sey eklenmiyor.
+
+  YAN KAZANC: versiyon artik gercekten "o gunku hal". Once montajin
+  versiyonu bir tek .SLDASM'di; ona donsen bile parcalar bugunku halleriyle
+  gelirdi.
+
+  BUNUN BEDELI DISK: montajin versiyonu, o gunku parcalarin kopyalarini da
+  tasiyor. Bu yuzden "Yeni versiyon" kutusu kac dosya arsivlenecegini
+  YAZIYOR ("Montaj1.SLDASM ve 12 dosya") - maliyet gozunun onunde olsun.
+  Cozulemeyen referans varsa sayisi soyleniyor: eksik arsivlenen versiyon
+  eksik acilir, bunu bilmelisin.
+
+  ELINDEKI ESKI VERSIYONLAR OKUNMAYA DEVAM EDIYOR: eski duzendeki tek
+  dosyalik arsivler listeleniyor, donuluyor, siliniyor. Ama onlar tek dosya
+  oldugu icin eski MONTAJ versiyonlari hala parcasiz acilir - yeni bir
+  versiyon olusturdugunda cocuklar da arsive girer.
+
+  OLCULDU: 6 yeni birim test, gercek SOLIDWORKS dosyalariyla - en onemlisi
+  "arsivdeki montajin YANINDA parcasi var mi" (Erkan'daki hatanin tam
+  karsiligi). 349 test, 344 gecti / 5 Windows'a ozel. Bes kapi TEMIZ,
+  calistirma 20/20 (17/18/19. olcumler yeni duzene gore guncellendi).
+
+  SENDE OLCULECEK: montaj ve teknik resim versiyonuna cift tik - HICBIR
+  DOSYA CIKMADAN, parcalariyla acilmali.
+
 BU SURUMDE - MONTAJ VE TEKNIK RESIM VERSIYONLARI ARTIK ACILIYOR
 
   Senin bildirdigin (31.08.2026): "part dosyasinin versiyonlarini
