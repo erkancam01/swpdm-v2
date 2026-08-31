@@ -114,6 +114,7 @@ internal sealed partial class AnaForm
                     this,
                     _referansSurucusu.SurumKaydi(_referanslar.SeciliSira),
                     SecimBaglamiKur(),
+                    _referansSurucusu.Indeks,
                     () => _onizleme.BelgeyiBirak(),
                     AgaciTazele,
                     _durum.Bilgi))

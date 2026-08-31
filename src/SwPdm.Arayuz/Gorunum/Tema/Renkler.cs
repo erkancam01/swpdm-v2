@@ -68,4 +68,13 @@ internal static class Renkler
     internal static readonly Color AcikDosyaZemin = Color.FromArgb(0xFF, 0xE3, 0xC8);
     internal static readonly Color SahipsizKilitYazi = Color.FromArgb(0x8A, 0x1F, 0x5C);
     internal static readonly Color SahipsizKilitZemin = Color.FromArgb(0xF7, 0xDC, 0xEC);
+
+    /// <summary>
+    /// "Bu islem sunlari da etkiliyor" bloklarinin zemini (versiyona donus
+    /// kutusu). Palette BASKA HICBIR YERDE yok - bilincli: cizilmis dolu bir
+    /// dikdortgen TAM rengi verir, ClearType'la cizilen metin vermez
+    /// (CLAUDE.md 11'de olculdu). Kapi bu sayede blogun cizilip cizilmedigini
+    /// ekran goruntusunden koordinatsiz sayabiliyor.
+    /// </summary>
+    internal static readonly Color EtkiZemin = Color.FromArgb(0xFF, 0xF3, 0xD9);
 }

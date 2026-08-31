@@ -1,3 +1,46 @@
+BU SURUMDE - "VERSIYONA DON" KUTUSU ARTIK KIMLERIN ETKILENDIGINI YAZIYOR
+
+  Senin sorun (31.08.2026): "versiyon secince o parcanin kullanildigi tum
+  montajlar degissin, yoksa karisiklik olur. mantikli mi?"
+
+  CEVAP: mantikli - VE ZATEN OYLE OLUYOR. Donus, arsiv kopyasini parcanin
+  KENDI dosya yoluna yaziyor. Tek dosya var, kopya yok; montajlar o dosyaya
+  YOL uzerinden bakiyor. Yani o parcayi kullanan butun montajlar donulen
+  icerigi kendiliginden goruyor ve montaj dosyalarina HIC dokunulmuyor -
+  dokunulmasina gerek de yok.
+
+  EKSIK OLAN SEY: uygulama bunu SOYLEMIYORDU. Kutu yalnizca "asagi"
+  soruyordu (bu versiyonun kullandigi dosyalar) ve parcada o liste bos
+  oldugu icin ise yaramaz bir satir cikiyordu ("Bu versiyonda baska dosya
+  yok."). Panelde "KULLANILDIGI YERLER 2 dosya" yaziyordu ama kutuda o iki
+  montajdan hic soz edilmiyordu. Karisiklik hissi buradan geliyordu -
+  haklisin.
+
+  ARTIK KUTU IKI YONU BIRDEN GOSTERIYOR:
+    YUKARI  o dosyayi KULLANANLAR adlariyla listeleniyor, ustunde tek
+            cumle: "Bu dosyanin KENDISI degisiyor - onu kullanan her yer
+            donulen icerigi gorur (SOLIDWORKS'te acinca yeniden olusturmak
+            gerekebilir)."
+    ASAGI   eskisi gibi: bu versiyonun kullandiklarindan hangileri geri
+            yazilsin. Bu versiyonun baska dosyasi yoksa o bolum HIC
+            cizilmiyor - o ise yaramaz satir kalkti.
+
+  TARAMA YAPILMADIYSA SAYI GOSTERILMIYOR: "Kimin kullandigi BILINMIYOR -
+  Ctrl+Shift+R ile tarayin" yaziyor. Bos liste "kimse kullanmiyor" demek
+  degildir; boyle bir listeye bakip onaylamak yanlis guven verir.
+
+  Liste doluysa adlar kazaniyor, eksiklik varsa ALTINA bir satir olarak
+  yaziliyor - paneldeki kuralin aynisi (senin 30.08 karariniz).
+
+  OLCULDU: 20. olcume ikinci sart eklendi - kutu bloğu cizmezse kapi
+  YAKALIYOR (denendi: blok kaldirilinca HAYIR, geri konunca TEMIZ).
+  364 test, 359 gecti / 5 Windows'a ozel. Bes kapi TEMIZ, calistirma 21/21.
+
+  YOL USTUNDE BIR BAYAT SATIR DA DUZELDI: OZELLIKLER'de hala "ad
+  degistirme/tasima arsivi henuz tasimiyor" yaziyordu - oysa tasiyor
+  (gecen turda duzelmisti). Iki madde birbiriyle celisiyordu; bayat uyari
+  fazla uyaridan tehlikeli.
+
 BU SURUMDE - PARCA LISTESI (BOM) KALDIRILDI
 
   Senin karariniz (31.08.2026): "bom ozelligini komple kaldir, solidworkun

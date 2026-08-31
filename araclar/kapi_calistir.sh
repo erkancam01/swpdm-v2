@@ -86,6 +86,7 @@ ONIZLEME_BASLIK_X=60                             # onizleme panelinin ustundeki 
 ONIZLEME_BASLIK_Y=463
 ONIZLEME_BASLIK_KIRP="200x16+15+456"            # basligin kendisi (iz icin)
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
+ETKI_ZEMIN="#FFF3D9"                            # Renkler.EtkiZemin (donus kutusu)
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -1196,11 +1197,26 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
     xdotool key Return > /dev/null 2>&1          # kutuda Evet (odak Evet'te)
     sleep 6
 
-    if cmp -s "$DON_DOSYA" "$DON_ARSIV"; then
-      olcum "versiyona don ........" "EVET (dosya v0 icerigine dondu, diskten dogrulandi)"
-    else
+    # KUTU "KIMLER ETKILENIYOR" DIYOR MU (Erkan, 31.08.2026: "versiyon
+    # secince o parcanin kullanildigi tum montajlar degissin"). Donus
+    # dosyanin KENDI yoluna yaziyor, yani montajlar zaten donulen icerigi
+    # goruyor; eksik olan bunu SOYLEMEKTI. Sessizce kaybolursa kullanici
+    # neyin etkilendigini bilmeden onaylar (CLAUDE.md 3).
+    #
+    # OLCUM KOORDINATSIZ: blogun zemini palette BASKA HICBIR YERDE OLMAYAN
+    # bir renk (Renkler.EtkiZemin), o yuzden kirpma butun ekran. Metnin
+    # rengini aramak ISE YARAMAZ - ClearType hicbir pikseli saf renkte
+    # birakmiyor (CLAUDE.md 11'de olculdu); dolu dikdortgen birakiyor.
+    ETKI_BANT="$(renk_bant_say "$CALISMA/don-kutu.png" "1200x1100+0+0" 0 0 "$ETKI_ZEMIN")"
+
+    if ! cmp -s "$DON_DOSYA" "$DON_ARSIV"; then
       olcum "versiyona don ........" "HAYIR (dosya v0 kopyasiyla ayni degil)"
       SORUN=1
+    elif [ "${ETKI_BANT:-0}" -lt 1 ]; then
+      olcum "versiyona don ........" "HAYIR (dondu ama kutu ETKILENENLERI gostermedi)"
+      SORUN=1
+    else
+      olcum "versiyona don ........" "EVET (v0 icerigine dondu + kutu etkilenenleri gosterdi)"
     fi
   else
     olcum "versiyona don ........" "HAYIR (versiyon uretilemedi)"

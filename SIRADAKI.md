@@ -31,6 +31,10 @@
 > `BelgeAgaci.cs`'te (versiyon arşivinin çekirdeği) ve kapısının yakaladığı
 > **gerçek hata** — alt klasördeki parça hiç bulunamıyordu, arşive girmiyordu
 > ve montajın versiyonu SOLIDWORKS'te açılmıyordu; onarıldı ve testle kilitli.
+> 31.08.2026: **dön kutusu "kimler etkilenir" diyor** — Erkan'ın sorusunun
+> cevabı: dönüş dosyanın kendi yoluna yazdığı için montajlar zaten dönülen
+> içeriği görüyor; eksik olan söylemekti. Kutu artık iki yönü de gösteriyor,
+> taranmamışsa sayı vermiyor.
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.

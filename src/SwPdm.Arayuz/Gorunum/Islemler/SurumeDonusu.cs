@@ -14,9 +14,17 @@ namespace SwPdm.Arayuz.Gorunum;
 ///
 /// GUVENLIK (CLAUDE.md 1a) cekirdekte: <see cref="Surumler.Don"/> once
 /// bugunku hali otomatik arsivler, SOLIDWORKS'te acik dosyaya dokunmaz.
-/// Buradaki onay kutusu iki seyi ACIKCA soyler: hicbir icerik kaybolmaz,
-/// ve bu parcayi kullanan BUTUN montajlar donulen icerigi gorur (ayni ad =
-/// tek icerik - Erkan'in sectigi model).
+///
+/// KUTUYA "KIMLER ETKILENIYOR" DA VERILIYOR (Erkan, 31.08.2026: "versiyon
+/// secince o parcanin kullanildigi tum montajlar degissin"). Cevap: zaten
+/// oyle oluyor - donus dosyanin KENDI yoluna yaziyor, montajlar ona yol
+/// uzerinden bakiyor. Eksik olan GOSTERMEKTI; bu yorum bir sure kutunun
+/// bunu soyledigini YAZIYORDU ama kutu soylemiyordu - bayat uyari, fazla
+/// uyaridan tehlikeli (CLAUDE.md 6). Artik gercekten soyluyor.
+///
+/// Cevabin GUVENILIRLIGI de tasiniyor: taranmamis kokte liste bos doner ve
+/// "hicbir montaj etkilenmiyor" demek yalan olurdu (CLAUDE.md 3). Karari
+/// kutu veriyor; burasi yalnizca indekse soruyor.
 /// </summary>
 internal static class SurumeDonusu
 {
@@ -28,6 +36,7 @@ internal static class SurumeDonusu
         IWin32Window sahip,
         SurumKaydi? kayit,
         SecimBaglami secim,
+        ReferansIndeksi? indeks,
         Action belgeyiBirak,
         Action<string?> tazele,
         Action<string> bildir)
@@ -55,7 +64,8 @@ internal static class SurumeDonusu
         // (CLAUDE.md 3). Karar kullanicinin; kutunun kendisi kendi dosyasinda.
         IReadOnlyList<string>? cocuklar = DonusSecimKutusu.Sor(
             sahip, dosya.Ad, kayit.No,
-            Surumler.DonusListesi(kok, dosya.Yol, kayit.No));
+            Surumler.DonusListesi(kok, dosya.Yol, kayit.No),
+            indeks?.Kullananlar(dosya.Yol));
 
         if (cocuklar is null)
         {

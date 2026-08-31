@@ -1150,7 +1150,8 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **`Ctrl+Shift+U` versiyonu gerçekten arşivliyor mu (diskten, birebir)** ·
 **ad değişince versiyon arşivi de taşınıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
-**`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu** ·
+**`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu ve kutu
+ETKİLENENLERİ gösteriyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
@@ -1416,6 +1417,31 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > düşüyor**; `Enter` o yüzden "bu satırda gidilecek bir dosya yok" dedi.
 > Sebep tahminle değil **durum çubuğundan** okundu (ekran görüntüsü).
 > Ölçüm artık tazelemeyi bekliyor.
+>
+> **AYNI ÖLÇÜME İKİNCİ ŞART EKLENDİ (31.08.2026) — "kimler etkilenir".**
+> Erkan: *"versiyon seçince o parçanın kullanıldığı tüm montajlar değişsin,
+> yoksa karışıklık olur."* Cevap: **zaten öyle oluyor** — dönüş dosyanın
+> **kendi yoluna** yazıyor (`File.Replace`), montajlar ona yol üzerinden
+> bakıyor, montaj dosyalarına hiç dokunulmuyor. Eksik olan **söylemekti**:
+> kutu yalnızca *aşağı* soruyordu ve parçada o liste boş olduğu için işe
+> yaramaz tek bir satır çıkıyordu. Daha kötüsü, `SurumeDonusu`'nün sınıf
+> yorumu kutunun bunu söylediğini **yazıyordu** — bayat uyarı, fazla
+> uyarıdan tehlikeli (§6).
+>
+> **ÖLÇÜM KOORDİNATSIZ:** bloğun zemini palette **başka hiçbir yerde
+> olmayan** bir renk (`Renkler.EtkiZemin`), o yüzden kırpma bütün ekran.
+> Metnin rengini aramak işe yaramazdı — ClearType hiçbir pikseli saf renkte
+> bırakmıyor; dolu dikdörtgen bırakıyor (§11'de ölçülü, kilit dosyası
+> işaretinde aynı tuzağa düşülmüştü). §9 döngüsü: TEMİZ → blok forma
+> eklenmeyince **YAKALADI** (0 bant) → geri konunca TEMİZ.
+>
+> **KUTU PANELİN KURALINI İZLİYOR — ve ilk hâli izlemiyordu.** İlk yazışta
+> cevap güvenilir değilse adlar **tümden gizleniyordu**; oysa panel (Erkan'ın
+> 30.08.2026 kararı) dolu listede adları gösterip güvenilirliği susturuyor.
+> İkisi yan yana duruyor: panel *"KULLANILDIĞI YERLER 2 dosya"* derken kutu
+> *"BİLİNMİYOR"* deseydi, düzeltilmek istenen karışıklığın ta kendisi
+> üretilirdi. Şimdi adlar kazanıyor, eksiklik **bir satır** olarak altına
+> yazılıyor.
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

@@ -196,7 +196,9 @@ referanslar kendiliğinden sağlam kalır.
 - **Eski versiyonlar okunmaya devam eder** (31.08.2026 öncesi tek dosyalık arşivler): listelenir, dönülür, silinir. Ama onlar tek dosya olduğu için eski **montaj** versiyonları hâlâ parçasız açılır; yeni oluşturduğunda çocuklar da arşive girer.
 
 - **Versiyon satırına sağ tık** → dosya işlemleri uygulanmaz (gri + sebep): F2/Sil arşive gitseydi kayıt ile kopya eşleşmesi kırılırdı.
-- **Bu versiyona dön** → sekmede satırı seç, **Enter**. Kutu, o versiyonun **kullandığı dosyaları** listeler: hangileri de geri yazılsın, sen seçersin. Bugünküyle **farklı** olanlar işaretli gelir; değişmemişe dokunulmaz. SOLIDWORKS'te açık ya da bugün yerinde olmayan dosya işaretlenemez, sebebi yanında yazar.
+- **Bu versiyona dön** → sekmede satırı seç, **Enter**. Kutu **iki yönü birden** gösterir:
+  - **Yukarı (kimler etkilenir)** → o dosyayı **kullanan** dosyalar adlarıyla listelenir. Dönüş, dosyanın **kendi yoluna** yazıyor — tek dosya var, kopya yok — yani onu kullanan **bütün montajlar** dönülen içeriği kendiliğinden görür; montaj dosyalarına hiç dokunulmaz. (SOLIDWORKS'te açınca yeniden oluşturmak gerekebilir.) Tarama yapılmadıysa **sayı gösterilmez**, "bilinmiyor" yazar — boş liste "kimse kullanmıyor" demek değildir.
+  - **Aşağı (neler geri yazılsın)** → o versiyonun **kullandığı dosyalar**: hangileri de geri yazılsın, sen seçersin. Bugünküyle **farklı** olanlar işaretli gelir; değişmemişe dokunulmaz. SOLIDWORKS'te açık ya da bugün yerinde olmayan dosya işaretlenemez, sebebi yanında yazar. Bu versiyonun başka dosyası yoksa o bölüm hiç çizilmez.
 - **Hiçbir içerik kaybolmaz:** geri yazılan **her** dosyanın bugünkü hâli önce kendi arşivine alınır (dönüş de bir versiyondur). Durum çubuğu kaç çocuğun yazıldığını ve atlananların sebebini söyler.
 - **Notu düzelt** → sekmede satırı seç, **`F2`**. Kutuda eski not hazır gelir; boş bırakırsan not silinir. İçeriğe, numaraya, tarihe dokunulmaz.
 - **Versiyonu sil** → sekmede satırı seç, **`Delete`**. Onay kutusu açıkça söyler: **kalıcıdır, çöp kutusuna gitmez, geri alınamaz** — ama **dosyanın kendisine dokunulmaz**, yalnız o versiyon kaydı ve arşiv kopyası gider.
@@ -206,7 +208,6 @@ referanslar kendiliğinden sağlam kalır.
 - **Ad ya da klasör adı değişince versiyonlar TAKİP EDER.** Arşiv, dosyayla birlikte taşınır — adlandırma, taşıma, sürükle-bırak ve bunların `Ctrl+Z` ile geri alınması dahil. Taşınamazsa (hedefte zaten bir arşiv varsa) durum çubuğu **sebebini yazar** ve hiçbir versiyon silinmez.
 - **Çöpe atmak arşivi taşımaz** (bilinçli): geri yükleyince dosya aynı yola döner ve versiyonlar kendiliğinden geri gelir.
 - **Açık sınır** → uygulama kapalıyken yaptığın bir değişikliğin *önceki* hâli, daha önce versiyonlanmadıysa **kurtarılamaz**. Alışkanlık: düzenlemeye başlamadan `Ctrl+Shift+U`. (Belge kapanınca kendiliğinden soran akış sonraki sürümde geliyor.)
-- **Açık sınır 2** → ad değiştirme/taşıma arşivi henüz **taşımıyor**: versiyonlu dosyayı adlandırırsan liste "yok" görünür (kayıp değil — arşiv eski adla diskte durur). Şimdilik versiyonlu dosyanın adını değiştirme; sonraki sürümde kendiliğinden taşınacak.
 - Bozuk ya da arşivi kayıp kayıtlar gizlenmez; listenin altında sayısıyla söylenir.
 
 ---
