@@ -960,6 +960,7 @@ dosyasında** duruyor:
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
 | **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surumler.Cocuklar.cs` |
+| **"bu versiyona dön"** (çekirdek) | `Cekirdek/Surumler.Donus.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
