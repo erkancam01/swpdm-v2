@@ -201,19 +201,30 @@ internal sealed class DiskIzleyici : IDisposable
         _susturmaSonu.Dispose();
     }
 
-    private static bool KendiKlasoru(string yol, string klasorAdi)
-        => yol.Contains(
-               WindowsYolu.Ayirici + klasorAdi, StringComparison.OrdinalIgnoreCase)
-           || yol.Contains(
-               WindowsYolu.EgikAyirici + klasorAdi, StringComparison.OrdinalIgnoreCase);
+    /// <summary>
+    /// Yol, uygulamanin KENDI klasorlerinden birinin icinde mi. Ad listesi
+    /// burada DEGIL: <see cref="GizliKlasorler.Tumu"/>'nden geliyor
+    /// (CLAUDE.md 1b - yeni bir gizli klasor bu dosyaya satir ekletmez).
+    /// </summary>
+    private static bool KendiKlasoru(string yol)
+    {
+        foreach (string ad in GizliKlasorler.Tumu)
+        {
+            if (yol.Contains(WindowsYolu.Ayirici + ad, StringComparison.OrdinalIgnoreCase)
+                || yol.Contains(WindowsYolu.EgikAyirici + ad, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private void Olay(object gonderen, FileSystemEventArgs e)
     {
-        // KENDI cop ve versiyon klasorlerimizdeki hareket sayilmaz: her
-        // silme/arsivleme orada dosya olusturuyor ve bu sonsuz tazeleme
-        // dongusu yaratirdi.
-        if (KendiKlasoru(e.FullPath, Cop.KlasorAdi)
-            || KendiKlasoru(e.FullPath, Surumler.KlasorAdi))
+        // KENDI klasorlerimizdeki hareket sayilmaz: her silme/arsivleme
+        // orada dosya olusturuyor ve bu sonsuz tazeleme dongusu yaratirdi.
+        if (KendiKlasoru(e.FullPath))
         {
             return;
         }

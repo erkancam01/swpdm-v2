@@ -172,6 +172,9 @@ internal sealed class GeriAlIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Z;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // yiginin kendi yollarina yazar, SECIME degil (bilinen sinir: geri alma kilitli klasore dokunabilir)
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (!GeriAlDefteri.Var)
@@ -235,6 +238,9 @@ internal sealed class IleriAlIslemi : IAgacIslemi
 
     /// <inheritdoc/>
     public Keys Kisayol => Keys.Control | Keys.Y;
+
+    /// <inheritdoc/>
+    public bool Yazar => false;   // yiginin kendi yollarina yazar, SECIME degil (bkz. GeriAlIslemi)
 
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)

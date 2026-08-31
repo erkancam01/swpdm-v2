@@ -77,4 +77,16 @@ internal static class Renkler
     /// ekran goruntusunden koordinatsiz sayabiliyor.
     /// </summary>
     internal static readonly Color EtkiZemin = Color.FromArgb(0xFF, 0xF3, 0xD9);
+
+    /// <summary>
+    /// Kilitli klasor satirinin zemini. Palette BASKA HICBIR YERDE yok:
+    /// hem "buraya dokunulmaz" diye okunuyor hem de kapi bu klasorun
+    /// gercekten isaretlendigini ekran goruntusunden KOORDINATSIZ
+    /// sayabiliyor (CLAUDE.md 11: dolu dikdortgen tam renk verir, ClearType
+    /// metin vermez).
+    /// </summary>
+    internal static readonly Color KilitliKlasorZemin = Color.FromArgb(0xDD, 0xDD, 0xE6);
+
+    /// <summary>Kilitli klasorun yazisi.</summary>
+    internal static readonly Color KilitliKlasorYazi = Color.FromArgb(0x4A, 0x4A, 0x6A);
 }

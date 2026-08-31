@@ -176,7 +176,7 @@ public static class BelgeAgaci
                 return komsu;
             }
 
-            string? cozulen = EbeveyneGoreCoz(ebeveynKlasoru, yazilanYol);
+            string? cozulen = WindowsYolu.TabandanCoz(ebeveynKlasoru, yazilanYol);
             if (cozulen is not null && Diskte(cozulen))
             {
                 return cozulen;
@@ -188,53 +188,6 @@ public static class BelgeAgaci
         {
             return null;
         }
-    }
-
-    /// <summary>
-    /// Yazili yolu ebeveynin klasorune gore GERCEK bir diske-yola cevirir.
-    ///
-    /// WindowsYolu.Cozumle KULLANILMIYOR - bilincli: o, iki yolu KIYASLAMAK
-    /// icin var ve sonucu hep "\" ile birlestiriyor; testler Linux'ta
-    /// kosuyor ve File.Exists oyle bir yolu bulamazdi. Burada tabandan
-    /// Klasor/Birlestir ile yuruyoruz: taban GERCEK bir yol oldugundan
-    /// Birlestir ayiriciyi ondan seciyor ve sonuc her iki isletim
-    /// sisteminde de aranabilir kaliyor.
-    /// </summary>
-    private static string? EbeveyneGoreCoz(string temel, string yazilan)
-    {
-        // Mutlak yol (surucu ya da UNC) oldugu gibi denenir.
-        if ((yazilan.Length > 1 && yazilan[1] == ':')
-            || (yazilan.Length > 1 && Ayirici(yazilan[0]) && Ayirici(yazilan[1])))
-        {
-            return yazilan;
-        }
-
-        string suan = temel;
-        foreach (string parca in yazilan.Split(
-                     new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (parca == ".")
-            {
-                continue;   // onarimin uzunluk dolgusu: ".\" yolu degistirmez
-            }
-
-            if (parca == "..")
-            {
-                suan = WindowsYolu.Klasor(suan);
-                if (suan.Length == 0)
-                {
-                    return null;   // kokun ustune cikti; yol gecersiz
-                }
-
-                continue;
-            }
-
-            suan = WindowsYolu.Birlestir(suan, parca);
-        }
-
-        return suan;
-
-        static bool Ayirici(char c) => c is '\\' or '/';
     }
 
     /// <summary>

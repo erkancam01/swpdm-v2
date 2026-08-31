@@ -257,6 +257,9 @@ internal sealed class RaporIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.D;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // yalnizca gosterir
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (string.IsNullOrWhiteSpace(secim.Kok))

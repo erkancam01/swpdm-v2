@@ -21,6 +21,9 @@ internal sealed class YenileIslemi : IAgacIslemi
     public Keys Kisayol => Keys.F5;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // diski yeniden okur
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (secim.Kok is null)

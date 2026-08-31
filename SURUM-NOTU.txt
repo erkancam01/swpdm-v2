@@ -1,3 +1,68 @@
+BU SURUMDE - KLASORU KILITLE (bitmis isler acilmasin)
+
+  Senin istegin (31.08.2026): "deneme yaparken yanlislikla bitmis islerin
+  icerigini degistirdim. Bitmis isleri tikleyeyim, kilitleyeyim, ondan sonra
+  rahat rahat calisayim."
+
+  NASIL: klasoru sec (birden fazla da secebilirsin), sag tik ->
+  "Klasoru kilitle / kilidi kaldir" ya da CTRL+SHIFT+Q.
+
+  KILITLENINCE:
+    - soldaki "+" KAYBOLUR, klasor ACILMAZ. Icindeki dosya agacta HIC
+      gorunmez, yani yanlislikla secip degistirmenin yolu kapanir.
+    - satir gri zeminli olur ve yaninda "kilitli" yazar; dosya sayisi
+      yazmaya devam eder (klasor gizlenmiyor - gizlemek "klasor kayboldu"
+      dedirtirdi).
+    - o klasorde ve altinda ad degistir / sil / tasi / surukle-birak /
+      yapistir / versiyona don REDDEDILIR ve sebebi durum cubuguna yazar.
+    - arama da icine girmez; kac kilitli klasorun atlandigi yazar.
+
+  KILIDI KALDIRMAK: ayni komut. Kilit listesi kokun icinde
+  ".SwPdmKilit\kilitler.txt" dosyasinda, yollar KOKE GORELI - kok baska bir
+  surucu harfinden baglansa da kilitler gecerli kalir. O klasoru elle
+  silersen butun kilitler acilir.
+
+  DURUSTCE - BUNU BILMEN LAZIM:
+    - BU GUVENLIK DEGIL, KAZA KORUMASI. Sifre yok; uygulamadan herkes
+      kilidi kaldirabilir.
+    - GEZGIN'I BAGLAMAZ. Dosya Windows'tan ya da SOLIDWORKS'un kendi "Ac"
+      penceresinden yine acilir ve degistirilebilir. Kotu niyete karsi tek
+      gercek kalkan Windows klasor iznidir - onu uygulama YAZMIYOR, cunku
+      yonetici hakki ister ve yanlis yazilirsa klasore erisim tumden
+      kaybolur.
+    - DOSYA OZNITELIGINE DOKUNMUYOR. Salt-okunur biti senin; biz
+      koymadigimizi kaldirmayalim diye hic ellenmiyor.
+    - REFERANS TARAMASI VE ONARIMI DEVAM EDIYOR - bilerek. Bitmis montaj
+      hala parcalari kullaniyor; indeksten duserse panel "bu parcayi kimse
+      kullanmiyor" der ve SAGLAM DOSYA SILDIRIR. Ayrica canli bir parcanin
+      adi degisince kilitli montajin icindeki yol da duzeltilir; yoksa
+      bitmis is SESSIZCE kirilirdi.
+    - Ctrl+Z kilide BAKMIYOR: geri alma yigindaki kendi yollarina yaziyor.
+      Az rastlanir (geri alinan is kilit konmadan once yapilmistir) ama
+      yazili dursun.
+
+  YOL USTUNDE BULUNAN GERCEK KUSUR: ARAMA kendi klasorlerimize giriyordu.
+  Cop kutusu ve versiyon arsivi dort yerde dislaniyordu ama ARAMA besinci
+  yerdi ve atlanmisti - "Parça1" arayinca arsivdeki KOPYA da cikiyor,
+  gercek dosya sanip adlandirilabiliyordu. Kapandi.
+
+  OLCULDU: 10 yeni birim test (kilit kalici · alttaki dosyalari kapsiyor ·
+  komsu klasor etkilenmiyor · kok kilitlenmiyor · silinmis klasorun satiri
+  duser · liste koke goreli · arama kilitliye girmiyor · arama kendi
+  klasorlerimize girmiyor · REFERANS TARAMASI kilitliye GIRMEYE devam
+  ediyor). 374 test, 369 gecti / 5 Windows'a ozel.
+
+  KAPIYA 22. OLCUM EKLENDI: kilit isareti belirdi mi VE dal gercekten
+  acilmiyor mu (kilitsizken acilabildigi de olculuyor - yoksa olcum
+  "hic acilmayan bir klasor"le kendini kandirirdi). Yer tutucuyu kesen
+  satir kaldirilinca kapi YAKALADI, geri konunca TEMIZ.
+  Bes kapi TEMIZ, calistirma 22/22.
+
+  SENDE OLCULECEK: bitmis bir isi kilitle, sonra onu acmaya calis; sag
+  tikla islem yapmayi dene. Bir de kilitli klasordeki bir parcayi
+  kullanan CANLI bir montajda ad degistir - onarim calismali (kilit
+  gorunusu durdurur, dogrulugu degil).
+
 BU SURUMDE - "VERSIYONA DON" KUTUSU ARTIK KIMLERIN ETKILENDIGINI YAZIYOR
 
   Senin sorun (31.08.2026): "versiyon secince o parcanin kullanildigi tum

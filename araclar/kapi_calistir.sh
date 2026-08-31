@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=21
+OLCUM_TOPLAM=22
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -87,6 +87,8 @@ ONIZLEME_BASLIK_Y=463
 ONIZLEME_BASLIK_KIRP="200x16+15+456"            # basligin kendisi (iz icin)
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 ETKI_ZEMIN="#FFF3D9"                            # Renkler.EtkiZemin (donus kutusu)
+KILIT_ZEMIN="#DDDDE6"                           # Renkler.KilitliKlasorZemin
+KILIT_AGAC_SATIRI=1                             # kilit kosusunda "Bitmis" klasorunun satiri
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -1280,6 +1282,98 @@ if [ -n "$AYAR_KLASORU" ]; then
   fi
 else
   olcum "3B ayariyla acilis ...." "OLCULEMEDI (wine kullanici klasoru yok)"
+  SORUN=1
+fi
+
+# 22) KLASOR KILIDI: kilitli klasor ACILMAMALI ("+" cikmamali)
+#
+# NEDEN VAR (Erkan, 31.08.2026): "deneme yaparken yanlislikla bitmis islerin
+# icerigini degistirdim. Bitmis isleri kilitleyeyim, rahat rahat calisayim."
+# Kilit sessizce calismazsa kullanici "kilitledim" sanip rahat calisir ve
+# tam da korktugu seyi yapar (CLAUDE.md 3).
+#
+# NEDEN AYRI KOSU: yukaridaki olcumler ornek klasordeki dosyalari yeniden
+# adlandiriyor ve agactaki satir sirasi kayiyor. Kilidin olcusu "dal acildi
+# mi" oldugu icin satir SAYISI onemli; kendi klasorunde kurmak olcumu oteki
+# olcumlerin sirasindan bagimsiz kiliyor.
+KILIT_ORNEK="$CALISMA/kilit-klasor/KILIT"
+rm -rf "$CALISMA/kilit-klasor"
+mkdir -p "$KILIT_ORNEK/Bitmis" "$KILIT_ORNEK/Canli"
+: > "$KILIT_ORNEK/Bitmis/EskiParca.SLDPRT"
+: > "$KILIT_ORNEK/Bitmis/EskiMontaj.SLDASM"
+: > "$KILIT_ORNEK/Canli/YeniParca.SLDPRT"
+KILIT_WIN="Z:$(echo "$KILIT_ORNEK" | tr '/' '\\')"
+
+KILIT_LOG="$CALISMA/uygulama-kilit.log"
+: > "$KILIT_LOG"
+kill "$UYG_PID" > /dev/null 2>&1
+sleep 2
+
+( cd "$YAYIN" && "$WINE" "./$AD.exe" --klasor "$KILIT_WIN" >> "$KILIT_LOG" 2>&1 ) &
+UYG_PID=$!
+sleep 18
+
+P4="$(xwininfo -root -children 2>/dev/null)"
+K4="$(echo "$P4" | grep -i "(\"${AD,,}.exe\"" \
+      | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' \
+      | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $3" "$4; exit}')"
+
+if [ -n "$K4" ]; then
+  # shellcheck disable=SC2086
+  set -- $K4
+  KX="$1"
+  KY="$2"
+  KILIT_SATIR_Y=$(( KY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * KILIT_AGAC_SATIRI ))
+
+  # Once TABAN: "Bitmis" acilabiliyor mu (kilitsiz hal).
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$KILIT_SATIR_Y" click 1 > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/kilit-once.png" > /dev/null 2>&1
+  KILIT_TABAN="$(agac_satir_say "$CALISMA/kilit-once.png" "$KX" "$KY")"
+
+  xdotool key --clearmodifiers Right > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/kilit-acik.png" > /dev/null 2>&1
+  KILIT_ACIK="$(agac_satir_say "$CALISMA/kilit-acik.png" "$KX" "$KY")"
+
+  # Dali kapat, kilitle.
+  xdotool key --clearmodifiers Left > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers ctrl+shift+q > /dev/null 2>&1
+  sleep 4
+
+  # SECIM BOYASI ZEMINI ORTER - OLCULDU (31.08.2026, ilk kosu HAYIR dedi):
+  # kilitlenen satir secili kaliyor ve #3399FF kilit zeminini tamamen
+  # kapatiyor. Ayni tuzaga kilit dosyasi isareti olcumunde de dusulmustu
+  # (CLAUDE.md 11). Once KOK satirina tiklanip secim oradan aliniyor.
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$(( KY + AGAC_ILK_SATIR ))" \
+    click 1 > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/kilit-kilitli.png" > /dev/null 2>&1
+  KILIT_BANT="$(renk_bant_say "$CALISMA/kilit-kilitli.png" "$AGAC_KIRP" "$KX" "$KY" "$KILIT_ZEMIN")"
+
+  # ACMAYI DENE: "+" yoksa Right hicbir sey yapmamali.
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$KILIT_SATIR_Y" click 1 > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers Right > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/kilit-denendi.png" > /dev/null 2>&1
+  KILIT_DENENDI="$(agac_satir_say "$CALISMA/kilit-denendi.png" "$KX" "$KY")"
+
+  if [ "${KILIT_ACIK:-0}" -le "${KILIT_TABAN:-0}" ]; then
+    olcum "klasor kilidi ........." "OLCULEMEDI (klasor kilitsizken de acilmadi: $KILIT_TABAN -> $KILIT_ACIK)"
+    SORUN=1
+  elif [ "${KILIT_BANT:-0}" -lt 1 ]; then
+    olcum "klasor kilidi ........." "HAYIR (kilit isareti agacta gorunmedi)"
+    SORUN=1
+  elif [ "${KILIT_DENENDI:-0}" -gt "${KILIT_TABAN:-0}" ]; then
+    olcum "klasor kilidi ........." "HAYIR (kilitli klasor ACILDI: $KILIT_TABAN -> $KILIT_DENENDI)"
+    SORUN=1
+  else
+    olcum "klasor kilidi ........." "EVET (isaretlendi ve acilmadi: $KILIT_TABAN -> $KILIT_ACIK kilitsiz, kilitli $KILIT_DENENDI)"
+  fi
+else
+  olcum "klasor kilidi ........." "HAYIR (kilit kosusunda pencere dogmadi)"
   SORUN=1
 fi
 

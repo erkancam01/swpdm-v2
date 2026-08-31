@@ -22,6 +22,9 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.U;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // arsive KOPYALAR; bitmis isin kendisini degistirmez
+
+    /// <inheritdoc/>
     /// <remarks>
     /// ElleBagla kalibi: referans panelinde bir SATIRDA dururken bile
     /// versiyonlanan, panelin gosterdigi (agacta secili) dosyadir - satir

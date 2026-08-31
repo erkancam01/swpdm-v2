@@ -38,7 +38,8 @@ public sealed record AramaSonucu(
     int TarananKlasor,
     bool SinirAsildi,
     bool Iptal,
-    IReadOnlyList<string> OkunamayanKlasorler);
+    IReadOnlyList<string> OkunamayanKlasorler,
+    int AtlananKilitli = 0);
 
 /// <summary>
 /// Diski okur. ARAYUZ BILMEZ - CLAUDE.md 7: bir arayuz sinifi hem ekran hem
@@ -79,8 +80,7 @@ public static class KlasorTarayici
             // kullanicinin dosyasi degil; icini agacta gormek karisiklik
             // olurdu. GIZLENMIS de olmuyor - yeri Cop Kutusu penceresinde
             // acikca yaziyor (CLAUDE.md 3).
-            if (string.Equals(WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal)
-                || string.Equals(WindowsYolu.DosyaAdi(alt), Surumler.KlasorAdi, StringComparison.Ordinal))
+            if (GizliKlasorler.BizimYol(alt))
             {
                 continue;
             }
@@ -117,16 +117,23 @@ public static class KlasorTarayici
     /// Uzun surebilir: iptal edilebilir, ilerleme bildirir ve sinir asilirsa
     /// bunu SOYLER. Sessiz kirpma yok (CLAUDE.md 9).
     /// </summary>
+    /// <param name="kilitler">
+    /// Kilitli klasorler; verilirse aramaya GIRMEZLER ve kac tanesinin
+    /// atlandigi sonuca yazilir. Bitmis is aranmaz - kullanici onu zaten
+    /// gozden uzak tutmak icin kilitledi; ama SESSIZ atlanmaz (CLAUDE.md 3).
+    /// </param>
     public static AramaSonucu Ara(
         string? kok,
         string? metin,
         int enFazla,
         CancellationToken iptal = default,
-        Action<int, int>? ilerleme = null)
+        Action<int, int>? ilerleme = null,
+        KilitKumesi? kilitler = null)
     {
         var bulunanlar = new List<DosyaOgesi>();
         var okunamayanlar = new List<string>();
         int taranan = 0;
+        int atlanan = 0;
 
         if (string.IsNullOrWhiteSpace(kok) || string.IsNullOrWhiteSpace(metin))
         {
@@ -142,7 +149,7 @@ public static class KlasorTarayici
         {
             if (iptal.IsCancellationRequested)
             {
-                return new AramaSonucu(bulunanlar, taranan, sinirAsildi, true, okunamayanlar);
+                return new AramaSonucu(bulunanlar, taranan, sinirAsildi, true, okunamayanlar, atlanan);
             }
 
             string simdiki = siradakiler.Pop();
@@ -164,6 +171,26 @@ public static class KlasorTarayici
 
             foreach (string alt in altlar)
             {
+                // KENDI KLASORLERIMIZ ARANMAZ - ve burasi BES YIL SONRA
+                // FARK EDILEN bir kusurdu: cop ve versiyon arsivi dort yerde
+                // dislaniyordu ama arama BESINCI yerdi ve atlanmisti. Sonuc
+                // sessiz degil ama tehlikeliydi: arama "Parça1.SLDPRT"
+                // deyince arsivdeki KOPYAYI da gosteriyor, kullanici onu
+                // gercek dosya sanip adlandirabiliyordu.
+                if (GizliKlasorler.BizimYol(alt))
+                {
+                    continue;
+                }
+
+                // KILITLI KLASOR ARANMAZ: bitmis isi gozden uzak tutmak
+                // kullanicinin kendi karari; arama onu geri getirseydi
+                // kilidin yarisi bosa giderdi.
+                if (kilitler is not null && kilitler.KendisiKilitli(alt))
+                {
+                    atlanan++;
+                    continue;
+                }
+
                 siradakiler.Push(alt);
             }
 
@@ -178,7 +205,7 @@ public static class KlasorTarayici
                 if (bulunanlar.Count >= enFazla)
                 {
                     sinirAsildi = true;
-                    return new AramaSonucu(bulunanlar, taranan, true, false, okunamayanlar);
+                    return new AramaSonucu(bulunanlar, taranan, true, false, okunamayanlar, atlanan);
                 }
 
                 DosyaOgesi? oge = DosyayiOku(dosya);
@@ -190,7 +217,7 @@ public static class KlasorTarayici
         }
 
         bulunanlar.Sort(static (a, b) => DogalKarsilastirici.Ortak.Compare(a.Ad, b.Ad));
-        return new AramaSonucu(bulunanlar, taranan, sinirAsildi, false, okunamayanlar);
+        return new AramaSonucu(bulunanlar, taranan, sinirAsildi, false, okunamayanlar, atlanan);
     }
 
     private static KlasorOgesi KlasoruOlc(string yol)

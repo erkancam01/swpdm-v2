@@ -8,8 +8,8 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 364 test · 359 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma **21** ölçüm).
+> 374 test · 369 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> (harita + boyut + derleme + test + çalıştırma **22** ölçüm).
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -31,6 +31,11 @@
 > `BelgeAgaci.cs`'te (versiyon arşivinin çekirdeği) ve kapısının yakaladığı
 > **gerçek hata** — alt klasördeki parça hiç bulunamıyordu, arşive girmiyordu
 > ve montajın versiyonu SOLIDWORKS'te açılmıyordu; onarıldı ve testle kilitli.
+> 31.08.2026: **KLASÖR KİLİDİ** geldi — `Ctrl+Shift+Q`, bitmiş işler
+> açılmaz (`KlasorKilidi.cs`). Kaza koruması: Gezgin'i bağlamaz, referans
+> taraması/onarımı bilerek devam eder. Yol üstünde gerçek bir kusur da
+> kapandı: **arama** kendi klasörlerimize (çöp + arşiv) giriyordu.
+> Gizli klasör adları artık `GizliKlasorler.Tumu`'nden türetiliyor.
 > 31.08.2026: **dön kutusu "kimler etkilenir" diyor** — Erkan'ın sorusunun
 > cevabı: dönüş dosyanın kendi yoluna yazdığı için montajlar zaten dönülen
 > içeriği görüyor; eksik olan söylemekti. Kutu artık iki yönü de gösteriyor,
@@ -238,6 +243,22 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   önizleme başlığının sağına **tek satır** özet (boyut · tarih) koymak —
   panelin sadeliğini bozmadan. Erkan söylemeden yapılmayacak.
 
+- **ÇOKLU KULLANICI — ERTELENDİ (31.08.2026), gerekçesiyle.** Erkan: *"burda
+  çok iş var, mevcut özellikleri ve arayüzü iyice oturtup ondan sonra mı
+  baksak"* — ve haklı: temel bilinmeyeni (**ağ paylaşımında dosya kilidi
+  atomik mi**) burada ölçülemiyor, üstelik tek kullanıcının akışı henüz
+  Erkan'ın makinesinde tam doğrulanmadı. Yerine **klasör kilidi** yazıldı
+  (kaza koruması, tek kullanıcı). Çoklu kullanıcı bir gün gelirse sırası:
+  (1) ağ ölçüm aracı — iki süreç tek paylaşımda `FileMode.CreateNew` için
+  yarışır, SMB önbelleği kaç saniye gecikiyor, saat farkı ne;
+  (2) kilit çekirdeği + kim/ne zaman; (3) işlemlerin kilide bakması —
+  en kritik yer `ReferansOnarimi`'nin **yazacağı montajlar**;
+  (4) günlük + "kimde ne var" penceresi. Kilit listesi zaten kökün içinde
+  (`.SwPdmKilit`), yani oraya doğru büyüyebilir.
+- **Klasör düzeni turu.** Gezgin / Referans / Versiyon / Paylaşım ayrı
+  klasörlere (yalnız `git mv`, sıfır kod değişikliği — bu depoda klasör ad
+  alanı değil). Erkan'ın isteği; alan **üç değil dört**, dördüncüsü ve en
+  değerlisi **referans koruma**.
 - **Pack and Go.** Bir montajı kullandıklarıyla birlikte başka klasöre
   kopyala, kopyadaki referanslar doğru olsun. Parçalar zaten var:
   `ReferansIndeksi.ZincirdekiEksikler` + `YolBaglama.Bagla`.

@@ -63,6 +63,12 @@ internal sealed class AramaSurucusu : IDisposable
     /// <summary>Icinde arama yapilacak kok. null ise arama yapilmaz.</summary>
     internal string? Kok { get; set; }
 
+    /// <summary>
+    /// Kilitli klasorler; aramaya girmezler. Kok gibi disaridan veriliyor -
+    /// bu sinif kilidin nereden geldigini BILMEZ (CLAUDE.md 1b).
+    /// </summary>
+    internal KilitKumesi? Kilitler { get; set; }
+
     /// <summary>Kutuyu KOD ile bosaltir; arama tetiklenmez.</summary>
     internal void MetniTemizle()
     {
@@ -184,8 +190,10 @@ internal sealed class AramaSurucusu : IDisposable
         Mesgul?.Invoke(this, true);
 
         Task.Run(
-            () => KlasorTarayici.Ara(kok, metin, Sinir, belirtec,
-                (klasor, eslesme) => Ilerleme(belirtec, klasor, eslesme)),
+            () => KlasorTarayici.Ara(
+                kok, metin, Sinir, belirtec,
+                (klasor, eslesme) => Ilerleme(belirtec, klasor, eslesme),
+                Kilitler),
             belirtec)
             .ContinueWith(is_ => Sonuclandi(is_, metin, belirtec), TaskScheduler.Default);
     }

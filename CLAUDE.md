@@ -964,7 +964,8 @@ dosyasında** duruyor:
 | 3B kipin sürücüye bağlanması (dene · gizle · sebep) | `Arayuz/Gorunum/Onizleme/Onizleme.UcBoyutluKip.cs` |
 | eski biçim gömülü önizleme okuma | `Cekirdek/OnizlemeOkuyucu.cs` |
 | arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
-| ağaç (doldurma, süzgeç, arama sonucu) | `Arayuz/Gorunum/Agac/AgacDoldurucu.cs` |
+| ağaç (doldurma, süzgeç, kilitli klasör) | `Arayuz/Gorunum/Agac/AgacDoldurucu.cs` |
+| arama sonucu görünümü (göster · gezinmeye dön) | `Arayuz/Gorunum/Agac/AgacDoldurucu.Arama.cs` |
 | çoklu seçim (Ctrl · Shift) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
 | bir satırın boyanması (seçim · bırakma hedefi) | `Arayuz/Gorunum/Agac/SecimliAgacCizimi.cs` |
 | açık dalların ve seçimin korunması | `Arayuz/Gorunum/Agac/AgacDurumu.cs` |
@@ -1037,6 +1038,9 @@ dosyasında** duruyor:
 | dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
+| **klasör kilidi** (bitmiş işler açılmasın) | `Cekirdek/KlasorKilidi.cs` |
+| kilitle/kilidi kaldır işlemi (`Ctrl+Shift+Q`) | `Arayuz/Gorunum/Islemler/KlasorKilidiIslemi.cs` |
+| **uygulamanın kendi klasörleri** (tek liste) | `Cekirdek/GizliKlasorler.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
@@ -1136,7 +1140,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi bir şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi iki şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1152,7 +1156,8 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu ve kutu
 ETKİLENENLERİ gösteriyor mu** ·
-**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
+**3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
+**kilitli klasör gerçekten açılmıyor mu** (üçüncü kısa koşu, kendi klasörü).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1442,6 +1447,22 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > *"BİLİNMİYOR"* deseydi, düzeltilmek istenen karışıklığın ta kendisi
 > üretilirdi. Şimdi adlar kazanıyor, eksiklik **bir satır** olarak altına
 > yazılıyor.
+
+> **Yirmi ikincisi neden var (klasör kilidi):** Erkan, 31.08.2026:
+> *"deneme yaparken yanlışlıkla bitmiş işlerin içeriğini değiştirdim."*
+> Kilit sessizce çalışmazsa kullanıcı *"kilitledim"* sanıp rahat çalışır ve
+> tam da korktuğu şeyi yapar (§3). Ölçüm iki şartlı: kilit **işareti** belirdi
+> mi (zemin rengi bandı) **ve** dal gerçekten **açılmıyor mu** (`→` ile açmayı
+> dene, ağaçtaki satır sayısı **artmamalı**). Taban da ölçülüyor: kilitsizken
+> aynı klasör **açılabiliyor** olmalı — yoksa ölçüm "hiç açılmayan bir
+> klasör"le kendini kandırırdı.
+> §9 döngüsü: TEMİZ (3 → 5 kilitsiz, kilitli 3) → yer tutucu çocuğu kesen
+> `return` kaldırılınca **YAKALADI** (kilitli 3 → 5) → geri konunca TEMİZ.
+>
+> **İLK KOŞU HAYIR DEDİ ve sebep ÖLÇÜMDEYDİ:** kilitlenen satır **seçili**
+> kalıyor ve seçim boyası (`#3399FF`) kilit zeminini tamamen örtüyor —
+> `~$` işareti ölçümünde de aynı tuzağa düşülmüştü. Ölçüm artık önce **kök
+> satırına tıklayıp** seçimi oradan alıyor.
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

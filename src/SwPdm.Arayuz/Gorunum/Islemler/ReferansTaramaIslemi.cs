@@ -30,6 +30,9 @@ internal sealed class ReferansTaramaIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.R;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // okur; kilitli klasor de TARANIR - taranmazsa panel "kimse kullanmiyor" der ve saglam dosya sildirir (CLAUDE.md 3)
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (_kosuyor)

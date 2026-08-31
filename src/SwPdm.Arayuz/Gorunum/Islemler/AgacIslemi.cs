@@ -22,12 +22,19 @@ namespace SwPdm.Arayuz.Gorunum;
 /// nerede oldugu TEK yerde cozuluyor ki islemler ayari okumak zorunda
 /// kalmasin (CLAUDE.md 8).
 /// </param>
+/// <param name="Kilitler">
+/// Kilitli klasorlerin anlik hali. Baglam alani, ozellik degil: islemlerin
+/// buradan OKUMASI kilidin icini bilmek degildir (CLAUDE.md 1b'nin
+/// AramaKipinde/CopKlasoru icin verilmis karari). Kilit denetimi tek yerde
+/// yapiliyor - bkz. <see cref="Kilitler.Engel"/>.
+/// </param>
 internal sealed record SecimBaglami(
     IReadOnlyList<object> Ogeler,
     string? EtkinKlasor,
     bool AramaKipinde,
     string? Kok,
-    string? CopKlasoru)
+    string? CopKlasoru,
+    KilitKumesi? Kilitler = null)
 {
     /// <summary>
     /// Baglami KURALIYLA kurar. "Etkin klasor" kurali BURADA yasar
@@ -36,7 +43,8 @@ internal sealed record SecimBaglami(
     /// dosyanin klasoru; o da yoksa kok.
     /// </summary>
     internal static SecimBaglami Kur(
-        IReadOnlyList<object> ogeler, string? kok, bool aramaKipinde, string? copKlasoru)
+        IReadOnlyList<object> ogeler, string? kok, bool aramaKipinde, string? copKlasoru,
+        KilitKumesi? kilitler = null)
     {
         string? etkin = null;
         foreach (object oge in ogeler)
@@ -54,7 +62,7 @@ internal sealed record SecimBaglami(
             }
         }
 
-        return new SecimBaglami(ogeler, etkin ?? kok, aramaKipinde, kok, copKlasoru);
+        return new SecimBaglami(ogeler, etkin ?? kok, aramaKipinde, kok, copKlasoru, kilitler);
     }
 
     /// <summary>Secili tek oge; birden fazlaysa null.</summary>
@@ -99,6 +107,54 @@ internal sealed record IslemBaglami(
     IIlerlemeYuzeyi Ilerleme,
     Action AgaciKapat,
     ReferansSurucusu Referanslar);
+
+/// <summary>
+/// KILIT DENETIMI TEK YERDE (CLAUDE.md 1b/8).
+///
+/// Kilitli bir klasorde YAZAN islem calismaz. Denetim burada duruyor, her
+/// islemin icinde degil: yoksa kilit ozelligi yirmi dosyaya satir ekletir ve
+/// KALDIRILIRKEN yirmi dosyadan satir sildirirdi - biri unutulur, hata da
+/// sessiz olurdu (bitmis is sessizce degisir).
+/// </summary>
+internal static class Kilitler
+{
+    /// <summary>
+    /// Bu islem bu secimde kilit yuzunden engelli mi. Engelliyse EKRANDA
+    /// gosterilecek sebep doner (CLAUDE.md 3).
+    /// </summary>
+    internal static bool Engel(IAgacIslemi islem, SecimBaglami secim, out string neden)
+    {
+        neden = string.Empty;
+        if (islem is null || secim?.Kilitler is null || !islem.Yazar)
+        {
+            return false;
+        }
+
+        foreach (object oge in secim.Ogeler)
+        {
+            if (Kapali(secim, SecimBaglami.Yolu(oge), SecimBaglami.Adi(oge), out neden))
+            {
+                return true;
+            }
+        }
+
+        // HEDEF DE SAYILIR: secim bos olsa bile "buraya yapistir" ya da
+        // "yeni klasor" ETKIN KLASORE yaziyor.
+        return Kapali(secim, secim.EtkinKlasor, WindowsYolu.DosyaAdi(secim.EtkinKlasor), out neden);
+    }
+
+    private static bool Kapali(SecimBaglami secim, string? yol, string ad, out string neden)
+    {
+        if (yol is not null && secim.Kilitler!.Kilitli(yol))
+        {
+            neden = $"\"{ad}\" kilitli — sağ tık ile kilidi kaldırın.";
+            return true;
+        }
+
+        neden = string.Empty;
+        return false;
+    }
+}
 
 /// <summary>
 /// Uzun suren islerin ilerlemeyi bildirdigi yuzey.
@@ -163,6 +219,20 @@ internal interface IAgacIslemi
     /// "BULUNAMADI" satirinda - orada satirin dosyasi yoktur) oldururdu.
     /// </summary>
     bool SahibineUygulanir => false;
+
+    /// <summary>
+    /// Bu islem SECIMDEKI dosyalara/klasorlere YAZAR mi.
+    ///
+    /// VARSAYILAN true - GUVENLI TARAF (CLAUDE.md 1a): yarin yazilacak yeni
+    /// bir islem bu uyeyi unutursa kilitli klasorde CALISMAZ; unutulan bir
+    /// "false" ise bitmis isi bozardi. Yalnizca OKUYAN islemler (tarama,
+    /// rapor, boyut, kopyala...) bunu false'a cevirir ve sebebini yazar.
+    ///
+    /// Kilit ozelligi bu uyeyi EKLEDI ama hicbir islem dosyasina satir
+    /// ekletmedi (govdesi var); "false" diyenler kendi dogalari geregi
+    /// diyor, kilit yuzunden degil (CLAUDE.md 1b).
+    /// </summary>
+    bool Yazar => true;
 
     /// <summary>
     /// Bu secimde uygulanabilir mi. Uygulanamiyorsa <paramref name="nedenOlmaz"/>

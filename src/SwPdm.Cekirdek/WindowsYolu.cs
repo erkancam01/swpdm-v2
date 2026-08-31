@@ -259,6 +259,65 @@ public static class WindowsYolu
     }
 
     /// <summary>
+    /// Goreli bir yolu GERCEK bir taban klasore gore cozer - sonuc DISKTE
+    /// ARANABILIR kalir.
+    ///
+    /// <see cref="Cozumle"/>'DEN FARKI VE NEDEN IKISI DE VAR: Cozumle iki
+    /// yolu KIYASLAMAK icin ve sonucu hep "\" ile birlestiriyor; testler
+    /// Linux'ta kosuyor ve File.Exists oyle bir yolu bulamaz. Burada tabandan
+    /// Klasor/Birlestir ile yuruyoruz, yani ayirici GERCEK yoldan geliyor ve
+    /// sonuc her iki isletim sisteminde de aranabiliyor.
+    ///
+    /// TEK KOPYA (CLAUDE.md 8): ayni yuruyus once belge agacinda yazildi,
+    /// sonra klasor kilidinde ikinci kez gerekti. Ucuncusunu yazmamak icin
+    /// yol yardimcilarinin yanina alindi - "bu soruyu soran herkes buraya
+    /// gelir".
+    /// </summary>
+    /// <returns>
+    /// Cozulmus yol; taban bos ya da yol kokun ustune cikiyorsa null.
+    /// Mutlak yol (surucu ya da UNC) oldugu gibi doner.
+    /// </returns>
+    public static string? TabandanCoz(string? taban, string? yol)
+    {
+        if (string.IsNullOrWhiteSpace(taban) || string.IsNullOrWhiteSpace(yol))
+        {
+            return null;
+        }
+
+        // Mutlak yol (surucu ya da UNC) oldugu gibi denenir.
+        if ((yol.Length > 1 && yol[1] == ':')
+            || (yol.Length > 1 && AyiriciMi(yol[0]) && AyiriciMi(yol[1])))
+        {
+            return yol;
+        }
+
+        string suan = taban;
+        foreach (string parca in yol.Split(
+                     new[] { Ayirici, EgikAyirici }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (parca == ".")
+            {
+                continue;   // onarimin uzunluk dolgusu: ".\" yolu degistirmez
+            }
+
+            if (parca == "..")
+            {
+                suan = Klasor(suan);
+                if (suan.Length == 0)
+                {
+                    return null;   // kokun ustune cikti; yol gecersiz
+                }
+
+                continue;
+            }
+
+            suan = Birlestir(suan, parca);
+        }
+
+        return suan;
+    }
+
+    /// <summary>
     /// Goreli bir yolu <paramref name="temel"/> klasorune gore COZER ve
     /// "." / ".." parcalarini duzlestirir. Yol zaten mutlaksa yalnizca
     /// duzlestirilir. Cozulemezse null.

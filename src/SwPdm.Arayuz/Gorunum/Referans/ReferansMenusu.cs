@@ -144,7 +144,8 @@ internal sealed class ReferansMenusu
         }
 
         return (
-            SecimBaglami.Kur([dosya], sahip.Kok, sahip.AramaKipinde, sahip.CopKlasoru),
+            SecimBaglami.Kur(
+                [dosya], sahip.Kok, sahip.AramaKipinde, sahip.CopKlasoru, sahip.Kilitler),
             dosya.Ad);
     }
 

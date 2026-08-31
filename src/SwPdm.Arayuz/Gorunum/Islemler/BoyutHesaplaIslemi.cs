@@ -26,6 +26,9 @@ internal sealed class BoyutHesaplaIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.B;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // sayar, yazmaz — kilitli klasorun boyutu da merak edilir
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (_kosuyor)

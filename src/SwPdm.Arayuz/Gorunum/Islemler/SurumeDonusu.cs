@@ -57,6 +57,16 @@ internal static class SurumeDonusu
             return true;
         }
 
+        // KILIT BURADA DA SORULUYOR: bu akis IAgacIslemi DEGIL, yani
+        // AgacMenusu'ndeki merkezi denetimden gecmiyor. "Don" dosyanin
+        // UZERINE yazan tek islem - kilitli bir bitmis isi sessizce
+        // degistirmesi CLAUDE.md 1a'nin ihlali olurdu.
+        if (secim.Kilitler is not null && secim.Kilitler.Kilitli(dosya.Yol))
+        {
+            bildir($"\"{dosya.Ad}\" kilitli bir klasörde — önce kilidi kaldırın.");
+            return true;
+        }
+
         // MONTAJDA VERSIYON SECME (Erkan'in ilk isteginin 3. maddesi):
         // versiyon artik o gunku COCUKLARI da tasiyor. Kutu, hangilerinin
         // geri yazilacagini SORUYOR - yalniz montaji yazmak "eski versiyona

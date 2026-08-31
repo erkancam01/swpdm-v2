@@ -18,10 +18,13 @@ namespace SwPdm.Arayuz.Gorunum;
 /// tazeleniyor. Erkan'in bildirdigi hata buydu: suzgece basinca actigi butun
 /// dallar kapaniyordu.
 /// </summary>
-internal sealed class AgacDoldurucu
+internal sealed partial class AgacDoldurucu
 {
     /// <summary>Henuz taranmamis bir dali isaretler; "+" kutusu bunun icin var.</summary>
     private static readonly object HenuzTaranmadi = new();
+
+    /// <summary>Kilitli klasorun adinin yanina yazilan.</summary>
+    private const string KilitliIsareti = "• kilitli";
 
     private readonly SecimliAgac _agac;
     private readonly Dictionary<TreeNode, KlasorIcerigi> _taranan = [];
@@ -30,6 +33,7 @@ internal sealed class AgacDoldurucu
     private string? _aramaMetni;
     private AramaSonucu? _aramaSonucu;
     private AgacDurumu? _gezinmeDurumu;
+    private KilitKumesi _kilitler = KilitKumesi.Bos;
 
     internal AgacDoldurucu(SecimliAgac agac)
     {
@@ -42,6 +46,14 @@ internal sealed class AgacDoldurucu
 
     /// <summary>Su an acik olan kok klasor. Yoksa null.</summary>
     internal string? Kok { get; private set; }
+
+    /// <summary>
+    /// Kilitli klasorlerin anlik hali. BIR KEZ okunuyor (kok acilirken /
+    /// yenilenirken), sonra her dugum ondan soruyor - kilidi dugum basina
+    /// diskten sormak ag surucusunde dugum basina bir gidis gelis olurdu
+    /// (CLAUDE.md 4).
+    /// </summary>
+    internal KilitKumesi Kilitler => _kilitler;
 
     /// <summary>Agac su an arama sonucu mu gosteriyor.</summary>
     internal bool AramaKipinde => _aramaSonucu is not null;
@@ -102,6 +114,7 @@ internal sealed class AgacDoldurucu
         _aramaMetni = null;
         _aramaSonucu = null;
         _taranan.Clear();
+        _kilitler = KlasorKilidi.Oku(yol);
 
         // Dugumler yok edilecek: kumede kalan olu dugumler "3 oge secili"
         // yazip ekranda hicbir sey secili gostermezdi (CLAUDE.md 3).
@@ -161,87 +174,6 @@ internal sealed class AgacDoldurucu
         _taranan.Clear();
         _agac.SecimiTemizle();
         _agac.Nodes.Clear();
-    }
-
-    /// <summary>
-    /// Arama sonucunu agaca yazar: eslesmeler bulunduklari klasore gore gruplanir.
-    /// Kesilme ve sinir asimi GIZLENMEZ.
-    /// </summary>
-    internal void AramaSonucunuGoster(string metin, AramaSonucu sonuc)
-    {
-        // Arama kipine ILK geciste gezinme durumu saklanir; aramadan cikinca
-        // kullanici actigi dallari acik bulur.
-        _gezinmeDurumu ??= AgacDurumlari.Al(_agac);
-
-        _aramaMetni = metin;
-        _aramaSonucu = sonuc;
-        _taranan.Clear();
-        _agac.SecimiTemizle();
-
-        _agac.BeginUpdate();
-        _agac.Nodes.Clear();
-
-        int gosterilen = 0;
-        var gruplar = new Dictionary<string, TreeNode>(StringComparer.OrdinalIgnoreCase);
-        var kokDugum = new TreeNode(string.Empty)
-        {
-            ImageIndex = TurSimgeleri.Klasor,
-            SelectedImageIndex = TurSimgeleri.Klasor,
-        };
-        _agac.Nodes.Add(kokDugum);
-
-        // Arama sonucu birden cok klasoru kapsiyor; Kilit.Coz eslesmeyi
-        // KLASOR BAZINDA yapiyor, yani A klasorundeki bir kilit B'deki bir
-        // dosyayi gizleyemez.
-        KilitDurumu kilit = Kilit.Coz(sonuc.Bulunanlar);
-
-        foreach (DosyaOgesi dosya in kilit.Gosterilecek)
-        {
-            if (!TureUyuyorMu(dosya.Tur))
-            {
-                continue;
-            }
-
-            gosterilen++;
-            string klasor = WindowsYolu.Klasor(dosya.Yol);
-            if (!gruplar.TryGetValue(klasor, out TreeNode? grup))
-            {
-                grup = new TreeNode(GoreceliYol(klasor))
-                {
-                    ImageIndex = TurSimgeleri.Klasor,
-                    SelectedImageIndex = TurSimgeleri.Klasor,
-                    Tag = new KlasorOgesi(klasor, WindowsYolu.DosyaAdi(klasor), null, null, null),
-                    ToolTipText = klasor,
-                };
-                gruplar[klasor] = grup;
-                kokDugum.Nodes.Add(grup);
-            }
-
-            grup.Nodes.Add(DosyaSatiri.Dugum(dosya, kilit));
-        }
-
-        string kokAdi = Kok is null ? "Arama" : WindowsYolu.DosyaAdi(Kok);
-        kokDugum.Text = $"{kokAdi}  —  \"{metin}\": {gosterilen} eşleşme";
-        kokDugum.ExpandAll();
-        _agac.EndUpdate();
-
-        Durum?.Invoke(this, AramaOzeti(sonuc, gosterilen));
-    }
-
-    /// <summary>
-    /// Arama kipinden gezinme kipine doner ve aramadan ONCEKI acik dallari
-    /// geri yukler.
-    /// </summary>
-    internal void GezinmeyeDon()
-    {
-        if (Kok is null)
-        {
-            return;
-        }
-
-        AgacDurumu? geri = _gezinmeDurumu;
-        _gezinmeDurumu = null;
-        KokuAc(Kok, geri);
     }
 
     /// <summary>
@@ -470,7 +402,7 @@ internal sealed class AgacDoldurucu
         DosyaSatiri.Ekle(dal, icerik.Dosyalar, TureUyuyorMu);
     }
 
-    private static TreeNode KlasorDugumu(KlasorOgesi klasor)
+    private TreeNode KlasorDugumu(KlasorOgesi klasor)
     {
         // Sayi BILINMIYORSA "0" yazilmaz - CLAUDE.md 3. "(0)" gormek
         // "ici bos" demektir ve okunamayan bir klasor icin bu YALAN olur.
@@ -488,6 +420,25 @@ internal sealed class AgacDoldurucu
             Tag = klasor,
             ToolTipText = klasor.Hata is null ? klasor.Yol : klasor.Yol + "\n" + klasor.Hata,
         };
+
+        // KILITLI KLASOR ACILMAZ (Erkan, 31.08.2026: "bitmis isleri
+        // kilitleyeyim, ondan sonra rahat rahat calisayim"). Yer tutucu
+        // cocuk EKLENMEZ -> "+" kutusu hic cikmaz -> dal acilamaz -> icindeki
+        // dosya agacta hic gorunmez, yani kazayla secilip degistirilemez.
+        // Tek "if"; ozelligi kaldirmak bu blogu silmek (CLAUDE.md 1b).
+        //
+        // KLASOR GIZLENMIYOR, dosya sayisi da yazmaya devam ediyor:
+        // gizlemek "klasor kayboldu" dedirtirdi (CLAUDE.md 3).
+        if (_kilitler.KendisiKilitli(klasor.Yol))
+        {
+            dugum.Text = $"{dugum.Text}   {KilitliIsareti}";
+            dugum.BackColor = Renkler.KilitliKlasorZemin;
+            dugum.ForeColor = Renkler.KilitliKlasorYazi;
+            dugum.ToolTipText =
+                klasor.Yol + "\n" + "KİLİTLİ — açılmaz. Sağ tık (Ctrl+Shift+Q) ile kilidi kaldırın."
+                + "\nKaza koruması: Gezgin'den yine açılabilir.";
+            return dugum;
+        }
 
         bool icindeBirSeyVar = (klasor.AltKlasorVarMi ?? false) || (klasor.DosyaSayisi ?? 0) > 0;
         if (icindeBirSeyVar)
@@ -551,31 +502,5 @@ internal sealed class AgacDoldurucu
             : $" · {kilit.GizlenenSayisi} kilit dosyası gizlendi (açık belgeler işaretli)";
 
         return $"{icerik.Klasorler.Count} klasör · {dosyaKismi}{kilitKismi}";
-    }
-
-    private static string AramaOzeti(AramaSonucu sonuc, int gosterilen)
-    {
-        string ozet = gosterilen == sonuc.Bulunanlar.Count
-            ? $"{gosterilen} eşleşme"
-            : $"{gosterilen} / {sonuc.Bulunanlar.Count} eşleşme (süzgeç açık)";
-
-        ozet += $" · {sonuc.TarananKlasor} klasör tarandı";
-
-        // Sessiz kirpma "hepsini kapsadim" gibi okunur (CLAUDE.md 9).
-        if (sonuc.Iptal)
-        {
-            ozet += " · ARAMA YARIDA KESİLDİ";
-        }
-        else if (sonuc.SinirAsildi)
-        {
-            ozet += " · SINIRA ULAŞILDI, daha fazlası olabilir";
-        }
-
-        if (sonuc.OkunamayanKlasorler.Count > 0)
-        {
-            ozet += $" · {sonuc.OkunamayanKlasorler.Count} klasör okunamadı";
-        }
-
-        return ozet;
     }
 }

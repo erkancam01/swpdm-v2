@@ -114,10 +114,7 @@ public static class KlasorBoyutu
                     // Kendi cop ve versiyon klasorlerimiz sayilmaz: kullanici
                     // "bu klasor kac GB" derken sildiklerini ve arsivi
                     // kastetmiyor.
-                    if (string.Equals(
-                            WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal)
-                        || string.Equals(
-                            WindowsYolu.DosyaAdi(alt), Surumler.KlasorAdi, StringComparison.Ordinal))
+                    if (GizliKlasorler.BizimYol(alt))
                     {
                         continue;
                     }

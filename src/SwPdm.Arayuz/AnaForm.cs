@@ -117,6 +117,23 @@ internal sealed partial class AnaForm : Form
             // ayrica birakilir. "?." sart: lambda kurulurken _onizleme HENUZ
             // atanmamis ve derleyici bunu yakaladi - "() => _doldurucu?.Kok"
             // ile ayni sebep (CLAUDE.md 6'nin kurucu tuzagi).
+            // KILIT SURUKLE-BIRAKTA DA GECERLI: bu yol AgacMenusu'nden
+            // GECMIYOR, yani merkezi denetim burayi gormuyor. Kaynak ya da
+            // HEDEF kilitliyse bitmis is bozulurdu (CLAUDE.md 1a).
+            KilitKumesi kilitler = _doldurucu.Kilitler;
+            string? kilitliOlan = kilitler.Kilitli(e.HedefKlasor) ? e.HedefKlasor : null;
+            foreach (string yol in e.Yollar)
+            {
+                kilitliOlan ??= kilitler.Kilitli(yol) ? yol : null;
+            }
+
+            if (kilitliOlan is not null)
+            {
+                _durum.Bilgi(
+                    $"\"{WindowsYolu.DosyaAdi(kilitliOlan)}\" kilitli — sağ tık ile kilidi kaldırın.");
+                return;
+            }
+
             _onizleme?.BelgeyiBirak();
             Aktar.Yurut(
                 new IslemBaglami(
@@ -303,6 +320,7 @@ internal sealed partial class AnaForm : Form
 
         // Kokun tek sahibi AgacDoldurucu; arama onun bildigi kokte arar.
         _arama.Kok = _doldurucu.Kok;
+        _arama.Kilitler = _doldurucu.Kilitler;
 
         _onizleme.Temizle();
         _durum.KokAcildi();
@@ -348,7 +366,7 @@ internal sealed partial class AnaForm : Form
         }
 
         return SecimBaglami.Kur(
-            ogeler, _doldurucu.Kok, _doldurucu.AramaKipinde, CopKlasoru());
+            ogeler, _doldurucu.Kok, _doldurucu.AramaKipinde, CopKlasoru(), _doldurucu.Kilitler);
     }
 
     /// <summary>

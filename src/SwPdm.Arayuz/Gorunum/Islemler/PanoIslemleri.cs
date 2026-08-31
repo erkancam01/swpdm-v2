@@ -75,6 +75,9 @@ internal sealed class KopyalaIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.C;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // panoya kopyalar; KAYNAGA yazmaz (yapistirma HEDEFE yazar ve orada denetlenir)
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
         => PanoyaKoy.Olur(secim, "kopyalanacak", out nedenOlmaz);
 

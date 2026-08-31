@@ -21,6 +21,9 @@ internal sealed class AgaciKapatIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.K;
 
     /// <inheritdoc/>
+    public bool Yazar => false;   // yalnizca dallari kapatir
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (secim.Kok is null)

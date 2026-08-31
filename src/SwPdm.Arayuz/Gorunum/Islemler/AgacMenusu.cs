@@ -207,7 +207,12 @@ internal sealed class AgacMenusu
 
         foreach ((ToolStripMenuItem oge, IAgacIslemi islem) in _islemler)
         {
-            bool olur = islem.Uygulanabilir(Secimi(islem, secim), out string neden);
+            SecimBaglami hedef = Secimi(islem, secim);
+
+            // KILIT ONCE SORULUYOR: kilitli bir klasorde islemin kendi
+            // "uygulanabilir mi"si EVET diyebilir; sebep o degil, kilit.
+            bool olur = !Kilitler.Engel(islem, hedef, out string neden)
+                && islem.Uygulanabilir(hedef, out neden);
 
             // Yazi her acilista islemden YENIDEN soruluyor: "Geri al" ve
             // "Yapistir" ne yapacaklarini adlarinda soyluyor.
@@ -237,7 +242,8 @@ internal sealed class AgacMenusu
     {
         SecimBaglami secim = Secimi(islem, Secim());
 
-        if (!islem.Uygulanabilir(secim, out string neden))
+        if (Kilitler.Engel(islem, secim, out string neden)
+            || !islem.Uygulanabilir(secim, out neden))
         {
             // Kisayolla gelindiyse menu gorunmedi; sebep yine SOYLENIR.
             Durum?.Invoke(this, neden);

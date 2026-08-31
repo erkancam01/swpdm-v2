@@ -50,7 +50,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 4. Sağ tık menüsü — 14 işlem
+## 4. Sağ tık menüsü — 15 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
@@ -63,6 +63,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | **Geri al** | `Ctrl+Z` | Son dosya işlemini geri alır (menüde adı yazar); "Değiştir" ile çöpe giden dosyayı da geri yükler, ad değiştiyse söyler. **En fazla 20 adım** tutulur | Geri alınacak iş yokken |
 | **İleri al** | `Ctrl+Y` | Geri alınan işlemi **yeniden yapar** (menüde adı yazar) | İleri alınacak iş yokken · adımın tersi yoksa |
 | **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
+| **Klasörü kilitle / kilidi kaldır** | `Ctrl+Shift+Q` | Seçili klasör(ler) **açılmaz olur**: `+` kaybolur, içi ağaçta hiç görünmez, üzerinde işlem yapılmaz. Aynı komut kilidi kaldırır | Kök yokken · arama sonucundayken · seçimde klasör yokken |
 | **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
 | **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
 | **Referans raporları** | `Ctrl+Shift+D` | Rapor penceresini açar | Kök yokken |
@@ -212,6 +213,46 @@ referanslar kendiliğinden sağlam kalır.
 
 ---
 
+## 11c. Klasör kilidi — `Ctrl+Shift+Q`
+
+**Ne işe yarar:** bitmiş işleri kapatıp gözden ve elden uzak tutmak. Klasörü
+kilitlersin; `+` kaybolur, açılmaz, içindeki dosya ağaçta **hiç görünmez** —
+yani yanlışlıkla seçip değiştirmenin yolu kapanır.
+
+- **Nasıl** → klasör(ler)i seç, sağ tık → *"Klasörü kilitle / kilidi kaldır"*
+  ya da `Ctrl+Shift+Q`. **Çoklu seçim çalışır**: bitmiş işleri işaretle, tek
+  hamlede kilitle. Aynı komut kilidi kaldırır.
+- **Görünüşü** → satır gri zeminli ve `• kilitli` yazar; dosya sayısı yazmaya
+  devam eder. Klasör **gizlenmez** — gizlemek "klasör kayboldu" dedirtirdi.
+- **Ne engellenir** → o klasörde ve altında: ad değiştir, sil, taşı,
+  sürükle-bırak, yapıştır, versiyona dön. Sebep durum çubuğuna yazar.
+- **Arama içine girmez** → kaç kilitli klasörün atlandığı durum çubuğunda
+  yazar; "bulamadım" ile "bakmadım" karıştırılmaz.
+- **Nerede durur** → kökün içinde `.SwPdmKilit\kilitler.txt`, klasör yolları
+  **köke göreli**. Kök başka bir sürücü harfinden bağlansa da kilitler geçerli
+  kalır. O klasörü elle silersen bütün kilitler açılır.
+
+**Dürüst sınırlar:**
+
+- **Bu güvenlik değil, KAZA KORUMASI.** Şifre yok; uygulamadan herkes kilidi
+  kaldırabilir.
+- **Gezgin'i bağlamaz.** Dosya Windows'tan ya da SOLIDWORKS'ün kendi "Aç"
+  penceresinden yine açılır ve değiştirilebilir. Kötü niyete karşı tek gerçek
+  kalkan Windows klasör iznidir; onu uygulama **yazmaz** (yönetici hakkı ister
+  ve yanlış yazılırsa klasöre erişim tümden kaybolur).
+- **Dosya özniteliğine dokunmaz.** Salt-okunur biti senin; biz koymadığımızı
+  kaldırmayalım diye hiç ellenmez.
+- **Referans taraması ve onarımı DEVAM EDER** — bilerek. Bitmiş montaj hâlâ
+  parçaları kullanıyor; indeksten düşseydi panel *"bu parçayı kimse
+  kullanmıyor"* der ve sağlam dosya sildirirdi. Canlı bir parçanın adı
+  değişince kilitli montajın içindeki yol da düzeltilir; düzeltilmeseydi
+  bitmiş iş **sessizce kırılırdı**.
+- **`Ctrl+Z` kilide bakmaz** → geri alma, yığındaki kendi yollarına yazar;
+  kilitli bir klasöre dokunabilir. (Az rastlanır: geri alınan iş, kilit
+  konmadan önce yapılmış olur.)
+
+---
+
 ## 12. Referans onarımı (uygulamanın varlık sebebi)
 
 - **Yeniden adlandırma (F2)** → adı değişen dosyayı kullanan belgelerin **içine** yeni ad yazılır.
@@ -346,6 +387,7 @@ referanslar kendiliğinden sağlam kalır.
 | `Enter` (VERSİYONLAR sekmesinde) | Seçili versiyona dön (önce bugünkü hâl otomatik arşivlenir) |
 | `F2` (VERSİYONLAR sekmesinde) | Seçili versiyonun notunu düzelt |
 | `Delete` (VERSİYONLAR sekmesinde) | Seçili versiyonu KALICI sil (dosyaya dokunmaz) |
+| `Ctrl+Shift+Q` | Klasörü kilitle / kilidi kaldır |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |
