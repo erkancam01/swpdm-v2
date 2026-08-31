@@ -122,6 +122,24 @@ internal sealed partial class AnaForm
                 return;
             }
 
+            // VERSIYONLAR sekmesinde F2 = notu duzelt, Delete = versiyonu sil.
+            // Panelin genel tuslarindan ONCE: orada ayni tuslar SATIRIN
+            // DOSYASINA gider ve arsiv kopyasinda zaten gri durur - sira
+            // kayarsa versiyon satirinda F2 hicbir sey yapmaz.
+            if (_referanslar.Focused
+                && _referansSeridi.SeciliBolum == ReferansBolumu.Surumler
+                && SurumBakimi.Calistir(
+                    this,
+                    e.KeyData,
+                    _referansSurucusu.SurumKaydi(_referanslar.SeciliSira),
+                    SecimBaglamiKur(),
+                    AgaciTazele,
+                    _durum.Bilgi))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // REFERANS PANELI ODAKTAYKEN: once panelin kendi tuslari
             // (Enter = git, Ctrl+C = yolu kopyala). Karari panel dosyasi
             // veriyor, burada yalnizca tus iletiliyor (CLAUDE.md 1b).

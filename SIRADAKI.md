@@ -131,10 +131,11 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle
   yuva klasörünü yeniden adlandırmak geri getirir). Aşama 2'yle birlikte
   `DosyaIslemleri`/`TasiIslemi` kancasına bağlanacak.
-- **Versiyon silme/temizleme yok.** Guard kopyaları (Erkan'daki v5/v6/v7
-  gibi) ve istenmeyen versiyonlar silinemiyor — bilinçli: silme, arşivin
-  tek "geri dönüşsüz" işlemi olurdu ve aceleye gelmez. Gelirse çöp kutusu
-  üzerinden (kalıcı değil) düşünülecek.
+- **Versiyon silme/not düzenleme GELDİ (31.08.2026).** `F2` notu düzeltir,
+  `Delete` versiyonu kalıcı siler (çöp kutusuna GİTMEZ — çöpten dönen kopya
+  kayıtsız kalır ve listede görünmez; "geri alınabilir" demek orada yalan
+  olurdu). Kalan borç: **silme `Ctrl+Z` yığınına girmiyor** — geri alma tek
+  savunma değil, onay kutusu var; yine de eklenebilir.
 - **v4 ayrışmasının KÖK SEBEBİ Erkan'da henüz ölçülemedi.** Üretebilen bir
   mekanizma bulundu ve kapatıldı (görünenlerin en büyüğünden numara türetme
   → çift No). Ama onun makinesindeki ilk tetikleyici doğrulanmadı; yeni

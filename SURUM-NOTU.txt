@@ -1,3 +1,39 @@
+BU SURUMDE - VERSIYON SILME VE NOT DUZENLEME GELDI
+
+  Erkan: "versiyon silme ve not duzenlemeyi ekle". VERSIYONLAR sekmesinde
+  satiri sec, sonra:
+
+    F2      -> notu duzelt. Kutuda eski not HAZIR gelir; bos birakirsan
+               not silinir. Icerige, numaraya, tarihe, boyuta dokunulmaz.
+    Delete  -> versiyonu KALICI sil. Onay kutusu cikar ve acikca soyler:
+               cop kutusuna GITMEZ, geri alinamaz - ama DOSYANIN KENDISINE
+               DOKUNULMAZ, yalniz o versiyonun arsiv kopyasi ve kayit
+               satiri gider.
+
+  Elindeki v5/v6/v7 (uc kere "v4'a donmeden once") artik boyle
+  temizlenebilir.
+
+  BILEREK BOYLE OLAN UC SEY:
+
+  1. COP KUTUSUNA GITMIYOR. Copten donen kopya kayitsiz kalir ve listede
+     gorunmez; "geri alinabilir" demek orada YALAN olurdu. Onun yerine
+     onay kutusu var ve ne oldugunu tam yaziyor.
+  2. HER ISLEMDEN SONRA SATIR SECIMI DUSUYOR. Liste yeniden cizilince
+     satirlar KAYABILIR; gozle secilmemis bir satira Delete gitmesin diye.
+     Yeni islem icin satira yeniden tikla. (Kapi bu yuzden bir kez HAYIR
+     dedi ve hakliydi.)
+  3. EN YENIYI SILERSEN NUMARA YENIDEN KULLANILIR: v3 silinince sonraki
+     versiyon yine v3 olur. Bosluk birakmak "bir versiyon kayip mi"
+     dedirtiyordu; silinenin dosyasi zaten yok.
+
+  OLCULDU: 6 yeni birim test (toplam 336, 331 gecti / 5 Windows'a ozel
+  atlandi) + calistirma kapisina 18. olcum eklendi (F2 notu kayit
+  dosyasina yaziyor mu, Delete hem kopyayi hem satiri siliyor mu - ekrandan
+  degil DISKTEN). Kapi File.Delete kesilince YAKALADI, geri konunca TEMIZ.
+  Bes kapi TEMIZ, calistirma 19/19.
+
+  KALAN BORC: silme Ctrl+Z yiginina girmiyor (tek savunma onay kutusu).
+
 BU SURUMDE - "VERSIYONA DONULEMEDI (68197 ≠ 62729)" ONARILDI
 
   Ekran goruntusundeki hata: v4'un arsiv dosyasi ile kaydindaki boyut

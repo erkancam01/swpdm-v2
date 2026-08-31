@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=18
+OLCUM_TOPLAM=19
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -1010,7 +1010,85 @@ else
   SORUN=1
 fi
 
-# 18) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 18) VERSIYON BAKIMI: F2 NOTU YAZMALI, Delete VERSIYONU SILMELI
+#
+# NEDEN VAR: silme GERI ALINAMAZ ve cop kutusuna gitmez (Surumler.Sil).
+# Sessizce YANLIS satiri silerse kullanici bunu ancak o versiyona donmek
+# isteyince anlar - o an da is islemistir (CLAUDE.md 1a). Ikinci tehlike
+# ters yonde: silme hic olmazsa kullanici "temizledim" sanip cop kayitlarla
+# devam eder (Erkan'in elindeki v5/v6/v7'nin sebebi buydu).
+#
+# Olcum EKRANDAN DEGIL DISKTEN, ve iki asamali: once F2 ile yazilan not
+# kayit dosyasinda GORULMELI (yazma yolu calisiyor), sonra Delete + onay
+# hem arsiv kopyasini hem O SATIRI kaldirmali. Not once yaziliyor cunku
+# satirin dogru KAYDA baglandigini tek basina kanitlayan sey o: yanlis
+# kayda yazilsaydi silinen satir da baska olurdu.
+#
+# 17. olcumden devraliyor: VERSIYONLAR sekmesi acik, listede tek satir (v0).
+# Satira yeniden tiklaniyor cunku tuslar YALNIZ panel odaktayken yonleniyor
+# (AnaForm.Kisayollar) ve 17 en son ONIZLEME BASLIGINA tiklamisti.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  SURUM_KAYIT="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/kayit.txt"
+
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+
+  xdotool key --clearmodifiers F2 > /dev/null 2>&1
+  sleep 3
+  xdotool type --delay 40 "kapi notu" > /dev/null 2>&1
+  sleep 1
+  xdotool key Return > /dev/null 2>&1              # Enter = Tamam
+  sleep 3
+
+  NOT_YAZILDI=0
+  if [ -f "$SURUM_KAYIT" ] && grep -q "kapi notu" "$SURUM_KAYIT"; then
+    NOT_YAZILDI=1
+  fi
+
+  # SATIRA YENIDEN TIK - OLCULDU (31.08.2026): not yazildiktan sonra panel
+  # yeniden doluyor ve secim DUSUYOR; ilk kosuda Delete bu yuzden hicbir sey
+  # yapmadi. Secimin dusmesi bilincli: silme geri alinamaz ve satirlar
+  # tazelemeden sonra KAYABILIR - kullanicinin gozuyle secmedigi bir satira
+  # Delete gitmemeli (CLAUDE.md 11'deki "yanlis hedef" tehlikesi).
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+
+  xdotool key --clearmodifiers Delete > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/surum-sil-onay.png" > /dev/null 2>&1
+  xdotool key Left > /dev/null 2>&1                # onay "tehlikeli": odak Vazgec'te
+  sleep 1
+  xdotool key Return > /dev/null 2>&1
+  sleep 3
+
+  KOPYA_GITTI=0
+  [ -f "$SURUM_ARSIV" ] || KOPYA_GITTI=1
+
+  SATIR_GITTI=0
+  if [ ! -f "$SURUM_KAYIT" ] || ! grep -q "kapi notu" "$SURUM_KAYIT"; then
+    SATIR_GITTI=1
+  fi
+
+  if [ "$NOT_YAZILDI" = "1" ] && [ "$KOPYA_GITTI" = "1" ] && [ "$SATIR_GITTI" = "1" ]; then
+    olcum "versiyon bakimi ......." "EVET (F2 notu yazdi, Delete kopyayi ve satiri sildi)"
+  elif [ "$NOT_YAZILDI" != "1" ]; then
+    olcum "versiyon bakimi ......." "HAYIR (F2 notu kayda yazmadi)"
+    SORUN=1
+  elif [ "$KOPYA_GITTI" != "1" ]; then
+    olcum "versiyon bakimi ......." "HAYIR (Delete arsiv kopyasini silmedi)"
+    SORUN=1
+  else
+    olcum "versiyon bakimi ......." "HAYIR (kopya silindi ama kayit satiri kaldi)"
+    SORUN=1
+  fi
+else
+  olcum "versiyon bakimi ......." "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 19) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey

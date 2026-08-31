@@ -194,6 +194,10 @@ referanslar kendiliğinden sağlam kalır.
 - **Çift tık** → o versiyonun arşiv kopyasını **açar**. Kopyalar diskte **salt-okunur** durur; SOLIDWORKS `[Read-Only]` açar, geçmişin üstüne kaza ile kaydedilemez.
 - **Versiyon satırına sağ tık** → dosya işlemleri uygulanmaz (gri + sebep): F2/Sil arşive gitseydi kayıt ile kopya eşleşmesi kırılırdı.
 - **Bu versiyona dön** → sekmede satırı seç, **Enter**. Onay kutusu iki şeyi açıkça söyler: **bugünkü hâl önce otomatik arşivlenir** (dönüş de bir versiyondur — hiçbir içerik hiçbir işlemle kaybolmaz) ve bu dosyayı kullanan **bütün montajlar** dönülen içeriği görür.
+- **Notu düzelt** → sekmede satırı seç, **`F2`**. Kutuda eski not hazır gelir; boş bırakırsan not silinir. İçeriğe, numaraya, tarihe dokunulmaz.
+- **Versiyonu sil** → sekmede satırı seç, **`Delete`**. Onay kutusu açıkça söyler: **kalıcıdır, çöp kutusuna gitmez, geri alınamaz** — ama **dosyanın kendisine dokunulmaz**, yalnız o versiyon kaydı ve arşiv kopyası gider.
+- **Her işlemden sonra satır seçimi düşer** (bilinçli): liste yeniden çizilince satırlar kayabilir, gözle seçilmemiş bir satıra `Delete` gitmesin diye. Yeni işlem için satıra yeniden tıkla.
+- **En yeni versiyonu silersen numara yeniden kullanılır** (v3 silinince sonraki yine v3 olur) — boşluk bırakmak "bir versiyon kayıp mı" dedirtiyordu.
 - **SOLIDWORKS'te açık dosyaya dönülmez** → `~$` kilidi varken işlem reddedilir ve sebebi yazılır; belgeyi kapatıp yeniden dene.
 - **Açık sınır** → uygulama kapalıyken yaptığın bir değişikliğin *önceki* hâli, daha önce versiyonlanmadıysa **kurtarılamaz**. Alışkanlık: düzenlemeye başlamadan `Ctrl+Shift+U`. (Belge kapanınca kendiliğinden soran akış sonraki sürümde geliyor.)
 - **Açık sınır 2** → ad değiştirme/taşıma arşivi henüz **taşımıyor**: versiyonlu dosyayı adlandırırsan liste "yok" görünür (kayıp değil — arşiv eski adla diskte durur). Şimdilik versiyonlu dosyanın adını değiştirme; sonraki sürümde kendiliğinden taşınacak.
@@ -332,6 +336,8 @@ referanslar kendiliğinden sağlam kalır.
 | `Ctrl+Shift+E` | Referans bölümünü ilerlet (İÇİNDEKİLER → KULLANILDIĞI YERLER → KIRIK → VERSİYONLAR → …) |
 | `Ctrl+Shift+U` | Yeni versiyon oluştur (seçili dosyanın o anki hâli arşive) |
 | `Enter` (VERSİYONLAR sekmesinde) | Seçili versiyona dön (önce bugünkü hâl otomatik arşivlenir) |
+| `F2` (VERSİYONLAR sekmesinde) | Seçili versiyonun notunu düzelt |
+| `Delete` (VERSİYONLAR sekmesinde) | Seçili versiyonu KALICI sil (dosyaya dokunmaz) |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |

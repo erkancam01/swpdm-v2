@@ -69,7 +69,7 @@ public sealed record SurumDurumu(
 ///     icerik OTOMATIK arsivlenir. Boylece hicbir icerik hicbir islemle
 ///     kaybolmaz - donusten de geri donulur.
 /// </summary>
-public static class Surumler
+public static partial class Surumler
 {
     /// <summary>Arsiv klasorunun adi. Agacta GOSTERILMEZ, taranmaz.</summary>
     public const string KlasorAdi = ".SwPdmSurum";
@@ -478,6 +478,19 @@ public static class Surumler
         }
 
         return null;
+    }
+
+    /// <summary>Yuvadaki kayit dosyasinin tam yolu.</summary>
+    private static string KayitYolu(string yuva) => WindowsYolu.Birlestir(yuva, KayitAdi);
+
+    /// <summary>Satirin basindaki numara; okunamadiysa -1 (satir korunur).</summary>
+    private static int SatirNosu(string satir)
+    {
+        string[] p = satir.Split('\t');
+        return p.Length >= 1
+               && int.TryParse(p[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int no)
+            ? no
+            : -1;
     }
 
     private static void TemizlemeyeCalis(string yol)

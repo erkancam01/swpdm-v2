@@ -337,4 +337,121 @@ public class SurumlerTestleri : IDisposable
         // Arsivdeki v0/v1 kopyalari taransaydi sayi 3 olurdu.
         Assert.Equal(1, indeks.DosyaSayisi);
     }
+
+    [Fact]
+    public void Sil_ARSIV_KOPYASINI_VE_KAYDI_SILER_dosyaya_dokunmaz()
+    {
+        // Erkan, 31.08.2026: "versiyon silme ve not düzenlemeyi ekle".
+        string yol = DosyaKoy("Parca1.SLDPRT", "v0 hali");
+        Surumler.Olustur(_kok, yol, "ilk", out int _);
+        File.WriteAllText(yol, "v1 hali");
+        Surumler.Olustur(_kok, yol, "ikinci", out int _);
+
+        string v0 = Surumler.Listele(_kok, yol).Ogeler[^1].ArsivYolu;
+
+        IslemRaporu rapor = Surumler.Sil(_kok, yol, 0);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.False(File.Exists(v0));                      // kopya gitti
+        Assert.Equal("v1 hali", File.ReadAllText(yol));     // CANLI DOSYA yerinde
+
+        SurumDurumu durum = Surumler.Listele(_kok, yol);
+        Assert.Single(durum.Ogeler);
+        Assert.Equal(1, durum.Ogeler[0].No);
+        Assert.Equal(0, durum.BozukSatir);                  // kayit satiri da gitti
+    }
+
+    [Fact]
+    public void Sil_OLMAYAN_NUMARADA_HICBIR_SEYE_dokunmaz()
+    {
+        string yol = DosyaKoy("Parca1.SLDPRT", "tek hal");
+        Surumler.Olustur(_kok, yol, "ilk", out int _);
+
+        IslemRaporu rapor = Surumler.Sil(_kok, yol, 7);
+
+        Assert.False(rapor.Oldu);
+        Assert.Contains("v7", rapor.Sebebi, StringComparison.Ordinal);
+        Assert.Single(Surumler.Listele(_kok, yol).Ogeler);
+    }
+
+    [Fact]
+    public void Sil_EN_YENIYI_silince_numara_YENIDEN_kullanilir()
+    {
+        // BILINCLI DAVRANIS (Surumler.Bakim.cs'te yazili): bos numara
+        // birakmak "bir versiyon kayip mi" dedirtiyor; silinenin dosyasi
+        // zaten yok. Kayit dosyasindan hem satir hem dosya gittigi icin
+        // EnBuyukNo dusuyor - yeni kopya carpisacak bir dosya bulmuyor.
+        string yol = DosyaKoy("Parca1.SLDPRT", "a");
+        Surumler.Olustur(_kok, yol, "", out int _);
+        File.WriteAllText(yol, "b");
+        Surumler.Olustur(_kok, yol, "", out int ikinci);
+        Assert.Equal(1, ikinci);
+
+        Assert.True(Surumler.Sil(_kok, yol, 1).Oldu);
+
+        File.WriteAllText(yol, "c");
+        IslemRaporu rapor = Surumler.Olustur(_kok, yol, "yeni", out int no);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal(1, no);
+        Assert.Equal("c", File.ReadAllText(rapor.YeniYol!));
+    }
+
+    [Fact]
+    public void NotDegistir_YALNIZ_NOTU_yazar_otekilere_dokunmaz()
+    {
+        string yol = DosyaKoy("Parca1.SLDPRT", "a");
+        Surumler.Olustur(_kok, yol, "eski not", out int _);
+        File.WriteAllText(yol, "b");
+        Surumler.Olustur(_kok, yol, "oteki", out int _);
+
+        SurumKaydi onceki = Surumler.Listele(_kok, yol).Ogeler[^1];
+
+        IslemRaporu rapor = Surumler.NotDegistir(_kok, yol, 0, "yeni not");
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+
+        SurumDurumu durum = Surumler.Listele(_kok, yol);
+        SurumKaydi sonraki = durum.Ogeler[^1];
+
+        Assert.Equal("yeni not", sonraki.Not);
+        Assert.Equal(onceki.No, sonraki.No);
+        Assert.Equal(onceki.Zaman, sonraki.Zaman);       // olcum alanlari
+        Assert.Equal(onceki.Boyut, sonraki.Boyut);       // AYNEN kaliyor
+        Assert.Equal("a", File.ReadAllText(sonraki.ArsivYolu));
+        Assert.Equal("oteki", durum.Ogeler[0].Not);      // komsu kayit yerinde
+        Assert.Equal(0, durum.BozukSatir);
+    }
+
+    [Fact]
+    public void NotDegistir_SEKME_ve_SATIR_SONU_kaydi_BOZAMAZ()
+    {
+        // Kayit sekmeyle ayrilmis duz metin; nota kacan bir sekme sonraki
+        // okumada alanlari kaydirirdi (sessiz bozulma).
+        string yol = DosyaKoy("Parca1.SLDPRT", "a");
+        Surumler.Olustur(_kok, yol, "", out int _);
+
+        Assert.True(Surumler.NotDegistir(_kok, yol, 0, "iki\tsatir\nnot").Oldu);
+
+        SurumDurumu durum = Surumler.Listele(_kok, yol);
+        Assert.Single(durum.Ogeler);
+        Assert.Equal(0, durum.BozukSatir);
+        Assert.Equal("iki satir not", durum.Ogeler[0].Not);
+    }
+
+    [Fact]
+    public void Sil_KOK_DISINDA_reddeder()
+    {
+        string disarisi = Path.Combine(Path.GetTempPath(), "swpdm-disari.SLDPRT");
+        File.WriteAllText(disarisi, "x");
+        try
+        {
+            IslemRaporu rapor = Surumler.Sil(_kok, disarisi, 0);
+            Assert.False(rapor.Oldu);
+        }
+        finally
+        {
+            File.Delete(disarisi);
+        }
+    }
 }

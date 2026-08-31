@@ -15,11 +15,14 @@ namespace SwPdm.Arayuz.Gorunum;
 internal static class SurumNotuKutusu
 {
     /// <summary>Notu sorar. Vazgecilirse null; bos not GECERLIDIR ("").</summary>
-    internal static string? Sor(IWin32Window sahip, string baslik, string aciklama)
+    /// <param name="baslangic">Kutuda hazir duracak metin - VAR OLAN bir
+    /// notu duzeltirken (F2) doldurulur; yeni versiyonda bos gecilir.</param>
+    internal static string? Sor(
+        IWin32Window sahip, string baslik, string aciklama, string baslangic = "")
     {
         // CLAUDE.md 6: alanlar BOYUT DEGISTIREN her seyden once atanir.
         var bilgi = new Label { Text = aciklama, AutoSize = false };
-        var notKutusu = new TextBox();
+        var notKutusu = new TextBox { Text = baslangic ?? string.Empty };
         var tamam = new Button { Text = "Tamam", DialogResult = DialogResult.OK };
         var vazgec = new Button { Text = "Vazgeç", DialogResult = DialogResult.Cancel };
 
@@ -45,6 +48,15 @@ internal static class SurumNotuKutusu
         pencere.Controls.Add(vazgec);
         pencere.AcceptButton = tamam;
         pencere.CancelButton = vazgec;
+
+        // ODAK PENCERE GORUNDUKTEN SONRA (CLAUDE.md 11): Focus() gorunmeyen
+        // pencerede sessizce hicbir sey yapmiyor. Var olan not SECILI gelir -
+        // duzeltmeye gelen kullanici dogrudan yazabilsin.
+        pencere.Shown += (_, _) =>
+        {
+            notKutusu.Focus();
+            notKutusu.SelectAll();
+        };
 
         return pencere.ShowDialog(sahip) == DialogResult.OK
             ? notKutusu.Text.Trim()

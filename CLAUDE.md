@@ -957,6 +957,8 @@ dosyasında** duruyor:
 | VERSİYONLAR sekmesinin içeriği | `Arayuz/Gorunum/Referans/SurumBolumu.cs` |
 | yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
+| **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
+| versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
@@ -1057,7 +1059,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on sekiz şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı on dokuz şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1069,6 +1071,7 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
 **panelden çalıştırılan işlem SATIRIN dosyasına mı gidiyor** ·
 **`Ctrl+Shift+U` versiyonu gerçekten arşivliyor mu (diskten, birebir)** ·
+**versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
@@ -1300,6 +1303,24 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > (`◂ v0.SLDPRT`). Başlığın kendi kırpması (`ONIZLEME_BASLIK_KIRP`) izlenir:
 > tıkla → iz değişmeli, başlığa tıkla → ilk ize dönmeli. §9: TEMİZ → satırın
 > hedefi null yapılınca YAKALADI (üç iz aynı) → geri konunca TEMİZ.
+
+> **On sekizincisi neden var (versiyon bakımı):** silme **geri alınamaz** ve
+> çöp kutusuna gitmez. Sessizce yanlış satırı silerse kullanıcı bunu ancak o
+> versiyona dönmek isteyince anlar — o an iş işlemiştir (§1a). Ters yön de
+> tehlikeli: silme hiç olmazsa kullanıcı "temizledim" sanıp çöp kayıtlarla
+> devam eder (Erkan'daki v5/v6/v7'nin sebebi buydu). Ölçüm ekrandan değil
+> **diskten** ve iki aşamalı: `F2` ile yazılan not `kayit.txt`'te görülmeli
+> (satırın doğru **kayda** bağlandığını tek başına kanıtlayan şey bu — yanlış
+> kayda yazsaydı silinen satır da başka olurdu), sonra `Delete` + onay hem
+> arşiv kopyasını hem o satırı kaldırmalı. §9 döngüsü: TEMİZ → `File.Delete`
+> kesilince **YAKALADI** ("Delete arşiv kopyasını silmedi") → geri konunca
+> TEMİZ.
+>
+> **İLK KOŞUDA KAPI HAYIR DEDİ ve haklıydı:** not yazıldıktan sonra panel
+> yeniden doluyor ve **satır seçimi düşüyor**; `Delete` hiçbir şeye
+> gitmiyordu. Seçimin düşmesi bilinçli — liste yeniden çizilince satırlar
+> kayabilir ve gözle seçilmemiş bir satıra `Delete` gitmemeli. Kapı da o
+> yüzden satıra yeniden tıklıyor; kullanıcının yaptığı da bu.
 
 > Aynı turda kapının **kazara bir bağı** da çözüldü: ekran görüntüsünü alan
 > satır `import … && # 14) ESC` diye bitiyordu ve 14. ölçüm, `import`
