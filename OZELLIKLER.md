@@ -190,6 +190,9 @@ referanslar kendiliğinden sağlam kalır.
 - **Her dosya v0 doğar.** Hazırlık gerekmez; ilk "Yeni versiyon oluştur" o anki içeriği **v0** olarak arşivler, sonrakiler v1, v2…
 - **`Ctrl+Shift+U` (ya da sağ tık → "Yeni versiyon oluştur…")** → kısa bir not sorar (boş geçilebilir), o anki içeriği arşivler. Dosya yerinde kalır, çalışmaya devam edersin. Yalnız SOLIDWORKS dosyaları.
 - **VERSİYONLAR sekmesi** → v0…vN listesi (en yeni üstte): solda `v3 — not`, sağda tarih. Fareyle üstüne gelince (ve `Ctrl+C` ile) **arşiv kopyasının tam yolu**.
+- **Tek tık** → soldaki önizleme **o versiyonun** resmine döner; başlıkta `◂ v3.SLDPRT` yazar, başlığa tıklayınca bugünkü dosyaya dönülür. (3B kip açıksa versiyon eDrawings'te döndürülerek de incelenir.)
+- **Çift tık** → o versiyonun arşiv kopyasını **açar**. Kopyalar diskte **salt-okunur** durur; SOLIDWORKS `[Read-Only]` açar, geçmişin üstüne kaza ile kaydedilemez.
+- **Versiyon satırına sağ tık** → dosya işlemleri uygulanmaz (gri + sebep): F2/Sil arşive gitseydi kayıt ile kopya eşleşmesi kırılırdı.
 - **Bu versiyona dön** → sekmede satırı seç, **Enter**. Onay kutusu iki şeyi açıkça söyler: **bugünkü hâl önce otomatik arşivlenir** (dönüş de bir versiyondur — hiçbir içerik hiçbir işlemle kaybolmaz) ve bu dosyayı kullanan **bütün montajlar** dönülen içeriği görür.
 - **SOLIDWORKS'te açık dosyaya dönülmez** → `~$` kilidi varken işlem reddedilir ve sebebi yazılır; belgeyi kapatıp yeniden dene.
 - **Açık sınır** → uygulama kapalıyken yaptığın bir değişikliğin *önceki* hâli, daha önce versiyonlanmadıysa **kurtarılamaz**. Alışkanlık: düzenlemeye başlamadan `Ctrl+Shift+U`. (Belge kapanınca kendiliğinden soran akış sonraki sürümde geliyor.)

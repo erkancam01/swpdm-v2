@@ -60,12 +60,18 @@ internal sealed class SurumBolumu
                 ? $"v{kayit.No}"
                 : $"v{kayit.No} — {kayit.Not}";
 
+            // HEDEF = ARSIV KOPYASI (Erkan, 31.08.2026: "versiyonların
+            // önizlemesini görmek ve çift tıklayınca açabilmek"). Tek tik
+            // boylece komsu onizleme borusuna girer: panelde o versiyonun
+            // resmi, baslikta "◂ v3.SLDPRT". Cift tikin "ac" anlami
+            // AnaForm'daki dallanmada; sag tik icin ReferansMenusu arsiv
+            // yolunu tanir ve dosya islemlerini uygulamaz.
             liste.Ekle(
                 ad,
                 Zaman.Yaz(kayit.Zaman),
                 simgeSirasi: -1,
                 Renkler.ReferansAsagiYazi,
-                hedefYol: null,
+                hedefYol: kayit.ArsivYolu,
                 tamMetin: kayit.ArsivYolu);
         }
 
@@ -79,6 +85,24 @@ internal sealed class SurumBolumu
                 $"{durum.BozukSatir} kayıt bozuk ya da arşiv kopyası kayıp",
                 "!");
         }
+    }
+
+    /// <summary>
+    /// Cift tik: arsiv kopyasini ACAR (Gezgin'de cift tiklamakla ayni).
+    /// Kopya diskte SALT-OKUNUR durur; SOLIDWORKS onu [Read-Only] acar,
+    /// gecmisin ustune kaza ile kaydedilemez (CLAUDE.md 1a).
+    /// </summary>
+    /// <returns>Durum cubuguna yazilacak cumle.</returns>
+    internal static string Ac(System.Windows.Forms.IWin32Window sahip, string? arsivYolu)
+    {
+        if (arsivYolu is null)
+        {
+            return "Bu satırda açılacak bir versiyon yok.";
+        }
+
+        return KlasorTarayici.DosyayiOku(arsivYolu) is DosyaOgesi dosya
+            ? DosyaAcici.Ac(sahip, dosya) + "  (salt-okunur arşiv kopyası)"
+            : "Arşiv kopyası okunamadı: " + arsivYolu;
     }
 
     /// <summary>Cizilen siradaki versiyon kaydi; sira bir versiyon satiri degilse null.</summary>

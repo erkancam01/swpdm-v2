@@ -196,6 +196,20 @@ public static class Surumler
                 "Versiyon kaydı yazılamadı — arşiv geri alındı: " + hata.Message);
         }
 
+        // ARSIV KOPYASI SALT-OKUNUR (CLAUDE.md 1a): kullanici versiyonu
+        // cift tikla ACABILIYOR; SOLIDWORKS salt-okunur dosyayi [Read-Only]
+        // acar ve kaza ile gecmisin ustune kaydedilemez. Kayittan SONRA
+        // konuyor ki basarisizlik temizligi (File.Delete) engellenmesin.
+        try
+        {
+            File.SetAttributes(arsiv, FileAttributes.ReadOnly);
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            // Oznitelik konamadiysa versiyon YINE GECERLI; koruma eksik
+            // kaldi ama arsiv duruyor - islemi geri almak asiri olurdu.
+        }
+
         no = yeniNo;
         return IslemRaporu.Basarili(arsiv);
     }
@@ -254,6 +268,11 @@ public static class Surumler
         try
         {
             File.Copy(hedef.ArsivYolu, gecici, overwrite: true);
+
+            // File.Copy OZNITELIGI DE kopyaliyor: arsiv salt-okunur, gecici
+            // de salt-okunur dogar. Temizlenmezse Replace sonrasi CANLI
+            // dosya salt-okunur kalir ve SOLIDWORKS kaydedemez olur.
+            File.SetAttributes(gecici, FileAttributes.Normal);
 
             long kopya = new FileInfo(gecici).Length;
             if (kopya != hedef.Boyut)
@@ -370,6 +389,8 @@ public static class Surumler
         {
             if (File.Exists(yol))
             {
+                // Windows salt-okunur dosyayi sildirmez; once oznitelik.
+                File.SetAttributes(yol, FileAttributes.Normal);
                 File.Delete(yol);
             }
         }

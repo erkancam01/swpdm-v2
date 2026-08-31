@@ -131,6 +131,10 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle
   yuva klasörünü yeniden adlandırmak geri getirir). Aşama 2'yle birlikte
   `DosyaIslemleri`/`TasiIslemi` kancasına bağlanacak.
+- **Eski arşiv kopyaları salt-okunur değil.** Koruma 31.08.2026'da geldi
+  ve yalnız YENİ kopyalara konuyor; öncesinde oluşan kopyalar yazılabilir.
+  İşlev aynı, koruma eksik — gerekirse Listele sırasında öznitelik
+  tamamlanabilir (yazılmadı: eski kopya sayısı bir elin parmağı).
 - **Silinen dosyanın arşivi yerinde kalıyor** — çöpten geri gelince
   versiyonları da geri gelir (iyi); dosya çöpten kalıcı silinirse arşiv
   öksüz kalır, temizliği düşünülecek.

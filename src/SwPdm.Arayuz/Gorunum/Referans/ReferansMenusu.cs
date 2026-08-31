@@ -128,6 +128,15 @@ internal sealed class ReferansMenusu
             return (Bos(sahip), "Bu dosya açık kökün dışında");
         }
 
+        // ARSIV KOPYASINA ISLEM UYGULANMAZ (CLAUDE.md 1a): VERSIYONLAR
+        // satirlari hedef olarak arsiv kopyasini tasiyor (tek tik onizleme,
+        // cift tik ac icin). F2/Sil/Kes oraya giderse kayit.txt ile dosya
+        // eslesmesi kirilir ve versiyon "kayip" gorunur.
+        if (ArsivdeMi(yol))
+        {
+            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz");
+        }
+
         if (KlasorTarayici.DosyayiOku(yol) is not DosyaOgesi dosya)
         {
             // Indeks bayat olabilir: yazan dosya artik yerinde degil.
@@ -138,6 +147,15 @@ internal sealed class ReferansMenusu
             SecimBaglami.Kur([dosya], sahip.Kok, sahip.AramaKipinde, sahip.CopKlasoru),
             dosya.Ad);
     }
+
+    /// <summary>Yol, versiyon arsivinin icinde mi (adi Surumler.KlasorAdi'ndan).</summary>
+    private static bool ArsivdeMi(string yol)
+        => yol.Contains(
+               WindowsYolu.Ayirici + Surumler.KlasorAdi + WindowsYolu.Ayirici,
+               StringComparison.OrdinalIgnoreCase)
+           || yol.Contains(
+               WindowsYolu.EgikAyirici + Surumler.KlasorAdi + WindowsYolu.EgikAyirici,
+               StringComparison.OrdinalIgnoreCase);
 
     private static SecimBaglami Bos(SecimBaglami sahip)
         => new([], sahip.Kok, sahip.AramaKipinde, sahip.Kok, sahip.CopKlasoru);

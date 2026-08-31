@@ -1,4 +1,36 @@
-BU SURUMDE - VERSIYONLAR (ASAMA 1)
+BU SURUMDE - VERSIYON ONIZLEME VE CIFT TIKLA ACMA
+
+  Sen: "önizleme penceresinde versiyonların önizlemesini görmek ve
+  versiyona çift tıklayınca açabilmek istiyorum, mümkün mü?" Mumkun -
+  arsivdeki her versiyon gercek bir SOLIDWORKS dosyasi. Yapildi:
+
+  - TEK TIK = ONIZLEME. VERSIYONLAR sekmesinde satira tiklayinca soldaki
+    onizleme O VERSIYONUN resmine doner; baslikta "◂ v3.SLDPRT" yazar,
+    basliga tiklayinca bugunku dosyaya donersin. 3B kip aciksa versiyonu
+    eDrawings'te dondurerek de inceleyebilirsin.
+  - CIFT TIK = AC. Versiyonun arsiv kopyasi acilir (Gezgin'de cift
+    tiklamakla ayni).
+  - ARSIV KOPYALARI ARTIK SALT-OKUNUR. SOLIDWORKS onlari [Read-Only]
+    acar - gecmisin ustune KAZA ILE KAYDEDILEMEZ. Donus akisi bunu
+    biliyor: geri getirilen dosya yazilabilir olarak oturur (testli).
+  - Versiyon satirina SAG TIK ile dosya islemleri uygulanmaz (gri +
+    sebep): F2/Sil arsive gitseydi kayit-kopya eslesmesi kirilirdi.
+
+  KUCUK NOT
+  - Salt-okunurluk YENI olusan kopyalara konuyor; bu paketten once
+    olusturdugun v0'lar (deneme yaptiysan) yazilabilir durumda. Sildir
+    ya da birak - islevleri ayni, yalniz koruma yeni kopyalardaki kadar
+    siki degil.
+
+  SENDE OLCULECEK
+  1. VERSIYONLAR'da satira tikla: onizleme degisiyor mu, baslik
+     "◂ v0.SLDPRT" oluyor mu, basliga tiklayinca donuyor mu?
+  2. Cift tikla: SOLIDWORKS acilirken baslikta [Read-Only] yaziyor mu?
+     Kaydet'e zorlarsan "farkli kaydet" mi istiyor? (Istedigimiz bu.)
+  3. 3B kip acikken versiyon satirina tikla: eDrawings arsiv kopyasini
+     aciyor mu, sonra islem yaparken kilit sorunu cikiyor mu?
+
+ONCEKI SURUMDE - VERSIYONLAR (ASAMA 1)
 
   Senin dort beklentin ve verdigin dort kararla kuruldu. Model:
   AYNI AD, TEK DOSYA + GIZLI ARSIV. Dosya hep ayni adla yerinde durur;

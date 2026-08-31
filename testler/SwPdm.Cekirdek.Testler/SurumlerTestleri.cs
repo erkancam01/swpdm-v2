@@ -141,6 +141,41 @@ public class SurumlerTestleri : IDisposable
     }
 
     [Fact]
+    public void ArsivKopyasi_SALT_OKUNUR_dogar()
+    {
+        // Kullanici versiyonu cift tikla ACIYOR; salt-okunur olmazsa
+        // SOLIDWORKS'te kaza ile gecmisin ustune kaydedilebilir (CLAUDE.md 1a).
+        string yol = DosyaKoy("Parca1.SLDPRT", "hal");
+
+        IslemRaporu rapor = Surumler.Olustur(_kok, yol, "", out _);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.True(
+            (File.GetAttributes(rapor.YeniYol!) & FileAttributes.ReadOnly) != 0,
+            "arsiv kopyasi salt-okunur degil");
+    }
+
+    [Fact]
+    public void Don_saltOkunurArsivden_calisir_ve_CANLI_dosya_YAZILABILIR_kalir()
+    {
+        // File.Copy OZNITELIGI DE kopyalar; temizlenmezse donusten sonra
+        // canli dosya salt-okunur kalir ve SOLIDWORKS kaydedemez olurdu.
+        string yol = DosyaKoy("Parca1.SLDPRT", "eski");
+        Surumler.Olustur(_kok, yol, "", out _);
+        File.WriteAllText(yol, "yeni");
+
+        IslemRaporu rapor = Surumler.Don(_kok, yol, 0);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal("eski", File.ReadAllText(yol));
+        Assert.True(
+            (File.GetAttributes(yol) & FileAttributes.ReadOnly) == 0,
+            "donusten sonra canli dosya salt-okunur kaldi");
+
+        File.WriteAllText(yol, "yazilabilir mi");   // atilabilmeli
+    }
+
+    [Fact]
     public void AyniAdliPRTveDRW_ayri_yuvalarda_CARPISMAZ()
     {
         string prt = DosyaKoy("X.SLDPRT", "parca");

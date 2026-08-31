@@ -84,6 +84,7 @@ REF_SATIR_X=360                                 # referans panelinde tiklanacak 
 REF_ILK_SATIR_Y=543                             # listenin ILK veri satiri (y)
 ONIZLEME_BASLIK_X=60                             # onizleme panelinin ustundeki ad (x)
 ONIZLEME_BASLIK_Y=463
+ONIZLEME_BASLIK_KIRP="200x16+15+456"            # basligin kendisi (iz icin)
 ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 # ==========================================================================
 
@@ -962,10 +963,38 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/surum-sonra.png" > /dev/null 2>&1
   SURUM_SONRA="$(agac_satir_say "$CALISMA/surum-sonra.png" "$PENCERE_X" "$PENCERE_Y")"
 
+  # VERSIYON SATIRINA TEK TIK = O VERSIYONUN ONIZLEMESI (Erkan, 31.08.2026).
+  # Icerik iziyle olculemez: v0 bugunku dosyayla birebir ayni, resim
+  # degismez. Ayiran sey BASLIK: "Parça1.SLDPRT" -> "◂ v0.SLDPRT".
+  # Serit 16'dan beri KULLANILDIGI YERLER'de; iki ilerletme = VERSIYONLAR.
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/surum-panel0.png" > /dev/null 2>&1
+  IZ_S0="$(kirpma_izi "$CALISMA/surum-panel0.png" "$ONIZLEME_BASLIK_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/surum-panel1.png" > /dev/null 2>&1
+  IZ_S1="$(kirpma_izi "$CALISMA/surum-panel1.png" "$ONIZLEME_BASLIK_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool mousemove "$(( PENCERE_X + ONIZLEME_BASLIK_X ))" "$(( PENCERE_Y + ONIZLEME_BASLIK_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/surum-panel2.png" > /dev/null 2>&1
+  IZ_S2="$(kirpma_izi "$CALISMA/surum-panel2.png" "$ONIZLEME_BASLIK_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
   SURUM_ARSIV="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/v0.SLDPRT"
   if [ -f "$SURUM_ARSIV" ] && cmp -s "$SURUM_ARSIV" "$ORNEK/Parça1.SLDPRT" \
-     && [ "$SURUM_SONRA" = "$SURUM_ONCE" ]; then
-    olcum "versiyon olustur ......" "EVET (v0 arsivde, icerik birebir, agac $SURUM_ONCE satir kaldi)"
+     && [ "$SURUM_SONRA" = "$SURUM_ONCE" ] \
+     && [ "$IZ_S1" != "$IZ_S0" ] && [ "$IZ_S2" = "$IZ_S0" ]; then
+    olcum "versiyon olustur ......" "EVET (v0 arsivde birebir, agac degismedi, onizleme v0'a gecip dondu)"
+  elif [ -f "$SURUM_ARSIV" ] && { [ "$IZ_S1" = "$IZ_S0" ] || [ "$IZ_S2" != "$IZ_S0" ]; }; then
+    olcum "versiyon olustur ......" \
+      "HAYIR (onizleme basligi: ${IZ_S0:0:6}/${IZ_S1:0:6}/${IZ_S2:0:6} - satira tik onizlemeyi degistirmedi)"
+    SORUN=1
   elif [ ! -f "$SURUM_ARSIV" ]; then
     olcum "versiyon olustur ......" "HAYIR (arsiv kopyasi olusmadi)"
     SORUN=1

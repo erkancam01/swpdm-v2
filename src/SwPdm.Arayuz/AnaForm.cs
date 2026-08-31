@@ -130,7 +130,19 @@ internal sealed partial class AnaForm : Form
         // --- referans listesinde cift tik: o dosyaya GIT
         // PDM'de asil ise yarayan sey bu: "bu parcayi Montaj3 kullaniyor"
         // yazisini gormek yetmez, oraya GIDEBILMEK gerekir.
-        _referanslar.MouseDoubleClick += (_, e) => ReferansaGit(_referanslar.TiklananHedef(e.Location));
+        _referanslar.MouseDoubleClick += (_, e) =>
+        {
+            // VERSIYONLAR sekmesinde cift tik = arsiv kopyasini AC (Erkan,
+            // 31.08.2026); satirin "gidecegi" bir agac dugumu yok, arsiv
+            // gizli. Karar SurumBolumu'nde, burasi yalnizca dallaniyor.
+            if (_referansSeridi.SeciliBolum == ReferansBolumu.Surumler)
+            {
+                _durum.Bilgi(SurumBolumu.Ac(this, _referanslar.TiklananHedef(e.Location)));
+                return;
+            }
+
+            ReferansaGit(_referanslar.TiklananHedef(e.Location));
+        };
 
 
         // --- klasor secme

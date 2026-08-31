@@ -1294,6 +1294,12 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > (`.SwPdmSurum` gizli). §9 döngüsü: TEMİZ → arşive yazma kesilince
 > **YAKALADI** → geri konunca TEMİZ. "Dön" kapıda ölçülmüyor — birim
 > testleri kapsıyor (dönüş öncesi otomatik arşiv dahil).
+> **Aynı ölçüme önizleme eki (31.08.2026):** versiyon satırına tek tık
+> önizlemeyi o versiyona çevirmeli. İçerik iziyle ölçülemez — v0, bugünkü
+> dosyayla birebir aynı, resim değişmez; ayıran şey önizleme **başlığı**
+> (`◂ v0.SLDPRT`). Başlığın kendi kırpması (`ONIZLEME_BASLIK_KIRP`) izlenir:
+> tıkla → iz değişmeli, başlığa tıkla → ilk ize dönmeli. §9: TEMİZ → satırın
+> hedefi null yapılınca YAKALADI (üç iz aynı) → geri konunca TEMİZ.
 
 > Aynı turda kapının **kazara bir bağı** da çözüldü: ekran görüntüsünü alan
 > satır `import … && # 14) ESC` diye bitiyordu ve 14. ölçüm, `import`
