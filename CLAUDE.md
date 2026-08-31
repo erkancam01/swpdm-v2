@@ -1308,6 +1308,26 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > tıkla → iz değişmeli, başlığa tıkla → ilk ize dönmeli. §9: TEMİZ → satırın
 > hedefi null yapılınca YAKALADI (üç iz aynı) → geri konunca TEMİZ.
 
+> **ARŞİV KLASÖRE DÖNÜNCE AÇILAN DELİK — ÖLÇÜLDÜ (31.08.2026).** Versiyon
+> "kendi kendine yeter" olunca arşiv `v3\<gerçek ad>` + o günkü çocukları
+> oldu. Asıl dosya **yuvanın adıyla** aranıyordu; ad değişince yuva yeni ada
+> taşınıyor ama içindeki kopya **arşivlendiği günkü** adını koruyor (doğrusu
+> bu) → eşleşme kayboluyor. Yedek kural *"klasörde tek dosya varsa o asıldır"*
+> yalnızca **çocuğu olmayan** dosyada tutuyor; Erkan'ın parçasının in-context
+> montaj referansı vardı, `v0`'da iki dosya vardı ve bütün versiyonlar
+> **"Versiyon yok"** göründü.
+>
+> → Asıl dosyanın adı artık `kayit.txt`'in **5. alanında**; arama zinciri
+> kayıttan başlıyor, sonra yuva adı, tek dosya, **yuvanın uzantısıyla tek
+> dosya**, en sonda eski düz düzen. Eski dört alanlı satırlar da çözülüyor.
+>
+> **KAPININ KÖR NOKTASI, BİLEREK:** çalıştırma kapısındaki 17–19. ölçümler
+> `Parça1.SLDPRT` ile koşuyor ve onun çocuğu yok — yani "tek dosya" kuralı
+> tuttuğu için bu hatayı **kaçırdı**. Çocuklu hâl dört birim testle kapandı
+> (kesince yakalıyor, geri konunca temiz). Kapıyı çocuklu bir dosyaya
+> çevirmek üç ölçümü birden yeniden kurmak demekti; ölçülen değer kadar
+> maliyeti de yazılı duruyor.
+
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve
 > panel "Versiyon yok" der. Arşiv diskte durur ama kullanıcı **kaybolduğunu

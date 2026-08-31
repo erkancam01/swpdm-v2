@@ -1,3 +1,41 @@
+BU SURUMDE - AD/KLASOR DEGISINCE VERSIYONLAR YINE GORUNUYOR
+
+  Senin bildirdigin (31.08.2026): "tum versiyon islemleri calisiyor, fakat
+  versiyonu olan parcanin adini veya bulundugu klasorun adini degisince
+  versiyonlari goremiyor."
+
+  SEBEP - ve bu benim gecen turda actigim delikti: versiyon "kendi kendine
+  yeter" olunca arsiv bir KLASOR oldu (v0\<gercek ad> + o gunku cocuklari).
+  Arsivdeki asil dosya YUVANIN ADIYLA araniyordu; ad degisince yuva yeni ada
+  tasiniyor ama icindeki kopya ARSIVLENDIGI GUNKU adini koruyor (dogrusu bu)
+  ve eslesme kayboluyordu. Yedek kural "klasorde tek dosya varsa o asildir"
+  yalnizca cocugu OLMAYAN dosyada tutuyor - senin parcanin in-context montaj
+  referansi var, yani v0'da iki dosya vardi.
+
+  DUZELTMELER:
+  1. Asil dosyanin ADI artik kayit.txt'e yaziliyor (5. alan). Arama zinciri:
+     kayittaki ad -> yuva adi -> tek dosya -> YUVANIN UZANTISIYLA tek dosya
+     -> eski duz duzen. Ad da klasor de degisse asil dosya bulunuyor.
+  2. ELINDEKI ESKI KAYITLAR ICIN HICBIR SEY YAPMANA GEREK YOK: onlarda 5.
+     alan yok ama zincirin "uzantiya gore tek dosya" maddesi onlari cozuyor
+     (testle kilitlendi).
+  3. "VERSIYON YOK" YALANI KALKTI (CLAUDE.md 3): kayit varken arsiv kopyasi
+     okunamiyorsa panel artik "N versiyon kaydi var ama arsiv kopyasi
+     okunamadi - SILMEYIN, arsiv .SwPdmSurum altinda duruyor" diyor; sekme
+     de "yok" degil "okunamadi" yaziyor. Bos liste hicbir zaman "yok"
+     demiyor.
+
+  OLCULDU: 4 yeni birim test - cocuklu dosyanin ADI degisince versiyonlar
+  gorunur · KLASORU adlaninca gorunur · adi degismis cocuklu versiyona
+  DONULEBILIYOR · kayitta ad yokken (eski bicim) uzantiya gore bulunur.
+  Onarim kesilince UCU birden kirildi, geri konunca gecti.
+  354 test, 349 gecti / 5 Windows'a ozel. Bes kapi TEMIZ, calistirma 20/20.
+
+  DURUSTCE: calistirma kapisi bu hatayi KACIRDI - oradaki ornek parcanin
+  cocugu yok, yani "tek dosya" kurali tutuyordu. Cocuklu hal dort birim
+  testle kapali; kapiyi cocuklu bir dosyaya cevirmek uc olcumu birden
+  yeniden kurmak demekti ve bu turda yapilmadi.
+
 BU SURUMDE - MONTAJ VERSIYONUNA COCUKLAR GERCEKTEN GIRIYOR
 
   Senin deneylerin sucluyu kesin buldu (tesekkurler - uc deney de tam

@@ -164,4 +164,98 @@ public partial class SurumlerTestleri
             File.Exists(WindowsYolu.Birlestir(v0, "Parça1.SLDPRT")),
             "parca kopyasi v0'da montajin yaninda degil");
     }
+
+    // ---------------------------------------------------------------------
+    // AD/KLASOR DEGISINCE VERSIYONLAR GORUNMEYE DEVAM EDER (Erkan,
+    // 31.08.2026: "versiyonu olan parçanın adını veya bulunduğu klasörün
+    // adını değişince versiyonları göremiyor").
+    //
+    // Arsiv klasor oldugundan beri asil dosya YUVANIN ADIYLA araniyordu; ad
+    // degisince yuva yeni ada tasiniyor ama icindeki kopya arsivlendigi
+    // gunku adini koruyor -> eslesme kayboluyordu. Cocugu olmayan dosyada
+    // "tek dosya" kurali kurtariyordu; COCUKLU dosyada kurtarmiyor.
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void COCUKLU_dosyanin_ADI_degisince_versiyonlar_GORUNUR()
+    {
+        OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(montaj, "Montaj9.SLDASM");
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+
+        SurumDurumu durum = Surumler.Listele(_kok, rapor.YeniYol!);
+
+        Assert.Single(durum.Ogeler);
+        Assert.Equal(0, durum.BozukSatir);
+        Assert.Equal("Montaj1.SLDASM", WindowsYolu.DosyaAdi(durum.Ogeler[0].ArsivYolu));
+    }
+
+    [Fact]
+    public void COCUKLU_dosyanin_KLASORU_adlanınca_versiyonlar_GORUNUR()
+    {
+        string alt = Path.Combine(_kok, "55");
+        Directory.CreateDirectory(alt);
+
+        string parca = Path.Combine(alt, "Parça1.SLDPRT");
+        File.Move(OrnegiKoy("Parça1.SLDPRT"), parca);
+        string montaj = Path.Combine(alt, "Montaj1.SLDASM");
+        File.Move(OrnegiKoy("Montaj1.SLDASM"), montaj);
+
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        Assert.True(DosyaIslemleri.YenidenAdlandir(alt, "56").Oldu);
+
+        string yeni = WindowsYolu.Birlestir(
+            WindowsYolu.Birlestir(_kok, "56"), "Montaj1.SLDASM");
+        SurumDurumu durum = Surumler.Listele(_kok, yeni);
+
+        Assert.Single(durum.Ogeler);
+        Assert.Equal(0, durum.BozukSatir);
+    }
+
+    [Fact]
+    public void ADI_DEGISMIS_cocuklu_versiyona_DONULEBILIYOR()
+    {
+        OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        long ilkBoyut = new FileInfo(montaj).Length;
+        string yeni = WindowsYolu.Birlestir(_kok, "Montaj9.SLDASM");
+        Assert.True(DosyaIslemleri.YenidenAdlandir(montaj, "Montaj9.SLDASM").Oldu);
+
+        File.AppendAllText(yeni, "bozucu ek");
+        Assert.True(Surumler.Don(_kok, yeni, 0).Oldu);
+        Assert.Equal(ilkBoyut, new FileInfo(yeni).Length);
+    }
+
+    [Fact]
+    public void KAYITTA_AD_YOKKEN_uzantiya_gore_bulunur()
+    {
+        // Bu turdan ONCE yazilmis kayitlar dort alanli: 5. alan (asil ad)
+        // yok. Erkan'in elindeki arsivler boyle - onlarin da gorunmesi sart
+        // (CLAUDE.md 3), yoksa "versiyonlarim kayboldu" der.
+        OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Surumler.Olustur(_kok, montaj, "eski kayit", out int _);
+
+        // 5. alani KIRP: eski bicime dondur.
+        string kayit = KayitYolu(montaj);
+        string[] satirlar = File.ReadAllLines(kayit);
+        File.WriteAllText(
+            kayit,
+            string.Join("\n", Array.ConvertAll(satirlar, x =>
+                string.Join("\t", x.Split('\t')[..4]))) + "\n");
+
+        Assert.True(DosyaIslemleri.YenidenAdlandir(montaj, "Montaj9.SLDASM").Oldu);
+
+        SurumDurumu durum = Surumler.Listele(
+            _kok, WindowsYolu.Birlestir(_kok, "Montaj9.SLDASM"));
+
+        Assert.Single(durum.Ogeler);
+        Assert.Equal("eski kayit", durum.Ogeler[0].Not);
+    }
 }

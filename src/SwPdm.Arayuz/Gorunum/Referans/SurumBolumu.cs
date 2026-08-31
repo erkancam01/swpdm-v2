@@ -29,9 +29,14 @@ internal sealed class SurumBolumu
             return "okunamadı";
         }
 
-        return durum.Ogeler.Count == 0
-            ? "yok"
-            : durum.Ogeler.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (durum.Ogeler.Count == 0)
+        {
+            // Sekme etiketi de yalan soylemez: kayit VARKEN "yok" yazmak
+            // kullaniciyi hic bakmadan gecirir (CLAUDE.md 3).
+            return durum.BozukSatir > 0 ? "okunamadı" : "yok";
+        }
+
+        return durum.Ogeler.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     /// <summary>Bolumu doldurur; cizilen kayitlari sira icin saklar.</summary>
@@ -48,7 +53,18 @@ internal sealed class SurumBolumu
 
         if (durum.Ogeler.Count == 0)
         {
-            Aciklama(liste, "Versiyon yok — Ctrl+Shift+U ile başlat.", "—");
+            // BOS LISTE "YOK" DEMEK DEGILDIR (CLAUDE.md 3). Kayit VAR ama
+            // arsiv kopyasi cozulemiyorsa "Versiyon yok" demek duz yalandi -
+            // Erkan'da tam bu oldu (31.08.2026): ad degisince arsivdeki asil
+            // dosya bulunamadi ve panel "versiyon yok" dedi, oysa arsiv
+            // diskte duruyordu.
+            Aciklama(
+                liste,
+                durum.BozukSatir > 0
+                    ? $"{durum.BozukSatir} versiyon kaydı var ama arşiv kopyası okunamadı — "
+                      + "SİLMEYİN, arşiv .SwPdmSurum altında duruyor."
+                    : "Versiyon yok — Ctrl+Shift+U ile başlat.",
+                durum.BozukSatir > 0 ? "!" : "—");
             return;
         }
 

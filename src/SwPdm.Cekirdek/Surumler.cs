@@ -223,7 +223,7 @@ public static partial class Surumler
         {
             File.AppendAllText(
                 WindowsYolu.Birlestir(yuva, KayitAdi),
-                SatirYap(yeniNo, DateTime.Now, not, boyut));
+                SatirYap(yeniNo, DateTime.Now, not, boyut, WindowsYolu.DosyaAdi(yol)));
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
@@ -386,11 +386,21 @@ public static partial class Surumler
     /// Kayit satiri: no·zaman·boyut·not, sekmeyle. Not icindeki sekme ve
     /// satir sonu bosluga cevrilir - biçim tek satir, elle onarilabilir.
     /// </summary>
-    private static string SatirYap(int no, DateTime zaman, string not, long boyut)
+    private static string SatirYap(int no, DateTime zaman, string not, long boyut, string asilAd)
         => no.ToString(CultureInfo.InvariantCulture) + '\t'
            + zaman.ToString("O", CultureInfo.InvariantCulture) + '\t'
            + boyut.ToString(CultureInfo.InvariantCulture) + '\t'
            + (not ?? string.Empty).Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ')
+
+           // BESINCI ALAN: ARSIVLENEN ASIL DOSYANIN ADI. Erkan'da olculdu
+           // (31.08.2026): arsiv artik klasor ve icindeki kopya ARSIVLENDIGI
+           // GUNKU adini koruyor; dosyanin adi degisince yuva yeni ada
+           // tasiniyor ama asil dosya yuvanin adiyla ARANDIGI icin
+           // bulunamiyor ve butun versiyonlar "yok" gorunuyordu. Ad artik
+           // kayitta duruyor: yuva ne olursa olsun asil dosya bulunur.
+           // Not 4. alanda KALDI - eski dort alanli satirlar okunmaya
+           // devam ediyor (CLAUDE.md 3).
+           + '\t' + (asilAd ?? string.Empty).Replace('\t', ' ')
            + Environment.NewLine;
 
     /// <param name="satirNo">Satirdan okunabilen numara; okunamadiysa -1.
@@ -414,8 +424,10 @@ public static partial class Surumler
 
         satirNo = no;
 
-        // Uzanti kayitta durmuyor; arsiv dosyasi yuvada "v<no>.*" diye tektir.
-        string? arsiv = ArsivBul(yuva, no);
+        // 5. alan varsa ASIL DOSYANIN ADI; eski dort alanli satirlarda yok.
+        string? kayittakiAd = p.Length >= 5 && p[4].Length > 0 ? p[4] : null;
+
+        string? arsiv = ArsivBul(yuva, no, kayittakiAd);
         return arsiv is null ? null : new SurumKaydi(no, zaman, p[3], arsiv, boyut);
     }
 
@@ -426,31 +438,72 @@ public static partial class Surumler
     /// Eskiyi okumaya devam etmek SART: kullanicinin elindeki versiyonlar o
     /// duzende ve onlari gormemek "versiyonlarim kayboldu" demek olurdu.
     /// </summary>
-    private static string? ArsivBul(string yuva, int no)
+    /// <summary>
+    /// Versiyonun ASIL dosyasini bulur. ADIM ADIM, en guveniliriden en zayifa:
+    ///
+    ///   1. KAYITTAKI AD ("v3\&lt;ad&gt;") - ad ve klasor ne olursa olsun tutar.
+    ///   2. YUVANIN ADI - bu turdan onceki kayitlar (5. alan yok) ve dosya
+    ///      henuz adlandirilmamis.
+    ///   3. Klasorde TEK dosya - cocugu olmayan dosyalar.
+    ///   4. Klasorde yuvanin UZANTISIYLA tek dosya - ERKAN'IN HALINI
+    ///      KURTARAN MADDE: "X.SLDPRT" yuvasinin v0'inda bir .SLDPRT + bir
+    ///      .SLDASM (in-context montaj) varsa asil olan .SLDPRT'dir.
+    ///   5. ESKI DUZ DUZEN "v3.SLDPRT" - 31.08.2026 oncesi arsivler.
+    ///
+    /// Hicbiri tutmazsa null; kayit "bozuk" sayilir ve panel bunu SEBEBIYLE
+    /// gosterir - bos liste asla "versiyon yok" demez (CLAUDE.md 3).
+    /// </summary>
+    private static string? ArsivBul(string yuva, int no, string? kayittakiAd = null)
     {
         try
         {
             string govde = "v" + no.ToString(CultureInfo.InvariantCulture);
-
-            // YENI DUZEN: klasorun icindeki asil dosya. Cocuklarin arasindan
-            // ASIL olani ad ile bulunur - yuva klasorunun adi zaten dosyanin
-            // TAM adi (Yuvasi boyle kuruyor).
             string klasor = WindowsYolu.Birlestir(yuva, govde);
+
             if (Directory.Exists(klasor))
             {
-                string asilAd = WindowsYolu.DosyaAdi(yuva);
-                string asil = WindowsYolu.Birlestir(klasor, asilAd);
+                if (kayittakiAd is not null)
+                {
+                    string kayitli = WindowsYolu.Birlestir(klasor, kayittakiAd);
+                    if (File.Exists(kayitli))
+                    {
+                        return kayitli;
+                    }
+                }
+
+                string yuvaAdi = WindowsYolu.DosyaAdi(yuva);
+                string asil = WindowsYolu.Birlestir(klasor, yuvaAdi);
                 if (File.Exists(asil))
                 {
                     return asil;
                 }
 
-                // Ad degismis olabilir (arsiv dosyayla birlikte tasindi):
-                // klasorde tek dosya varsa o asildir.
                 string[] icerik = Directory.GetFiles(klasor);
                 if (icerik.Length == 1)
                 {
                     return icerik[0];
+                }
+
+                // Uzantiya gore tek aday: cocuklar genelde baska turdendir.
+                string uzanti = WindowsYolu.Uzanti(yuvaAdi);
+                if (uzanti.Length > 0)
+                {
+                    string? tekAday = null;
+                    int sayi = 0;
+                    foreach (string aday in icerik)
+                    {
+                        if (string.Equals(
+                                WindowsYolu.Uzanti(aday), uzanti, StringComparison.OrdinalIgnoreCase))
+                        {
+                            tekAday = aday;
+                            sayi++;
+                        }
+                    }
+
+                    if (sayi == 1)
+                    {
+                        return tekAday;
+                    }
                 }
             }
 
