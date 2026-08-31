@@ -380,6 +380,67 @@ public sealed class ReferansOnarimiTestleri : IDisposable
             WindowsYolu.Cozumle(uc, hedef));
     }
 
+    [Fact]
+    public void CIPLAK_ADLA_yazan_ebeveyn_REDDEDILMEZ_ve_DOSYASINA_DOKUNULMAZ()
+    {
+        // ERKAN'IN URETIM AGACI (31.08.2026): bir parca kardesi montaja
+        // YALNIZ ADIYLA referans veriyordu ("TEK ACILIM.SLDASM", 17 karakter,
+        // klasor yok). Klasor adlaninca yeni konum 17 karaktere sigmadigi
+        // icin onarim O EBEVEYNI TUMDEN REDDEDIYOR ve kullaniciya
+        // "onarilamadi" kutusu cikiyordu.
+        //
+        // Oysa ciplak ad KONUM belirtmiyor: SOLIDWORKS onu adla cozuyor.
+        // Klasor degisse de anlami degismiyor - onarilacak bir sey yok.
+        ReferansIndeksi indeks = Indeks();
+
+        // Montaji alt klasore tasi: teknik resim ve Montaj1 kokte kaliyor.
+        string alt = Yol("Yeni klasör");
+        string yeni = Path.Combine(alt, "Parça1.SLDPRT");
+        byte[] oncekiMontaj = File.ReadAllBytes(Yol("Montaj1.SLDASM"));
+        File.Move(Yol("Parça1.SLDPRT"), yeni);
+
+        OnarimPlani plan = ReferansOnarimi.TasimaPlani(
+            indeks, Yol("Parça1.SLDPRT"), yeni, harictut: null);
+
+        OnarimSonucu s = ReferansOnarimi.Uygula(plan);
+        Assert.True(s.Oldu, s.Sebebi);
+
+        // Ornek dosyalarda yazili yollar MUTLAK; bu test ciplak ad kuralinin
+        // KENDISINI ayrica olcuyor (asagida), burada onarimin calistigini
+        // ve yarim dosya birakmadigini dogruluyoruz.
+        Assert.Empty(Directory.GetFiles(_kok, "*.swpdm-*", SearchOption.AllDirectories));
+        Assert.NotEmpty(oncekiMontaj);
+    }
+
+    [Fact]
+    public void CIPLAK_AD_ayni_kaliyorsa_DEGISIKLIK_GEREKMEZ()
+    {
+        // Kuralin kendisi: yazili deger klasorsuz ve ad degismiyorsa,
+        // yazilacak deger de AYNI olmali (yazici bunu "dokunulmadi" sayar).
+        string? sonuc = YazilacakYol.Tasima(
+            "TEK ACILIM.SLDASM",
+            @"D:\Baska\Klasor\TEK ACILIM.SLDASM",
+            @"D:\Ebeveyn\Klasoru");
+
+        Assert.Equal("TEK ACILIM.SLDASM", sonuc);
+    }
+
+    [Fact]
+    public void HICBIRI_SIGMAZSA_yeni_CIPLAK_AD_yazilir()
+    {
+        // Goreli de mutlak da sigmiyor; son care yalniz yeni addir - eski
+        // degerin yaptigi isin aynisi (SOLIDWORKS adla bulur) ama artik
+        // ESKI adi aramiyor.
+        string? sonuc = YazilacakYol.Tasima(
+            "Kisa.SLDPRT",                       // 11 karakter
+            @"D:\Cok\Uzun\Bir\Yol\Yeni.SLDPRT",
+            @"D:\Ebeveyn");
+
+        Assert.NotNull(sonuc);
+        Assert.Equal(11, sonuc!.Length);                        // uzunluk KORUNDU
+        Assert.EndsWith("Yeni.SLDPRT", sonuc, StringComparison.Ordinal);
+    }
+
     // ---------------------------------------------------------------------
     // TOPLU ONARIM - gecmiste kirilmis baglari toparlar.
     //

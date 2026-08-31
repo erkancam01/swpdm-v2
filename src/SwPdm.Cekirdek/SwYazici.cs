@@ -204,6 +204,28 @@ public static class SwYazici
 
             if (akis == 0)
             {
+                // AYRIM SART (CLAUDE.md 3): "aranan ad hic gecmiyor" ile
+                // "geciyor ama DEGISIKLIK GEREKMEDI" ayni sey degil.
+                // Ikincisi BASARIDIR - Erkan'da ciplak adla yazilmis bir
+                // referans yuzunden butun onarim reddediliyordu (31.08.2026).
+                // Donusturucu bunu DEGISMEDI isaretiyle (Sayi < 0) soyluyor.
+                if (dize < 0)
+                {
+                    // Yan dosya gereksiz: asilda degistirilecek bir sey yok.
+                    try
+                    {
+                        File.Delete(hedef);
+                    }
+                    catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+                    {
+                        // Kalirsa ReferansOnarimi'nin temizligi alir.
+                    }
+
+                    return new YamaSonucu(
+                        true, 0, 0,
+                        "yazılı yol zaten geçerli; dosyaya dokunulmadı", []);
+                }
+
                 return YamaSonucu.Olmadi(bosSebep);
             }
 
@@ -256,6 +278,14 @@ public static class SwYazici
             if (sebep is not null)
             {
                 return (0, 0, sebep);
+            }
+
+            if (sayi < 0)
+            {
+                // DEGISIKLIK GEREKMEDI: ad geciyor ama yazilacak deger
+                // eskisinin ayni. Akisa dokunulmuyor, isaret yukari gidiyor.
+                degisenDize = -1;
+                continue;
             }
 
             if (yenisi is null)
@@ -341,6 +371,13 @@ public static class SwYazici
                     + $"(eski yol {b.Deger.Length} karakter). Dosyaya dokunulmadı.");
             }
 
+            // DEGISIKLIK GEREKMEDI: yeni deger eskisiyle ayni (ciplak ad -
+            // bkz. YazilacakYol.Tasima). Dizeye dokunulmaz; sayilmaz da.
+            if (string.Equals(yeniDeger, b.Deger, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             byte[]? dize = MfcDize.Yaz(yeniDeger);
             if (dize is null)
             {
@@ -354,6 +391,14 @@ public static class SwYazici
             cikti.Write(dize, 0, dize.Length);
             imlec = b.Baslangic + b.ToplamBayt;
             sayi++;
+        }
+
+        if (sayi == 0)
+        {
+            // Bulgu vardi ama hicbiri degismedi (ciplak ad). Akis YENIDEN
+            // YAZILMAZ - gereksiz yere sikistirip yuvaya sigdirmaya
+            // calismanin anlami yok.
+            return (null, -1, null);
         }
 
         cikti.Write(acik, imlec, acik.Length - imlec);

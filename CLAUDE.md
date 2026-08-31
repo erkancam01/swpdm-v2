@@ -445,6 +445,30 @@ Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek
 > → Yani üç yolun üçü de kabul ediliyor: **aynı uzunlukta ad · dolgulu ad ·
 > göreli yol**. Yazma tarafında ölçülmemiş bir yol kalmadı.
 
+### ÇIPLAK AD YAZAN REFERANS KONUM BELİRTMEZ — ölçüldü (31.08.2026)
+
+Erkan'ın üretim ağacında bir parça, kardeşi montaja **yalnız adıyla**
+referans veriyordu: `TEK ACILIM.SLDASM` — klasör yok, **17 karakter**.
+In-context montajlarda sık. Klasör adı değişince ne göreli ne mutlak yol
+17 karaktere sığıyor (yazılan dizenin uzunluğu korunmak zorunda) ve onarım
+o ebeveyni **tümden reddediyordu**.
+
+Ama çıplak ad bir **konum** göstermiyor: SOLIDWORKS onu **adla** çözüyor
+(komşu · oturum · arama klasörleri). Klasör değişse de o dizenin anlamı
+değişmez — yani orada onarılacak bir şey yoktur.
+
+→ `YazilacakYol.Tasima`'nın **son çaresi yalnız dosya adını** yazmak: göreli
+de mutlak da sığmazsa ad yazılır. Ad değişmediyse sonuç eski değerin kendisi
+olur ve `SwYazici` bunu **"değişiklik gerekmedi"** sayıp dosyaya hiç
+dokunmaz — başarısızlık değil. `ReferansOnarimi` de onu "onarıldı" diye
+saymaz: sayı yalan söylemez.
+
+> **AYNI SONUCU ÜRETEN İKİNCİ DAL SİLİNDİ.** Önce "ad aynı kaldıysa değeri
+> olduğu gibi döndür" diye ayrı bir dal yazılmıştı. §9 döngüsünde bilerek
+> bozuldu ve **hiçbir test kırılmadı** — çünkü son çare aynı sonucu
+> üretiyordu. Ölçülemeyen dal, olmayan daldır (§8): kaldırıldı. Son çare
+> kesildiğinde iki test birden yakalıyor.
+
 ### Dosyaların içindeki yollar MUTLAK ve YAZARIN makinesine ait
 
 Ölçüldü: `C:\Users\PC\Desktop\tertemiz\Parça1.SLDPRT`. Aynı dosyalar başka

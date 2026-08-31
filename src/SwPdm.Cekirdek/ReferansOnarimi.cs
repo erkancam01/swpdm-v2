@@ -359,6 +359,7 @@ public static class ReferansOnarimi
 
         // ---- 1) HER ebeveyn YAN DOSYAYA yamalanir; asillara dokunulmaz.
         var yamalar = new List<(string Ebeveyn, string Yeni)>();
+        var dokunulmayan = new List<string>();
         foreach (string ebeveyn in plan.Ebeveynler)
         {
             string yeni = ebeveyn + YeniUzanti;
@@ -388,6 +389,17 @@ public static class ReferansOnarimi
                 return OnarimSonucu.Olmadi(
                     $"{WindowsYolu.DosyaAdi(ebeveyn)} onarılamadı: {s.Sebep} "
                     + "Hiçbir şey değiştirilmedi.");
+            }
+
+            // DEGISIKLIK GEREKMEDI (yazici DegisenAkis = 0 diyor): ebeveynin
+            // yazdigi deger zaten gecerli - tipik hali CIPLAK AD, konum
+            // belirtmiyor ve klasor degisince anlami degismiyor (Erkan'da
+            // olculdu, 31.08.2026). Yan dosya yok; ASILA HIC DOKUNULMAZ ve
+            // "onarilan" sayisina da girmez - sayi dogru kalmali (CLAUDE.md 3).
+            if (s.DegisenAkis == 0)
+            {
+                dokunulmayan.Add(ebeveyn);
+                continue;
             }
 
             yamalar.Add((ebeveyn, yeni));
@@ -442,7 +454,18 @@ public static class ReferansOnarimi
             Sil(yedek);
         }
 
-        return new OnarimSonucu(true, [.. plan.Ebeveynler], arsivUyarisi);
+        // ONARILANLAR = GERCEKTEN YAZILANLAR. Dokunulmayan ebeveyn "onarildi"
+        // diye sayilmaz; sayi yalan soylemez (CLAUDE.md 3/10).
+        var onarilanlar = new List<string>();
+        foreach (string ebeveyn in plan.Ebeveynler)
+        {
+            if (!dokunulmayan.Contains(ebeveyn))
+            {
+                onarilanlar.Add(ebeveyn);
+            }
+        }
+
+        return new OnarimSonucu(true, onarilanlar, arsivUyarisi);
     }
 
     /// <summary>Yaninda "~$" kilidi olan, yani SOLIDWORKS'te acik gorunenler.</summary>

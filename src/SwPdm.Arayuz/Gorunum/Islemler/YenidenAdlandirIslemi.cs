@@ -164,7 +164,9 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             MessageBox.Show(
                 baglam.Sahip,
                 "Klasör adlandı ama şu dosyalar onarılamadı:\n\n  "
-                + string.Join("\n  ", onarimHatalari),
+                + string.Join("\n  ", onarimHatalari)
+                + "\n\nKlasörün adı DEĞİŞTİ; bu dosyaların içine yazılamadı."
+                + "\nCtrl+Shift+L ile elle bağlayabilirsiniz.",
                 "Referanslar onarılamadı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 

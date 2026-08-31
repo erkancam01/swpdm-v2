@@ -144,6 +144,7 @@ public static class YazilacakYol
     public static string? Tasima(string yazilan, string yeniTamYol, string? ebeveynKlasoru)
     {
         int hedef = yazilan.Length;
+        string yeniAd = WindowsYolu.DosyaAdi(yeniTamYol);
 
         string? goreli = WindowsYolu.Goreli(ebeveynKlasoru, yeniTamYol);
         if (goreli is not null)
@@ -155,6 +156,31 @@ public static class YazilacakYol
             }
         }
 
-        return Ayarla(hedef, yeniTamYol, kirpmayaIzinVer: false);
+        string? mutlak = Ayarla(hedef, yeniTamYol, kirpmayaIzinVer: false);
+        if (mutlak is not null)
+        {
+            return mutlak;
+        }
+
+        // ============ SON CARE: YALNIZ DOSYA ADI ============
+        //
+        // ERKAN'DA OLCULDU (31.08.2026, gercek uretim agaci): bir parca
+        // kardesi montaja YALNIZ ADIYLA referans veriyordu
+        // ("TEK ACILIM.SLDASM" - tam 17 karakter, klasor yok). Klasor adi
+        // degisince ne goreli ne mutlak yol 17 karaktere sigiyor ve onarim
+        // O EBEVEYNI TUMDEN REDDEDIYORDU; kullaniciya "onarilamadi" kutusu
+        // cikiyordu.
+        //
+        // Oysa CIPLAK AD BIR KONUM BELIRTMIYOR: SOLIDWORKS onu ADLA cozuyor
+        // (komsu, oturum, arama klasorleri). Yalniz adi yazmak, eski degerin
+        // yaptigi isin AYNISIDIR - ve ad degistiyse ESKI adi aramasini
+        // onler. Ad ayni kaldiysa sonuc eski degerin kendisi olur; yazici
+        // bunu "degisiklik gerekmedi" sayip dosyaya HIC dokunmaz.
+        //
+        // TEK KURAL, IKINCI KOPYA YOK (CLAUDE.md 8): "ad ayni kaldi" hali
+        // icin ayrica bir dal yazilmisti; ayni sonucu ureten ikinci kopyaydi
+        // ve bilerek bozuldugunda hicbir test kirilmiyordu - yani olculemez
+        // bir daldi. Kaldirildi.
+        return Ayarla(hedef, yeniAd, kirpmayaIzinVer: false);
     }
 }

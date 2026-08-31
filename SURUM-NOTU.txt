@@ -1,3 +1,40 @@
+BU SURUMDE - "ONARILAMADI" KUTUSU: CIPLAK ADLA YAZAN REFERANS
+
+  Senin ekranin (31.08.2026): klasor adlandirma CALISTI ama bir dosya icin
+  kutu cikti - "TEK ACILIM.SLDASM ... yazili yolun uzunlugu korunamiyor
+  (eski yol 17 karakter)".
+
+  17 karakter tam olarak "TEK ACILIM.SLDASM" demek: o parca kardesi montaja
+  YALNIZ ADIYLA referans veriyor, klasor yazmiyor. In-context montajlarda
+  sik. Klasor adi degisince yeni konumu 17 karaktere sigdirmak imkansiz
+  (yazilan dizenin uzunlugu korunmak zorunda - senin makinende olculdu) ve
+  onarim o ebeveyni tumden reddediyordu.
+
+  AMA CIPLAK AD BIR KONUM BELIRTMIYOR: SOLIDWORKS onu ADLA cozuyor (komsu,
+  oturum, arama klasorleri). Klasor degisse de anlami degismiyor - yani
+  orada onarilacak bir sey YOK. Yani o dosya ZATEN saglamdi; kutu bosuna
+  korkutuyordu.
+
+  DUZELTME: yazilacak yolun SON CARESI artik yalniz dosya adi. Goreli de
+  mutlak da sigmiyorsa ad yaziliyor:
+    - Ad degismediyse sonuc eski degerin kendisi olur -> yazici "degisiklik
+      gerekmedi" der ve DOSYAYA HIC DOKUNMAZ (basarisizlik degil).
+    - Ad degistiyse yeni ad yazilir -> SOLIDWORKS eski adi aramaz.
+    - Yeni ad bile sigmiyorsa yine reddedilir ve sebebi yazilir (durust ret).
+  Onarilan SAYISI da dogru kalir: dokunulmayan dosya "onarildi" sayilmaz.
+
+  Kutu metni de duzeldi: onarilamayan kalirsa artik ne yapabilecegini
+  soyluyor (Ctrl+Shift+L ile elle baglama).
+
+  SENDE: ayni klasoru bir daha adlandir - o kutu artik cikmamali.
+
+  OLCULDU: 3 yeni test; son care kesilince IKISI birden kirildi, geri
+  konunca gecti. 357 test, 352 gecti / 5 Windows'a ozel. Bes kapi TEMIZ,
+  calistirma 20/20.
+
+  NOT: ayni sonucu ureten fazladan bir dal da silindi - bilerek bozuldugunda
+  hicbir test kirilmiyordu, yani olculemez bir daldi (CLAUDE.md 8/9).
+
 BU SURUMDE - AD/KLASOR DEGISINCE VERSIYONLAR YINE GORUNUYOR
 
   Senin bildirdigin (31.08.2026): "tum versiyon islemleri calisiyor, fakat
