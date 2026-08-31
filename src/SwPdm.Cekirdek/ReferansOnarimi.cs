@@ -363,12 +363,24 @@ public static class ReferansOnarimi
         {
             string yeni = ebeveyn + YeniUzanti;
 
-            // KLASOR DEGISTIYSE tam yol yazilir (komsuluk kurali kurtarmaz);
-            // yalnizca ad degistiyse yazili klasor korunur - o hal OLCULDU.
-            YamaSonucu s = plan.KlasorDegisti
-                ? SwYazici.YoluDegistir(
-                    ebeveyn, yeni, eskiAd, yeniYol, WindowsYolu.Klasor(ebeveyn))
-                : SwYazici.AdiDegistir(ebeveyn, yeni, eskiAd, plan.YeniAd);
+            // YAZILAN YOL HER ZAMAN EBEVEYNE GORE KURULUR - ad degisiminde de.
+            //
+            // ONCE BOYLE DEGILDI ve ERKAN'DA KIRILDI (31.08.2026): ad
+            // degisiminde yazili KLASOR korunuyor, yalniz ad degisiyordu.
+            // Dayanagi "cocuk ebeveynin yaninda kalir" varsayimiydi - teknik
+            // resim 1\, parca 3\ olunca varsayim COKUYOR. Ustune uzunlugu
+            // korumak icin soldan klasor atilinca ortaya
+            // "3\.\.\...\11-Parça1.SLDPRT" gibi bir yol cikiyor ve
+            // ebeveynin klasorune gore cozulunce "1\3\..." ediyordu: referans
+            // KAYBOLUYOR, hicbir sey patlamiyor (CLAUDE.md 3).
+            //
+            // Tek dogru soru "bu dosya ebeveynden nasil gorunur": once
+            // EBEVEYNE GORELI yol, sigmazsa MUTLAK, ikisi de sigmazsa YAZILMAZ
+            // ve sebebi soylenir. Yan kazanc: dogrulama da ada degil
+            // COZUMLEMEYE bakiyor (SwYazici.YoluDogrula) - yani yanlis yeri
+            // gosteren bir yama artik kabul edilmiyor (CLAUDE.md 2).
+            YamaSonucu s = SwYazici.YoluDegistir(
+                ebeveyn, yeni, eskiAd, yeniYol, WindowsYolu.Klasor(ebeveyn));
             if (!s.Oldu)
             {
                 Temizle(yamalar);

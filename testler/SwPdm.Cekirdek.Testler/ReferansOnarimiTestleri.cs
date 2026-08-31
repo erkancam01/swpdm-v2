@@ -293,6 +293,46 @@ public sealed class ReferansOnarimiTestleri : IDisposable
             WindowsYolu.Cozumle(bir, hedef));
     }
 
+    [Fact]
+    public void BASKA_KLASORDEKI_cocugun_ADI_degisince_yol_YINE_COZULMELI()
+    {
+        // ERKAN'IN EKRANI (31.08.2026): teknik resim 1\, parca 3\ - yani
+        // cocuk ebeveynin YANINDA DEGIL. Ad degisiminde yazilan yol
+        // "3\.\.\...\11-Parça1.SLDPRT" oldu; ebeveynin klasorune gore
+        // cozulunce "1\3\..." eder ve referans KAYBOLUR.
+        string bir = Path.Combine(_kok, "1");
+        string uc = Path.Combine(_kok, "3");
+        Directory.CreateDirectory(bir);
+        Directory.CreateDirectory(uc);
+
+        string resim = Path.Combine(bir, "Parça1.SLDDRW");
+        File.Move(Yol("Parça1.SLDDRW"), resim);
+
+        string parca = Path.Combine(uc, "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), parca);
+
+        ReferansIndeksi indeks = Indeks();
+
+        OnarimPlani plan = ReferansOnarimi.Planla(indeks, parca, "11-Parça1.SLDPRT");
+        Assert.Contains(resim, plan.Ebeveynler);
+
+        OnarimSonucu sonuc = ReferansOnarimi.Uygula(plan);
+        Assert.True(sonuc.Oldu, sonuc.Sebebi);
+
+        string yeni = Path.Combine(uc, "11-Parça1.SLDPRT");
+        string? hedef = SwReferans.Oku(resim).Dogrudan.FirstOrDefault(
+            y => string.Equals(
+                WindowsYolu.DosyaAdi(y), "11-Parça1.SLDPRT", StringComparison.OrdinalIgnoreCase));
+
+        Assert.NotNull(hedef);
+
+        // ASIL OLCUM: yazili yol, EBEVEYNIN klasorune gore cozuldugunde
+        // parcanin gercek yerini gostermeli.
+        Assert.Equal(
+            WindowsYolu.Cozumle(null, yeni),
+            WindowsYolu.Cozumle(bir, hedef));
+    }
+
     // ---------------------------------------------------------------------
     // TOPLU ONARIM - gecmiste kirilmis baglari toparlar.
     //
