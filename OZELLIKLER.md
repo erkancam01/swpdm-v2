@@ -55,7 +55,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
 | **Yeni klasör** | `Ctrl+Shift+N` | **Adı sorar** (çakışmayan bir ad dolu gelir), sonra klasörü açar ve seçili gelir | Arama sonucundayken · kök yokken |
-| **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır | Seçim yokken · birden çok öğe seçiliyken |
+| **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır. **Klasörde de:** içindeki dosyaları dışarıdan kullanan belgeler onarılır | Seçim yokken · birden çok öğe seçiliyken |
 | **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
 | **Kes** | `Ctrl+X` | Seçilenleri panoya "taşınacak" olarak koyar | Seçim yokken |
 | **Kopyala** | `Ctrl+C` | Seçilenleri panoya "kopyalanacak" olarak koyar | Seçim yokken |
@@ -208,6 +208,7 @@ referanslar kendiliğinden sağlam kalır.
 ## 12. Referans onarımı (uygulamanın varlık sebebi)
 
 - **Yeniden adlandırma (F2)** → adı değişen dosyayı kullanan belgelerin **içine** yeni ad yazılır.
+- **Klasör adı değişince (F2)** → klasörün **içindeki** dosyaları **dışarıdan** kullanan belgeler onarılır (içeridekiler zaten sağlam kalır — SOLIDWORKS önce komşuya bakar). Durum çubuğu kaç dosyanın onarıldığını yazar; `Ctrl+Z` adı VE onarımları birlikte geri alır.
 - **Taşıma (sürükle / Ctrl+X-V)** → taşınan dosyayı kullanan belgelerin içindeki yol yeni konuma çevrilir.
 - **Birlikte taşınan aile** → onarılmaz, gerekmez: SOLIDWORKS önce ebeveynin yanına bakar.
 - **Kopyalama** → onarım yapılmaz; kopya, özgün parçaları göstermeye devam eder (onay kutusunda yazar).

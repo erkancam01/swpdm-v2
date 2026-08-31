@@ -119,13 +119,60 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             return;
         }
 
+        // ============ KLASOR ADI DEGISINCE DISARIDAKI EBEVEYNLER ============
+        //
+        // ERKAN'DA KIRILDI (31.08.2026, "aynı sorun devam ediyor"): 55\
+        // klasoru 56 yapilinca, disaridaki Montaj1.SLDASM'in icinde yazili
+        // "..\55\...Parça1.SLDPRT" oldugu gibi kaldi ve referans BAYATLADI.
+        //
+        // Klasor adi degistirmek, icindeki HER dosyayi tasimaktir - o yuzden
+        // tasima motorunun makinesi kullaniliyor (CLAUDE.md 8, ikinci kopya
+        // yok): TasimaPlanlari klasor ciftini dosya ciftlerine ACAR, birlikte
+        // giden ic ebeveynleri ELER (SOLIDWORKS once komsuya bakiyor ve
+        // goreli yolun derinligi degismedi - CLAUDE.md 5), disarida kalanlari
+        // yamalar. Plan RENAME'DEN SONRA kurulmak zorunda: acilim yeni
+        // klasoru diskten sayarak yapiliyor.
+        int onarilan = 0;
+        IReadOnlyList<string> onarimHatalari = [];
+        IReadOnlyList<OnarimPlani> tutan = [];
+        string? onarimSebebi = null;
+
+        if (oge is not DosyaOgesi && rapor.YeniYol is string yeniKlasor)
+        {
+            (IReadOnlyList<OnarimPlani> planlar, onarimSebebi) =
+                ReferansOnarimi.TasimaPlanlari(
+                    baglam.Referanslar.Indeks, [(yol, yeniKlasor)], [yol]);
+            (onarilan, onarimHatalari, tutan) = ReferansOnarimi.Onar(planlar);
+        }
+
         if (rapor.YeniYol is string yeniYol)
         {
-            GeriAlDefteri.Kaydet(GeriAlmasi(yeniYol, eskiAd, eskiAd, yeniAd));
+            // Onarim varsa geri alma IKISINI birden cozmeli: yalniz adi geri
+            // dondurmek, ebeveynleri yeni ada bakar halde birakirdi. Tasima
+            // geri almasi tam bunu yapiyor (once GeriOnar, sonra Move).
+            GeriAlDefteri.Kaydet(tutan.Count > 0
+                ? AktarmaGeriAlma.TasimayiGeriAl(
+                    [(yol, yeniYol)], tutan, [], baglam.Secim.CopKlasoru)
+                : GeriAlmasi(yeniYol, eskiAd, eskiAd, yeniAd));
+        }
+
+        // ONARIM HATASI KUTUYLA soylenir (CLAUDE.md 6'nin 2. sebebi): durum
+        // cubugunda kalsa kullanici klasoru adlandirdim sanir, referanslar
+        // sessizce kirik kalirdi - tam da bugunku sikayet.
+        if (onarimHatalari.Count > 0)
+        {
+            MessageBox.Show(
+                baglam.Sahip,
+                "Klasör adlandı ama şu dosyalar onarılamadı:\n\n  "
+                + string.Join("\n  ", onarimHatalari),
+                "Referanslar onarılamadı", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         baglam.Tazele(rapor.YeniYol);
-        baglam.Bildir($"{eskiAd} → {yeniAd}");
+        baglam.Bildir(
+            $"{eskiAd} → {yeniAd}"
+            + (onarilan > 0 ? $" · dışarıdan kullanan {onarilan} dosya onarıldı" : "")
+            + (onarimSebebi is not null ? $" · onarım yapılamadı: {onarimSebebi}" : ""));
 
         // Dokunulan iki yol biliniyor; butun kok taranmiyor. Klasor
         // adlandirildiysa Sonra kendisi tam taramaya duser.

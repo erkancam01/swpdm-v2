@@ -126,14 +126,6 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   `kayit.txt`'e çocukların o günkü versiyon numaraları yazılır (referans
   indeksi biliyor, kopya değil ucuz); dönüşte "yalnız montaj / o günkü
   çocuk versiyonlarıyla" seçimi. Karar verildi, kurulmadı.
-- **KLASÖR adı değişince dışarıdaki ebeveynler ONARILMIYOR (Erkan, 31.08.2026:
-  "dosya ve klasör ismi değiştirmede referanslar kayboluyor").** Dosya adı
-  tarafı bu turda onarıldı ve testle kilitlendi; klasör tarafı açık: klasörün
-  İÇİNDEKİ referanslar komşuluk kuralıyla sağlam kalıyor (§5'te ölçüldü), ama
-  dışarıdan gelen ebeveyn eski klasör adını yazmaya devam ediyor. Taşıma
-  motorunun `TasimaPlanlari` makinesi bunu zaten yapabiliyor — klasör altındaki
-  SOLIDWORKS dosyaları için (eski yol → yeni yol) çiftleri üretilip aynı
-  "hepsi ya da hiçbiri" akışına verilmeli.
 - **Ad değiştirme/taşıma arşivi TAŞIMIYOR (bilinen borç, §3).** Dosya bizim
   uygulamadan adlanınca/taşınınca `.SwPdmSurum` yuvası eski adda kalıyor ve
   versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle

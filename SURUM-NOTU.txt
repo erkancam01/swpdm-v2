@@ -1,3 +1,31 @@
+BU SURUMDE - KLASOR ADI DEGISINCE REFERANSLAR DA ONARILIYOR
+
+  Ikinci ekranin (31.08.2026): montaj 3\ klasorunde, parca 55\ icindeydi;
+  montajin icinde "..\55\...511-Parça1.SLDPRT" yaziyordu (bir onceki
+  surumun DOGRU yazdigi yol). Sonra klasorun adi 56 oldu ve yol BAYATLADI -
+  klasor adlandirmasi hicbir referansi onarmiyordu. Simdi onariyor:
+
+  - Klasorun adini degistirince, icindeki dosyalari DISARIDAN kullanan
+    belgelerin yazili yollari yeniden yazilir (tasima motorunun makinesi -
+    ayni kod, ikinci kopya yok).
+  - Klasorun ICINDEKI referanslara dokunulmaz: birlikte tasindilar,
+    goreli yol ve komsuluk kurali onlari zaten koruyor (senin makinende
+    olculmus davranis).
+  - Durum cubugu kac dosyanin onarildigini yazar; onarilamayan olursa
+    kutu cikar ve tek tek sayar.
+  - Ctrl+Z adi VE onarimlari BIRLIKTE geri alir.
+
+  SENDEKI BOZUK DOSYA ICIN: 56 klasorunun adini bir kez daha degistir
+  (ornegin 57 yap, istersen geri 56) - yeni surum bu adlandirmada montaji
+  gorup dogru yolu yazacak. Olmazsa KIRIK sekmesi + Ctrl+Shift+L her zaman
+  var.
+
+  OLCULDU: senaryon birebir birim test oldu (montaj 3\'te, parca 55\'te,
+  klasor 55 -> 56, montajin icindeki yol yeni klasoru COZMELI) - 338 test,
+  333 gecti / 5 Windows'a ozel. Wine kapisi klasor dalini ayrica olcmuyor;
+  tus -> adlandirma zinciri 16. olcumde zaten olculuyor, klasor dali ayni
+  giristen ayriliyor ve cekirdegi ucuca testli.
+
 BU SURUMDE - AD DEGISTIRINCE REFERANSIN KAYBOLMASI ONARILDI
 
   Senin ekranin (31.08.2026): teknik resim 1\ klasorunde, parca 3\

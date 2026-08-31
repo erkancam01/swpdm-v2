@@ -333,6 +333,53 @@ public sealed class ReferansOnarimiTestleri : IDisposable
             WindowsYolu.Cozumle(bir, hedef));
     }
 
+    [Fact]
+    public void KLASOR_ADI_degisince_disaridaki_ebeveyn_ONARILIYOR()
+    {
+        // ERKAN'IN IKINCI EKRANI (31.08.2026): montaj 3\'te, parca 55\'te.
+        // Klasor 55 -> 56 olunca montajin icindeki "..\55\..." bayatladi.
+        // Klasor adlandirmasi = icindeki her dosyanin tasinmasi; ayni
+        // makine (TasimaPlanlari) klasor ciftiyle cagrilir.
+        string uc = Path.Combine(_kok, "3");
+        string bes = Path.Combine(_kok, "55");
+        Directory.CreateDirectory(uc);
+        Directory.CreateDirectory(bes);
+
+        string montaj = Path.Combine(uc, "Montaj1.SLDASM");
+        File.Move(Yol("Montaj1.SLDASM"), montaj);
+
+        string parca = Path.Combine(bes, "Parça1.SLDPRT");
+        File.Move(Yol("Parça1.SLDPRT"), parca);
+
+        ReferansIndeksi indeks = Indeks();
+
+        // Klasorun adi degisiyor - once disk (uygulamadaki sira da bu),
+        // sonra plan: acilim yeni klasoru diskten sayiyor.
+        string yeniKlasor = Path.Combine(_kok, "56");
+        Directory.Move(bes, yeniKlasor);
+
+        (IReadOnlyList<OnarimPlani> planlar, string? sebep) =
+            ReferansOnarimi.TasimaPlanlari(indeks, [(bes, yeniKlasor)], [bes]);
+
+        Assert.Null(sebep);
+        Assert.NotEmpty(planlar);
+
+        (int onarilan, IReadOnlyList<string> hatalar, _) = ReferansOnarimi.Onar(planlar);
+        Assert.Empty(hatalar);
+        Assert.True(onarilan > 0);
+
+        // ASIL OLCUM: montajin icindeki yol, montajin klasorune gore
+        // cozuldugunde parcanin YENI klasorunu gostermeli.
+        string? hedef = SwReferans.Oku(montaj).Dogrudan.FirstOrDefault(
+            y => string.Equals(
+                WindowsYolu.DosyaAdi(y), "Parça1.SLDPRT", StringComparison.OrdinalIgnoreCase));
+
+        Assert.NotNull(hedef);
+        Assert.Equal(
+            WindowsYolu.Cozumle(null, Path.Combine(yeniKlasor, "Parça1.SLDPRT")),
+            WindowsYolu.Cozumle(uc, hedef));
+    }
+
     // ---------------------------------------------------------------------
     // TOPLU ONARIM - gecmiste kirilmis baglari toparlar.
     //
