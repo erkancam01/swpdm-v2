@@ -74,6 +74,16 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             : $"\"{dosya.Ad}\" ve kullandığı {cocuklar.Yollar.Count} dosya "
               + "şimdiki hâlleriyle arşivlenecek.";
 
+        // EKSIK VERSIYON UYARISI KUTUNUN ICINDE (CLAUDE.md 3/6): durum
+        // cubuguna yazilan uyari Erkan'da GOZDEN KACTI ve eksik arsivlenen
+        // montaj "dosya bozuk" diye geri dondu. Kullanici karari kutuda
+        // gorup versiyonu yine de olusturabilir - engel degil, bilgi.
+        if (cocuklar.Cozulemeyen > 0)
+        {
+            kapsam += $"\nDİKKAT: {cocuklar.Cozulemeyen} referans bulunamadı — "
+                + "versiyon EKSİK arşivlenecek.";
+        }
+
         string? not = SurumNotuKutusu.Sor(
             baglam.Sahip, "Yeni versiyon", kapsam + " Not (isteğe bağlı):");
 

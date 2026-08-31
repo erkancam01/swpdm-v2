@@ -125,4 +125,43 @@ public partial class SurumlerTestleri
         Assert.NotNull(rapor.Sebep);
         Assert.Contains("bulunamadı", rapor.Sebep!, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void ONARIMIN_YAZDIGI_GORELI_YOLLU_cocuk_da_ARSIVLENIR()
+    {
+        // ERKAN'IN EKRANI (31.08.2026): montaj 3\, parca 3157\ klasorunde ve
+        // montajin icindeki yol ONARIMIN YAZDIGI GORELI yol ("..\3157\...").
+        // Ilk halde cocuk toplayici bu yolu ebeveyne gore COZMUYORDU:
+        // v0'da montaj TEK BASINA kaldi ve SOLIDWORKS "dosya bozuk" dedi.
+        string uc = Path.Combine(_kok, "3");
+        string binUc = Path.Combine(_kok, "3157");
+        Directory.CreateDirectory(uc);
+        Directory.CreateDirectory(binUc);
+
+        string montaj = Path.Combine(uc, "Montaj1.SLDASM");
+        File.Move(OrnegiKoy("Montaj1.SLDASM"), montaj);
+
+        // Parcayi 3157'ye tasi ve montaji GERCEK onarimla yamala - montajin
+        // icine tam da Erkan'daki gibi ebeveyne goreli yol yazilir.
+        string parca = Path.Combine(binUc, "Parça1.SLDPRT");
+        File.Move(OrnegiKoy("Parça1.SLDPRT"), parca);
+
+        YamaSonucu yama = SwYazici.YoluDegistir(
+            montaj, montaj + ".yeni", "Parça1.SLDPRT", parca, uc);
+        Assert.True(yama.Oldu, yama.Sebep);
+        File.Delete(montaj);
+        File.Move(montaj + ".yeni", montaj);
+
+        // ASIL OLCUM: cocuk bulunmali ve arsive girmeli.
+        CocukKumesi cocuklar = Surumler.Cocuklari(montaj);
+        Assert.Contains(parca, cocuklar.Yollar);
+
+        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+
+        string v0 = WindowsYolu.Klasor(rapor.YeniYol!);
+        Assert.True(
+            File.Exists(WindowsYolu.Birlestir(v0, "Parça1.SLDPRT")),
+            "parca kopyasi v0'da montajin yaninda degil");
+    }
 }

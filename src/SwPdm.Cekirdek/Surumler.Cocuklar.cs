@@ -93,7 +93,14 @@ public static partial class Surumler
 
     /// <summary>
     /// Yazili bir referansin diskteki karsiligi: once EBEVEYNIN YANI, sonra
-    /// yazili yolun kendisi. SOLIDWORKS'un sirasi bu (CLAUDE.md 5).
+    /// yazili yol EBEVEYNE GORE COZULEREK. SOLIDWORKS'un sirasi bu (CLAUDE.md 5).
+    ///
+    /// EBEVEYNE GORE COZMEK SART - ERKAN'DA OLCULDU (31.08.2026): onarimin
+    /// kendi yazdigi yollar GORELI ("..\3157\.\...\Ad.SLDPRT"). Ilk halde
+    /// buraya duz File.Exists(yazilan) konmustu; goreli yol calisma klasorune
+    /// gore bakiliyor, hicbir zaman bulunmuyor ve montajin COCUKLARI HIC
+    /// ARSIVLENMIYORDU - v0'da montaj tek basina kaldi, SOLIDWORKS "dosya
+    /// bozuk" dedi. Kendi yazdigimiz yolu kendi toplayicimiz okuyamiyordu.
     /// </summary>
     private static string? Bul(string yazilanYol, string ebeveynYolu)
     {
@@ -105,17 +112,66 @@ public static partial class Surumler
 
         try
         {
-            string komsu = WindowsYolu.Birlestir(WindowsYolu.Klasor(ebeveynYolu), ad);
+            string ebeveynKlasoru = WindowsYolu.Klasor(ebeveynYolu);
+            string komsu = WindowsYolu.Birlestir(ebeveynKlasoru, ad);
             if (File.Exists(komsu))
             {
                 return komsu;
             }
 
-            return File.Exists(yazilanYol) ? yazilanYol : null;
+            string? cozulen = EbeveyneGoreCoz(ebeveynKlasoru, yazilanYol);
+            return cozulen is not null && File.Exists(cozulen) ? cozulen : null;
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Yazili yolu ebeveynin klasorune gore GERCEK bir diske-yola cevirir.
+    ///
+    /// WindowsYolu.Cozumle KULLANILMIYOR - bilincli: o, iki yolu KIYASLAMAK
+    /// icin var ve sonucu hep "\" ile birlestiriyor; testler Linux'ta
+    /// kosuyor ve File.Exists oyle bir yolu bulamazdi. Burada tabandan
+    /// Klasor/Birlestir ile yuruyoruz: taban GERCEK bir yol oldugundan
+    /// Birlestir ayiriciyi ondan seciyor ve sonuc her iki isletim
+    /// sisteminde de aranabilir kaliyor.
+    /// </summary>
+    private static string? EbeveyneGoreCoz(string temel, string yazilan)
+    {
+        // Mutlak yol (surucu ya da UNC) oldugu gibi denenir.
+        if ((yazilan.Length > 1 && yazilan[1] == ':')
+            || (yazilan.Length > 1 && Ayirici(yazilan[0]) && Ayirici(yazilan[1])))
+        {
+            return yazilan;
+        }
+
+        string suan = temel;
+        foreach (string parca in yazilan.Split(
+                     new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (parca == ".")
+            {
+                continue;   // onarimin uzunluk dolgusu: ".\" yolu degistirmez
+            }
+
+            if (parca == "..")
+            {
+                suan = WindowsYolu.Klasor(suan);
+                if (suan.Length == 0)
+                {
+                    return null;   // kokun ustune cikti; yol gecersiz
+                }
+
+                continue;
+            }
+
+            suan = WindowsYolu.Birlestir(suan, parca);
+        }
+
+        return suan;
+
+        static bool Ayirici(char c) => c is '\\' or '/';
     }
 }

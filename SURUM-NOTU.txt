@@ -1,3 +1,42 @@
+BU SURUMDE - MONTAJ VERSIYONUNA COCUKLAR GERCEKTEN GIRIYOR
+
+  Senin deneylerin sucluyu kesin buldu (tesekkurler - uc deney de tam
+  isabetti): montajin v0 klasorunde MONTAJ TEK BASINAYDI, cocuklar hic
+  kopyalanmamisti. Ayni dosya tek basina Masaustunde aciliyordu; yaninda
+  cocuklari OLMADIGI icin arsivden acilamiyordu.
+
+  SEBEP (kodda olculdu, testle kilitlendi): onarimin kendisi montajin
+  icine EBEVEYNE GORELI yol yaziyor ("..\3157\.\...\2-551511-Parça1.SLDPRT").
+  Cocuk toplayici bu yolu ebeveynin klasorune gore COZMUYORDU - yani kendi
+  yazdigimiz yolu kendi toplayicimiz okuyamiyordu. Cocuk "bulunamadi"
+  sayiliyor ve v0 eksik olusuyordu. Uyari yalnizca durum cubugundaydi ve
+  gozden kacti.
+
+  DUZELTMELER:
+  1. Cocuk toplayici yazili yolu artik EBEVEYNE GORE cozuyor (once komsu,
+     sonra cozulmus yol - SOLIDWORKS'un kendi sirasi). Testle kilitli:
+     senin duzenin birebir (montaj 3\, parca 3157\, onarimli goreli yol).
+  2. Cozulemeyen referans artik "Yeni versiyon" KUTUSUNDA yazar:
+     "DIKKAT: N referans bulunamadi - versiyon EKSIK arsivlenecek."
+     Durum cubugunda kaybolmaz.
+
+  SENIN YAPMAN GEREKEN (PC'ye donunce, 30 saniye):
+  1. Yeni zip'i ac.
+  2. VERSIYONLAR'da montajin ESKI v0'ini sec, Delete ile SIL - o versiyon
+     eksik (icinde yalniz montaj var) ve duzelmez; o gunku cocuk kopyalari
+     hic alinmadi.
+  3. Ctrl+Shift+U ile YENI versiyon olustur - kutu "Montaj1.SLDASM ve N
+     dosya arsivlenecek" demeli (N > 0 OLMALI; 0 derse ekran goruntusu at).
+  4. Cift tikla - artik parcalariyla, o gunku haliyle acilmali.
+
+  (Gecen turda elle adini degistirdigin ars klasoru: "2-551511-Parça1
+  (SLDPRT)" adini eski haline dondurmene gerek yok - uygulama iki adi da
+  okur demiyorum, DONDUR: adi "2-551511-Parça1.SLDPRT" yap ki uygulama
+  yuvayi bulsun. Yol denemesi icin degismisti, suclu o cikmadi.)
+
+  OLCULDU: yeni test onarim kesilince KIRILDI, geri konunca GECTI.
+  350 test, 345 gecti / 5 Windows'a ozel. Bes kapi TEMIZ, 20/20.
+
 BU SURUMDE - VERSIYON ARTIK KENDI KENDINE YETIYOR
 
   Senin sozun (31.08.2026): "hayır geçici çözüm olmaz, part dosyası eskiden
