@@ -28,6 +28,7 @@ internal static class AgacIslemleri
         new IleriAlIslemi(),
         null,
         new BoyutHesaplaIslemi(),
+        new SurumOlusturIslemi(),
         null,
         new ReferansTaramaIslemi(),
         new ElleBaglaIslemi(),

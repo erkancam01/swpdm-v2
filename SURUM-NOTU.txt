@@ -1,4 +1,58 @@
-BU SURUMDE - SEKME SAYILARI SADELESTI
+BU SURUMDE - VERSIYONLAR (ASAMA 1)
+
+  Senin dort beklentin ve verdigin dort kararla kuruldu. Model:
+  AYNI AD, TEK DOSYA + GIZLI ARSIV. Dosya hep ayni adla yerinde durur;
+  eski icerikler kokun icindeki gizli .SwPdmSurum klasorunde tam kopya
+  olarak saklanir (cop kutusu gibi: ayni disk, agacta gorunmez,
+  taranmaz). Eski versiyona donmek montaj dosyasina HIC dokunmaz - ad
+  degismedigi icin referanslar kendiliginden saglam.
+
+  BU PAKETTE OLAN (Asama 1)
+  - HER DOSYA v0 DOGAR (1. beklentin). Hazirlik yok; ilk "Yeni versiyon
+    olustur" o anki icerigi v0 olarak arsivler, sonrakiler v1, v2...
+  - Ctrl+Shift+U ya da sag tik -> "Yeni versiyon olustur..." - kisa not
+    sorar (bos gecilebilir), arsivler. Yalniz SOLIDWORKS dosyalari.
+  - Yeni VERSIYONLAR sekmesi (dorduncu): v0..vN, en yeni ustte, notu ve
+    tarihiyle. Ipucunda arsiv kopyasinin tam yolu.
+  - BU VERSIYONA DON (3. beklentin): sekmede satiri sec, Enter. Onay
+    kutusu iki seyi acikca soyler: bugunku hal ONCE OTOMATIK ARSIVLENIR
+    (donus de bir versiyondur - hicbir icerik hicbir islemle kaybolmaz)
+    ve bu dosyayi kullanan BUTUN montajlar donulen icerigi gorur.
+  - Montaj dosyalari da ayni akista versiyonlanir/donulur (4. beklentin).
+  - SOLIDWORKS'te ACIK dosyaya donulmez: ~$ kilidi varken reddedilir,
+    sebebi yazilir.
+
+  SONRAKI PAKETLERDE (soz, unutulmadi)
+  - Asama 2 - "uzerine yaz / yeni versiyon" SORUSU (2. beklentin):
+    uygulama ~$ kilidinden belgeyi actigini/kapattigini gorecek; belge
+    kapaninca icerik degistiyse TEK soru gelecek. Su an o soru yok -
+    aliskanlik: duzenlemeye baslamadan Ctrl+Shift+U.
+  - Asama 3 - montaj versiyonu cocuklarin o gunku versiyonlarini NOT
+    edecek; donerken "yalniz montaj mi, cocuklarla mi" soracak.
+
+  ACIK SINIR (durustluk)
+  - Uygulama kapaliyken yaptigin degisikligin ONCEKI hali, daha once
+    versiyonlanmadiysa KURTARILAMAZ. Uygulama bunu iddia etmiyor.
+  - AD DEGISTIRME/TASIMA arsivi HENUZ tasimiyor: versiyonlu bir dosyayi
+    adlandirirsan versiyon listesi "yok" gorunur. KAYIP DEGIL - arsiv
+    eski adiyla diskte duruyor; simdilik versiyonlu dosyanin adini
+    degistirme. Asama 2 ile birlikte kendiliginden tasinacak.
+
+  BURADA OLCULEN
+  - Cekirdek 11 birim testli (v0 kurali, numaralama, don + otomatik
+    arsiv, kilitli dosyada red, bozuk kayit sayimi, arsivin taranmadigi).
+  - Kapinin yeni 17. olcumu: Ctrl+Shift+U -> not kutusu -> DISKTE v0
+    kopyasi olustu mu ve asilla BIREBIR ayni mi (cmp); agac satir sayisi
+    degismedi mi (.SwPdmSurum gizli mi).
+
+  SENDE OLCULECEK
+  1. Gercek bir parcada Ctrl+Shift+U, sonra parcayi degistir, kaydet,
+     sekmeden v0'a don: SOLIDWORKS eski hali aciyor mu?
+  2. Parca SOLIDWORKS'te ACIKKEN donmeyi dene: reddedip sebep yaziyor mu?
+  3. Buyuk montajda versiyon olusturma kac saniye? (Tam kopya aliniyor;
+     3 MB'lik montajda anlik olmali, 100 MB'ta ilk olcum sende.)
+
+ONCEKI SURUMDE - SEKME SAYILARI SADELESTI
 
   Uc istegin de yapildi:
 

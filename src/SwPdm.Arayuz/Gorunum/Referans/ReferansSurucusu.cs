@@ -21,6 +21,9 @@ internal enum ReferansBolumu
 
     /// <summary>Cozulemeyen ve bayat yollar - onarilacaklar.</summary>
     Kirik,
+
+    /// <summary>Dosyanin arsivlenmis versiyonlari (Surumler).</summary>
+    Surumler,
 }
 
 /// <summary>
@@ -38,7 +41,8 @@ internal static class ReferansBolumleri
     {
         ReferansBolumu.Icindekiler => "İÇİNDEKİLER",
         ReferansBolumu.KullanildigiYerler => "KULLANILDIĞI YERLER",
-        _ => "KIRIK",
+        ReferansBolumu.Kirik => "KIRIK",
+        _ => "VERSİYONLAR",
     };
 }
 
@@ -78,6 +82,12 @@ internal sealed partial class ReferansSurucusu
     private readonly HashSet<string> _kirli = new(StringComparer.OrdinalIgnoreCase);
 
     private ReferansIndeksi? _indeks;
+
+    /// <summary>VERSIYONLAR sekmesinin sahibi; karari SurumBolumu.cs'te.</summary>
+    private readonly SurumBolumu _surumler = new();
+
+    /// <summary>Enter = "bu versiyona don" icin: cizilen siradaki kayit.</summary>
+    internal SurumKaydi? SurumKaydi(int sira) => _surumler.Kayit(sira);
 
     /// <summary>Hedefli tazeleme YETMEZ; butun kok taranmali.</summary>
     private bool _tamGerekli = true;
@@ -279,7 +289,8 @@ internal sealed partial class ReferansSurucusu
         {
             ReferansBolumu.Icindekiler => IcindekilerMetni(yol),
             ReferansBolumu.KullanildigiYerler => YukariMetni(_indeks.Kullananlar(yol)),
-            _ => KirikMetni(yol),
+            ReferansBolumu.Kirik => KirikMetni(yol),
+            _ => SurumBolumu.SayiMetni(_indeks.Kok, yol),
         };
     }
 
@@ -338,6 +349,10 @@ internal sealed partial class ReferansSurucusu
 
                 case ReferansBolumu.Kirik:
                     Kiriklari(liste, yol);
+                    break;
+
+                case ReferansBolumu.Surumler:
+                    _surumler.Doldur(liste, _indeks.Kok, yol);
                     break;
 
                 default:

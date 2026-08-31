@@ -953,6 +953,11 @@ dosyasında** duruyor:
 | **bölüm seçme şeridi** (`Ctrl+Shift+E`, sayılar) | `Arayuz/Gorunum/Referans/ReferansSeridi.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
+| **versiyon arşivi** (v0 · oluştur · dön · kayıt) | `Cekirdek/Surumler.cs` |
+| VERSİYONLAR sekmesinin içeriği | `Arayuz/Gorunum/Referans/SurumBolumu.cs` |
+| yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
+| "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
+| versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
@@ -1052,7 +1057,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on yedi şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı on sekiz şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1063,6 +1068,7 @@ mu** · **tür süzgeci gerçekten süzüyor mu** · **`Ctrl+Z` geri alıyor mu*
 sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
 **panelden çalıştırılan işlem SATIRIN dosyasına mı gidiyor** ·
+**`Ctrl+Shift+U` versiyonu gerçekten arşivliyor mu (diskten, birebir)** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
@@ -1272,6 +1278,23 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > kutusu `"Parça1.SLDDRW"` yazıyordu, yani hedef daha o an doğruydu;
 > eksik olan yalnızca kutuya cevap vermekti.
 >
+> **31.08.2026 — DÖRDÜNCÜ SEKME (VERSİYONLAR) ve 12. ölçümün sayacı.**
+> Şeride VERSİYONLAR eklenince döngü dört bölüm oldu ve üç basışta başa
+> dönmeyi bekleyen 12. ölçüm **HAYIR** dedi — kapı doğru davrandı, ölçüm
+> dörde çıkarıldı (dört iz birbirinden farklı + beşinci basış = ilk iz).
+> Yapışkan bölüm seçimi yüzünden 15. ve 16. ölçümler de o sırada kırıldı:
+> 12 artık İÇİNDEKİLER'e dönerek bitiyor, 15 oradan tek basışla
+> KULLANILDIĞI YERLER'e geçiyor — sıra bağımlılığı bilinçli ve yazılı.
+>
+> **Versiyon ölçümü (17.) neden var:** versiyon arşivi dosya KOPYALAYAN bir
+> özellik; kopya sessizce oluşmazsa kullanıcı "versiyonladım" sanıp dosyanın
+> üstüne yazar ve eski hâl GERİ GELMEZ (§1a). Çekirdek Linux'ta 11 birim
+> testli; kapının ölçtüğü, kısayol → not kutusu → disk zinciri: `v0.SLDPRT`
+> arşivde ve `cmp` ile asılla birebir, ağaç satır sayısı değişmemiş
+> (`.SwPdmSurum` gizli). §9 döngüsü: TEMİZ → arşive yazma kesilince
+> **YAKALADI** → geri konunca TEMİZ. "Dön" kapıda ölçülmüyor — birim
+> testleri kapsıyor (dönüş öncesi otomatik arşiv dahil).
+
 > Aynı turda kapının **kazara bir bağı** da çözüldü: ekran görüntüsünü alan
 > satır `import … && # 14) ESC` diye bitiyordu ve 14. ölçüm, `import`
 > başarılı olduğu sürece koşuyordu. `import` bir gün düşse ölçüm sessizce

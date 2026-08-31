@@ -79,7 +79,8 @@ public static class KlasorTarayici
             // kullanicinin dosyasi degil; icini agacta gormek karisiklik
             // olurdu. GIZLENMIS de olmuyor - yeri Cop Kutusu penceresinde
             // acikca yaziyor (CLAUDE.md 3).
-            if (string.Equals(WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal))
+            if (string.Equals(WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal)
+                || string.Equals(WindowsYolu.DosyaAdi(alt), Surumler.KlasorAdi, StringComparison.Ordinal))
             {
                 continue;
             }

@@ -201,14 +201,19 @@ internal sealed class DiskIzleyici : IDisposable
         _susturmaSonu.Dispose();
     }
 
+    private static bool KendiKlasoru(string yol, string klasorAdi)
+        => yol.Contains(
+               WindowsYolu.Ayirici + klasorAdi, StringComparison.OrdinalIgnoreCase)
+           || yol.Contains(
+               WindowsYolu.EgikAyirici + klasorAdi, StringComparison.OrdinalIgnoreCase);
+
     private void Olay(object gonderen, FileSystemEventArgs e)
     {
-        // KENDI cop klasorumuzdeki hareket sayilmaz: her silme orada dosya
-        // olusturuyor ve bu sonsuz tazeleme dongusu yaratirdi.
-        if (e.FullPath.Contains(
-                WindowsYolu.Ayirici + Cop.KlasorAdi, StringComparison.OrdinalIgnoreCase)
-            || e.FullPath.Contains(
-                WindowsYolu.EgikAyirici + Cop.KlasorAdi, StringComparison.OrdinalIgnoreCase))
+        // KENDI cop ve versiyon klasorlerimizdeki hareket sayilmaz: her
+        // silme/arsivleme orada dosya olusturuyor ve bu sonsuz tazeleme
+        // dongusu yaratirdi.
+        if (KendiKlasoru(e.FullPath, Cop.KlasorAdi)
+            || KendiKlasoru(e.FullPath, Surumler.KlasorAdi))
         {
             return;
         }

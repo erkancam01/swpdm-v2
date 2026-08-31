@@ -23,6 +23,8 @@
 > Aynı gün panel **üç sekme** oldu: İÇİNDEKİLER · KULLANILDIĞI YERLER ·
 > **KIRIK** (`ReferansSeridi.cs`); `Ctrl+Shift+E` ile gezilir. Sayılar
 > aynı gün sadeleşti: sekmedeki sayı = o sekmedeki satır, "· eksik" kalktı.
+> 31.08.2026: **VERSİYONLAR** geldi (Aşama 1) — `Surumler.cs`, dördüncü
+> sekme, `Ctrl+Shift+U`, Enter = dön. Aşama 2-3 aşağıda AÇIK İŞ.
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.
@@ -111,6 +113,27 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   ilk açılış süresi · 3B açıkken taşıma/ad değiştirme (belge kilidi işlem
   öncesi bırakılıyor; `OpenDoc` imzası bir sürümde farklıysa durum
   çubuğundaki hata metni gelsin, ikinci turda düzeltilir).
+
+## A2 — VERSİYON: AÇIK İŞLER (kurgu Erkan'la kuruldu, 31.08.2026)
+
+- **Aşama 2 — "üzerine yaz / yeni versiyon" sorusu (Erkan'ın 2. beklentisi).**
+  Kurgu: uygulamadan açılan (ya da `~$` kilidi beliren) SW dosyasının o anki
+  hâli beklemeye alınır; kilit KALKINCA içerik değiştiyse TEK soru: "Üzerine
+  yazıldı (versiyon artmasın) / Yeni versiyon". Her Ctrl+S'te soru YOK —
+  SOLIDWORKS kullanıcısı sık kaydeder, kutu kullanılmaz olurdu (§6).
+  Parçalar hazır: `DiskIzleyici` (değişikliği görür) + `Kilit` (açık/kapalı).
+- **Aşama 3 — montaj versiyonu çocukları NOT eder, dönerken sorar.**
+  `kayit.txt`'e çocukların o günkü versiyon numaraları yazılır (referans
+  indeksi biliyor, kopya değil ucuz); dönüşte "yalnız montaj / o günkü
+  çocuk versiyonlarıyla" seçimi. Karar verildi, kurulmadı.
+- **Ad değiştirme/taşıma arşivi TAŞIMIYOR (bilinen borç, §3).** Dosya bizim
+  uygulamadan adlanınca/taşınınca `.SwPdmSurum` yuvası eski adda kalıyor ve
+  versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle
+  yuva klasörünü yeniden adlandırmak geri getirir). Aşama 2'yle birlikte
+  `DosyaIslemleri`/`TasiIslemi` kancasına bağlanacak.
+- **Silinen dosyanın arşivi yerinde kalıyor** — çöpten geri gelince
+  versiyonları da geri gelir (iyi); dosya çöpten kalıcı silinirse arşiv
+  öksüz kalır, temizliği düşünülecek.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 

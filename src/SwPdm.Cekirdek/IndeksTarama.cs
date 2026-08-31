@@ -286,7 +286,8 @@ public static class IndeksTarama
                     {
                         // Kendi cop klasorumuz taranmaz: silinmis dosyalarin
                         // referanslari "bu parcayi biri kullaniyor" dedirtirdi.
-                        if (!string.Equals(alt.Name, Cop.KlasorAdi, StringComparison.Ordinal))
+                        if (!string.Equals(alt.Name, Cop.KlasorAdi, StringComparison.Ordinal)
+                            && !string.Equals(alt.Name, Surumler.KlasorAdi, StringComparison.Ordinal))
                         {
                             yigin.Push(alt.FullName);
                         }

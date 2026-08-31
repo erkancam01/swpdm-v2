@@ -148,12 +148,13 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ## 11. Referans paneli (sağ alt)
 
-Üstte **üç sekmelik bir şerit**, altında o sekmenin listesi. Şerit sabittir —
+Üstte **dört sekmelik bir şerit**, altında o sekmenin listesi. Şerit sabittir —
 liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cevaplı.
 
 - **İÇİNDEKİLER** (varsayılan) → bu dosyanın **içinde** kullandığı dosyalar (aşağı yön).
 - **KULLANILDIĞI YERLER** → bu dosyayı kullanan dosyalar (yukarı yön).
 - **KIRIK** → SOLIDWORKS'ün açamayacağı referanslar: `BULUNAMADI` (bu adda dosya taranan ağaçta yok) ve `yol BAYAT` (dosya duruyor ama belgedeki yol başka yeri gösteriyor).
+- **VERSİYONLAR** → dosyanın arşivlenmiş versiyonları; ayrıntısı aşağıda (§11a).
 - **Her sekmede SAYI yazar** → "İÇİNDEKİLER 14" · "KULLANILDIĞI YERLER 4 dosya" · "KIRIK 29 dosya". Sekmeyi açmadan da durumu görürsün; "yok" ile "taranmadı" asla aynı kelimeyle yazılmaz.
 - **Sayı, o sekmede GERÇEKTEN duran satır kadardır.** İÇİNDEKİLER'in sayısı kırıkları **içermez** — onlar KIRIK sekmesinde sayılır. (Önceden toplam yazıyordu: sekme "43" derken listede 14 satır vardı.)
 - **Ctrl+Shift+E** → sıradaki bölüme geçer, sonunda başa döner.
@@ -175,6 +176,25 @@ liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cev
 - **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Hepsi kırık — KIRIK bölümünde." / "Bunu kullanan dosya yok." / "Kırık referans yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz.
 - **Tarama yarım kaldıysa** → sekmede fazladan bir kelime yazmaz; ama liste **boşsa** sayı "yok" değil **"taranmadı"** olur ve bölümün içindeki satır sebebini yazar. Ayrıntı ("EKSİK — 15 dosya okunamadı") durum çubuğundaki tarama cümlesindedir.
 - **Klasör, çoklu seçim ya da SOLIDWORKS olmayan dosya** → panel boş kalmaz, **neden boş olduğunu** yazar ("SOLIDWORKS dosyası değil" · "Seçim yok" · "taranmadı").
+
+---
+
+## 11a. Versiyonlar
+
+Model: **aynı ad, tek dosya + gizli arşiv.** Dosya hep aynı adla yerinde durur;
+eski içerikler kökün içindeki gizli `.SwPdmSurum` klasöründe tam kopya olarak
+saklanır (çöp kutusu gibi: aynı disk, ağaçta görünmez, taranmaz). Parçayı eski
+versiyona döndürmek montaj dosyasına **hiç dokunmaz** — ad değişmediği için
+referanslar kendiliğinden sağlam kalır.
+
+- **Her dosya v0 doğar.** Hazırlık gerekmez; ilk "Yeni versiyon oluştur" o anki içeriği **v0** olarak arşivler, sonrakiler v1, v2…
+- **`Ctrl+Shift+U` (ya da sağ tık → "Yeni versiyon oluştur…")** → kısa bir not sorar (boş geçilebilir), o anki içeriği arşivler. Dosya yerinde kalır, çalışmaya devam edersin. Yalnız SOLIDWORKS dosyaları.
+- **VERSİYONLAR sekmesi** → v0…vN listesi (en yeni üstte): solda `v3 — not`, sağda tarih. Fareyle üstüne gelince (ve `Ctrl+C` ile) **arşiv kopyasının tam yolu**.
+- **Bu versiyona dön** → sekmede satırı seç, **Enter**. Onay kutusu iki şeyi açıkça söyler: **bugünkü hâl önce otomatik arşivlenir** (dönüş de bir versiyondur — hiçbir içerik hiçbir işlemle kaybolmaz) ve bu dosyayı kullanan **bütün montajlar** dönülen içeriği görür.
+- **SOLIDWORKS'te açık dosyaya dönülmez** → `~$` kilidi varken işlem reddedilir ve sebebi yazılır; belgeyi kapatıp yeniden dene.
+- **Açık sınır** → uygulama kapalıyken yaptığın bir değişikliğin *önceki* hâli, daha önce versiyonlanmadıysa **kurtarılamaz**. Alışkanlık: düzenlemeye başlamadan `Ctrl+Shift+U`. (Belge kapanınca kendiliğinden soran akış sonraki sürümde geliyor.)
+- **Açık sınır 2** → ad değiştirme/taşıma arşivi henüz **taşımıyor**: versiyonlu dosyayı adlandırırsan liste "yok" görünür (kayıp değil — arşiv eski adla diskte durur). Şimdilik versiyonlu dosyanın adını değiştirme; sonraki sürümde kendiliğinden taşınacak.
+- Bozuk ya da arşivi kayıp kayıtlar gizlenmez; listenin altında sayısıyla söylenir.
 
 ---
 
@@ -306,7 +326,9 @@ liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cev
 | `Esc` | Süren işi iptal et; iş yoksa aramadan çık |
 | `Ctrl+Shift+S` | Sıralamayı ilerlet |
 | `Ctrl+Shift+F` | Tür süzgecini ilerlet (Tümü → Montaj → … → Tümü) |
-| `Ctrl+Shift+E` | Referans bölümünü ilerlet (İÇİNDEKİLER → KULLANILDIĞI YERLER → KIRIK → …) |
+| `Ctrl+Shift+E` | Referans bölümünü ilerlet (İÇİNDEKİLER → KULLANILDIĞI YERLER → KIRIK → VERSİYONLAR → …) |
+| `Ctrl+Shift+U` | Yeni versiyon oluştur (seçili dosyanın o anki hâli arşive) |
+| `Enter` (VERSİYONLAR sekmesinde) | Seçili versiyona dön (önce bugünkü hâl otomatik arşivlenir) |
 | `Ctrl+Shift+B` | Klasör boyutunu hesapla |
 | `Ctrl+Shift+R` | Referansları tara |
 | `Ctrl+Shift+L` | Referansı elle bağla |

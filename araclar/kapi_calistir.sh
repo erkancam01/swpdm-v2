@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=17
+OLCUM_TOPLAM=18
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -700,7 +700,7 @@ else
   SORUN=1
 fi
 
-# 12) YON AYRIMI: uc bolum seridi gercekten AYRI listeler gosteriyor mu
+# 12) YON AYRIMI: dort bolum seridi gercekten AYRI listeler gosteriyor mu
 #
 # NEDEN VAR: liste uc ayri soruya cevap veriyor - "bu dosya neyi kullaniyor"
 # (ICINDEKILER), "bu dosyayi kim kullaniyor" (KULLANILDIGI YERLER) ve
@@ -709,8 +709,10 @@ fi
 #
 # OLCUM DEGISTI (30.08.2026): once bolum basliklarinin ZEMIN RENGI sayiliyordu
 # (iki bant). Basliklar kalkti - islerini serit yapiyor - ve o olcum
-# ANLAMSIZ kaldi. Yerine ayni tehlikeyi olcen sey kondu: uc bolumun listesi
-# birbirinden FARKLI olmali.
+# ANLAMSIZ kaldi. Yerine ayni tehlikeyi olcen sey kondu: bolumlerin listesi
+# birbirinden FARKLI olmali. (31.08.2026: VERSIYONLAR eklendi, dongu DORT
+# bolum oldu - olcum de dorde cikti; uc basista basa donmesini bekleyen
+# eski hali tam da bu yuzden HAYIR dedi, sayaci kapinin kendisi yakaladi.)
 #
 # SERIT WINE'DA TIKLANMIYOR degil ama koordinati sarmaya bagli; ayni kodu
 # cagiran Ctrl+Shift+E olculuyor (CLAUDE.md 11: menusuz/faresiz kalan ozellik
@@ -740,16 +742,22 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   import -window root "$CALISMA/bolum4.png" > /dev/null 2>&1
   IZ_B4="$(kirpma_izi "$CALISMA/bolum4.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
 
-  if [ "$IZ_B1" != "$IZ_B2" ] && [ "$IZ_B2" != "$IZ_B3" ] && [ "$IZ_B1" != "$IZ_B3" ] \
-     && [ "$IZ_B4" = "$IZ_B1" ]; then
-    olcum "yon ayrimi (uc bolum) ." "EVET (uc liste farkli, basa dondu)"
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/bolum5.png" > /dev/null 2>&1
+  IZ_B5="$(kirpma_izi "$CALISMA/bolum5.png" "$REFERANS_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  if [ "$IZ_B1" != "$IZ_B2" ] && [ "$IZ_B1" != "$IZ_B3" ] && [ "$IZ_B1" != "$IZ_B4" ] \
+     && [ "$IZ_B2" != "$IZ_B3" ] && [ "$IZ_B2" != "$IZ_B4" ] && [ "$IZ_B3" != "$IZ_B4" ] \
+     && [ "$IZ_B5" = "$IZ_B1" ]; then
+    olcum "yon ayrimi (dort bolum)" "EVET (dort liste farkli, basa dondu)"
   else
-    olcum "yon ayrimi (uc bolum) ." \
-      "HAYIR (iz ${IZ_B1:0:6}/${IZ_B2:0:6}/${IZ_B3:0:6}/${IZ_B4:0:6})"
+    olcum "yon ayrimi (dort bolum)" \
+      "HAYIR (iz ${IZ_B1:0:6}/${IZ_B2:0:6}/${IZ_B3:0:6}/${IZ_B4:0:6}/${IZ_B5:0:6})"
     SORUN=1
   fi
 else
-  olcum "yon ayrimi (uc bolum) ." "OLCULEMEDI (pencere yok)"
+  olcum "yon ayrimi (dort bolum)" "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 
@@ -931,7 +939,49 @@ else
   SORUN=1
 fi
 
-# 17) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 17) VERSIYON OLUSTUR: Ctrl+Shift+U o anki icerigi v0 olarak ARSIVLEMELI
+#
+# NEDEN VAR: versiyon arsivi dosya KOPYALAYAN bir ozellik; kopya sessizce
+# olusmazsa kullanici "versiyonladim" sanip dosyanin ustune yazar ve eski
+# hal GERI GELMEZ (CLAUDE.md 1a/3). Cekirdek birim testli (Linux'ta 11
+# test); burada olculen, KISAYOL -> NOT KUTUSU -> DISK zinciri.
+#
+# Olcum EKRANDAN degil DISKTEN: arsiv kopyasi olustu mu ve icerigi asilla
+# BIREBIR ayni mi (cmp). Ikinci sart: agactaki satir sayisi DEGISMEMELI -
+# .SwPdmSurum gizli kalmali; gorunse kullanici onu dosya sanip tasir.
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/surum-once.png" > /dev/null 2>&1
+  SURUM_ONCE="$(agac_satir_say "$CALISMA/surum-once.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  xdotool key --clearmodifiers ctrl+shift+u > /dev/null 2>&1
+  sleep 3
+  xdotool key Return > /dev/null 2>&1          # not bos gecilir, Enter = Tamam
+  sleep 4
+  import -window root "$CALISMA/surum-sonra.png" > /dev/null 2>&1
+  SURUM_SONRA="$(agac_satir_say "$CALISMA/surum-sonra.png" "$PENCERE_X" "$PENCERE_Y")"
+
+  SURUM_ARSIV="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/v0.SLDPRT"
+  if [ -f "$SURUM_ARSIV" ] && cmp -s "$SURUM_ARSIV" "$ORNEK/Parça1.SLDPRT" \
+     && [ "$SURUM_SONRA" = "$SURUM_ONCE" ]; then
+    olcum "versiyon olustur ......" "EVET (v0 arsivde, icerik birebir, agac $SURUM_ONCE satir kaldi)"
+  elif [ ! -f "$SURUM_ARSIV" ]; then
+    olcum "versiyon olustur ......" "HAYIR (arsiv kopyasi olusmadi)"
+    SORUN=1
+  elif ! cmp -s "$SURUM_ARSIV" "$ORNEK/Parça1.SLDPRT"; then
+    olcum "versiyon olustur ......" "HAYIR (kopya asildan FARKLI)"
+    SORUN=1
+  else
+    olcum "versiyon olustur ......" "HAYIR (agac $SURUM_ONCE -> $SURUM_SONRA - arsiv gorunur oldu)"
+    SORUN=1
+  fi
+else
+  olcum "versiyon olustur ......" "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 18) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey

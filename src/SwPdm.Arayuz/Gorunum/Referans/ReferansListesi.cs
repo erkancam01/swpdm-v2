@@ -129,6 +129,14 @@ internal sealed class ReferansListesi : ListView
     /// </summary>
     internal string? SeciliMetin => Secili?.TamMetin;
 
+    /// <summary>
+    /// Secili satirin SIRASI (0 tabanli); secim yoksa -1. VERSIYONLAR
+    /// sekmesi "Enter = bu versiyona don" icin kullanir - o satirlarin
+    /// hedef yolu yok, kimlikleri cizim sirasidir.
+    /// </summary>
+    internal int SeciliSira
+        => SelectedIndices.Count > 0 ? SelectedIndices[0] : -1;
+
     private Satir? Secili
         => SelectedItems.Count > 0 ? SelectedItems[0].Tag as Satir : null;
 

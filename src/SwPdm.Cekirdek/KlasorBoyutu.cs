@@ -111,10 +111,13 @@ public static class KlasorBoyutu
 
                 foreach (string alt in Directory.GetDirectories(su_an))
                 {
-                    // Kendi cop klasorumuz sayilmaz: kullanici "bu klasor kac
-                    // GB" derken sildiklerini kastetmiyor.
+                    // Kendi cop ve versiyon klasorlerimiz sayilmaz: kullanici
+                    // "bu klasor kac GB" derken sildiklerini ve arsivi
+                    // kastetmiyor.
                     if (string.Equals(
-                            WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal))
+                            WindowsYolu.DosyaAdi(alt), Cop.KlasorAdi, StringComparison.Ordinal)
+                        || string.Equals(
+                            WindowsYolu.DosyaAdi(alt), Surumler.KlasorAdi, StringComparison.Ordinal))
                     {
                         continue;
                     }

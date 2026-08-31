@@ -104,6 +104,24 @@ internal sealed partial class AnaForm
                 return;
             }
 
+            // VERSIYONLAR sekmesinde Enter = "bu versiyona don". Olagan
+            // Enter'dan (git) ONCE bakilir cunku versiyon satirinin gidecek
+            // yeri yok; akisin karari SurumeDonusu'nde (CLAUDE.md 1b).
+            if (_referanslar.Focused
+                && e.KeyData == Keys.Enter
+                && _referansSeridi.SeciliBolum == ReferansBolumu.Surumler
+                && SurumeDonusu.Calistir(
+                    this,
+                    _referansSurucusu.SurumKaydi(_referanslar.SeciliSira),
+                    SecimBaglamiKur(),
+                    () => _onizleme.BelgeyiBirak(),
+                    AgaciTazele,
+                    _durum.Bilgi))
+            {
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             // REFERANS PANELI ODAKTAYKEN: once panelin kendi tuslari
             // (Enter = git, Ctrl+C = yolu kopyala). Karari panel dosyasi
             // veriyor, burada yalnizca tus iletiliyor (CLAUDE.md 1b).
