@@ -131,6 +131,14 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle
   yuva klasörünü yeniden adlandırmak geri getirir). Aşama 2'yle birlikte
   `DosyaIslemleri`/`TasiIslemi` kancasına bağlanacak.
+- **Versiyon silme/temizleme yok.** Guard kopyaları (Erkan'daki v5/v6/v7
+  gibi) ve istenmeyen versiyonlar silinemiyor — bilinçli: silme, arşivin
+  tek "geri dönüşsüz" işlemi olurdu ve aceleye gelmez. Gelirse çöp kutusu
+  üzerinden (kalıcı değil) düşünülecek.
+- **v4 ayrışmasının KÖK SEBEBİ Erkan'da henüz ölçülemedi.** Üretebilen bir
+  mekanizma bulundu ve kapatıldı (görünenlerin en büyüğünden numara türetme
+  → çift No). Ama onun makinesindeki ilk tetikleyici doğrulanmadı; yeni
+  sürümdeki "kayıt ... diyordu" durum notu izi gösterecek.
 - **Eski arşiv kopyaları salt-okunur değil.** Koruma 31.08.2026'da geldi
   ve yalnız YENİ kopyalara konuyor; öncesinde oluşan kopyalar yazılabilir.
   İşlev aynı, koruma eksik — gerekirse Listele sırasında öznitelik

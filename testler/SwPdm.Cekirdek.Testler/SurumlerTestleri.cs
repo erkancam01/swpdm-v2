@@ -176,6 +176,92 @@ public class SurumlerTestleri : IDisposable
     }
 
     [Fact]
+    public void Don_KAYITLA_DOSYASI_AYRISMIS_versiyona_yine_doner_ve_SOYLER()
+    {
+        // ERKAN'DA OLCULDU (31.08.2026): v4'un arsiv dosyasi 68197 bayt,
+        // kaydi 62729 diyordu; donus her denemede reddediliyordu. Dogru
+        // davranis: kopya KAYNAGA gore dogrulanir, kayit farki GIZLENMEDEN
+        // soylenir ve donus yapilir - kullanici tikali kalmaz.
+        string yol = DosyaKoy("Parca1.SLDPRT", "eski hal");
+        Surumler.Olustur(_kok, yol, "", out _);
+
+        // arsiv dosyasini kaydindan AYRISTIR (buyut)
+        string arsiv = Surumler.Listele(_kok, yol).Ogeler[0].ArsivYolu;
+        File.SetAttributes(arsiv, FileAttributes.Normal);
+        File.WriteAllText(arsiv, "eski hal ama BUYUMUS");
+
+        File.WriteAllText(yol, "bugunku hal");
+        IslemRaporu rapor = Surumler.Don(_kok, yol, 0);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal("eski hal ama BUYUMUS", File.ReadAllText(yol));
+        Assert.Contains("kayıt", rapor.Sebep, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AyniNodan_iki_satir_TEKLESIR_ve_bozuk_sayilir()
+    {
+        string yol = DosyaKoy("Parca1.SLDPRT", "hal");
+        Surumler.Olustur(_kok, yol, "ilk", out _);
+
+        // kayit.txt'e ayni No'dan IKINCI bir satir (gecmis carpisma taklidi)
+        string yuva = WindowsYolu.Klasor(Surumler.Listele(_kok, yol).Ogeler[0].ArsivYolu);
+        File.AppendAllText(
+            WindowsYolu.Birlestir(yuva, "kayit.txt"),
+            "0\t2026-08-31T10:00:00.0000000\t999\tikinci satir\n");
+
+        SurumDurumu durum = Surumler.Listele(_kok, yol);
+
+        Assert.Single(durum.Ogeler);                       // teklesti
+        Assert.Equal("ikinci satir", durum.Ogeler[0].Not); // EN SON satir esas
+        Assert.Equal(1, durum.BozukSatir);                 // oncekini sakladigi soyleniyor
+    }
+
+    [Fact]
+    public void DosyasiKayip_EN_YENI_kaydin_numarasi_CALINMAZ()
+    {
+        // Numara "gosterilebilenlerin en buyugu"nden turetilseydi, dosyasi
+        // kayip v1'in numarasi yeniden dagitilir ve ayni No'dan iki satir
+        // dogardi - Erkan'daki boyut uyusmazliginin uretici mekanizmasi.
+        string yol = DosyaKoy("Parca1.SLDPRT", "a");
+        Surumler.Olustur(_kok, yol, "", out _);
+        File.WriteAllText(yol, "b");
+        Surumler.Olustur(_kok, yol, "", out int no1);
+        Assert.Equal(1, no1);
+
+        // v1'in dosyasini kaybet
+        string arsiv1 = Surumler.Listele(_kok, yol).Ogeler[0].ArsivYolu;
+        File.SetAttributes(arsiv1, FileAttributes.Normal);
+        File.Delete(arsiv1);
+
+        Surumler.Olustur(_kok, yol, "", out int yeniNo);
+
+        Assert.Equal(2, yeniNo);   // 1 DEGIL - kayip kaydin numarasi sayildi
+    }
+
+    [Fact]
+    public void AyniIcerikle_don_denemesi_guard_YIGMAZ()
+    {
+        // ERKAN'DA OLCULDU: uc basarisiz deneme uc "donmeden once" kopyasi
+        // yigmisti (v5/v6/v7 ayni icerik). Bugunku hal zaten son versiyonda
+        // arsivliyken yeniden arsivlemek hicbir seyi korumaz.
+        string yol = DosyaKoy("Parca1.SLDPRT", "eski");
+        Surumler.Olustur(_kok, yol, "", out _);
+        File.WriteAllText(yol, "yeni");
+        Surumler.Olustur(_kok, yol, "", out _);   // v1 = "yeni" (canliyla ayni)
+
+        IslemRaporu rapor = Surumler.Don(_kok, yol, 0);
+
+        Assert.True(rapor.Oldu, rapor.Sebebi);
+        Assert.Equal("eski", File.ReadAllText(yol));
+
+        // v2 ACILMADI: v0, v1 duruyor, yenisi yok.
+        SurumDurumu durum = Surumler.Listele(_kok, yol);
+        Assert.Equal(2, durum.Ogeler.Count);
+        Assert.Contains("zaten v1'da arşivli", rapor.Sebep, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AyniAdliPRTveDRW_ayri_yuvalarda_CARPISMAZ()
     {
         string prt = DosyaKoy("X.SLDPRT", "parca");

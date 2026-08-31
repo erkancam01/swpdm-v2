@@ -1,4 +1,39 @@
-BU SURUMDE - VERSIYON ONIZLEME VE CIFT TIKLA ACMA
+BU SURUMDE - "VERSIYONA DONULEMEDI (68197 ≠ 62729)" ONARILDI
+
+  Ekran goruntusundeki hata: v4'un arsiv dosyasi ile kaydindaki boyut
+  ayrismisti ve donus her denemede reddediliyordu. DOSYANA DOKUNULMADI
+  (kutu dogru soyluyordu), arsiv de saglam - tikali olan yalnizca
+  dogrulamaydi. Dort duzeltme:
+
+  1. DOGRULAMA ARTIK KAYNAGA GORE. Kopyanin sadakati, kopyalanan arsiv
+     dosyasina gore olculuyor. Kayit boyutu farkliysa donus YAPILIYOR ve
+     durum cubugu acikca yaziyor: "(not: kayıt 62729 bayt diyordu, arşiv
+     68197 — arşivdeki içerik esas alındı)". Yani v4'e artik donersin.
+  2. AYRISMANIN URETICISI KAPANDI. Yeni versiyon numarasi artik kayit
+     dosyasindaki BUTUN satirlarin en buyugunden turetiliyor - dosyasi
+     bir an okunamayan bir kaydin numarasi ikinci kez dagitilamiyor
+     (ayni numaradan iki satir = senin gordugun boyut uyusmazliginin
+     olasi kaynagi).
+  3. GECMISTE OLUSMUS CIFT KAYIT SAVUNMASI: ayni numaradan iki satir
+     varsa EN SON yazilan esas alinir, oncekiler "bozuk" sayilir ve
+     listenin altinda sayisiyla gorunur - sessiz kalmaz.
+  4. GUARD YIGILMASI DURDU. v5/v6/v7'nin uc kez "v4'a donmeden once"
+     yazmasinin sebebi: her basarisiz deneme bir guard kopyasi
+     birakiyordu. Artik bugunku hal zaten son versiyonda birebir
+     arsivliyse yeniden arsivlenmiyor ("bugünkü hâl zaten vN'de
+     arşivli" notu dusuyor).
+
+  ELINDEKI v5/v6/v7 NE OLACAK
+    Zararsizlar - ayni icerigin guard kopyalari. Dursunlar; silme
+    ozelligi henuz yok (SIRADAKI'de acik is).
+
+  SENDE OLCULECEK
+  1. v4'e don: artik oluyor mu? Durum cubugunda "kayıt ... diyordu"
+     notu cikiyor mu? CIKARSA EKRAN GORUNTUSU AL - v4'un nasil
+     ayristigini (kok sebebi) o notla kovalayacagiz.
+  2. Yeni versiyonlar olustur/don dongusu: bir daha ayni hata geliyor mu?
+
+ONCEKI SURUMDE - VERSIYON ONIZLEME VE CIFT TIKLA ACMA
 
   Sen: "önizleme penceresinde versiyonların önizlemesini görmek ve
   versiyona çift tıklayınca açabilmek istiyorum, mümkün mü?" Mumkun -

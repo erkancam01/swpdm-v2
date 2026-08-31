@@ -77,7 +77,11 @@ internal static class SurumeDonusu
             return true;
         }
 
-        bildir($"{dosya.Ad} → v{kayit.No} içeriğine dönüldü (önceki hâl arşivde).");
+        // Cekirdegin notlari (kayit-boyut farki, "zaten arsivli") GIZLENMEZ -
+        // ozellikle kayit farki, kok sebep avinda Erkan'in gorecegi tek iz.
+        bildir(
+            $"{dosya.Ad} → v{kayit.No} içeriğine dönüldü."
+            + (rapor.Sebep is { Length: > 0 } not_ ? not_ : " (önceki hâl arşivde)"));
         tazele(dosya.Yol);
         return true;
     }

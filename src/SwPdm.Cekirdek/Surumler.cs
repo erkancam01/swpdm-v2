@@ -28,10 +28,18 @@ public sealed record SurumKaydi(
 /// <param name="Ogeler">Versiyonlar, EN YENI basta.</param>
 /// <param name="Okunamadi">Kayit okunamadiysa sebebi; okunduysa null.</param>
 /// <param name="BozukSatir">Cozulemeyen ya da arsiv dosyasi kayip kayit sayisi.</param>
+/// <param name="EnBuyukNo">
+/// Kayit dosyasindaki EN BUYUK numara - dosyasi kayip/bozuk satirlar DAHIL;
+/// hic numara yoksa -1. Yeni numara BUNDAN turetilir: gosterilebilenlerin
+/// en buyugunden turetmek, dosyasi bir an okunamayan en yeni kaydin
+/// numarasini CALDIRIYORDU (ayni No'dan iki satir, sonra boyut uyusmazligi -
+/// Erkan'da olculdu, 31.08.2026).
+/// </param>
 public sealed record SurumDurumu(
     IReadOnlyList<SurumKaydi> Ogeler,
     string? Okunamadi,
-    int BozukSatir)
+    int BozukSatir,
+    int EnBuyukNo)
 {
     /// <summary>Kayit okunabildi mi. false ise SAYI GOSTERILMEZ.</summary>
     public bool Guvenilir => Okunamadi is null;
@@ -77,13 +85,13 @@ public static class Surumler
         string? yuva = Yuvasi(kok, yol);
         if (yuva is null)
         {
-            return new SurumDurumu([], "Dosya açık kökün altında değil.", 0);
+            return new SurumDurumu([], "Dosya açık kökün altında değil.", 0, -1);
         }
 
         string kayitYolu = WindowsYolu.Birlestir(yuva, KayitAdi);
         if (!File.Exists(kayitYolu))
         {
-            return new SurumDurumu([], null, 0);
+            return new SurumDurumu([], null, 0, -1);
         }
 
         string[] satirlar;
@@ -93,11 +101,16 @@ public static class Surumler
         }
         catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
         {
-            return new SurumDurumu([], "Versiyon kaydı okunamadı: " + hata.Message, 0);
+            return new SurumDurumu([], "Versiyon kaydı okunamadı: " + hata.Message, 0, -1);
         }
 
-        var ogeler = new List<SurumKaydi>();
+        // AYNI No'DAN IKI SATIR OLABILIR (gecmis bir numara carpismasi):
+        // EN SON YAZILAN satir esas alinir, oncekiler bozuk SAYILIR -
+        // ikisini birden gostermek ayni dosyaya iki farkli boyut/tarih
+        // yakistirir ve donusu kilitler (Erkan'da olculdu, 31.08.2026).
+        var noyaGore = new Dictionary<int, SurumKaydi>();
         int bozuk = 0;
+        int enBuyukNo = -1;
 
         foreach (string satir in satirlar)
         {
@@ -106,7 +119,11 @@ public static class Surumler
                 continue;
             }
 
-            SurumKaydi? kayit = SatiriCoz(yuva, satir);
+            SurumKaydi? kayit = SatiriCoz(yuva, satir, out int satirNo);
+            if (satirNo > enBuyukNo)
+            {
+                enBuyukNo = satirNo;
+            }
 
             // Arsiv dosyasi kayipsa kayit GOSTERILMEZ ama SAYILIR - sessizce
             // yutmak, kullaniciya "o versiyon hic olmadi" dedirtir (CLAUDE.md 3).
@@ -116,11 +133,17 @@ public static class Surumler
                 continue;
             }
 
-            ogeler.Add(kayit);
+            if (noyaGore.ContainsKey(kayit.No))
+            {
+                bozuk++;   // onceki satir gecersiz sayildi ama GIZLENMEDI
+            }
+
+            noyaGore[kayit.No] = kayit;
         }
 
+        var ogeler = new List<SurumKaydi>(noyaGore.Values);
         ogeler.Sort((a, b) => b.No.CompareTo(a.No));
-        return new SurumDurumu(ogeler, null, bozuk);
+        return new SurumDurumu(ogeler, null, bozuk, enBuyukNo);
     }
 
     /// <summary>
@@ -154,7 +177,7 @@ public static class Surumler
             return new IslemRaporu(IslemSonucu.Bilinmeyen, null, durum.Okunamadi);
         }
 
-        int yeniNo = durum.Ogeler.Count == 0 ? 0 : durum.Ogeler[0].No + 1;
+        int yeniNo = durum.EnBuyukNo + 1;
         string arsiv = WindowsYolu.Birlestir(yuva, ArsivAdi(yeniNo, yol));
 
         long boyut;
@@ -254,19 +277,34 @@ public static class Surumler
                 IslemSonucu.Bulunamadi, null, $"v{no} arşivde yok.");
         }
 
-        IslemRaporu guvence = Olustur(kok, yol, $"v{no}'a dönmeden önce", out int _);
-        if (!guvence.Oldu)
+        // GUARD YIGILMASI DURDURULUR - ERKAN'DA OLCULDU (31.08.2026):
+        // basarisiz bir donus denemesi her seferinde yeni bir "donmeden
+        // once" kopyasi yigiyordu (v5/v6/v7 ayni icerik). Bugunku icerik en
+        // son versiyonun kopyasiyla BIREBIR ayniysa yeniden arsivlemek
+        // hicbir seyi korumaz; atlanir ve sebep cumleye yazilir.
+        string? guardNotu = null;
+        if (durum.Ogeler.Count > 0 && AyniIcerik(yol, durum.Ogeler[0].ArsivYolu))
         {
-            // Bugunku hal saklanamadiysa donus YAPILMAZ - aksi, mevcut
-            // icerigi geri donussuz silmek olurdu (CLAUDE.md 1a).
-            return new IslemRaporu(
-                guvence.Sonuc, null,
-                "Dönülmedi — bugünkü hâl arşivlenemedi: " + guvence.Sebebi);
+            guardNotu = $" (bugünkü hâl zaten v{durum.Ogeler[0].No}'da arşivli)";
+        }
+        else
+        {
+            IslemRaporu guvence = Olustur(kok, yol, $"v{no}'a dönmeden önce", out int _);
+            if (!guvence.Oldu)
+            {
+                // Bugunku hal saklanamadiysa donus YAPILMAZ - aksi, mevcut
+                // icerigi geri donussuz silmek olurdu (CLAUDE.md 1a).
+                return new IslemRaporu(
+                    guvence.Sonuc, null,
+                    "Dönülmedi — bugünkü hâl arşivlenemedi: " + guvence.Sebebi);
+            }
         }
 
         string gecici = yol + ".swpdm-don";
+        long arsivBoyutu;
         try
         {
+            arsivBoyutu = new FileInfo(hedef.ArsivYolu).Length;
             File.Copy(hedef.ArsivYolu, gecici, overwrite: true);
 
             // File.Copy OZNITELIGI DE kopyaliyor: arsiv salt-okunur, gecici
@@ -274,13 +312,19 @@ public static class Surumler
             // dosya salt-okunur kalir ve SOLIDWORKS kaydedemez olur.
             File.SetAttributes(gecici, FileAttributes.Normal);
 
+            // DOGRULAMA KAYNAGA GORE - ERKAN'DA OLCULDU (31.08.2026):
+            // once kopya KAYITTAKI boyutla karsilastiriliyordu; kayitla
+            // dosyasi ayrismis bir versiyonda (68197 ≠ 62729) donus her
+            // denemede reddediliyor ve kullanici TIKALI kaliyordu. Kopya
+            // sadakati kopyalanan KAYNAGA gore olculur; kayit farki ise
+            // gizlenmez, asagida cumleye yazilir (CLAUDE.md 3).
             long kopya = new FileInfo(gecici).Length;
-            if (kopya != hedef.Boyut)
+            if (kopya != arsivBoyutu)
             {
                 File.Delete(gecici);
                 return new IslemRaporu(
                     IslemSonucu.Bilinmeyen, null,
-                    $"Kopya doğrulanamadı ({kopya} ≠ {hedef.Boyut} bayt) — dosyaya dokunulmadı.");
+                    $"Kopya doğrulanamadı ({kopya} ≠ {arsivBoyutu} bayt) — dosyaya dokunulmadı.");
             }
 
             File.Replace(gecici, yol, destinationBackupFileName: null);
@@ -291,7 +335,53 @@ public static class Surumler
             return IslemSonuclari.HatayiCevir(hata);
         }
 
-        return IslemRaporu.Basarili(yol);
+        string? kayitNotu = arsivBoyutu == hedef.Boyut
+            ? null
+            : $" (not: kayıt {hedef.Boyut} bayt diyordu, arşiv {arsivBoyutu} — arşivdeki içerik esas alındı)";
+
+        return new IslemRaporu(IslemSonucu.Tamam, yol, (guardNotu ?? "") + (kayitNotu ?? ""));
+    }
+
+    /// <summary>
+    /// Iki dosya BIREBIR ayni mi - once boyut (ucuz), esitse bayt bayt.
+    /// Okunamayan dosyada "farkli" denir: yanlis "ayni" cevabi, donusten
+    /// once bugunku hali arsivlemeyi atlatir ve icerik kaybettirirdi.
+    /// </summary>
+    private static bool AyniIcerik(string a, string b)
+    {
+        try
+        {
+            var ba = new FileInfo(a);
+            var bb = new FileInfo(b);
+            if (!ba.Exists || !bb.Exists || ba.Length != bb.Length)
+            {
+                return false;
+            }
+
+            using FileStream sa = File.OpenRead(a);
+            using FileStream sb = File.OpenRead(b);
+            var ta = new byte[64 * 1024];
+            var tb = new byte[64 * 1024];
+
+            while (true)
+            {
+                int na = sa.ReadAtLeast(ta, ta.Length, throwOnEndOfStream: false);
+                int nb = sb.ReadAtLeast(tb, tb.Length, throwOnEndOfStream: false);
+                if (na != nb || !ta.AsSpan(0, na).SequenceEqual(tb.AsSpan(0, nb)))
+                {
+                    return false;
+                }
+
+                if (na == 0)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -338,8 +428,13 @@ public static class Surumler
            + (not ?? string.Empty).Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ')
            + Environment.NewLine;
 
-    private static SurumKaydi? SatiriCoz(string yuva, string satir)
+    /// <param name="satirNo">Satirdan okunabilen numara; okunamadiysa -1.
+    /// Dosyasi kayip satirin numarasi da SAYILIR - numara uretimi ona
+    /// bakar, yoksa ayni numara ikinci kez dagitilir.</param>
+    private static SurumKaydi? SatiriCoz(string yuva, string satir, out int satirNo)
     {
+        satirNo = -1;
+
         string[] p = satir.Split('\t');
         if (p.Length < 4
             || !int.TryParse(p[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int no)
@@ -351,6 +446,8 @@ public static class Surumler
         {
             return null;
         }
+
+        satirNo = no;
 
         // Uzanti kayitta durmuyor; arsiv dosyasi yuvada "v<no>.*" diye tektir.
         string? arsiv = ArsivBul(yuva, no);
