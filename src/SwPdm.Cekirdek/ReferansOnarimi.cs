@@ -395,11 +395,19 @@ public static class ReferansOnarimi
 
         // ---- 2) Cocugun adi degisir. TASIMADA bu adim YOK: dosya zaten
         //         yeni yerinde, tasima motoru goturdu.
+        string? arsivUyarisi = null;
         if (plan.CocuguTasi)
         {
             try
             {
                 File.Move(plan.EskiYol, yeniYol);
+
+                // VERSIYON ARSIVI DA TASINIR. Bu yol DosyaIslemleri'nden
+                // gecmiyor (yama sirasi yuzunden ad burada degisiyor), o
+                // yuzden kanca ayrica gerekli - Erkan'in kullandigi ASIL
+                // yol bu: onarimli ad degisimi. Tasinamazsa SEBEP asagida
+                // basari raporuna giriyor; sessiz gecmiyor (CLAUDE.md 3).
+                arsivUyarisi = Surumler.Tasindi(plan.EskiYol, yeniYol);
             }
             catch (Exception hata) when (Dosya(hata))
             {
@@ -434,7 +442,7 @@ public static class ReferansOnarimi
             Sil(yedek);
         }
 
-        return new OnarimSonucu(true, [.. plan.Ebeveynler], null);
+        return new OnarimSonucu(true, [.. plan.Ebeveynler], arsivUyarisi);
     }
 
     /// <summary>Yaninda "~$" kilidi olan, yani SOLIDWORKS'te acik gorunenler.</summary>
@@ -485,6 +493,7 @@ public static class ReferansOnarimi
             if (yeniYol is not null && File.Exists(yeniYol))
             {
                 File.Move(yeniYol, eskiYol);
+                Surumler.Tasindi(yeniYol, eskiYol);
             }
         }
         catch (Exception hata) when (Dosya(hata))

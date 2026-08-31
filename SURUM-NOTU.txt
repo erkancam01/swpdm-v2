@@ -1,3 +1,42 @@
+BU SURUMDE - AD/KLASOR DEGISINCE VERSIYONLAR ARTIK KAYBOLMUYOR
+
+  Senin bildirdigin (31.08.2026): "parçanın adını veya bağlı bulunduğu
+  klasörün adını değiştirince versiyonlar gözükmüyor, versiyon yok diyor."
+
+  SEBEP: versiyon arsivi dosyanin YOLUNDAN turetiliyordu
+  (.SwPdmSurum\<klasor>\<dosya adi>\). Ad ya da klasor adi degisince yuvanin
+  yolu da degisiyor, eski yuva OKSUZ kaliyor ve panel "Versiyon yok" diyordu.
+  Arsiv diskte duruyordu - yani veri kaybi yoktu ama sen kaybolmus goruyordun,
+  ki bu daha tehlikeli: "versiyonladim" deyip dosyanin ustune yazabilirdin.
+
+  ONARIM: bir yol diskte tasindiginda versiyon arsivi de onunla tasiniyor.
+  Kanca CEKIRDEKTE - yani su islemlerin HEPSI kapsandi:
+    - dosya adi degistirme (F2), onarimli ya da onarimsiz
+    - KLASOR adi degistirme (tek hamlede icindeki butun dosyalarin arsivleri)
+    - baska klasore tasima, surukle-birak, Kes/Yapistir
+    - bunlarin Ctrl+Z ile geri alinmasi ve Ctrl+Y ile ileri alinmasi
+
+  BILEREK BOYLE OLAN IKI SEY:
+  1. COPE ATMAK ARSIVI TASIMAZ. Geri yukleyince dosya ayni yola donuyor ve
+     versiyonlar kendiliginden geri geliyor; arsivi cope goturmek hicbir sey
+     kazandirmaz, kaybetme riski katardi.
+  2. HEDEFTE ZATEN ARSIV VARSA tasima YAPILMAZ (cope gitmis eski bir
+     dosyadan kalmis olabilir). Ustune yazmak ikisinden birini yok ederdi;
+     ikisi de yerinde birakilir ve durum cubugu SEBEBINI yazar.
+
+  SENDEKI ESKI OKSUZ ARSIVLER: bu surum gecmiste kalmislari kendiliginden
+  toplamaz (hangi arsivin hangi yeni ada ait oldugu tahmin edilemez).
+  El ilaci: dosyayi ESKI adina geri dondur (versiyonlar gorunur), sonra yeni
+  adi ver - bu surumle arsiv de gelir. Ya da .SwPdmSurum altindaki yuva
+  klasorunu elle yeni ada gore adlandir.
+
+  OLCULDU: 6 yeni birim test (ad · klasor adi · baska klasore tasima · geri
+  alma · hedefte arsiv varsa · versiyonu olmayan dosya) - 344 test, 339 gecti
+  / 5 Windows'a ozel. Calistirma kapisina 18. olcum eklendi: ad degisince
+  yuva yeni adda mi, eski yuva kalkti mi - EKRANDAN degil DISKTEN.
+  Directory.Move kesilince kapi YAKALADI, geri konunca TEMIZ.
+  Bes kapi TEMIZ, calistirma 20/20.
+
 BU SURUMDE - KLASOR ADI DEGISINCE REFERANSLAR DA ONARILIYOR
 
   Ikinci ekranin (31.08.2026): montaj 3\ klasorunde, parca 55\ icindeydi;

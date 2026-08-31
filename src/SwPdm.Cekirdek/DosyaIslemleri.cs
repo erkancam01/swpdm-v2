@@ -122,7 +122,11 @@ public static class DosyaIslemleri
                 File.Move(yol, hedef, overwrite: false);
             }
 
-            return IslemRaporu.Basarili(hedef);
+            // VERSIYON ARSIVI DA TASINIR (Surumler.Tasima.cs'te NEDEN'i).
+            // Kanca burada, cunku F2 · geri al · ileri al - ucu de buradan
+            // geciyor; arayuze uc ayri satir eklemek CLAUDE.md 1b'nin
+            // uyardigi merkezi liste olurdu.
+            return ArsiviyleBirlikte(IslemRaporu.Basarili(hedef), yol, hedef);
         }
         catch (Exception hata)
         {
@@ -195,12 +199,27 @@ public static class DosyaIslemleri
                 File.Move(kaynak, hedef, overwrite: false);
             }
 
-            return IslemRaporu.Basarili(hedef);
+            return ArsiviyleBirlikte(IslemRaporu.Basarili(hedef), kaynak, hedef);
         }
         catch (Exception hata)
         {
             return EskisiniSoyle(IslemSonuclari.HatayiCevir(hata), eskisiCopeAlindi, ad);
         }
+    }
+
+    /// <summary>
+    /// Basarili bir tasima/adlandirmadan sonra versiyon arsivini de tasir ve
+    /// - tasinamadiysa - SEBEBI rapora yazar.
+    ///
+    /// KOPYALAMADA CAGRILMAZ: kopya yeni bir dosyadir, gecmisi yoktur;
+    /// kaynagin versiyonlarini kopyaya da yazmak "bu kopyanin gecmisi var"
+    /// yalanini soylerdi (CLAUDE.md 3).
+    /// </summary>
+    private static IslemRaporu ArsiviyleBirlikte(
+        IslemRaporu rapor, string eskiYol, string yeniYol)
+    {
+        string? sebep = Surumler.Tasindi(eskiYol, yeniYol);
+        return sebep is null ? rapor : rapor with { Sebep = sebep };
     }
 
     /// <summary>

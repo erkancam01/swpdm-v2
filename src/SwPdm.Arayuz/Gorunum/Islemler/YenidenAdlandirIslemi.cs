@@ -172,7 +172,10 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         baglam.Bildir(
             $"{eskiAd} → {yeniAd}"
             + (onarilan > 0 ? $" · dışarıdan kullanan {onarilan} dosya onarıldı" : "")
-            + (onarimSebebi is not null ? $" · onarım yapılamadı: {onarimSebebi}" : ""));
+            + (onarimSebebi is not null ? $" · onarım yapılamadı: {onarimSebebi}" : "")
+            // Cekirdek versiyon arsivini de tasidi; tasiyamadiysa SEBEBI
+            // burada gorunur (CLAUDE.md 3 - sessiz gecilmez).
+            + (rapor.Sebep is { Length: > 0 } arsiv ? " · " + arsiv : ""));
 
         // Dokunulan iki yol biliniyor; butun kok taranmiyor. Klasor
         // adlandirildiysa Sonra kendisi tam taramaya duser.
@@ -205,7 +208,8 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
 
         baglam.Tazele(yeniYol);
         baglam.Bildir(
-            $"{eskiAd} → {yeniAd} · onu kullanan {sonuc.Onarilanlar.Count} dosya onarıldı");
+            $"{eskiAd} → {yeniAd} · onu kullanan {sonuc.Onarilanlar.Count} dosya onarıldı"
+            + (sonuc.Sebep is { Length: > 0 } arsiv ? " · " + arsiv : ""));
         ReferansTazeleme.Sonra(baglam, [plan.EskiYol, yeniYol, .. sonuc.Onarilanlar]);
     }
 

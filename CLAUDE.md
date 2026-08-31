@@ -958,6 +958,7 @@ dosyasında** duruyor:
 | yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
+| **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
 | versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
 | **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
@@ -1059,7 +1060,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı on dokuz şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1071,6 +1072,7 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **referans satırına tek tık önizlemeyi değiştirip çıpaya dönüyor mu** ·
 **panelden çalıştırılan işlem SATIRIN dosyasına mı gidiyor** ·
 **`Ctrl+Shift+U` versiyonu gerçekten arşivliyor mu (diskten, birebir)** ·
+**ad değişince versiyon arşivi de taşınıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
@@ -1303,6 +1305,25 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > (`◂ v0.SLDPRT`). Başlığın kendi kırpması (`ONIZLEME_BASLIK_KIRP`) izlenir:
 > tıkla → iz değişmeli, başlığa tıkla → ilk ize dönmeli. §9: TEMİZ → satırın
 > hedefi null yapılınca YAKALADI (üç iz aynı) → geri konunca TEMİZ.
+
+> **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
+> **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve
+> panel "Versiyon yok" der. Arşiv diskte durur ama kullanıcı **kaybolduğunu
+> sanır** — "versiyonladım" deyip dosyanın üstüne yazar (§3). Erkan bunu
+> 31.08.2026'da bildirdi. Ölçüm ekrandan değil **diskten**: yeni adın
+> yuvasında `v0` var mı, eski yuva kalktı mı. §9 döngüsü: TEMİZ →
+> `Directory.Move` kesilince **YAKALADI** ("arşiv eski adda kaldı") → geri
+> konunca TEMİZ.
+>
+> **İLK İKİ KOŞU HAYIR DEDİ ve ikisi de ÖLÇÜMÜN kusuruydu.** Birincisi: F2
+> ağaçtan basılınca işlemden önce referans taraması koşuyor, ad kutusu geç
+> açılıyor ve 3 saniye yetmiyordu (9 oldu). İkincisi daha sinsi: onarım
+> kutusuna 16. ölçümdeki `Left`+`Return` kalıbı uygulanmıştı — **ama o kutu
+> başka kutu.** 16'daki "kimin kullandığı bilinmiyor" kutusu `tehlikeli: true`
+> olduğu için odak "Vazgeç"tedir ve sol ok gerekir; buradaki düz onay
+> kutusunda odak zaten "Evet"te, sol ok onu "Vazgeç"e kaydırıp **adlandırmayı
+> iptal ettiriyordu**. Sebep, F2'den sonra alınan ekran görüntüsüyle bulundu
+> (kutu açıktı, yani tuş gitmişti) — tahminle değil.
 
 > **On sekizincisi neden var (versiyon bakımı):** silme **geri alınamaz** ve
 > çöp kutusuna gitmez. Sessizce yanlış satırı silerse kullanıcı bunu ancak o

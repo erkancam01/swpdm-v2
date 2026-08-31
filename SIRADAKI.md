@@ -126,11 +126,13 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   `kayit.txt`'e çocukların o günkü versiyon numaraları yazılır (referans
   indeksi biliyor, kopya değil ucuz); dönüşte "yalnız montaj / o günkü
   çocuk versiyonlarıyla" seçimi. Karar verildi, kurulmadı.
-- **Ad değiştirme/taşıma arşivi TAŞIMIYOR (bilinen borç, §3).** Dosya bizim
-  uygulamadan adlanınca/taşınınca `.SwPdmSurum` yuvası eski adda kalıyor ve
-  versiyon listesi "yok"a döner (kayıt kaybolmaz, yuva diskte durur; elle
-  yuva klasörünü yeniden adlandırmak geri getirir). Aşama 2'yle birlikte
-  `DosyaIslemleri`/`TasiIslemi` kancasına bağlanacak.
+- **Arşiv artık dosyayla birlikte TAŞINIYOR (31.08.2026).** Kanca çekirdekte
+  (`DosyaIslemleri.YenidenAdlandir` · `.Tasi` · `ReferansOnarimi`'nin ad
+  değiştirmesi), yani adlandırma · taşıma · sürükle-bırak · geri/ileri alma
+  hepsi kapsanıyor. Kalan ölçülmüş sınır: **hedefte zaten bir arşiv varsa**
+  (çöpe gitmiş eski bir dosyadan kalmış olabilir) taşıma yapılmaz — ikisi de
+  yerinde bırakılır ve sebep yazılır. Birleştirme kurgusu yok; gerekirse
+  kullanıcı `.SwPdmSurum` altında elle çözer.
 - **Versiyon silme/not düzenleme GELDİ (31.08.2026).** `F2` notu düzeltir,
   `Delete` versiyonu kalıcı siler (çöp kutusuna GİTMEZ — çöpten dönen kopya
   kayıtsız kalır ve listede görünmez; "geri alınabilir" demek orada yalan

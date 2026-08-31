@@ -121,6 +121,7 @@ internal static class Aktar
         var olmayan = new List<string>();
         var atlanan = new List<string>();
         var ciftler = new List<(string Eski, string Yeni)>();
+        var arsivUyarilari = new List<string>();
 
         // "Degistir" ile UZERINE YAZILAN dosyalarin hedef yollari. Geri alma
         // bunlari da geri yuklemeli; yoksa Ctrl+Z "geri alindi" der ama hedef
@@ -172,6 +173,14 @@ internal static class Aktar
                 string yeniYol = rapor.YeniYol ?? WindowsYolu.Birlestir(hedefKlasor, ad);
                 olan.Add(yeniYol);
                 ciftler.Add((yol, yeniYol));
+
+                // OLDU ama SOYLENECEK bir sey var: cekirdek versiyon
+                // arsivini de tasiyor; tasiyamadiysa sebep raporda gelir ve
+                // yutulmaz (CLAUDE.md 3). "Olmayan" sayilmaz - dosya tasindi.
+                if (rapor.Sebep is { Length: > 0 } uyari)
+                {
+                    arsivUyarilari.Add(ad + " — " + uyari);
+                }
             }
             else if (rapor.Sonuc == IslemSonucu.Atlandi)
             {
@@ -216,7 +225,8 @@ internal static class Aktar
 
         baglam.Ilerleme.Bitti(() => Topla(
             baglam, ciftler, olan, olmayan, atlanan, kip, kesildi,
-            onarilan, onarimHatalari, tutan, onarimSebebi, copeGidenler));
+            onarilan, onarimHatalari, tutan, onarimSebebi, copeGidenler,
+            arsivUyarilari));
     }
 
     /// <summary>Tek bir ogeyi verilen cakisma karariyla aktarir.</summary>
@@ -301,7 +311,8 @@ internal static class Aktar
         IReadOnlyList<string> onarimHatalari,
         IReadOnlyList<OnarimPlani> onarilanPlanlar,
         string? onarimSebebi,
-        IReadOnlyList<string> copeGidenler)
+        IReadOnlyList<string> copeGidenler,
+        IReadOnlyList<string> arsivUyarilari)
     {
         AktarmaGeriAlma.Panoyu(kip, olan.Count > 0);
 
@@ -330,7 +341,8 @@ internal static class Aktar
         // IKI AYRI HATA KUTUSU BIRLESTI (28.08.2026): once "Bazi ogeler
         // aktarilamadi" ve "Referans onarilamadi" ust uste iki kutu
         // cikabiliyordu. Ikisi de ayni islemin sonucu; tek kutu yeter.
-        if (olmayan.Count > 0 || onarimHatalari.Count > 0 || onarimSebebi is not null)
+        if (olmayan.Count > 0 || onarimHatalari.Count > 0 || onarimSebebi is not null
+            || arsivUyarilari.Count > 0)
         {
             var metin = new StringBuilder();
             metin.AppendLine($"{olan.Count} öğe {is_}.");
@@ -358,6 +370,19 @@ internal static class Aktar
                 metin.AppendLine();
                 metin.AppendLine("Bunları kullanan belgeler parçayı bulamayabilir.");
                 metin.AppendLine("Ctrl+Z ile geri alabilirsiniz.");
+            }
+
+            // VERSIYON ARSIVI AYRI BASLIK: dosya tasindi, arsivi
+            // tasinamadi. Kullanici "versiyonlar nerede" diye sormadan
+            // once cevabi burada gormeli (CLAUDE.md 3).
+            if (arsivUyarilari.Count > 0)
+            {
+                metin.AppendLine();
+                metin.AppendLine(MaddeKutusu.Metin(
+                    $"{arsivUyarilari.Count} dosyanın versiyon arşivi taşınamadı:",
+                    arsivUyarilari));
+                metin.AppendLine();
+                metin.AppendLine("Arşiv eski yerinde duruyor; hiçbir versiyon silinmedi.");
             }
 
             MessageBox.Show(

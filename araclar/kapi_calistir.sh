@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=19
+OLCUM_TOPLAM=20
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -1010,7 +1010,67 @@ else
   SORUN=1
 fi
 
-# 18) VERSIYON BAKIMI: F2 NOTU YAZMALI, Delete VERSIYONU SILMELI
+# 18) ARSIV ADLA BIRLIKTE TASINIR: ad degisince VERSIYONLAR kaybolmamali
+#
+# NEDEN VAR (Erkan, 31.08.2026: "parçanın adını veya bağlı bulunduğu
+# klasörün adını değiştirince versiyonlar gözükmüyor, versiyon yok diyor"):
+# arsiv yuvasi dosyanin YOLUNDAN turetiliyor; ad degisince yuva OKSUZ kalir
+# ve panel "Versiyon yok" der. Arsiv diskte durur ama kullanici KAYBOLDUGUNU
+# sanir - "versiyonladim" deyip dosyanin ustune yazar (CLAUDE.md 3).
+#
+# Olcum EKRANDAN degil DISKTEN: yeni adin yuvasinda v0 var mi, eski yuva
+# kalkti mi. 17. olcumden devraliyor (v0 orada uretildi).
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  # Agaca don ve Parça1.SLDPRT'yi sec (17 en son ONIZLEME BASLIGINA tikladi).
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$SON_SATIR" click 1 > /dev/null 2>&1
+  sleep 4
+
+  # AD KUTUSU GEC ACILIYOR: agactan F2, islemden ONCE referans taramasi
+  # kosturuyor (ReferansTazeleme.Once). Ilk kosuda 3 saniye YETMEDI - yazi
+  # hicbir yere gitmedi ve ad DEGISMEDI; kapi bunu yakaladi ve sebep
+  # ekran goruntusunden okundu.
+  xdotool key F2 > /dev/null 2>&1
+  sleep 9
+  import -window root "$CALISMA/ad-kutusu.png" > /dev/null 2>&1
+  xdotool type --delay 60 "VParca1" > /dev/null 2>&1      # uzanti kutuda kilitli
+  sleep 2
+  xdotool key Return > /dev/null 2>&1
+  sleep 5
+
+  # ONARIM KUTUSU - 16. OLCUMDEKI KALIP BURADA YANLIS, OLCULDU (31.08.2026):
+  # oradaki kutu "kimin kullandigi bilinmiyor" (tehlikeli: true) ve odak
+  # "Vazgeç"te oldugu icin sol ok gerekiyordu. BURADA plan guvenilir ve
+  # ebeveynler biliniyor -> duz onay kutusu cikiyor, odak zaten "Evet"te.
+  # Sol ok basmak odagi "Vazgeç"e kaydirip ADLANDIRMAYI IPTAL ETTIRDI;
+  # kapi "arsiv eski adda kaldi" dedi, ekran goruntusu (ad-kutusu.png)
+  # kutunun acik oldugunu gosterdi ve sebep boyle bulundu.
+  xdotool key Return > /dev/null 2>&1
+  sleep 8
+
+  YENI_YUVA="$ORNEK/.SwPdmSurum/VParca1.SLDPRT"
+  ESKI_YUVA="$ORNEK/.SwPdmSurum/Parça1.SLDPRT"
+
+  if [ -f "$YENI_YUVA/v0.SLDPRT" ] && [ ! -d "$ESKI_YUVA" ]; then
+    olcum "arsiv adla tasindi ..." "EVET (yuva yeni adda, eski yuva kalmadi)"
+  elif [ -f "$YENI_YUVA/v0.SLDPRT" ]; then
+    olcum "arsiv adla tasindi ..." "HAYIR (yeni yuva var ama ESKISI de duruyor)"
+    SORUN=1
+  elif [ -d "$ESKI_YUVA" ]; then
+    olcum "arsiv adla tasindi ..." "HAYIR (arsiv eski adda kaldi - versiyonlar kayboldu)"
+    SORUN=1
+  else
+    olcum "arsiv adla tasindi ..." "HAYIR (ad degismedi ya da arsiv yok)"
+    SORUN=1
+  fi
+
+  # SONRAKI OLCUM YENI ADI KULLANIR.
+  SURUM_ARSIV="$YENI_YUVA/v0.SLDPRT"
+else
+  olcum "arsiv adla tasindi ..." "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 19) VERSIYON BAKIMI: F2 NOTU YAZMALI, Delete VERSIYONU SILMELI
 #
 # NEDEN VAR: silme GERI ALINAMAZ ve cop kutusuna gitmez (Surumler.Sil).
 # Sessizce YANLIS satiri silerse kullanici bunu ancak o versiyona donmek
@@ -1028,7 +1088,7 @@ fi
 # Satira yeniden tiklaniyor cunku tuslar YALNIZ panel odaktayken yonleniyor
 # (AnaForm.Kisayollar) ve 17 en son ONIZLEME BASLIGINA tiklamisti.
 if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
-  SURUM_KAYIT="$ORNEK/.SwPdmSurum/Parça1.SLDPRT/kayit.txt"
+  SURUM_KAYIT="$ORNEK/.SwPdmSurum/VParca1.SLDPRT/kayit.txt"   # 18'de adlandi
 
   xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
     click 1 > /dev/null 2>&1
@@ -1088,7 +1148,7 @@ else
   SORUN=1
 fi
 
-# 19) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 20) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey
