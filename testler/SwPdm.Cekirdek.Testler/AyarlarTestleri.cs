@@ -173,6 +173,45 @@ public class AyarlarTestleri : IDisposable
     }
 
     [Fact]
+    public void BUTUN_AYARLAR_diske_yazilip_geri_OKUNUYOR()
+    {
+        // 01.09.2026 denetiminde bulundu: her anahtar adi bu dosyada IKI
+        // YERDE elle yazili (case "siralama" ve satirlar.Add("siralama=")).
+        // Biri kayarsa hata SESSIZ: ayar her acilista sifirlanir ve
+        // kullanici "kaydetmiyor" der, sebebini bulamaz.
+        //
+        // Tek tek anahtarlara test yazmak bu borcu kapatmiyordu -
+        // "siralama" hic test edilmemisti, "otomatikTazele" ise yalnizca
+        // OKUMA tarafindan. Bu test HEPSINI birden gezyor; yeni bir ayar
+        // eklenip buraya yazilmazsa borc goze batar.
+        var yazilan = new Ayarlar
+        {
+            CopUstKlasoru = @"D:\Cop",
+            Siralama = new Siralama(SiralamaOlcutu.Boyut, Azalan: true),
+            OtomatikTazele = false,
+            PencereBoyutu = "1234x777",
+            DikeyBolen = 411,
+            AltBolen = 222,
+            Suzgec = "Montaj",
+            OnizlemeUcBoyutlu = true,
+        };
+        yazilan.KokEkle(@"C:\Proje\Z");
+
+        Assert.True(yazilan.Yaz(_dosya));
+        Ayarlar geri = Ayarlar.Oku(_dosya);
+
+        Assert.Equal(@"C:\Proje\Z", geri.SonKok);
+        Assert.Equal(@"D:\Cop", geri.CopUstKlasoru);
+        Assert.Equal(yazilan.Siralama, geri.Siralama);
+        Assert.False(geri.OtomatikTazele);
+        Assert.Equal("1234x777", geri.PencereBoyutu);
+        Assert.Equal(411, geri.DikeyBolen);
+        Assert.Equal(222, geri.AltBolen);
+        Assert.Equal("Montaj", geri.Suzgec);
+        Assert.True(geri.OnizlemeUcBoyutlu);
+    }
+
+    [Fact]
     public void BOZUK_SAYI_ayarlarin_TAMAMINI_bozmuyor()
     {
         // Dosya elle duzenlenebiliyor; bozuk tek bir satir yuzunden butun
