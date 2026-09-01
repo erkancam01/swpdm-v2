@@ -25,8 +25,14 @@ internal static class RaporPenceresi
     /// <param name="git">
     /// Bir rapor satirina gidilir: pencere kapanir ve o dosya agacta secilir.
     /// </param>
+    /// <param name="kilitler">
+    /// Kilitli klasorler. "Bulunanlari duzelt" dosyalarin ICINE yaziyor ve
+    /// bu yol islemlerin kilit kapisindan (Kilitler.Engel) GECMIYOR - kilidi
+    /// buraya kadar tasimak sart (01.09.2026 denetimi).
+    /// </param>
     internal static void Ac(
-        IWin32Window sahip, ReferansIndeksi? indeks, Action<string> bildir, Action<string> git)
+        IWin32Window sahip, ReferansIndeksi? indeks, Action<string> bildir, Action<string> git,
+        KilitKumesi? kilitler)
     {
         ArgumentNullException.ThrowIfNull(bildir);
         ArgumentNullException.ThrowIfNull(git);
@@ -51,7 +57,7 @@ internal static class RaporPenceresi
 
         foreach (IRapor rapor in RaporListesi.Tumu)
         {
-            sekmeler.TabPages.Add(Sekme(pencere, rapor, indeks, bildir, git));
+            sekmeler.TabPages.Add(Sekme(pencere, rapor, indeks, bildir, git, kilitler));
         }
 
         var kapat = new Button
@@ -72,7 +78,7 @@ internal static class RaporPenceresi
 
     private static TabPage Sekme(
         Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir,
-        Action<string> git)
+        Action<string> git, KilitKumesi? kilitler)
     {
         RaporSonucu sonuc = rapor.Uret(indeks);
         // Sekme basliginda SAYI var ama yalnizca guvenilirse. Guvenilir
@@ -154,7 +160,7 @@ internal static class RaporPenceresi
                 Height = 34,
             };
 
-            duzelt.Click += (_, _) => Duzelt(pencere, rapor, indeks, bildir, duzelt);
+            duzelt.Click += (_, _) => Duzelt(pencere, rapor, indeks, bildir, duzelt, kilitler);
             sayfa.Controls.Add(duzelt);
         }
 
@@ -170,7 +176,7 @@ internal static class RaporPenceresi
         // Sinif adina bakmiyoruz (CLAUDE.md 9: kapsam ADLARA baglanmaz).
         // Bos bir indeks uzerinde soruluyor olsaydi is yapardi; o yuzden
         // yalnizca "bu tur destekliyor mu" diye bakan ucuz bir yol lazim.
-        return rapor.Duzelt(BosIndeks) is not null;
+        return rapor.Duzelt(BosIndeks, null) is not null;
     }
 
     /// <summary>Duzeltme destegini sormak icin BOS indeks - is yapmaz.</summary>
@@ -181,7 +187,8 @@ internal static class RaporPenceresi
     /// yetmez; kac tanesi ve tutmayanlarin sebebi de yazilir (CLAUDE.md 3).
     /// </summary>
     private static void Duzelt(
-        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir, Button dugme)
+        Form pencere, IRapor rapor, ReferansIndeksi indeks, Action<string> bildir, Button dugme,
+        KilitKumesi? kilitler)
     {
         if (!OnayKutusu.Sor(
                 pencere, "Bulunanları düzelt",
@@ -195,7 +202,7 @@ internal static class RaporPenceresi
         }
 
         dugme.Enabled = false;
-        OnarimOzeti? ozet = rapor.Duzelt(indeks);
+        OnarimOzeti? ozet = rapor.Duzelt(indeks, kilitler);
         if (ozet is null)
         {
             // DUGME OLU KALMASIN: burasi eskiden duz "return" ediyordu ve
@@ -219,8 +226,14 @@ internal static class RaporPenceresi
                 ozet.Hatalar);
         }
 
+        // ATLANANLAR YUTULMAZ (CLAUDE.md 3): kilitli klasordekiler bilerek
+        // atlandi; soylenmezse kullanici "hepsi duzeldi" sanip kilitli
+        // klasoru duzelmis kabul eder.
         bildir($"{ozet.Onarilan} bayat yol düzeltildi"
-            + (ozet.Hatalar.Count > 0 ? $" · {ozet.Hatalar.Count} olmadı" : string.Empty));
+            + (ozet.Hatalar.Count > 0 ? $" · {ozet.Hatalar.Count} olmadı" : string.Empty)
+            + (ozet.AtlananKilitli > 0
+                ? $" · {ozet.AtlananKilitli} dosya kilitli klasörde, atlandı"
+                : string.Empty));
 
         // Pencere KAPANIR: listeler artik bayat. Yeniden acildiginda
         // guncel hali gorunur - yarim guncellenmis bir pencere gostermek
@@ -257,7 +270,16 @@ internal sealed class RaporIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.D;
 
     /// <inheritdoc/>
-    public bool Yazar => false;   // yalnizca gosterir
+    /// <remarks>
+    /// RAPOR PENCERESINI ACMAK yazmak degildir - bu yuzden false. AMA
+    /// pencerenin icindeki "Bulunanlari duzelt" dugmesi dosyalarin ICINE
+    /// yaziyor; o yol bu bayragin denetiminden GECMEZ (Kilitler.Engel
+    /// SECIME bakiyor, duzeltme ise indeksin tamamina yaziyor). Kilit
+    /// denetimi bu yuzden YolBaglama.BayatlariOnar'in kendi dongusunde.
+    /// Buradaki eski yorum ("yalnizca gosterir") YANLISTI ve 01.09.2026
+    /// denetimi onu yakaladi.
+    /// </remarks>
+    public bool Yazar => false;
 
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
@@ -275,5 +297,6 @@ internal sealed class RaporIslemi : IAgacIslemi
     /// <inheritdoc/>
     public void Uygula(IslemBaglami baglam)
         => RaporPenceresi.Ac(
-            baglam.Sahip, baglam.Referanslar.Indeks, baglam.Bildir, baglam.Tazele);
+            baglam.Sahip, baglam.Referanslar.Indeks, baglam.Bildir, baglam.Tazele,
+            baglam.Secim.Kilitler);
 }

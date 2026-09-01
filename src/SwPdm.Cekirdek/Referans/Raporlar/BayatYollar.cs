@@ -53,5 +53,6 @@ internal sealed class BayatYollar : IRapor
     }
 
     /// <inheritdoc/>
-    public OnarimOzeti? Duzelt(ReferansIndeksi indeks) => YolBaglama.BayatlariOnar(indeks);
+    public OnarimOzeti? Duzelt(ReferansIndeksi indeks, KilitKumesi? kilitler)
+        => YolBaglama.BayatlariOnar(indeks, kilitler);
 }

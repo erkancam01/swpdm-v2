@@ -62,7 +62,12 @@ public interface IRapor
     /// resmi olmayan...). Her birine bos bir govde yazdirmak, listeye satir
     /// eklemenin bedelini artirirdi (CLAUDE.md 1b).
     /// </summary>
-    OnarimOzeti? Duzelt(ReferansIndeksi indeks) => null;
+    /// <param name="kilitler">
+    /// Kilitli klasorler - YAZAN her rapor bunu SORMAK ZORUNDA. Duzeltme
+    /// secimden bagimsiz calisiyor, yani islemlerin kilit kapisi
+    /// (Kilitler.Engel) buraya ulasmiyor.
+    /// </param>
+    OnarimOzeti? Duzelt(ReferansIndeksi indeks, KilitKumesi? kilitler) => null;
 }
 
 /// <summary>

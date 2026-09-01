@@ -233,6 +233,9 @@ yani yanlışlıkla seçip değiştirmenin yolu kapanır.
   sürükle-bırak, yapıştır, versiyona dön. Sebep durum çubuğuna yazar.
 - **Arama içine girmez** → kaç kilitli klasörün atlandığı durum çubuğunda
   yazar; "bulamadım" ile "bakmadım" karıştırılmaz.
+- **Raporlardaki "Bulunanları düzelt" de içine girmez** → o düğme dosyaların
+  **içine yazıyor**; kilitli klasördekiler atlanır ve **kaç tanesinin
+  atlandığı** durum çubuğunda yazar. (01.09.2026'ya kadar girip yazıyordu.)
 - **Nerede durur** → kökün içinde `.SwPdmKilit\kilitler.txt`, klasör yolları
   **köke göreli**. Kök başka bir sürücü harfinden bağlansa da kilitler geçerli
   kalır. O klasörü elle silersen bütün kilitler açılır.

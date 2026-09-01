@@ -472,7 +472,7 @@ public sealed class ReferansOnarimiTestleri : IDisposable
         Assert.Contains(once.Satirlar, r => r.Yol == resim);
 
         // 2) DUZELT.
-        OnarimOzeti? ozet = rapor.Duzelt(indeks);
+        OnarimOzeti? ozet = rapor.Duzelt(indeks, kilitler: null);
         Assert.NotNull(ozet);
         Assert.Empty(ozet!.Hatalar);
         Assert.True(ozet.Onarilan > 0);
@@ -511,7 +511,7 @@ public sealed class ReferansOnarimiTestleri : IDisposable
         {
             if (r.Ad != "Bayat yollar")
             {
-                Assert.Null(r.Duzelt(indeks));
+                Assert.Null(r.Duzelt(indeks, kilitler: null));
             }
         }
     }

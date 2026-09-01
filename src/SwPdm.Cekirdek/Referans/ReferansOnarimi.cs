@@ -34,8 +34,17 @@ public sealed record OnarimPlani(
 /// <param name="Onarilan">Kac yazili yol duzeltildi.</param>
 /// <param name="Hatalar">Tutmayanlar ve sebepleri. Bos donmek yasak (CLAUDE.md 3).</param>
 /// <param name="Dokunulan">Degistirilen dosyalar - indeks bunlardan tazelenir.</param>
+/// <param name="AtlananKilitli">
+/// KILITLI klasorde oldugu icin HIC DOKUNULMAYAN dosya sayisi.
+///
+/// AYRI ALAN OLMASI SART (CLAUDE.md 3): bunlar "hata" degil, kullanicinin
+/// KENDI koydugu kilidin geregi - hata listesine karistirmak "onarim
+/// basarisiz" dedirtirdi. Ama sessizce yutmak da yalan olurdu: kullanici
+/// "hepsi duzeldi" sanip kilitli klasoru duzelmis kabul eder.
+/// </param>
 public sealed record OnarimOzeti(
-    int Onarilan, IReadOnlyList<string> Hatalar, IReadOnlyList<string> Dokunulan);
+    int Onarilan, IReadOnlyList<string> Hatalar, IReadOnlyList<string> Dokunulan,
+    int AtlananKilitli = 0);
 
 /// <summary>Onarimin sonucu.</summary>
 /// <param name="Oldu">Ad degisti VE butun ebeveynler onarildi mi.</param>

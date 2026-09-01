@@ -1,3 +1,38 @@
+TUR 1/18 - KILIT ARTIK RAPOR DUZELTMESINI DE DURDURUYOR
+
+  *** BU BIR HATAYDI VE SENDE SESSIZCE CALISMIS OLABILIR ***
+
+  Rapor penceresindeki "Bulunanlari duzelt" dugmesi (Ctrl+Shift+D ->
+  "Bayat yollar") dosyalarin ICINE yaziyor. O yol KLASOR KILIDINI HIC
+  SORMUYORDU: bitmis bir projeyi kilitlemis olsan bile, o dugmeye
+  basildiginda kilitli klasordeki montajlarin icine yaziliyordu.
+  Agacta hala "kilitli" yaziyordu; yani kilit, tam da onlemek icin
+  koydugun seyi yapiyordu.
+
+  NEDEN GORULMEDI: kilit denetiminin oteki kapisi islemin SECIMINE
+  bakiyor. Duzeltme ise secimden bagimsiz - indeksin TAMAMINA yaziyor.
+  Yani o kapi hicbir zaman devreye girmiyordu.
+
+  DUZELDI: denetim artik yazan dongunun KENDISINDE. Kilitli klasordeki
+  dosyalara HIC dokunulmuyor ve durum cubugunda "N dosya kilitli
+  klasorde, atlandi" yaziyor - sessizce atlamak "hepsi duzeldi"
+  sandirirdi.
+
+  NE ETKILENMEDI: kilitli klasor hala TARANIYOR (referanslar dogru
+  gorunmeye devam ediyor) ve raporda hala LISTELENIYOR - yalnizca
+  ICINE YAZILMIYOR. Kilit gozden saklamak icin degil, degistirmeyi
+  onlemek icin.
+
+  OLCUM: iki birim testi. Once TABAN - kilit yokken montajin icine
+  gercekten yaziliyor (yoksa ikinci test kendini kandirirdi), sonra
+  kilitliyken dosya BIREBIR ayni kaliyor. Denetim bilerek kesildi,
+  test YAKALADI, geri konunca TEMIZ.
+
+  Bes kapi TEMIZ · calistirma 25/25 · 371 test gecti, 5 atlandi.
+
+  SIRADAKI TUR: Ctrl+Z / Ctrl+Y de kilitli klasore yazabiliyor
+  (kodun kendi yorumunda yazili bir sinir). Onarimi bir sonraki pakette.
+
 TUR 0/18 - ANAFORM BOLUNDU (SENDE DENENECEK YENI BIR SEY YOK)
 
   Denetim turunda bulunanlarin hepsi TEK TEK kapatiliyor (senin istegin:

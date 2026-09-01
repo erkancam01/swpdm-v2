@@ -1519,6 +1519,21 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > `~$` işareti ölçümünde de aynı tuzağa düşülmüştü. Ölçüm artık önce **kök
 > satırına tıklayıp** seçimi oradan alıyor.
 
+> **KİLİT DENETİMİ SEÇİME BAKAN KAPIDA YETMİYOR — ölçüldü (01.09.2026).**
+> `Kilitler.Engel` işlemin **seçimine** bakıyor; oysa iki yol seçimden
+> bağımsız çalışıyor ve ikisi de **dosyanın içine yazıyor**:
+> rapor penceresindeki *"Bulunanları düzelt"* (indeksin tamamını geziyor) ve
+> geri alma (yığındaki kendi yollarına yazıyor). Birincisi kilidi hiç
+> sormuyordu; `RaporIslemi.Yazar => false` dediği için o kapı zaten
+> çalışmıyordu — ve `true` yapmak da **çözmezdi**, çünkü yazılan dosyalar
+> seçimde değil. → Denetim **yazan döngünün kendisine** kondu
+> (`YolBaglama.BayatlariOnar`) ve **atlananın sayısı yazılıyor** (§3:
+> sessizce atlamak "hepsi düzeldi" sandırırdı). İki birim testle kilitli:
+> taban (kilitsizken dosya **değişiyor**) → kilitliyken **birebir aynı**.
+> Taban şart: yoksa "onarılacak bir şey yoktu" hâli testi geçirirdi —
+> nitekim ilk yazışta iki aynı kopya yüzünden çözüm **belirsiz** çıktı,
+> hiçbir şey onarılmadı ve **testin kendisi bunu yakaladı**.
+
 > **Yirmi üçüncüsü neden var (panelden versiyon):** Erkan, 31.08.2026, ekran
 > görüntüsüyle: *"önizleme ekranında dosyaya sağ tıklayıp revizyon oluştur
 > dediğimde seçtiğim parçaya revizyon oluştursun."* `SurumOlusturIslemi`

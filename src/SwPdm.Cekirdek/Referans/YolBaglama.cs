@@ -49,10 +49,23 @@ public static class YolBaglama
     /// olarak gecer. Biri tutmazsa otekiler DURMAZ; tutmayanin sebebi yazilir.
     ///
     /// ACIK DOSYAYA DOKUNULMAZ (yaninda "~$" kilidi olan) - sebebi yazilir.
+    ///
+    /// KILITLI KLASORE DE DOKUNULMAZ - VE BU DENETIM BURADA OLMAK ZORUNDA
+    /// (01.09.2026 denetiminde bulundu). Kilit denetiminin oteki kapisi
+    /// Kilitler.Engel, islemin SECIMINE bakiyor; oysa burasi secimden
+    /// bagimsiz, INDEKSIN TAMAMINA yaziyor. Yani "Bulunanlari duzelt"
+    /// dugmesi kilitli klasordeki montajlarin icine sessizce yaziyordu ve
+    /// kullanici ekranda hala "kilitli" gorurken bitmis is degisiyordu -
+    /// kilidin tam da onlemek icin konuldugu sey (CLAUDE.md 1a/3).
     /// </summary>
-    public static OnarimOzeti BayatlariOnar(ReferansIndeksi? indeks)
+    /// <param name="kilitler">
+    /// Kilitli klasorlerin anlik hali; null verilirse kilit denetimi YAPILMAZ
+    /// (cekirdegin kilitten habersiz cagrilari icin).
+    /// </param>
+    public static OnarimOzeti BayatlariOnar(ReferansIndeksi? indeks, KilitKumesi? kilitler = null)
     {
         int onarilan = 0;
+        int atlanan = 0;
         var hatalar = new List<string>();
         var dokunulan = new List<string>();
 
@@ -63,6 +76,13 @@ public static class YolBaglama
 
         foreach (IndeksKaydi kayit in new List<IndeksKaydi>(indeks.Kayitlar))
         {
+            // KILITLI EBEVEYNE HIC BAKILMAZ: yazilacak dosya ONUN kendisi.
+            if (kilitler?.Kilitli(kayit.Yol) == true)
+            {
+                atlanan++;
+                continue;
+            }
+
             foreach (string yazilan in kayit.YazilanYollar)
             {
                 Cozum cozum = indeks.Coz(kayit, yazilan);
@@ -88,7 +108,7 @@ public static class YolBaglama
             }
         }
 
-        return new OnarimOzeti(onarilan, hatalar, dokunulan);
+        return new OnarimOzeti(onarilan, hatalar, dokunulan, atlanan);
     }
 
     /// <summary>
