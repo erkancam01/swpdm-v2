@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=24
+OLCUM_TOPLAM=25
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -90,6 +90,7 @@ ETKI_ZEMIN="#FFF3D9"                            # Renkler.EtkiZemin (donus kutus
 KILIT_ZEMIN="#DDDDE6"                           # Renkler.KilitliKlasorZemin
 KILIT_AGAC_SATIRI=1                             # kilit kosusunda "Bitmis" klasorunun satiri
 SATIR_MONTAJ_SATIRI=2                           # satir-versiyon kosusunda Montaj1.SLDASM (kok · "Yeni klasör" · Montaj1)
+SATIR_PARCA_SATIRI=4                            # ayni kosuda Parça1.SLDPRT (… · Parça1.SLDDRW · Parça1.SLDPRT)
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -1567,10 +1568,59 @@ if [ -n "$K5" ]; then
   else
     olcum "suzgec tuzagi ........." "EVET (suzgec kalkti ve gidildi: $SUZ_TABAN -> $SUZ_ACIK -> $SUZ_SONRA)"
   fi
+
+  # 25) AGACTA GOSTER: panelden calisan islem SATIRIN dosyasini gostermeli
+  #
+  # NEDEN VAR (Erkan, 31.08.2026): "sag tika onizlemede calisacak sekilde
+  # dosya agacinda goster diye secenek ekler misin. dosyanin konumunu
+  # bilmiyorum." Menunun kendisi Wine'da OLCULEMEZ (her ToolStripDropDown
+  # uygulamayi cokertiyor - CLAUDE.md 11); ayni kodu cagiran Ctrl+Shift+G
+  # olculuyor.
+  #
+  # OLCUM ESITLIKLE, "degisti" ILE DEGIL (16. olcumun dersi): once hedef
+  # satira ELLE tiklanip parmak izi alinir, sonra panelden gidilir ve iz
+  # AYNI cikmali - yani secim tam BEKLENEN satira dustu.
+  #
+  # FARE VE ODAK IKI GORUNTUDE DE AYNI: 16. olcumde olculen iki tuzak
+  # (fare agactayken IPUCU aciliyor · odak degisince secim SOLUK ciziliyor)
+  # burada bastan kapatiliyor - iki iz de fare PANELDEYKEN ve agac
+  # odakliyken aliniyor (ReferansaGit sonda _agac.Focus() cagiriyor).
+  SATIR_MONTAJ_Y=$(( SATY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * SATIR_MONTAJ_SATIRI ))
+  SATIR_PARCA_Y=$(( SATY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * SATIR_PARCA_SATIRI ))
+
+  # HEDEF IZI: montaj satirina elle tiklanir, fare panele cekilir.
+  xdotool mousemove "$(( SATX + AGAC_TIK_X ))" "$SATIR_MONTAJ_Y" click 1 > /dev/null 2>&1
+  sleep 3
+  xdotool mousemove "$(( SATX + REF_SATIR_X ))" "$(( SATY + REF_ILK_SATIR_Y ))" > /dev/null 2>&1
+  sleep 2
+  import -window root "$CALISMA/goster-hedef.png" > /dev/null 2>&1
+  IZ_HEDEF="$(kirpma_izi "$CALISMA/goster-hedef.png" "$AGAC_KIRP" "$SATX" "$SATY")"
+
+  # Simdi PARCA seciliyken panelden montaja gidilir. Serit 24'ten beri
+  # KULLANILDIGI YERLER'de; parcanin orada tek satiri Montaj1.SLDASM.
+  xdotool mousemove "$(( SATX + AGAC_TIK_X ))" "$SATIR_PARCA_Y" click 1 > /dev/null 2>&1
+  sleep 4
+  xdotool mousemove "$(( SATX + REF_SATIR_X ))" "$(( SATY + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers ctrl+shift+g > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/goster-sonra.png" > /dev/null 2>&1
+  IZ_GOSTER="$(kirpma_izi "$CALISMA/goster-sonra.png" "$AGAC_KIRP" "$SATX" "$SATY")"
+
+  if [ "$IZ_GOSTER" = "$IZ_HEDEF" ]; then
+    olcum "agacta goster ........." "EVET (satirin dosyasi agacta secildi)"
+  else
+    olcum "agacta goster ........." \
+      "HAYIR (secim beklenen satira dusmedi: ${IZ_HEDEF:0:6} bekleniyordu, ${IZ_GOSTER:0:6} cikti)"
+    SORUN=1
+  fi
 else
   olcum "panelden versiyon ...." "HAYIR (satir-versiyon kosusunda pencere dogmadi)"
   SORUN=1
   olcum "suzgec tuzagi ........." "OLCULEMEDI (pencere yok)"
+  SORUN=1
+  olcum "agacta goster ........." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

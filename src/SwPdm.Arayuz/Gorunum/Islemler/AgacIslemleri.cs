@@ -17,6 +17,7 @@ internal static class AgacIslemleri
     internal static readonly IReadOnlyList<IAgacIslemi?> Tumu =
     [
         new AcIslemi(),
+        new AgactaGosterIslemi(),
         null,
         new YeniKlasorIslemi(),
         new YenidenAdlandirIslemi(),

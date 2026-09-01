@@ -146,7 +146,7 @@ internal sealed partial class AnaForm
             // veriyor, burada yalnizca tus iletiliyor (CLAUDE.md 1b).
             if (_referanslar.Focused
                 && ReferansPaneliTuslari.Isle(
-                    e.KeyData, _referanslar, ReferansaGit, _durum.Bilgi))
+                    e.KeyData, _referanslar, hedef => ReferansaGit(hedef), _durum.Bilgi))
             {
                 e.SuppressKeyPress = true;
                 return;

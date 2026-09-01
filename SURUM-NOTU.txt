@@ -1,3 +1,41 @@
+BU SURUMDE - SAG TIK: "DOSYA AGACINDA GOSTER"
+
+  Senin istegin (31.08.2026): "sag tika onizlemede calisacak sekilde dosya
+  agacinda goster diye secenek ekler misin. dosyanin konumunu bilmiyorum."
+
+  NEREDE: hem onizleme/referans panelinde hem agacta, sag tik menusunun
+  ikinci sirasinda ("Ac"in hemen altinda). Kisayolu CTRL+SHIFT+G.
+
+  NE YAPAR:
+    - panelde: TIKLADIGIN SATIRIN dosyasini agacta acar ve secer. Kapali
+      dallar acilir; dosya tur suzgecinin disindaysa suzgec de kaldirilir.
+    - agacta: secili dosyayi yeniden gosterir.
+    - HER IKI HALDE: dosyanin HANGI KLASORDE oldugunu durum cubuguna yazar
+      ("Agacta gosterildi - C:\...\klasor"). Istegin ikinci yarisi
+      ("konumunu bilmiyorum") bununla kapaniyor - eskiden gidis SESSIZ
+      bitiyordu.
+
+  ONEMLI: bu yetenek ASLINDA VARDI - panelde Enter ayni isi yapiyordu -
+  ama MENUDE YAZMIYORDU. Yani senin icin var olmayan bir ozellikti.
+  Enter da duruyor, degismedi.
+
+  NEREDE GRI KALIR VE NEDEN: VERSIYONLAR sekmesinde. Oradaki satir bir
+  ARSIV KOPYASI ve arsiv klasoru agacta hic gorunmuyor; gitmeye calissa
+  "acik kokun disinda olabilir" derdi - YANLIS SEBEP. Gri durup sebebini
+  soylemek dogrusu.
+
+  KAPIYA 25. OLCUM: panelden Ctrl+Shift+G basilinca agactaki secim TAM
+  BEKLENEN satira dusuyor mu. Olcum "degisti" demiyor, ESITLIK ariyor:
+  once hedef satira elle tiklanip parmak izi aliniyor, sonra panelden
+  gidiliyor ve iz AYNI cikmali.
+
+  OLCULEMEYEN (durustce): sag tik menusunun KENDISI burada acilamiyor -
+  Wine her acilir menude cokuyor (bilinen, yazili). Olculen sey menunun
+  cagirdigi AYNI kod, yani Ctrl+SHIFT+G. Menunun goruntusunu sen
+  goreceksin.
+
+  OLCULDU: bes kapi TEMIZ · calistirma 25/25.
+
 BU SURUMDE - DORT ISTEK (ikisi GERCEK HATAYDI)
 
   Senin dort istegin (31.08.2026, iki ekran goruntusuyle):

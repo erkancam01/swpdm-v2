@@ -1010,6 +1010,7 @@ dosyasında** duruyor:
 | sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
 | **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
 | **dosyayı aç** (menüdeki "Aç") | `Arayuz/Gorunum/Islemler/AcIslemi.cs` |
+| **dosyayı ağaçta göster** (`Ctrl+Shift+G`) | `Arayuz/Gorunum/Islemler/AgactaGosterIslemi.cs` |
 | yeni klasör | `Arayuz/Gorunum/Islemler/YeniKlasorIslemi.cs` |
 | yeniden adlandır (F2) | `Arayuz/Gorunum/Islemler/YenidenAdlandirIslemi.cs` |
 | sil (çöpe taşı) + referans uyarısı | `Arayuz/Gorunum/Islemler/SilIslemi.cs` |
@@ -1185,7 +1186,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi dört şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi beş şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1204,8 +1205,9 @@ ETKİLENENLERİ gösteriyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
 **kilitli klasör gerçekten açılmıyor mu** (üçüncü kısa koşu, kendi klasörü) ·
 **panelden alınan versiyon SATIRIN dosyasına mı açılıyor** ·
-**tür süzgecinin GİZLEDİĞİ dosyaya panelden gidilebiliyor mu** (son ikisi
-dördüncü kısa koşu, kendi klasörü).
+**tür süzgecinin GİZLEDİĞİ dosyaya panelden gidilebiliyor mu** ·
+**panelden "ağaçta göster" SATIRIN dosyasını mı seçiyor** (son üçü dördüncü
+kısa koşu, kendi klasörü).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1570,6 +1572,28 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > başına "değişti" demek, süzgeç hiç çalışmasa da sağlanırdı. §9 döngüsü:
 > TEMİZ → süzgeci sıfırlayan dal kesilince **YAKALADI** (5 → 3 → 3) → geri
 > konunca TEMİZ.
+
+> **Yirmi beşincisi neden var (ağaçta göster):** Erkan, 31.08.2026:
+> *"sağ tıka önizlemede çalışacak şekilde dosya ağacında göster diye seçenek
+> ekler misin. dosyanın konumunu bilmiyorum."* Gitme yeteneği **zaten
+> vardı** (panelde `Enter`); eksik olan **menüde görünmesiydi** — §11'in
+> "menüsüz kalan özellik kör noktadır" maddesinin tersi: kısayol vardı,
+> menü yoktu.
+>
+> **ÖLÇÜM EŞİTLİKLE, "değişti" ile DEĞİL** (16. ölçümün dersi): önce hedef
+> satıra **elle** tıklanıp parmak izi alınır, sonra panelden `Ctrl+Shift+G`
+> ile gidilir ve iz **aynı** çıkmalı — yani seçim tam beklenen satıra düştü.
+> Fare ve odak iki görüntüde de aynı tutuluyor (fare panelde, ağaç odaklı);
+> 16. ölçümde ölçülen iki tuzak — ipucu ve soluk seçim — baştan kapatıldı.
+> §9 döngüsü: TEMİZ → `AgactaGoster` çağrısı kesilince **YAKALADI**
+> (beklenen iz gelmedi) → geri konunca TEMİZ.
+>
+> **İŞLEM AĞACI KENDİ SÜRMÜYOR:** `IslemBaglami.AgactaGoster`,
+> `AgaciKapat`'ın kardeşi. `Tazele(yol)` ile **aynı şey değil** — ölçüldü:
+> o `YoluSec`'e gidiyor, **kapalı dalı açmıyor**, **tür süzgecini
+> kaldırmıyor** (24. ölçümde kapatılan hata geri gelirdi) ve diskten tam
+> tarama yapıyor. `bool` dönmesi de şart (§3): işlem "gösterildi" diyecekse
+> gerçekten gösterildiğini bilmek zorunda.
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

@@ -9,7 +9,7 @@
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
 > 369 test geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma **24** ölçüm).
+> (harita + boyut + derleme + test + çalıştırma **25** ölçüm).
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -45,6 +45,11 @@
 > cevabı: dönüş dosyanın kendi yoluna yazdığı için montajlar zaten dönülen
 > içeriği görüyor; eksik olan söylemekti. Kutu artık iki yönü de gösteriyor,
 > taranmamışsa sayı vermiyor.
+> 31.08.2026: **sağ tık → "Dosya ağacında göster"** (`Ctrl+Shift+G`) —
+> Erkan: *"dosyanın konumunu bilmiyorum."* Gitme yeteneği vardı (panelde
+> `Enter`), **menüde yoktu**; artık menüde ve gidilen klasörü durum
+> çubuğuna yazıyor. İşlem ağacı kendi sürmüyor: `IslemBaglami.AgactaGoster`
+> (`AgaciKapat`'ın kardeşi) — `Tazele` ile aynı şey **değil**, ölçüldü.
 > 31.08.2026: **dört istek** — sağ tık **"Aç"** · panelde **çift tık AÇAR**
 > (git artık `Enter`) · **versiyon SATIRIN dosyasına** · tür süzgeci tuzağı.
 > Son ikisi **gerçek hataydı**: versiyon panelden alınınca ağaçtaki dosyaya

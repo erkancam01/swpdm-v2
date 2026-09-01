@@ -99,6 +99,19 @@ internal sealed record SecimBaglami(
 /// Referans indeksi. ORTAK ARAC, ozellik degil (CLAUDE.md 1b): birden cok
 /// islem ona soruyor - tarama, raporlar, ve silme/tasima oncesi uyari.
 /// </param>
+/// <param name="AgactaGoster">
+/// Verilen yolu agacta ACAR ve SECER; doner: gercekten gosterildi mi.
+/// <see cref="AgaciKapat"/>'in kardesi - agaci suren isi islemin kendisi
+/// yapmaz, buradan ister.
+///
+/// BOOL DONMESI SART (CLAUDE.md 3): islem "gosterildi" diyecekse gercekten
+/// gosterildigini BILMEK zorunda. Gidilemedigi zaman sebebi cagiran zaten
+/// yaziyor; islemin ustune "oldu" yazmasi yalan olurdu.
+///
+/// TAZELE ILE AYNI SEY DEGIL - OLCULDU: Tazele(yol) kapali dali ACMIYOR,
+/// tur suzgecini KALDIRMIYOR (24. olcumde kapatilan hata geri gelirdi) ve
+/// diskten tam tarama yapiyor.
+/// </param>
 internal sealed record IslemBaglami(
     IWin32Window Sahip,
     SecimBaglami Secim,
@@ -106,7 +119,8 @@ internal sealed record IslemBaglami(
     Action<string> Bildir,
     IIlerlemeYuzeyi Ilerleme,
     Action AgaciKapat,
-    ReferansSurucusu Referanslar);
+    ReferansSurucusu Referanslar,
+    Func<string?, bool> AgactaGoster);
 
 /// <summary>
 /// KILIT DENETIMI TEK YERDE (CLAUDE.md 1b/8).

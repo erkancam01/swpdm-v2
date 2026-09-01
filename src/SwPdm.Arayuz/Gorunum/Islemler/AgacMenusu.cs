@@ -33,6 +33,7 @@ internal sealed class AgacMenusu
     private Func<string>? _ustBilgiMetni;
     private IIlerlemeYuzeyi? _ilerleme;
     private Action? _agaciKapat;
+    private Func<string?, bool>? _agactaGoster;
     private ReferansSurucusu? _referanslar;
 
     internal AgacMenusu(Control tasiyici)
@@ -98,6 +99,9 @@ internal sealed class AgacMenusu
     /// <summary>Butun dallari kapatan isi.</summary>
     internal void AgaciKapatan(Action is_) => _agaciKapat = is_;
 
+    /// <summary>Bir yolu agacta acip secen isi (bkz. IslemBaglami.AgactaGoster).</summary>
+    internal void AgactaGosteren(Func<string?, bool> is_) => _agactaGoster = is_;
+
     /// <summary>Referans indeksini islemlere ulastirir.</summary>
     internal void ReferansSurucusunu(ReferansSurucusu surucu) => _referanslar = surucu;
 
@@ -160,7 +164,7 @@ internal sealed class AgacMenusu
     /// Her islemden HEMEN ONCE kosacak kanca. Bugunku tek musterisi 3B
     /// onizleme: eDrawings actigi dosyayi kilitli tutabilir ve islem o
     /// kilide carpardi (CLAUDE.md 1a); belge islem baslamadan birakilir.
-    /// Buraya baglaniyor cunku 14 islemin TAMAMI (menu + kisayol + arac
+    /// Buraya baglaniyor cunku listedeki her islemin TAMAMI (menu + kisayol + arac
     /// dugmesi) bu siniftaki Calistir'dan gecer - tek nokta.
     /// </summary>
     internal void IslemOncesi(Action kanca) => _islemOncesi = kanca;
@@ -285,6 +289,7 @@ internal sealed class AgacMenusu
             Bildir: cumle => Durum?.Invoke(this, cumle),
             Ilerleme: _ilerleme,
             AgaciKapat: _agaciKapat ?? (() => { }),
-            Referanslar: _referanslar));
+            Referanslar: _referanslar,
+            AgactaGoster: _agactaGoster ?? (_ => false)));
     }
 }

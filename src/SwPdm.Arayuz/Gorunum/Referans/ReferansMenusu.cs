@@ -81,13 +81,15 @@ internal sealed class ReferansMenusu
         Func<SecimBaglami> sahipSecimi,
         Action islemOncesi,
         EventHandler<string?> tazele,
-        EventHandler<string> durum)
+        EventHandler<string> durum,
+        Func<string?, bool> agactaGoster)
     {
         ArgumentNullException.ThrowIfNull(sahipSecimi);
 
         _sahipSecimi = sahipSecimi;
         _menu.IlerlemeYuzeyi(ilerleme);
         _menu.AgaciKapatan(agaciKapat);
+        _menu.AgactaGosteren(agactaGoster);
         _menu.ReferansSurucusunu(referanslar);
         _menu.SahipSecimi(sahipSecimi);
         _menu.IslemOncesi(islemOncesi);

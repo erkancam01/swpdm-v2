@@ -50,11 +50,12 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 4. Sağ tık menüsü — 16 işlem
+## 4. Sağ tık menüsü — 17 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
 | **Aç** | `Enter` | Dosyayı Windows'un varsayılan uygulamasıyla açar (çift tıkla aynı iş). Kilitli klasörde de çalışır: kilit **değiştirmeyi** engeller, bakmayı değil | Seçim tek dosya değilken · klasörde (sebep yazar: dalı `Enter`/çift tık açar) |
+| **Dosya ağacında göster** | `Ctrl+Shift+G` | Seçili dosyayı ağaçta **açar ve seçer** (kapalı dallar açılır, gerekirse tür süzgeci kaldırılır) ve **hangi klasörde olduğunu** durum çubuğuna yazar. Panelde: o **satırdaki** dosyaya gider — `Enter` ile aynı iş | Seçim tek öğe değilken · satır bir dosyaya çözülemiyorken (arşiv kopyası, BULUNAMADI) |
 | **Yeni klasör** | `Ctrl+Shift+N` | **Adı sorar** (çakışmayan bir ad dolu gelir), sonra klasörü açar ve seçili gelir | Arama sonucundayken · kök yokken |
 | **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır. **Klasörde de:** içindeki dosyaları dışarıdan kullanan belgeler onarılır | Seçim yokken · birden çok öğe seçiliyken |
 | **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
@@ -169,6 +170,7 @@ liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cev
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
 - **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme **o satırdaki dosyaya** döner (üstteki başlık da o dosyanın adını yazar); ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
 - **Çift tık** → dosyayı **açar** (SOLIDWORKS/varsayılan uygulama). Ağaçtaki seçim yerinde kalır — o dosyaya gitmez.
+- **Sağ tık → "Dosya ağacında göster"** (`Ctrl+Shift+G`) → `Enter` ile **aynı iş**, artık menüde de yazıyor; ayrıca gidilen **klasörü** durum çubuğuna yazar.
 - **Enter** → o dosyaya **gider**, ağaçta açıp seçer; gidilemiyorsa sebebi yazar. Aranan dosya **tür süzgecinin dışında** kaldıysa süzgeç kaldırılır ve bu durum çubuğunda yazar — eskiden "kökün dışında olabilir" diyordu, **yanlış sebep**.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
 - **SAĞ TIK** → ağaçtakinin **aynı menüsü**, ama işlem **o satırdaki dosyaya** uygulanır; ağaçtaki seçim ve okunan liste yerinde kalır. Sağ tık önce o satırı seçer ve menünün en üstünde **hedefin adı** yazar — hangi dosyaya uygulanacağı görünmeden hiçbir işlem çalışmaz.

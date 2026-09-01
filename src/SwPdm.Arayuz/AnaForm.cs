@@ -107,6 +107,7 @@ internal sealed partial class AnaForm : Form
         _menu.SecimKaynagi(SecimBaglamiKur);
         _menu.IlerlemeYuzeyi(_ilerleme);
         _menu.AgaciKapatan(_doldurucu.HepsiniKapat);
+        _menu.AgactaGosteren(hedef => ReferansaGit(hedef));
         _menu.ReferansSurucusunu(_referansSurucusu);
         _menu.Durum += (_, cumle) => _durum.Bilgi(cumle);
         _menu.Tazele += (_, yol) => AgaciTazele(yol);
@@ -138,7 +139,8 @@ internal sealed partial class AnaForm : Form
             Aktar.Yurut(
                 new IslemBaglami(
                     this, SecimBaglamiKur(), AgaciTazele, _durum.Bilgi, _ilerleme,
-                    _doldurucu.HepsiniKapat, _referansSurucusu),
+                    _doldurucu.HepsiniKapat, _referansSurucusu,
+                    hedef => ReferansaGit(hedef)),
                 e.Yollar,
                 e.HedefKlasor,
                 e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
@@ -206,7 +208,8 @@ internal sealed partial class AnaForm : Form
             SecimBaglamiKur,
             () => _onizleme.BelgeyiBirak(),
             (_, yol) => AgaciTazele(yol),
-            (_, cumle) => _durum.Bilgi(cumle));
+            (_, cumle) => _durum.Bilgi(cumle),
+            hedef => ReferansaGit(hedef));
 
         // --- referans satirina TEK TIK: o dosyanin onizlemesi (Erkan,
         // 29.08.2026: "13 kullananin resmine yerinden kipirdamadan bakayim").
@@ -431,12 +434,12 @@ internal sealed partial class AnaForm : Form
     /// oysa sebep genelde belli: dosya taranan kokun disinda ya da
     /// referans cozulememis.
     /// </summary>
-    private void ReferansaGit(string? hedef)
+    private bool ReferansaGit(string? hedef)
     {
         if (hedef is null)
         {
             _durum.Bilgi("Bu satırda gidilecek bir dosya yok — referans çözülemedi.");
-            return;
+            return false;
         }
 
         // SUZGEC TUZAGI (Erkan, 31.08.2026: "montaj filtresi açıkken montajın
@@ -454,7 +457,7 @@ internal sealed partial class AnaForm : Form
             if (!_suzgecler.Sifirla() || !_doldurucu.YoluAcVeSec(hedef))
             {
                 _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
-                return;
+                return false;
             }
 
             not = "Tür süzgeci kaldırıldı — aranan dosya süzgecin dışındaydı.";
@@ -469,6 +472,8 @@ internal sealed partial class AnaForm : Form
         {
             _durum.Bilgi(not);
         }
+
+        return true;
     }
 
     /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>
