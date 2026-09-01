@@ -123,13 +123,34 @@ internal sealed partial class AnaForm
         string? not = null;
         if (!_doldurucu.YoluAcVeSec(hedef))
         {
-            if (!_suzgecler.Sifirla() || !_doldurucu.YoluAcVeSec(hedef))
+            // KESIN SEBEP ONCE - "olabilir" YANLISTI (01.09.2026 denetimi):
+            // WindowsYolu.AltindaMi saf dize karsilastirmasi, diske hic
+            // bakmiyor, yani cevap KESIN. Ustelik AYNI EKRANDA
+            // ReferansMenusu kesin konusuyor ("Bu dosya acik kokun
+            // disinda"); ayni soruya iki ayri kesinlik veriyorduk.
+            if (!WindowsYolu.AltindaMi(hedef, _doldurucu.Kok))
             {
-                _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
+                _durum.Bilgi("Bu dosya açık kökün dışında: " + hedef);
                 return false;
             }
 
-            not = "Tür süzgeci kaldırıldı — aranan dosya süzgecin dışındaydı.";
+            // SUZGEC KALKTIYSA SOYLENIR - KALKIP DA GIDILEMEDIYSE DE
+            // (01.09.2026 denetimi, GECEN TURDA ACILAN DELIK): eski hal
+            // Sifirla() true donup gitme yine basarisiz olunca kullanicinin
+            // suzgecini SESSIZCE kaldirmis oluyor ve ustune yanlis sebep
+            // yaziyordu. Ne oldugunu soylemek sart (CLAUDE.md 3).
+            bool suzgecKalkti = _suzgecler.Sifirla();
+            if (!_doldurucu.YoluAcVeSec(hedef))
+            {
+                _durum.Bilgi(suzgecKalkti
+                    ? "Tür süzgeci kaldırıldı ama dosya yine ağaçta bulunamadı: " + hedef
+                    : "Dosya ağaçta bulunamadı: " + hedef);
+                return false;
+            }
+
+            not = suzgecKalkti
+                ? "Tür süzgeci kaldırıldı — aranan dosya süzgecin dışındaydı."
+                : null;
         }
 
         SecimiGoster();
