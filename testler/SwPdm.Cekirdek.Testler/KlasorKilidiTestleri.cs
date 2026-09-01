@@ -86,6 +86,31 @@ public sealed class KlasorKilidiTestleri : IDisposable
     }
 
     [Fact]
+    public void ILK_KILITLI_kumeden_HANGISI_oldugunu_SOYLUYOR()
+    {
+        // GERI ALMA BUNU KULLANIYOR (01.09.2026 denetimi): Ctrl+Z secime
+        // degil YIGININ KENDI YOLLARINA yaziyor, yani islemlerin kilit
+        // kapisi oraya hic ulasmiyordu. Adim, dokunacagi yollari bildiriyor
+        // ve denetim bu kumeye bakiyor.
+        //
+        // SAYI DEGIL YOL DONUYOR: ekranda "hangi dosya yuzunden" yazacak
+        // (CLAUDE.md 3); "1 dosya kilitli" demek kullaniciya hicbir sey
+        // anlatmaz.
+        string bitmis = KlasorKoy("Bitmis Is");
+        string canli = KlasorKoy("Canli");
+        string kilitliDosya = DosyaKoy(bitmis, "Parça1.SLDPRT");
+        string serbest = DosyaKoy(canli, "Parça2.SLDPRT");
+
+        KlasorKilidi.Degistir(_kok, [bitmis], kilitle: true);
+        KilitKumesi kilitler = KlasorKilidi.Oku(_kok);
+
+        Assert.Equal(kilitliDosya, kilitler.IlkKilitli([serbest, kilitliDosya]));
+        Assert.Null(kilitler.IlkKilitli([serbest]));
+        Assert.Null(kilitler.IlkKilitli([]));
+        Assert.Null(kilitler.IlkKilitli(null));
+    }
+
+    [Fact]
     public void KOMSU_klasor_ETKILENMEZ()
     {
         // "C:\Kok2" yolunu "C:\Kok"un ici sayan StartsWith hatasi

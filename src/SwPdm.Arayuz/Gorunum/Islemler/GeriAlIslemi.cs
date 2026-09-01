@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
 
@@ -24,9 +25,21 @@ namespace SwPdm.Arayuz.Gorunum;
 /// dokunur (CLAUDE.md 1a). Null ise Ctrl+Y sebebini SOYLER, sessizce
 /// hicbir sey yapmaz (CLAUDE.md 3).
 /// </param>
+/// <param name="Yollar">
+/// Bu adim uygulanirsa DISKTE DOKUNULACAK yollar - kilit denetimi bunlara
+/// bakiyor (01.09.2026 denetimi).
+///
+/// NEDEN ADIMIN KENDISINDE: geri alma SECIME degil, yiginin kendi
+/// yollarina yaziyor; yani islemlerin kilit kapisi (Kilitler.Engel) buraya
+/// hicbir zaman ulasmiyordu. Yollari yalnizca adimi URETEN bilir, o yuzden
+/// bildirmeyi de o yapiyor. Varsayilan YOK - yeni bir adim tipi yazan
+/// kisi bunu atlayamaz (derleyici sorar); atlanabilseydi kilit sessizce
+/// delinirdi (CLAUDE.md 1a).
+/// </param>
 internal sealed record GeriAlinabilir(
     string Aciklama,
     Func<IslemBaglami, List<string>> Uygula,
+    IReadOnlyList<string> Yollar,
     Func<GeriAlinabilir>? Ters = null);
 
 /// <summary>
@@ -63,6 +76,12 @@ internal static class GeriAlDefteri
 
     /// <summary>Sirada ileri alinacak islemin adi; yoksa null.</summary>
     internal static string? SonrakiIleri => Ileri.First?.Value.Aciklama;
+
+    /// <summary>Siradaki GERI adimin dokunacagi yollar (kilit denetimi icin).</summary>
+    internal static IReadOnlyList<string> SonrakiYollar => Yigin.First?.Value.Yollar ?? [];
+
+    /// <summary>Siradaki ILERI adimin dokunacagi yollar.</summary>
+    internal static IReadOnlyList<string> SonrakiIleriYollar => Ileri.First?.Value.Yollar ?? [];
 
     /// <summary>Kac adim tutuldugu - kullaniciya soylenebilsin diye.</summary>
     internal static int EnFazlaAdim => Sinir;
@@ -172,15 +191,33 @@ internal sealed class GeriAlIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Z;
 
     /// <inheritdoc/>
-    public bool Yazar => false;   // yiginin kendi yollarina yazar, SECIME degil (bilinen sinir: geri alma kilitli klasore dokunabilir)
+    /// <remarks>
+    /// false, cunku bu islem SECIMDEKI dosyalara yazmiyor - yiginin kendi
+    /// yollarina yaziyor. Kilit denetimi bu yuzden asagida, ADIMIN
+    /// yollarina bakarak yapiliyor (Kilitler.Engel buraya ulasmiyordu;
+    /// 01.09.2026 denetiminde bulundu).
+    /// </remarks>
+    public bool Yazar => false;
 
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
+        ArgumentNullException.ThrowIfNull(secim);
+
         if (!GeriAlDefteri.Var)
         {
             nedenOlmaz = $"Geri alınacak bir işlem yok (en fazla "
                 + $"{GeriAlDefteri.EnFazlaAdim} adım tutulur).";
+            return false;
+        }
+
+        // KILIT: adim UYGULANMADAN once soruluyor ki adim yiginda KALSIN.
+        // Uygula icinde bakilsaydi adim once yigindan cikardi ve kullanici
+        // kilidi kaldirdiginda geri alacak bir sey bulamazdi (CLAUDE.md 1a).
+        if (secim.Kilitler?.IlkKilitli(GeriAlDefteri.SonrakiYollar) is string kilitli)
+        {
+            nedenOlmaz = $"\"{WindowsYolu.DosyaAdi(kilitli)}\" kilitli klasörde — "
+                + "önce kilidi kaldırın.";
             return false;
         }
 
@@ -245,9 +282,21 @@ internal sealed class IleriAlIslemi : IAgacIslemi
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
+        ArgumentNullException.ThrowIfNull(secim);
+
         if (!GeriAlDefteri.IleriVar)
         {
             nedenOlmaz = "İleri alınacak bir işlem yok — önce Ctrl+Z ile geri alın.";
+            return false;
+        }
+
+        // Kilit denetimi GeriAlIslemi ile AYNI sebeple burada (oradaki
+        // aciklama gecerli): ileri alma da secime degil adimin kendi
+        // yollarina yaziyor.
+        if (secim.Kilitler?.IlkKilitli(GeriAlDefteri.SonrakiIleriYollar) is string kilitli)
+        {
+            nedenOlmaz = $"\"{WindowsYolu.DosyaAdi(kilitli)}\" kilitli klasörde — "
+                + "önce kilidi kaldırın.";
             return false;
         }
 

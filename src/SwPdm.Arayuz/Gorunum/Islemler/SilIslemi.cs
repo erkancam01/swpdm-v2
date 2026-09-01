@@ -119,6 +119,8 @@ internal sealed class SilIslemi : IAgacIslemi
     private static GeriAlinabilir GeriAlmasi(string cop, IReadOnlyList<string> yollar)
         => new(
             $"{yollar.Count} öğenin silinmesi",
+            // Copten geri YAZILACAK yollar - dosyalar buraya donecek.
+            Yollar: yollar,
             // ILERI ALMA: yeniden cope gonderir - kalici silmez, yani
             // Ctrl+Y'nin bedeli yine geri alinabilir (CLAUDE.md 1a).
             Ters: () => YenidenSilmesi(cop, yollar),
@@ -168,6 +170,7 @@ internal sealed class SilIslemi : IAgacIslemi
     private static GeriAlinabilir YenidenSilmesi(string cop, IReadOnlyList<string> yollar)
         => new(
             $"{yollar.Count} öğenin silinmesi",
+            Yollar: yollar,          // yeniden cope gidecek dosyalar
             Ters: () => GeriAlmasi(cop, yollar),
             Uygula: baglam =>
             {

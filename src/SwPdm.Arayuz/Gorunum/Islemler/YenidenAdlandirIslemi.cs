@@ -228,6 +228,9 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
         IReadOnlyList<string> ebeveynler)
         => new(
             $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması ve {ebeveynler.Count} onarım",
+            // DOSYANIN IKI HALI DE + ICINE YAZILACAK EBEVEYNLER: onarim
+            // ebeveynlerin ICINE yaziyor, yani onlar da dokunulan yol.
+            Yollar: [eskiYol, yeniYol, .. ebeveynler],
             // ILERI ALMA: ayni sey ters yone. Onarim planinin kendisi
             // simetrik (PlanlaBilinenlerle iki yolu da aliyor), o yuzden
             // yalnizca yollar takas ediliyor.
@@ -258,6 +261,7 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
     private static GeriAlinabilir GeriAlmasi(string yol, string hedefAd, string eskiAd, string yeniAd)
         => new(
             $"\"{eskiAd}\" → \"{yeniAd}\" adlandırması",
+            Yollar: [yol, WindowsYolu.Birlestir(WindowsYolu.Klasor(yol), hedefAd)],
             Ters: () => GeriAlmasi(
                 WindowsYolu.Birlestir(WindowsYolu.Klasor(yol), hedefAd),
                 WindowsYolu.DosyaAdi(yol), eskiAd, yeniAd),

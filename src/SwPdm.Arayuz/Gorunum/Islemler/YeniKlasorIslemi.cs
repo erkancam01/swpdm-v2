@@ -99,6 +99,7 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
     private static GeriAlinabilir GeriAlmasi(string yol, string ad)
         => new(
             $"\"{ad}\" klasörünün açılması",
+            Yollar: [yol],           // silinecek klasorun kendisi
             Ters: () => YenidenAcmasi(yol, ad),
             Uygula: baglam =>
             {
@@ -122,6 +123,7 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
     private static GeriAlinabilir YenidenAcmasi(string yol, string ad)
         => new(
             $"\"{ad}\" klasörünün açılması",
+            Yollar: [yol],           // yeniden acilacak klasorun kendisi
             Ters: () => GeriAlmasi(yol, ad),
             Uygula: baglam =>
             {

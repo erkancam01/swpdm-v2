@@ -1,3 +1,32 @@
+TUR 2/18 - CTRL+Z / CTRL+Y KILITLI KLASORE YAZMIYOR
+
+  *** BU DA BIR HATAYDI - kodun kendi yorumunda "bilinen sinir" diye
+      yaziyordu ***
+
+  Geri alma SECIME degil, yiginin KENDI YOLLARINA yaziyor. Yani kilit
+  denetimi (secime bakan kapi) oraya hicbir zaman ulasmiyordu:
+  klasorden bir dosya sil -> klasoru kilitle -> Ctrl+Z -> dosya kilitli
+  klasore GERI DONUYORDU. Hicbir uyari yoktu.
+
+  DUZELDI: her geri alma adimi artik "dokunacagim yollar" diye bir liste
+  tasiyor; Ctrl+Z / Ctrl+Y o listeye bakiyor. Kilitli bir yol varsa islem
+  GRI kaliyor ve sebebi yaziyor ("... kilitli klasorde - once kilidi
+  kaldirin"). ADIM YIGINDA KALIYOR: kilidi kaldirdiginda geri alma yine
+  orada, kaybolmuyor.
+
+  OLCUM - KAPIDA 23. OLCUM, KENDI TABANIYLA: kilitsizken yeni klasor
+  acilip Ctrl+Z ile geri aliniyor (yani geri alma gercekten calisiyor),
+  sonra ayni sey kilitliyken deneniyor ve klasor YERINDE KALIYOR.
+  Denetim bilerek kesildi, kapi YAKALADI ("KILITLI klasorde geri alma
+  calisti"), geri konunca TEMIZ.
+
+  OLCUM YOLU BIR KEZ DEGISTI: once dosya silinip geri alinacakti ama
+  silme onayi, her islemden once kosan referans taramasi yuzunden gec
+  aciliyor ve tuslar kutudan once gidiyordu. Sebep ekran goruntusunden
+  okundu, tahminle degil.
+
+  Bes kapi TEMIZ · calistirma 26/26 · 372 test gecti, 5 atlandi.
+
 TUR 1/18 - KILIT ARTIK RAPOR DUZELTMESINI DE DURDURUYOR
 
   *** BU BIR HATAYDI VE SENDE SESSIZCE CALISMIS OLABILIR ***

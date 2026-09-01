@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=25
+OLCUM_TOPLAM=26
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -89,6 +89,7 @@ ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 ETKI_ZEMIN="#FFF3D9"                            # Renkler.EtkiZemin (donus kutusu)
 KILIT_ZEMIN="#DDDDE6"                           # Renkler.KilitliKlasorZemin
 KILIT_AGAC_SATIRI=1                             # kilit kosusunda "Bitmis" klasorunun satiri
+KILIT_CANLI_SATIRI=2                            # ayni kosuda "Canli" klasoru (26. olcum)
 SATIR_MONTAJ_SATIRI=2                           # satir-versiyon kosusunda Montaj1.SLDASM (kok · "Yeni klasör" · Montaj1)
 SATIR_PARCA_SATIRI=4                            # ayni kosuda Parça1.SLDPRT (… · Parça1.SLDDRW · Parça1.SLDPRT)
 # ==========================================================================
@@ -1423,8 +1424,75 @@ if [ -n "$K4" ]; then
   else
     olcum "klasor kilidi ........." "EVET (isaretlendi ve acilmadi: $KILIT_TABAN -> $KILIT_ACIK kilitsiz, kilitli $KILIT_DENENDI)"
   fi
+
+  # 26) GERI ALMA KILITLI KLASORE YAZMAZ (01.09.2026 denetiminde bulundu)
+  #
+  # NEDEN VAR: Ctrl+Z secime degil YIGININ KENDI YOLLARINA yaziyor - yani
+  # islemlerin kilit kapisi (Kilitler.Engel, secime bakiyor) oraya hicbir
+  # zaman ulasmiyordu. Kullanici bitmis isi kilitler, Ctrl+Z basar ve
+  # geri alma kilitli klasore DOKUNURDU (CLAUDE.md 1a).
+  #
+  # OLCUM DISKTEN ve KENDI TABANIYLA: once KILITSIZKEN Ctrl+Z'nin gercekten
+  # geri aldigi gosteriliyor. Taban olmadan "geri alinmadi" sonucu, geri
+  # almanin hic calismamasindan da cikardi.
+  #
+  # NEDEN YENI KLASOR, SILME DEGIL - OLCULDU: ilk yazista dosya silinip
+  # geri alinacakti; silme onayi "tehlikeli" kutusu ve o kutu HER ISLEMDEN
+  # ONCE KOSAN REFERANS TARAMASI yuzunden gec aciliyor - tuslar kutudan
+  # once gidiyordu ve olcum "silme calismadi" diyordu. Yeni klasor ayni
+  # geri alma yigininini kullaniyor ama tek bir ad kutusu var (9. olcumde
+  # zaten olculmus kalip).
+  CANLI_Y=$(( KY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * KILIT_CANLI_SATIRI ))
+  CANLI="$KILIT_ORNEK/Canli"
+  klasor_say() { find "$CANLI" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l; }
+
+  # TABAN: kilitsizken yeni klasor acilir ve Ctrl+Z onu geri alir.
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$CANLI_Y" click 1 > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers ctrl+shift+n > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers Return > /dev/null 2>&1
+  sleep 4
+  ACILDI="$(klasor_say)"
+
+  xdotool key --clearmodifiers ctrl+z > /dev/null 2>&1
+  sleep 5
+  TABAN_GERI="$(klasor_say)"
+
+  # ASIL OLCUM: yeni klasor acilir, KLASOR KILITLENIR, Ctrl+Z basilir.
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$CANLI_Y" click 1 > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers ctrl+shift+n > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers Return > /dev/null 2>&1
+  sleep 4
+  IKINCI="$(klasor_say)"
+
+  xdotool mousemove "$(( KX + AGAC_TIK_X ))" "$CANLI_Y" click 1 > /dev/null 2>&1
+  sleep 2
+  xdotool key --clearmodifiers ctrl+shift+q > /dev/null 2>&1
+  sleep 4
+  xdotool key --clearmodifiers ctrl+z > /dev/null 2>&1
+  sleep 6
+  import -window root "$CALISMA/kilit-gerial.png" > /dev/null 2>&1
+  KILITLIYKEN="$(klasor_say)"
+
+  if [ "${ACILDI:-0}" -lt 1 ] || [ "${IKINCI:-0}" -lt 1 ]; then
+    olcum "geri al + kilit ......." "OLCULEMEDI (yeni klasor acilmadi: $ACILDI/$IKINCI)"
+    SORUN=1
+  elif [ "${TABAN_GERI:-9}" -ne 0 ]; then
+    olcum "geri al + kilit ......." "OLCULEMEDI (kilitsizken de geri alinmadi - taban yok)"
+    SORUN=1
+  elif [ "${KILITLIYKEN:-0}" -ne "${IKINCI:-0}" ]; then
+    olcum "geri al + kilit ......." "HAYIR (KILITLI klasorde geri alma calisti: $IKINCI -> $KILITLIYKEN)"
+    SORUN=1
+  else
+    olcum "geri al + kilit ......." "EVET (kilitsizken geri aldi, kilitliyken almadi)"
+  fi
 else
   olcum "klasor kilidi ........." "HAYIR (kilit kosusunda pencere dogmadi)"
+  SORUN=1
+  olcum "geri al + kilit ......." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

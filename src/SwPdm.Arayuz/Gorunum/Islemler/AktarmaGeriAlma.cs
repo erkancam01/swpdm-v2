@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SwPdm.Cekirdek;
 
 namespace SwPdm.Arayuz.Gorunum;
@@ -41,6 +42,10 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{kopya.Count} öğenin taşınması",
+            // KILIT DENETIMININ BAKTIGI YOLLAR: dosyalar YENI yerinden ESKI
+            // yerine tasinacak, yani iki uc da dokunulan yol sayilir.
+            // Kurtarilanlar da copten geri gelecegi icin listede.
+            Yollar: [.. kopya.Select(c => c.Eski), .. kopya.Select(c => c.Yeni), .. kurtarilanlar],
             // ILERI ALMA yalnizca "Degistir" KULLANILMADIYSA verilir.
             // Sebebi somut: uzerine yazilan dosya geri alma sirasinda
             // copten geri geldi; ileri alirken onu YENIDEN cope gondermek
@@ -103,6 +108,7 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{kopya.Count} öğenin taşınması",
+            Yollar: [.. kopya.Select(c => c.Eski), .. kopya.Select(c => c.Yeni)],
             Ters: () => TasimayiGeriAl(kopya, kopyaPlanlar, [], cop),
             Uygula: baglam =>
             {
@@ -232,6 +238,8 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{yollar.Count} öğenin kopyalanması",
+            // Kopyalar cope gidecek, kurtarilanlar copten geri gelecek.
+            Yollar: [.. yollar, .. kurtarilanlar],
             // "Degistir" kullanildiysa ileri alma yok - tasimadaki ayni
             // gerekce.
             Ters: kurtarilanlar.Count > 0
@@ -278,6 +286,7 @@ internal static class AktarmaGeriAlma
 
         return new GeriAlinabilir(
             $"{kopya.Count} öğenin kopyalanması",
+            Yollar: kopya,
             Ters: () => KopyalamayiGeriAl(kopya, [], copKlasoru),
             Uygula: baglam =>
             {

@@ -70,6 +70,35 @@ public sealed class KilitKumesi
         return false;
     }
 
+    /// <summary>
+    /// Verilen yollardan KILITLI OLAN ILKI; hicbiri kilitli degilse null.
+    ///
+    /// NEDEN KUME HALINDE SORULUYOR: bir islem cogu zaman TEK dosyaya degil
+    /// bir LISTEYE dokunuyor (tasima ciftleri, geri alma adiminin yollari).
+    /// Cagiranin kendi dongusunu yazmasi ayni mantigin ikinci kopyasi olurdu
+    /// (CLAUDE.md 8) - ve biri "altini da say" kuralini unutabilirdi.
+    ///
+    /// ILKINI DONDURUYOR, SAYIYI DEGIL: ekranda gosterilecek sey "hangi
+    /// dosya yuzunden" (CLAUDE.md 3); sayi bir sey anlatmiyor.
+    /// </summary>
+    public string? IlkKilitli(IEnumerable<string>? yollar)
+    {
+        if (yollar is null)
+        {
+            return null;
+        }
+
+        foreach (string yol in yollar)
+        {
+            if (Kilitli(yol))
+            {
+                return yol;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Bu klasorun KENDISI kilitli mi (altinda olmak saymaz).</summary>
     public bool KendisiKilitli(string? klasorYolu)
     {
