@@ -79,6 +79,12 @@
 > arşivler bozulmadı (on birim testi kilitliyor). Kabul edilen bedel:
 > arşivdeki montaj/teknik resim bugünkü parçalarla açılır — durum çubuğu
 > **söylüyor**.
+> **01.09.2026: YERELE GEÇİLİYOR.** Erkan bundan sonra kendi makinesinde
+> (Windows + SOLIDWORKS 2022) Claude Code ile çalışacak. Ortam belgesi
+> **`YEREL-KURULUM.md`** — hangi kapı Windows'ta koşar, hangisi koşmaz ve
+> Wine'ın ölçemediği nelerin orada **ölçülebilir** hale geldiği yazılı.
+> Aşağıdaki A ve B listelerinin çoğu artık kapatılabilir: sağ tık menüleri,
+> 3B önizleme, pano/sürükle-bırak, gerçek simgeler, ağ sürücüsü hızı.
 
 ---
 
