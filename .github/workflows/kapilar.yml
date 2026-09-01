@@ -41,6 +41,8 @@ jobs:
         run: ./araclar/kapi_harita.sh
       - name: Kilavuz kapisi
         run: ./araclar/kapi_ozellikler.sh
+      - name: Kisayol kapisi
+        run: ./araclar/kapi_kisayol.sh
       - name: Boyut kapisi
         run: ./araclar/kapi_boyut.sh
       - name: Derleme kapisi

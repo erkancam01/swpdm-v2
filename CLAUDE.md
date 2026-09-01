@@ -1150,9 +1150,10 @@ bilmez. Ölçüldü (01.09.2026): `AnaForm.cs` **477 satır**, `AnaForm.Referans
 
 ```
 araclar/paket.sh               # Erkan'in deneyecegi zip (~120 KB)
-araclar/kapilar.sh [--kur]     # altısını sırayla koşar
+araclar/kapilar.sh [--kur]     # yedisini sırayla koşar
 ├── kapi_harita.sh             # CLAUDE.md §11 tablosu <-> gerçek ağaç
 ├── kapi_ozellikler.sh         # OZELLIKLER.md menü tablosu <-> gerçek menü
+├── kapi_kisayol.sh            # menüye KAYDEDİLEN tuş geçerli mi
 ├── kapi_boyut.sh              # ağaçtaki her .cs; satır sınırı 600
 ├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
@@ -1165,6 +1166,17 @@ araclar/kapilar.sh [--kur]     # altısını sırayla koşar
 > tam da korumakla görevli olduğu şeyi koruyamaz hâle gelirdi. Üçüncü yön,
 > belgede yazan yolun gerçek konum olduğunu denetliyor. §9 döngüsü: TEMİZ →
 > bir satırın yolu eskisine çevrilince **YAKALADI** → düzeltilince TEMİZ.
+
+> **KISAYOL KAPISI NEDEN VAR (01.09.2026) — ONARIM DEĞİL, KORUMA.**
+> `Keys.Enter` bir kez uygulamayı **hiç açtırmadı** (§6) ve bunu gören tek
+> şey tam bir Wine koşusu oldu; derleme "0 uyarı 0 hata" diyordu. Bugün
+> ağaç temiz — 18 kısayolun hiçbiri modifiyesiz değil — ama bunu koruyan
+> bir şey **yoktu**. Kapı bir saniye sürüyor ve o Wine koşusunun yerine
+> geçiyor: `Kisayol` ya modifiyeli olacak ya da WinForms'un tek başına
+> kabul ettiği listeden (`F1..F12` · `Delete` · `Insert` · `Back`).
+> `YazilanTus` bilerek kapsam dışı — o zaten **kaydedilmeyen** tuş.
+> §9 döngüsü: TEMİZ → `AcIslemi` yeniden `Keys.Enter` deyince
+> **YAKALADI** → geri alınca TEMİZ.
 
 > **KILAVUZ KAPISI NEDEN VAR (01.09.2026) — ve eklendiği anda BAYAT bir
 > şey buldu.** `OZELLIKLER.md` pakete `OZELLIKLER.txt` olarak giriyor;
