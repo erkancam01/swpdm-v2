@@ -422,6 +422,43 @@ kesilince test kırılıyor.
 > kapısı gösterdi. Özellik gitti, **ölçüm ve onarım kaldı** — hata baştan
 > versiyon arşivinindi.
 
+### PARÇA MONTAJI İÇERMEZ — in-context bağ YUKARI dogrudur (01.09.2026)
+
+Erkan, ekran görüntüsüyle: *"knk versiyon oluşturma o parçanın bir kopyasını
+oluşturma değil mi, ne alaka dosyaları arşivleme. büyük bi yanlışlık var."*
+Tek başına 3,1 MB'lik bir parçanın versiyon kutusu **162 dosya** diyordu:
+*"1 doğrudan · 161 alt seviye"*.
+
+Sebep, yukarıdaki *"çıplak ad yazan referans"* maddesinin **öbür yüzü**:
+in-context yapılmış bir parça kardeşi montaja referans verir
+(`TEK ACILIM.SLDASM`). Ağaç yürüyüşünde tür ayrımı yoktu; yürüyüş o
+referanstan **aşağı** inip bütün ürün ağacını parçanın arşivine dolduruyordu.
+
+**Bağ yukarı dogrudur:** parçanın içinde montaj yoktur — parça o montajın
+**içinde yapılmıştır**. Aynı kaçak montajlarda da vardı:
+`MontajA → in-context Parça → MontajB → B'nin bütün ağacı`.
+
+→ `BelgeAgaci.IcerikMi`: ebeveyn `.SLDPRT` ise `.SLDASM` çocuk **izlenmez**,
+düğüm bile üretilmez. Uzantı bilgisi `DosyaTurleri.Tani`'dan türetilir (§1b),
+çözmeden önce sorulur (disk hiç yoklanmaz).
+
+**TEK KURAL, bilerek.** *"Montaj teknik resmi içermez"* gibi ek kurallar
+gerçek veride hiç oluşmuyor; ölçülemeyen dal olmayan daldır (§8).
+
+Ölçüm tek değişkenli: aynı dosya (`Montaj2.SLDDRW`, montaja referans veriyor)
+köke **iki kez** kopyalanıyor — `Sahte.SLDDRW` ve `Sahte.SLDPRT`. Baytlar
+birebir aynı, değişen tek şey **ebeveynin türü**. Drawing hâli montajı
+arşivliyor (**taban** — yoksa "yürüyüş hiç çalışmıyor" hâli de testi geçerdi),
+part hâli hiçbir şey arşivlemiyor. Üçüncü test aşırı süzmeyi kapatıyor:
+montaj kendi parçalarını vermeye devam ediyor. `AgacYonuTestleri`; §9
+döngüsü: TEMİZ → kural kesilince **YAKALADI** → geri konunca TEMİZ.
+
+> **ATLANAN BAĞ "BULUNAMADI" DEĞİLDİR** (§3): eskiden o dal izlendiği için
+> montajın çözülemeyen çocuğu da sayılıyor ve kutu *"1 referans bulunamadı —
+> versiyon EKSİK"* diyordu. Eksik olan bir şey yok; o dal versiyonun
+> **kapsamında** hiç değil. Montajın referansı **panelde görünmeye devam
+> ediyor** — gizlenen bir şey de yok.
+
 ### DOSYAYA YAZMA — ölçüldü (28.08.2026), yeniden kurma DEĞİL YERİNDE yama
 
 Ad değişince komşuluk kuralı kurtarmıyor: ebeveyn **eski adı** arar. Tek

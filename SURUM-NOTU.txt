@@ -1,3 +1,52 @@
+PARCANIN VERSIYONU ARTIK YALNIZ O PARCA
+
+  Senin bildirdigin (01.09.2026): "knk versiyon olusturma o parcanin bir
+  kopyasini olusturma degil mi ne alaka dosyalari arsivleme. versiyon
+  olusturma eskiden boyle calismiyordu. buyuk bi yanlislik var."
+
+  HAKLIYDIN. Tek basina 3,1 MB'lik bir parca icin kutu "162 dosya
+  (1 dogrudan · 161 alt seviye)" diyordu.
+
+  SEBEP - OLCULDU:
+  Montaj baglaminda (in-context) yapilmis bir parca, kendi dosyasinin
+  icinde o MONTAJI yaziyor. Senin parcanin o TEK dogrudan referansi
+  buydu. Agac yuruyusu tur ayrimi yapmiyordu: parcadan montaja iniyor,
+  montajdan da butun urun agacina. 1 -> 161.
+
+  Oysa o bag YUKARI dogru: parcanin icinde montaj yok - parca o
+  montajin ICINDE yapilmis.
+
+  DUZELDI:
+  - Parcanin referans verdigi MONTAJ artik izlenmiyor. Bir parcanin
+    versiyonu = o parcanin kopyasi.
+  - Ayni kacak montajlarda da vardi: MontajA -> in-context parca ->
+    MontajB -> B'nin butun agaci. Ayni satir onu da kapatti.
+  - Montaj ve teknik resim ESKISI GIBI kendi cocuklariyla arsivleniyor
+    (montajin versiyonu parcalarsiz acilmaz - o bilerek boyle).
+
+  BUNU DENE:
+  - Bir parcaya Ctrl+Shift+U: kutu artik "... simdiki haliyle
+    arsivlenecek" demeli, dosya sayisi yazmamali.
+  - Ayni parcanin panelindeki ICINDEKILER'de o montaj HALA gorunur -
+    gizlenen bir sey yok, yalnizca arsive kopyalanmiyor.
+  - Bir montaja Ctrl+Shift+U: sayi eskisi gibi yazmali ve
+    "Listeyi goster..." ile tam listeyi gorebilmelisin.
+
+  ATLANAN BAG "BULUNAMADI" DEGILDIR: eskiden o dal izlendigi icin
+  "1 referans bulunamadi - versiyon EKSIK" da yaziyordu. Artik yazmiyor,
+  cunku eksik olan bir sey yok.
+
+  Olcum: uc yeni birim testi. Ayni dosya koke iki kez kopyalaniyor -
+  Sahte.SLDDRW ve Sahte.SLDPRT; baytlar birebir ayni, degisen tek sey
+  ebeveynin turu. Drawing hali montaji arsivliyor (taban), part hali
+  hicbir sey arsivlemiyor, montaj kendi parcalarini vermeye devam
+  ediyor (asiri suzme kapisi).
+
+  BU PAKETTE OLCULEMEYEN: senin gercek agacindaki sayi. Burada senin
+  162 dosyalik montajin yok; olculen sey kuralin kendisi.
+
+----------------------------------------------------------------------
+
 "241 DOSYA" - BIR KISMI GERCEKTEN FAZLAYDI, HESABI DA VERILMIYORDU
 
   Senin bildirdigin (01.09.2026): "denedim calisiyor. fakat 241 dosya

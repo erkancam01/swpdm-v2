@@ -8,7 +8,7 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 384 test geçti · 5 atlandı (Windows'a özel) · **YEDİ** kapı TEMİZ
+> 392 test geçti · 5 atlandı (Windows'a özel) · **YEDİ** kapı TEMİZ
 > (harita + kılavuz + kısayol + boyut + derleme + test + çalıştırma
 > **27** ölçüm) — **YEDİ** kapı.
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
@@ -37,6 +37,10 @@
 > `Islemler/Kutular/`e çıktı. **Yalnız `git mv`**: 54 rename, sıfır kod
 > değişikliği, 374 test aynı. Harita kapısına **yol denetimi** eklendi —
 > önceden yalnız dosya adına bakıyordu ve taşınan yolu göremezdi.
+> 01.09.2026: **PARÇANIN VERSİYONU YALNIZ O PARÇA** — in-context bir parça
+> kendi montajını referans veriyor ve yürüyüş oradan aşağı inip bütün ürün
+> ağacını parçanın arşivine dolduruyordu (Erkan'da **162 dosya**).
+> `BelgeAgaci.IcerikMi`: parça → montaj bağı izlenmez (CLAUDE.md §5).
 > 31.08.2026: **KLASÖR KİLİDİ** geldi — `Ctrl+Shift+Q`, bitmiş işler
 > açılmaz (`KlasorKilidi.cs`). Kaza koruması: Gezgin'i bağlamaz, referans
 > taraması/onarımı bilerek devam eder. Yol üstünde gerçek bir kusur da

@@ -40,6 +40,9 @@ public sealed record AgacDugumu(
 /// KALDI, cunku asagidaki 3. adim versiyon arsivinin gercek bir hatasini
 /// kapatiyor.)
 ///
+/// YON KURALI ONCE GELIR: bir parcanin referans verdigi MONTAJ hic
+/// izlenmez - o bag asagi degil YUKARI dogrudur (bkz. IcerikMi).
+///
 /// COZUMLEME SOLIDWORKS'UN KENDI KURALIYLA (CLAUDE.md 5'te olculdu):
 ///   1. EBEVEYNIN YANINDAKI ayni adli dosya kazanir - yazili mutlak yolun
 ///      onune geciyor.
@@ -119,6 +122,11 @@ public static class BelgeAgaci
 
         foreach (string yazilan in referanslar.Dogrudan)
         {
+            if (!IcerikMi(yol, yazilan))
+            {
+                continue;
+            }
+
             string? cocuk = Coz(yazilan, yol);
             if (cocuk is null)
             {
@@ -147,6 +155,34 @@ public static class BelgeAgaci
             Yurut(cocuk, seviye + 1, dugumler, acilan, belirtec);
         }
     }
+
+    /// <summary>
+    /// Bu yazili referans ebeveynin ICERIGI mi - yoksa yalnizca BAGLAMI mi.
+    ///
+    /// TEK KURAL: <b>PARCA MONTAJI ICERMEZ.</b> In-context yapilmis bir parca
+    /// kardesi montaja referans verir (CLAUDE.md 5'te olculdu: Erkan'in
+    /// uretim agacinda bir parca "TEK ACILIM.SLDASM" diye yaziyordu) - ama o
+    /// bag YUKARI dogrudur: parcanin icinde montaj yoktur, parca o montajin
+    /// ICINDE yapilmistir.
+    ///
+    /// BEDELI ODENDI (Erkan, 01.09.2026): "versiyon olusturma o parcanin bir
+    /// kopyasini olusturma degil mi, ne alaka dosyalari arsivleme." Tek
+    /// basina 3 MB'lik bir parcanin versiyonu <b>162 dosya</b> suruklyordu -
+    /// 1 dogrudan (o montaj) + 161 torun, yani butun urun agaci. Ayni kacak
+    /// montajda da vardi: MontajA -> in-context Parca -> MontajB -> B'nin
+    /// bütün agaci.
+    ///
+    /// UZANTI BILGISI TURETILIYOR (CLAUDE.md 1b): tur listesinin ikinci
+    /// kopyasi yazilmaz, <see cref="DosyaTurleri.Tani"/> sorulur. Cozmeden
+    /// ONCE soruluyor - yazili ad yetiyor, disk hic yoklanmiyor.
+    ///
+    /// TEK KURAL OLMASI BILINCLI: "montaj teknik resmi icermez" gibi ek
+    /// kurallar gercek veride hic olusmuyor, yani olculemezler; olculemeyen
+    /// dal olmayan daldir (CLAUDE.md 8).
+    /// </summary>
+    private static bool IcerikMi(string ebeveynYolu, string yazilanCocuk)
+        => DosyaTurleri.Tani(ebeveynYolu) != DosyaTuru.Parca
+            || DosyaTurleri.Tani(yazilanCocuk) != DosyaTuru.Montaj;
 
     /// <summary>
     /// Yazili bir referansin diskteki karsiligi: once EBEVEYNIN YANI, sonra
