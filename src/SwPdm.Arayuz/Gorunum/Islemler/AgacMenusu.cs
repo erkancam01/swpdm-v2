@@ -34,6 +34,7 @@ internal sealed class AgacMenusu
     private IIlerlemeYuzeyi? _ilerleme;
     private Action? _agaciKapat;
     private Func<string?, bool>? _agactaGoster;
+    private Func<string?>? _satirSebebi;
     private ReferansSurucusu? _referanslar;
 
     internal AgacMenusu(Control tasiyici)
@@ -101,6 +102,16 @@ internal sealed class AgacMenusu
 
     /// <summary>Bir yolu agacta acip secen isi (bkz. IslemBaglami.AgactaGoster).</summary>
     internal void AgactaGosteren(Func<string?, bool> is_) => _agactaGoster = is_;
+
+    /// <summary>
+    /// SECIM NEDEN BOS - tasiyicinin kendi cumlesi (bkz. <see cref="Sebebi"/>).
+    ///
+    /// Panelde satir bir dosyaya cozulemedigi zaman gercek sebep orada
+    /// biliniyor ("Arsiv kopyasi...", "Bu dosya acik kokun disinda"); islem
+    /// ise yalnizca "Once bir oge secin." diyebilir. Kurulmazsa hicbir sey
+    /// degismez - agacin menusu bunu vermiyor.
+    /// </summary>
+    internal void SatirSebebi(Func<string?> sebep) => _satirSebebi = sebep;
 
     /// <summary>Referans indeksini islemlere ulastirir.</summary>
     internal void ReferansSurucusunu(ReferansSurucusu surucu) => _referanslar = surucu;
@@ -225,6 +236,7 @@ internal sealed class AgacMenusu
             // "uygulanabilir mi"si EVET diyebilir; sebep o degil, kilit.
             bool olur = !Kilitler.Engel(islem, hedef, out string neden)
                 && islem.Uygulanabilir(hedef, out neden);
+            neden = Sebebi(islem, hedef, neden);
 
             // Yazi her acilista islemden YENIDEN soruluyor: "Geri al" ve
             // "Yapistir" ne yapacaklarini adlarinda soyluyor.
@@ -236,6 +248,29 @@ internal sealed class AgacMenusu
             oge.ToolTipText = olur ? string.Empty : neden;
         }
     }
+
+    /// <summary>
+    /// GRI KALMANIN GERCEK SEBEBI - 01.09.2026 denetiminde bulundu.
+    ///
+    /// Panelde satir bir dosyaya cozulemediginde secim BOS geliyor ve her
+    /// islem kendi genel cumlesini yaziyor: "Once silinecek ogeleri secin."
+    /// Oysa satir SECILI; kullanici satiri yeniden tiklamaya calisiyor ve
+    /// sorun orada degil. Gercek sebep tasiyicida biliniyor (ReferansMenusu:
+    /// "Arsiv kopyasi - dosya islemleri uygulanmaz", "Bu dosya acik kokun
+    /// disinda") ama yalnizca MENU BASLIGINA gidiyordu - Wine'da menu hic
+    /// acilamadigi icin kullanicinin gordugu hep yanlis olandi.
+    ///
+    /// YALNIZ BOS SECIMDE devreye giriyor: satir cozulduyse islemin kendi
+    /// cumlesi dogrudur ("Tek bir dosya secin" gibi) ve ezilmemeli.
+    /// Sahibine uygulanan islemler de disarida - onlarin secimi satirdan
+    /// gelmiyor.
+    /// </summary>
+    private string Sebebi(IAgacIslemi islem, SecimBaglami secim, string neden)
+        => secim.Ogeler.Count == 0
+           && islem.Hedef != IslemHedefi.Sahip
+           && _satirSebebi?.Invoke() is string sebep
+            ? sebep
+            : neden;
 
     private SecimBaglami Secim()
         => _secimKaynagi?.Invoke() ?? new SecimBaglami([], null, AramaKipinde: false, Kok: null, CopKlasoru: null);
@@ -271,7 +306,7 @@ internal sealed class AgacMenusu
             || !islem.Uygulanabilir(secim, out neden))
         {
             // Kisayolla gelindiyse menu gorunmedi; sebep yine SOYLENIR.
-            Durum?.Invoke(this, neden);
+            Durum?.Invoke(this, Sebebi(islem, secim, neden));
             return;
         }
 

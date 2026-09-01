@@ -1,3 +1,41 @@
+TUR 3-7/18 - HEDEF, SEBEP VE "BURAYA" ONARIMLARI (bes madde)
+
+  Hepsi ayri commit'te; tek pakette veriliyor ki bir seferde deneyebilesin.
+
+  1) PANELDE "YENI KLASOR" DOGRU YERE ACILIYOR (hataydi)
+     Panelde bir parcaya sag tiklayip "Yeni klasor" deyince klasor O
+     PARCANIN klasorunde aciliyordu - agacta bambaska bir montaj
+     seciliyken. Hedef hicbir yerde yazmadigi icin klasoru kaybediyordun.
+     Artik "buraya" = panelin gosterdigi yer, yani agacta secili olan.
+
+  2) COZULEMEYEN SATIRDA "YAPISTIR" KOKE YAPISTIRMIYOR (hataydi)
+     BULUNAMADI / arsiv kopyasi gibi satirlarda Yapistir gri KALMIYOR ve
+     Ctrl+V dosyalari KOKUN KENDISINE tasiyordu. Menu ustunde "bu satir
+     cozulemedi" yazarken islem calisiyordu. Ayni satirda ikinci bir
+     eksik daha vardi: kilit bilgisi tasinmiyordu (bugun zararsizdi ama
+     birincisi duzelince gercek acik olurdu) - ikisi birlikte kapandi.
+
+  3) SUZGEC ARTIK SESSIZCE KAYBOLMUYOR (GECEN TURDA BEN ACMISIM)
+     Panelden bir dosyaya giderken tur suzgeci kaldirilip dosya YINE
+     bulunamazsa, suzgecin gitmis oluyordu ve ekranda bundan tek kelime
+     yoktu. Artik soyluyor.
+
+  4) "OLABILIR" DEGIL, KESIN SEBEP
+     "Dosya agacta bulunamadi (acik kokun disinda OLABILIR)" bir tahmindi;
+     oysa cevap kesin ve ayni ekranin baska yerinde kesin yaziliyordu.
+     Artik: kok disindaysa "Bu dosya acik kokun disinda", degilse
+     "agacta bulunamadi".
+
+  5) PANELDE GRI KALAN ISLEM GERCEK SEBEBINI SOYLUYOR
+     Versiyon satirinda Delete'e basinca "Once silinecek ogeleri secin."
+     diyordu - oysa satir SECILI, sorun onun bir ARSIV KOPYASI olmasi.
+     Gercek sebep zaten uretiliyordu ama yalnizca sag tik menusunun
+     basligina gidiyordu. Artik kisayolla da yaziliyor.
+
+  OLCULDU: bes kapi TEMIZ · calistirma 26/26 · 372 test gecti, 5 atlandi.
+  BURADA OLCULEMEYEN: 5. maddenin metni ekrandan okunmuyor (durum cubugu
+  yazisi kapida OCR ile olculmuyor); olculen sey davranisin bozulmadigi.
+
 TUR 2/18 - CTRL+Z / CTRL+Y KILITLI KLASORE YAZMIYOR
 
   *** BU DA BIR HATAYDI - kodun kendi yorumunda "bilinen sinir" diye

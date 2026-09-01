@@ -65,6 +65,11 @@ internal sealed class ReferansMenusu
         _menu.SecimKaynagi(() => Coz().Secim);
         _menu.UstBilgi(() => Coz().Baslik);
 
+        // GRI KALMANIN GERCEK SEBEBI kisayol yolunda da yazilsin: Coz()
+        // zaten uretiyordu ama yalnizca menu basligina gidiyordu ve Wine'da
+        // menu hic acilamiyor (01.09.2026 denetimi).
+        _menu.SatirSebebi(() => Coz().Sebep);
+
         // Kisayollari KAYDETMIYOR, yalniz yaziyor; panelin kendi sahiplendigi
         // tuslarin (Enter, Ctrl+C) etiketi hic yazilmiyor.
         _menu.KisayollariYalnizYaz(ReferansPaneliTuslari.Sahiplenir);
@@ -116,18 +121,20 @@ internal sealed class ReferansMenusu
     /// pencere geneli degerler ve iki yerde ayri ayri hesaplanirsa AYRISIR
     /// (CLAUDE.md 8).
     /// </summary>
-    private (SecimBaglami Secim, string Baslik) Coz()
+    private (SecimBaglami Secim, string Baslik, string? Sebep) Coz()
     {
         SecimBaglami sahip = _sahipSecimi();
 
         if (_liste.SeciliHedef is not string yol)
         {
-            return (Bos(sahip), "Bu satır bir dosyaya çözülemedi");
+            return (Bos(sahip), "Bu satır bir dosyaya çözülemedi",
+                "Bu satır bir dosyaya çözülemedi — üzerinde dosya işlemi yapılamaz.");
         }
 
         if (!WindowsYolu.AltindaMi(yol, sahip.Kok))
         {
-            return (Bos(sahip), "Bu dosya açık kökün dışında");
+            return (Bos(sahip), "Bu dosya açık kökün dışında",
+                "Bu dosya açık kökün dışında — üzerinde işlem yapılamaz.");
         }
 
         // ARSIV KOPYASINA ISLEM UYGULANMAZ (CLAUDE.md 1a): VERSIYONLAR
@@ -136,19 +143,25 @@ internal sealed class ReferansMenusu
         // eslesmesi kirilir ve versiyon "kayip" gorunur.
         if (ArsivdeMi(yol))
         {
-            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz; Enter: bu versiyona dön");
+            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz; Enter: bu versiyona dön",
+                "Arşiv kopyası — dosya işlemleri uygulanmaz. Enter: bu versiyona dön.");
         }
 
         if (KlasorTarayici.DosyayiOku(yol) is not DosyaOgesi dosya)
         {
             // Indeks bayat olabilir: yazan dosya artik yerinde degil.
-            return (Bos(sahip), "Bu dosya okunamadı: " + WindowsYolu.DosyaAdi(yol));
+            return (Bos(sahip), "Bu dosya okunamadı: " + WindowsYolu.DosyaAdi(yol),
+                "Bu dosya okunamadı: " + WindowsYolu.DosyaAdi(yol));
         }
 
+        // SATIR COZULDU: sebep YOK - buradan sonra gri kalan bir islem
+        // varsa sebebi KENDI kuralidir ("Tek bir dosya secin" gibi) ve
+        // ezilmemeli.
         return (
             SecimBaglami.Kur(
                 [dosya], sahip.Kok, sahip.AramaKipinde, sahip.CopKlasoru, sahip.Kilitler),
-            dosya.Ad);
+            dosya.Ad,
+            null);
     }
 
     /// <summary>Yol, versiyon arsivinin icinde mi (adi Surumler.KlasorAdi'ndan).</summary>
