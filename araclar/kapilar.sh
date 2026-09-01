@@ -11,6 +11,8 @@ KOK="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KIRIK=0
 
 "$KOK/araclar/kapi_harita.sh"         || KIRIK=1
+
+"$KOK/araclar/kapi_ozellikler.sh"     || KIRIK=1
 echo
 "$KOK/araclar/kapi_boyut.sh"          || KIRIK=1
 echo

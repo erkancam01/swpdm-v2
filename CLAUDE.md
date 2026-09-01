@@ -1150,8 +1150,9 @@ bilmez. Ölçüldü (01.09.2026): `AnaForm.cs` **477 satır**, `AnaForm.Referans
 
 ```
 araclar/paket.sh               # Erkan'in deneyecegi zip (~120 KB)
-araclar/kapilar.sh [--kur]     # beşini sırayla koşar
+araclar/kapilar.sh [--kur]     # altısını sırayla koşar
 ├── kapi_harita.sh             # CLAUDE.md §11 tablosu <-> gerçek ağaç
+├── kapi_ozellikler.sh         # OZELLIKLER.md menü tablosu <-> gerçek menü
 ├── kapi_boyut.sh              # ağaçtaki her .cs; satır sınırı 600
 ├── kapi_derleme.sh            # ağaçtaki her .csproj, uyarılar hata sayılarak
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
@@ -1164,6 +1165,23 @@ araclar/kapilar.sh [--kur]     # beşini sırayla koşar
 > tam da korumakla görevli olduğu şeyi koruyamaz hâle gelirdi. Üçüncü yön,
 > belgede yazan yolun gerçek konum olduğunu denetliyor. §9 döngüsü: TEMİZ →
 > bir satırın yolu eskisine çevrilince **YAKALADI** → düzeltilince TEMİZ.
+
+> **KILAVUZ KAPISI NEDEN VAR (01.09.2026) — ve eklendiği anda BAYAT bir
+> şey buldu.** `OZELLIKLER.md` pakete `OZELLIKLER.txt` olarak giriyor;
+> Erkan'ın okuduğu dosya o ve onu koda karşı denetleyen **hiçbir şey
+> yoktu**. Ölçüm: menüde **18** işlem varken kılavuzun menü tablosu
+> **17** diyordu ve **"Yeni versiyon oluştur…"** satırı hiç yoktu — yani
+> arşive **yazan** işlem kullanıcının kılavuzunda görünmüyordu.
+>
+> **TABLOYLA SINIRLI, BİLEREK:** adın belgenin herhangi bir yerinde
+> geçmesi yetmiyor. İlk yazışta öyleydi ve kapı **TEMİZ dedi** — çünkü o
+> işlem başka bölümlerde anlatılıyordu; oysa tablo "menünün tamamı" diye
+> sunuluyor. Kapsam tabloya indirilince **YAKALADI**. Aynı zayıflık harita
+> kapısının 1. yönünde bilerek duruyor (orada "bulunabilir olmak" yeter).
+>
+> Başlıktaki **sayı** da denetleniyor: bayat sayı tek başına bir bulgudur
+> (§2). §9 döngüsü: YAKALADI (iki bulgu) → düzeltilince TEMİZ → satır
+> silinince yine YAKALADI → geri konunca TEMİZ.
 
 > **Harita kapısı neden var (29.08.2026):** §11 tablosu 23 dosyayı hiç
 > saymıyordu (`AnaForm.cs` dahil) ve geçmişte silinmiş bir dosyayı

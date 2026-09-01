@@ -5,7 +5,8 @@
 # UC COMMIT yayinlandi.
 #
 # Uc is var ve ucu de AYNI betikleri kosuyor - CI'da ikinci bir kopya YOK:
-#   derleme-linux     : boyut kapisi + agactaki her csproj + her test projesi
+#   derleme-linux     : harita + kilavuz + boyut kapisi + agactaki her csproj
+#                       + her test projesi
 #   derleme-windows   : ayni kapilar, gercek Windows SDK'siyla. WindowsYolu
 #                       burada System.IO.Path'in KENDISIYLE karsilastiriliyor;
 #                       Linux'ta o olcum yapilamaz cunku orada Path bozuk.
@@ -38,6 +39,8 @@ jobs:
           dotnet-version: "8.0.x"
       - name: Harita kapisi
         run: ./araclar/kapi_harita.sh
+      - name: Kilavuz kapisi
+        run: ./araclar/kapi_ozellikler.sh
       - name: Boyut kapisi
         run: ./araclar/kapi_boyut.sh
       - name: Derleme kapisi

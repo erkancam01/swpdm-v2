@@ -50,7 +50,7 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 4. Sağ tık menüsü — 17 işlem
+## 4. Sağ tık menüsü — 18 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
@@ -66,6 +66,7 @@ olmayan hiçbir şey buraya yazılmadı.
 | **İleri al** | `Ctrl+Y` | Geri alınan işlemi **yeniden yapar** (menüde adı yazar) | İleri alınacak iş yokken · adımın tersi yoksa |
 | **Boyutu hesapla** | `Ctrl+Shift+B` | Seçili klasörlerin toplam boyutunu hesaplar, durum çubuğuna yazar | Hesaplama sürerken · seçimde klasör yokken |
 | **Klasörü kilitle / kilidi kaldır** | `Ctrl+Shift+Q` | Seçili klasör(ler) **açılmaz olur**: `+` kaybolur, içi ağaçta hiç görünmez, üzerinde işlem yapılmaz. Aynı komut kilidi kaldırır | Kök yokken · arama sonucundayken · seçimde klasör yokken |
+| **Yeni versiyon oluştur…** | `Ctrl+Shift+U` | O anki içeriği **arşivler** (ilk çağrı `v0`'ı yaratır); kısa bir not sorar. Montajsa **o günkü çocukları** da arşive girer ve kutu kaç dosya olduğunu yazar. Dosya yerinde kalır. Panelde: **satırın** dosyasına açılır | Tek dosya seçili değilken · SOLIDWORKS dosyası değilken |
 | **Referansları tara** | `Ctrl+Shift+R` | "Kim kimi kullanıyor" indeksini kurar (artımlı) | Tarama sürerken · kök yokken |
 | **Referansı elle bağla…** | `Ctrl+Shift+L` | Çözülemeyen bir referansı, senin seçtiğin dosyaya bağlar | Tek dosya seçili değilken · tür referans taşımıyorken |
 | **Referans raporları** | `Ctrl+Shift+D` | Rapor penceresini açar | Kök yokken |
