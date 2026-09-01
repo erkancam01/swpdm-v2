@@ -160,6 +160,18 @@ internal sealed class ReferansMenusu
                WindowsYolu.EgikAyirici + Surumler.KlasorAdi + WindowsYolu.EgikAyirici,
                StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// COZULEMEYEN SATIRIN secimi: BOS - ve "buraya" da YOK.
+    ///
+    /// IKI HATA BURADA KAPANDI (01.09.2026 denetimi):
+    /// 1. EtkinKlasor'a KOK konuyordu; Yapistir bu satirda GRI kalmiyor,
+    ///    Ctrl+V dosyalari KOKUN KENDISINE tasiyordu. Menu ustunde "Bu
+    ///    satir bir dosyaya cozulemedi" yazarken islem calisiyordu.
+    /// 2. Kilit kumesi TASINMIYORDU (6. konum atlanmisti) -> Kilitler.Engel
+    ///    "kilit yok" gorup her islem icin false donuyordu. Bugun
+    ///    somurulemiyordu cunku tek hedef koktu ve kok kilitlenemiyor; 1.
+    ///    madde duzelmeden once fark edilmesi sans isiydi.
+    /// </summary>
     private static SecimBaglami Bos(SecimBaglami sahip)
-        => new([], sahip.Kok, sahip.AramaKipinde, sahip.Kok, sahip.CopKlasoru);
+        => new([], null, sahip.AramaKipinde, sahip.Kok, sahip.CopKlasoru, sahip.Kilitler);
 }
