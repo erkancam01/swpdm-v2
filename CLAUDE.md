@@ -605,6 +605,17 @@ kullanıcıya yanlış dosyayı sildirir.
   dedi.** Çalışan tek kanca `Form.ProcessCmdKey` — komut tuşları, dialog
   tuşlarından **önce** sorulur. Belirti sinsi: aynı kısayol ağaç odaktayken
   çalışıyor, kutudayken hiçbir şey yapmıyor; yani "bazen çalışan" bir tuş.
+- **Tek başına `Enter` GEÇERLİ BİR MENÜ KISAYOLU DEĞİL — ve bedeli uygulamanın
+  HİÇ AÇILMAMASI.** `ToolStripMenuItem.ShortcutKeys = Keys.Enter` yazmak
+  `InvalidEnumArgumentException: The value of argument 'value' (13) is invalid
+  for Enum type 'Keys'` atıyor; menü öğesi kurucuda üretildiği için istisna
+  **açılışta** çıkıyor ve pencere hiç doğmuyor. Derleme **0 uyarı 0 hata**
+  dedi; gören tek şey çalıştırma kapısı oldu (31.08.2026). Aynı kural
+  `Escape`, `Tab`, `Space` gibi tek tuşlar için de geçerli — `Delete`, `F2`
+  ve `Insert` kabul ediliyor.
+  → Menüde yazması istenen ama **kaydedilmemesi gereken** tuş,
+  `ShortcutKeyDisplayString` ile yazılır (`ShortcutKeys` boş kalır). Bu
+  uygulamada karşılığı `IAgacIslemi.KisayolYazisi`.
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
@@ -998,6 +1009,7 @@ dosyasında** duruyor:
 | sürükleyerek taşıma | `Arayuz/Gorunum/Agac/SurukleBirak.cs` |
 | sağ tık menüsü (üretim) | `Arayuz/Gorunum/Islemler/AgacMenusu.cs` |
 | **hangi işlemler var, hangi sırada** | `Arayuz/Gorunum/Islemler/AgacIslemleri.cs` |
+| **dosyayı aç** (menüdeki "Aç") | `Arayuz/Gorunum/Islemler/AcIslemi.cs` |
 | yeni klasör | `Arayuz/Gorunum/Islemler/YeniKlasorIslemi.cs` |
 | yeniden adlandır (F2) | `Arayuz/Gorunum/Islemler/YenidenAdlandirIslemi.cs` |
 | sil (çöpe taşı) + referans uyarısı | `Arayuz/Gorunum/Islemler/SilIslemi.cs` |
@@ -1173,7 +1185,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi iki şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi dört şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1190,7 +1202,10 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu ve kutu
 ETKİLENENLERİ gösteriyor mu** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
-**kilitli klasör gerçekten açılmıyor mu** (üçüncü kısa koşu, kendi klasörü).
+**kilitli klasör gerçekten açılmıyor mu** (üçüncü kısa koşu, kendi klasörü) ·
+**panelden alınan versiyon SATIRIN dosyasına mı açılıyor** ·
+**tür süzgecinin GİZLEDİĞİ dosyaya panelden gidilebiliyor mu** (son ikisi
+dördüncü kısa koşu, kendi klasörü).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.
 
 > **Onuncusu neden var (önizleme):** bu alan **bugüne kadar hiç ölçülemedi**.
@@ -1496,6 +1511,65 @@ Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak s
 > kalıyor ve seçim boyası (`#3399FF`) kilit zeminini tamamen örtüyor —
 > `~$` işareti ölçümünde de aynı tuzağa düşülmüştü. Ölçüm artık önce **kök
 > satırına tıklayıp** seçimi oradan alıyor.
+
+> **Yirmi üçüncüsü neden var (panelden versiyon):** Erkan, 31.08.2026, ekran
+> görüntüsüyle: *"önizleme ekranında dosyaya sağ tıklayıp revizyon oluştur
+> dediğimde seçtiğim parçaya revizyon oluştursun."* `SurumOlusturIslemi`
+> **`Sahip`** diyordu: panelde bir parçaya sağ tıklansa bile versiyon
+> **ağaçta seçili montaja** açılıyordu — kutu *"… .SLDASM ve kullandığı 33
+> dosya"* yazıyordu. Kullanıcı yanlış dosyayı versiyonlar ve bunu **ancak o
+> versiyona dönmek isteyince** anlar; o an iş işlemiştir (§3).
+>
+> **16. ölçüm bunu YAKALAMIYORDU ve bu bir kusur değil:** orada hedef zaten
+> satırdı (`F2`), yani 16 TEMİZ iken bu hata yaşıyordu. Aynı tehlikenin iki
+> ayrı işlemi, iki ayrı ölçüm.
+>
+> Ölçüm ekrandan değil **diskten** ve encoding'den bağımsız: `.SwPdmSurum`
+> altında açılan yuvanın **uzantısı** hangi dosyanın versiyonlandığını tek
+> başına söylüyor — `.SLDPRT` satırın, `.SLDASM` sahibin. §9 döngüsü: TEMİZ →
+> hedef `Sahip`'e çevrilince **YAKALADI** ("versiyon AGACTAKI montaja
+> acildi") → geri konunca TEMİZ.
+>
+> **16. ÖLÇÜME EK — panelde çift tık ARTIK GİTMİYOR (aynı gün).** Erkan:
+> *"önizleme alanındaki dosyaya çift tıklayınca SOLIDWORKS'te açsın, dosya
+> ağacında o dosyaya gitmesine gerek yok."* Ölçülebilen şey açmanın kendisi
+> **değil** — Wine'da `.SLDPRT`/`.SLDDRW` için kayıtlı uygulama yok — ağaçtaki
+> seçimin **yerinde kalması**.
+>
+> **İKİ KOŞU HAYIR DEDİ ve ikisi de ÖLÇÜMÜN kusuruydu** (ikisi de ekran
+> görüntüsünden okundu, tahminle değil):
+> 1. *"Dosya açılamadı"* kutusu ağacın üstünde duruyordu: kabuk çağrısı yavaş,
+>    5 saniye sonra atılan `Escape` kutudan **önce** geliyordu.
+> 2. Taban görüntüsü ağaca tıkladıktan hemen sonra alınıyordu; orada fare
+>    ağacın üstünde olduğu için **ipucu** açılıyor, ayrıca ağaç odaklıyken
+>    seçim **koyu**, odağı kaybedince **soluk** çiziliyordu. Yani ölçülen şey
+>    "seçim değişti" değil "odak değişti"ydi.
+> → İki görüntü de **panel odaktayken ve fare paneldeyken** alınıyor.
+> §9 döngüsü: TEMİZ → çift tık yeniden ağaca gidince **YAKALADI** → geri
+> konunca TEMİZ. Karşılaştırma sırası da düzeltildi: eski davranışta `F2`
+> zinciri de kayıyor ve kapı *"hiçbir şey adlanmadı"* diyordu — **doğru
+> sonuç, yanlış sebep** (§3).
+
+> **Yirmi dördüncüsü neden var (süzgeç tuzağı):** Erkan, 31.08.2026:
+> *"montaj filtresi açıkken montajın içindekiler bölümündeki parçaya çift
+> tıkladığımda en altta dosya bulunamadı diyor."* Dosya kökün **içinde**;
+> yalnızca tür süzgeci onu ağaçtan gizlemiş. Eski hâl **iki kez**
+> yanıltıyordu: gidilemiyordu **ve** sebep olarak *"açık kökün dışında
+> olabilir"* yazıyordu — yanlış sebep, sebep göstermemekten kötüdür (§3).
+>
+> **SÜZGECİ KALDIRMAK AĞAÇ DOLDURUCUSUNUN İŞİ DEĞİL.** İlk yazışta
+> `AgacDoldurucu` doğrudan `TurSuzgeci = null` yazıyordu: ağaç süzgeçsiz
+> görünüyor ama şeritte **"Montaj" basılı kalıyordu** — ekranda duran bir
+> yalan (§3), üstelik aynı düğmeye basmak da bir şey yapmazdı (`Sec` aynı
+> düğmede erken dönüyor). Şimdi kaldırma kararı `SuzgecSeridi.Sifirla`'da,
+> gitme `AgacDoldurucu`'da, ikisini `AnaForm.ReferansaGit` **birleştiriyor**
+> — bileşim bağlayıcının işidir (§1b).
+>
+> Ölçüm **sayıyla ve iki şartlı**: süzgeç konunca ağaç **kısalmalı**
+> (5 → 3), panelden `Enter` ile gidilince **tabana dönmeli** (→ 5). Tek
+> başına "değişti" demek, süzgeç hiç çalışmasa da sağlanırdı. §9 döngüsü:
+> TEMİZ → süzgeci sıfırlayan dal kesilince **YAKALADI** (5 → 3 → 3) → geri
+> konunca TEMİZ.
 
 > **On sekizincisi neden var (arşiv adla taşınır):** versiyon yuvası dosyanın
 > **yolundan** türetiliyor; ad ya da klasör adı değişince yuva öksüz kalır ve

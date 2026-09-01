@@ -41,7 +41,7 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
     /// kullanim yeri cozulememis ("BULUNAMADI") satir ve orada satirin bir
     /// dosyasi YOKTUR; satiri hedef almak ozelligi tam orada oldururdu.
     /// </remarks>
-    public bool SahibineUygulanir => true;
+    public IslemHedefi Hedef => IslemHedefi.Sahip;
 
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)

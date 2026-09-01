@@ -15,7 +15,7 @@ namespace SwPdm.Arayuz.Gorunum;
 ///
 /// HEDEF SATIRDIR (Erkan'in karari): islem, tiklanan satirin dosyasina
 /// uygulanir; agactaki secim ve okunan liste YERINDE KALIR. Tek istisna
-/// <see cref="IAgacIslemi.SahibineUygulanir"/> diyen islem (ElleBagla) - o,
+/// <see cref="IslemHedefi.Sahip"/> diyen islem (ElleBagla) - o,
 /// panelin gosterdigi dosyaya uygulanir.
 ///
 /// UC SESSIZ HATA BURADA KAPATILIYOR (CLAUDE.md 3 - hepsi yanlis dosyaya
@@ -101,7 +101,7 @@ internal sealed class ReferansMenusu
     /// menusunden gecmeye devam eder - boylece bugunku davranis bozulmuyor.
     /// </summary>
     internal bool TusaBasildi(Keys tuslar)
-        => _menu.TusaBasildi(tuslar, islem => !islem.SahibineUygulanir);
+        => _menu.TusaBasildi(tuslar, islem => islem.Hedef != IslemHedefi.Sahip);
 
     private static SecimBaglami BosSecim()
         => new([], null, AramaKipinde: false, Kok: null, CopKlasoru: null);

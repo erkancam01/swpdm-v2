@@ -87,6 +87,26 @@ internal sealed class SuzgecSeridi : FlowLayoutPanel
     }
 
     /// <summary>
+    /// SUZGECI KALDIRIR ("Tümü"ye doner). Doner: gercekten bir sey degisti mi.
+    ///
+    /// NEDEN BURADA (CLAUDE.md 1b): hangi dugmenin BASILI gorundugu bu
+    /// dosyanin isi. Agac doldurucusundan dogrudan "TurSuzgeci = null"
+    /// yazmak agaci suzgecsiz gosterirdi ama seritte "Montaj" BASILI
+    /// KALIRDI - ekranda duran bir yalan (CLAUDE.md 3), ustelik ayni
+    /// dugmeye basmak da bir sey yapmazdi (Sec ayni dugmede erken doner).
+    /// </summary>
+    internal bool Sifirla()
+    {
+        if (SeciliTur is null || _dugmeler.Count == 0)
+        {
+            return false;
+        }
+
+        Sec(_dugmeler[0]);   // ilk dugme "Tümü"
+        return true;
+    }
+
+    /// <summary>
     /// SUZGEC KISAYOLU (Ctrl+Shift+F): siradaki suzgece gecer, sonunda
     /// "Tümü"ye doner. Doner: tus kullanildi mi.
     ///

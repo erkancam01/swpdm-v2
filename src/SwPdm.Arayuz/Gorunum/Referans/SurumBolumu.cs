@@ -124,10 +124,12 @@ internal sealed class SurumBolumu
             return "Bu satırda açılacak bir versiyon yok.";
         }
 
-        return KlasorTarayici.DosyayiOku(arsivYolu) is DosyaOgesi dosya
-            ? DosyaAcici.Ac(sahip, dosya)
-                + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
-            : "Arşiv kopyası okunamadı: " + arsivYolu;
+        // Acma kalibi TEK KOPYA (CLAUDE.md 8); buraya yalnizca versiyona
+        // ozel cumle ekleniyor.
+        string cumle = DosyaAcici.YoluAc(sahip, arsivYolu);
+        return cumle.EndsWith("açılıyor…", StringComparison.Ordinal)
+            ? cumle + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
+            : cumle;
     }
 
     /// <summary>Cizilen siradaki versiyon kaydi; sira bir versiyon satiri degilse null.</summary>

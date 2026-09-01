@@ -16,6 +16,24 @@ namespace SwPdm.Arayuz.Gorunum;
 internal static class DosyaAcici
 {
     /// <summary>
+    /// YOLDAN acar: once diskten okur, sonra <see cref="Ac"/>. Ayni uc satir
+    /// once SurumBolumu'nde, sonra referans panelinde gerekti - ucuncusunu
+    /// yazmamak icin buraya alindi (CLAUDE.md 8).
+    /// </summary>
+    /// <returns>Durum cubuguna yazilacak cumle; yol okunamazsa SEBEBI.</returns>
+    internal static string YoluAc(IWin32Window sahip, string? yol)
+    {
+        if (yol is null)
+        {
+            return "Bu satırda açılacak bir dosya yok.";
+        }
+
+        return KlasorTarayici.DosyayiOku(yol) is DosyaOgesi dosya
+            ? Ac(sahip, dosya)
+            : "Dosya okunamadı: " + yol;
+    }
+
+    /// <summary>
     /// Dosyayi Windows'un varsayilan uygulamasiyla acar - Gezgin'de cift
     /// tiklamakla ayni.
     ///

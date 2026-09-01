@@ -1,3 +1,76 @@
+BU SURUMDE - DORT ISTEK (ikisi GERCEK HATAYDI)
+
+  Senin dort istegin (31.08.2026, iki ekran goruntusuyle):
+
+  1) "SAG TIK AC DIYE KISAYOL EKLE"
+     Menuye "Ac" geldi, en ustte. Dosyayi Windows'un varsayilan
+     uygulamasiyla acar - cift tikla ayni is. Yetenek zaten vardi ama
+     MENUDE YOKTU; menuye bakan biri icin var olmayan bir ozellikti.
+     Kilitli klasorde de calisir: kilit DEGISTIRMEYI engeller, bakmayi
+     degil.
+
+  2) "ONIZLEME ALANINDAKI DOSYAYA CIFT TIKLAYINCA SOLIDWORKS'TE ACSIN,
+      DOSYA AGACINDA O DOSYAYA GITMESINE GEREK YOK"
+     Panelde CIFT TIK artik ACIYOR, agactaki secim yerinde kaliyor.
+     "Git" kaybolmadi, ENTER'a gecti - iki yetenek de duruyor, yalnizca
+     yer degistirdi. VERSIYONLAR sekmesi zaten cift tikta aciyordu;
+     panelin tamami artik tutarli.
+
+  3) "ONIZLEME EKRANINDA DOSYAYA SAG TIKLAYIP REVIZYON OLUSTUR DEDIGIMDE
+      SECTIGIM PARCAYA REVIZYON OLUSTURSUN"
+
+     *** BU BIR HATAYDI VE SENDE VERI URETMIS OLABILIR - OKU ***
+
+     Versiyon, panelde hangi satira sag tiklarsan tikla AGACTA SECILI
+     dosyaya aciliyordu. Senin ekran goruntunde de goruluyor: satirda
+     "ITALYAN KOL GOVDESI KAPAMA PARCASI" seciliyken kutu "PENCERE KOLU -
+     ITALYAN BUYUK GOVDE.SLDASM ve kullandigi 33 dosya" diyordu.
+
+     YANI: bugune kadar panelden aldigin versiyonlar YANLIS DOSYAYA
+     gitmis olabilir. ".SwPdmSurum" altinda beklemedigin bir yuva
+     (ozellikle bir MONTAJ adiyla) gorursen sebebi budur; icindekiler
+     bozuk degil, yalnizca YANLIS DOSYANIN versiyonu. Silmek istersen
+     o klasoru elle silebilirsin - uygulama onu tekrar uretmez.
+
+     DUZELDI: versiyon artik SATIRIN dosyasina aciliyor. VERSIYONLAR
+     sekmesinde satir bir arsiv kopyasi oldugu icin oradaki Ctrl+Shift+U
+     yine sahibe yeni versiyon acar (bugun calisan sey bozulmadi).
+
+  4) "MONTAJ FILTRESI ACIKKEN MONTAJIN ICINDEKILER BOLUMUNDEKI PARCAYA
+      CIFT TIKLADIGIMDA EN ALTTA DOSYA BULUNAMADI DIYOR"
+
+     *** BU DA HATAYDI - ustelik YANLIS SEBEP yaziyordu ***
+
+     Dosya duruyordu; tur suzgeci acik oldugu icin agacta O SATIR YOKTU.
+     Uygulama ise "acik kokun disinda olabilir" diyordu - yani dogru
+     olmayan bir sebep. Yanlis sebep, sebep gostermemekten kotudur.
+
+     DUZELDI: Enter ile bir satira gidilirken aranan dosya suzgecin
+     disindaysa SUZGEC KALDIRILIR, dosyaya gidilir ve durum cubugunda
+     "Tur suzgeci kaldirildi - aranan dosya suzgecin disindaydi." yazar.
+     Suzgec kapaliyken hala bulunamiyorsa eski (dogru) mesaj kalir.
+
+  KAPI UC YENI SEY OLCUYOR (calistirma kapisi artik 24 olcum):
+    - panelde Ctrl+Shift+U SATIRIN dosyasina versiyon aciyor mu (DISKTEN
+      dogrulaniyor: yuvanin uzantisi .SLDPRT mi .SLDASM mi)
+    - panelde cift tik agactaki secimi artik OYNATMIYOR mu
+    - suzgecin GIZLEDIGI dosyaya panelden gidilebiliyor mu (agac kisaliyor,
+      Enter'dan sonra tabana donuyor)
+
+  KAPI BIR HATA DA YAKALADI (senin gormedigin): "Ac" isleminin kisayolu
+  once Keys.Enter yazilmisti; tek basina Enter gecerli bir menu kisayolu
+  DEGIL ve uygulama HIC ACILMADI. Derleme "0 uyari 0 hata" diyordu.
+  Duzeltildi: tus menude yalnizca YAZIYOR, kaydedilmiyor (Enter'i zaten
+  agac ve panel kendi isliyor).
+
+  OLCULEMEYEN (durustce): "SOLIDWORKS'te gercekten acti mi" burada
+  olculemez - bu makinede ne SOLIDWORKS var ne de .SLDPRT icin kayitli
+  bir uygulama. Olculen sey: cift tikin artik agaci OYNATMADIGI ve
+  uygulamanin cokmedigi. Gercek acilisi sen goreceksin.
+
+  OLCULDU: bes kapi TEMIZ · calistirma 24/24 · 369 test gecti,
+  5 atlandi (Windows'a ozel).
+
 BU SURUMDE - KLASOR DUZENI (SENDE DENENECEK YENI BIR SEY YOK)
 
   Senin istegin: "dosya gezgini, versiyon kontrolu ve coklu kullaniciyi ayri

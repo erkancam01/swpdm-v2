@@ -50,10 +50,11 @@ olmayan hiçbir şey buraya yazılmadı.
 
 ---
 
-## 4. Sağ tık menüsü — 15 işlem
+## 4. Sağ tık menüsü — 16 işlem
 
 | İşlem | Kısayol | Ne olur | Ne zaman gri kalır |
 |---|---|---|---|
+| **Aç** | `Enter` | Dosyayı Windows'un varsayılan uygulamasıyla açar (çift tıkla aynı iş). Kilitli klasörde de çalışır: kilit **değiştirmeyi** engeller, bakmayı değil | Seçim tek dosya değilken · klasörde (sebep yazar: dalı `Enter`/çift tık açar) |
 | **Yeni klasör** | `Ctrl+Shift+N` | **Adı sorar** (çakışmayan bir ad dolu gelir), sonra klasörü açar ve seçili gelir | Arama sonucundayken · kök yokken |
 | **Yeniden adlandır** | `F2` | Ad kutusu açar; SOLIDWORKS dosyasıysa onu kullananları da onarır. **Klasörde de:** içindeki dosyaları dışarıdan kullanan belgeler onarılır | Seçim yokken · birden çok öğe seçiliyken |
 | **Sil** | `Delete` | Seçilenleri **çöp kutusuna taşır** (kalıcı silmez) | Seçim yokken · kök yokken |
@@ -167,11 +168,13 @@ liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cev
 - **Kırık referanslar İÇİNDEKİLER'de görünmez** → hepsi KIRIK sekmesinde ve sayısı orada yazıyor; ayrıca `Ctrl+Shift+D` raporlarında da duruyorlar.
 - **İpucu (fareyle üstüne gel)** → çözülen satırda dosyanın **tam yolu**, çözülemeyende dosyanın **içinde yazan yol**.
 - **Tek tık (ya da ok tuşuyla gezinme)** → soldaki önizleme **o satırdaki dosyaya** döner (üstteki başlık da o dosyanın adını yazar); ağaçtaki seçim BOZULMAZ. Üstteki `◂` adına tıklayınca seçili dosyaya dönülür.
-- **Çift tık / Enter** → o dosyaya gider, ağaçta açıp seçer; gidilemiyorsa sebebi yazar.
+- **Çift tık** → dosyayı **açar** (SOLIDWORKS/varsayılan uygulama). Ağaçtaki seçim yerinde kalır — o dosyaya gitmez.
+- **Enter** → o dosyaya **gider**, ağaçta açıp seçer; gidilemiyorsa sebebi yazar. Aranan dosya **tür süzgecinin dışında** kaldıysa süzgeç kaldırılır ve bu durum çubuğunda yazar — eskiden "kökün dışında olabilir" diyordu, **yanlış sebep**.
 - **Ctrl+C (panel odaktayken)** → satırın yolunu panoya kopyalar ve ne kopyalandığını yazar.
 - **SAĞ TIK** → ağaçtakinin **aynı menüsü**, ama işlem **o satırdaki dosyaya** uygulanır; ağaçtaki seçim ve okunan liste yerinde kalır. Sağ tık önce o satırı seçer ve menünün en üstünde **hedefin adı** yazar — hangi dosyaya uygulanacağı görünmeden hiçbir işlem çalışmaz.
 - **Kısayollar da aynı hedefe gider** (panel odaktayken): `F2` · `Delete` · `Ctrl+X` · `Ctrl+V` … satırın dosyasına uygulanır.
 - **Menüde "Kopyala" yanında kısayol yazmaz** → `Ctrl+C` bu panelde "yolu kopyala"dır; iki ayrı iş, ikisi de duruyor.
+- **`Ctrl+Shift+U` (panel odaktayken)** → versiyon **satırın dosyasına** açılır, ağaçta seçili olana değil. (31.08.2026'ya kadar sahibe açılıyordu — yanlış dosya versiyonlanıyordu.) VERSİYONLAR sekmesinde satır bir arşiv kopyası olduğu için oradaki `Ctrl+Shift+U` yine **sahibe** yeni versiyon açar.
 - **Ctrl+Shift+L (panel odaktayken)** → **satıra değil**, panelin gösterdiği (ağaçta seçili) dosyaya uygulanır: düzeltilecek yazı onun içinde durur. Çözülemeyen bir satıra bakarken de çalışması bu yüzden.
 - **Satırda dosya yoksa** (açıklama satırı, "BULUNAMADI", kök dışında kalan yol) → menü yine açılır ama dosya işlemleri **gri durur ve sebebini söyler**; sessizce başka bir dosyaya uygulanmaz. KIRIK bölümündeki `yol BAYAT` satırlarının hedefi ise **gerçek dosyadır**, işlem ona gider.
 - **Boş bölüm** → sebebini yazar ("Başka dosya kullanmıyor." / "Hepsi kırık — KIRIK bölümünde." / "Bunu kullanan dosya yok." / "Kırık referans yok." / "Bu kök henüz taranmadı."). Liste **doluyken** ayrıca uyarı satırı çıkmaz.

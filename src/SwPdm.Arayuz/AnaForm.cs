@@ -144,23 +144,25 @@ internal sealed partial class AnaForm : Form
                 e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
         };
 
-        // --- referans listesinde cift tik: o dosyaya GIT
-        // PDM'de asil ise yarayan sey bu: "bu parcayi Montaj3 kullaniyor"
-        // yazisini gormek yetmez, oraya GIDEBILMEK gerekir.
+        // --- referans listesinde cift tik: dosyayi AC
+        //
+        // ERKAN, 31.08.2026: "önizleme alanındaki dosyaya çift tıklayınca
+        // SOLIDWORKS'te açsın, dosya ağacında o dosyaya gitmesine gerek yok."
+        // ONCEDEN buradan agaca GIDILIYORDU; artik aciyor.
+        //
+        // "GIT" KAYBOLMADI, ENTER'A GECTI (ReferansPaneliTuslari) - iki
+        // yetenek de duruyor, yalnizca yer degistirdi. VERSIYONLAR sekmesi
+        // zaten cift tikta aciyordu; panelin tamami artik tutarli.
         _referanslar.MouseDoubleClick += (_, e) =>
         {
-            // VERSIYONLAR sekmesinde cift tik = arsiv kopyasini AC (Erkan,
-            // 31.08.2026); satirin "gidecegi" bir agac dugumu yok, arsiv
-            // gizli. Karar SurumBolumu'nde, burasi yalnizca dallaniyor.
-            if (_referansSeridi.SeciliBolum == ReferansBolumu.Surumler)
-            {
-                _durum.Bilgi(SurumBolumu.Ac(this, _referanslar.TiklananHedef(e.Location)));
-                return;
-            }
+            string? hedef = _referanslar.TiklananHedef(e.Location);
 
-            ReferansaGit(_referanslar.TiklananHedef(e.Location));
+            // Versiyon satirinin ek cumlesi (salt-okunur arsiv) SurumBolumu'nde.
+            _durum.Bilgi(
+                _referansSeridi.SeciliBolum == ReferansBolumu.Surumler
+                    ? SurumBolumu.Ac(this, hedef)
+                    : DosyaAcici.YoluAc(this, hedef));
         };
-
 
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
@@ -437,14 +439,36 @@ internal sealed partial class AnaForm : Form
             return;
         }
 
+        // SUZGEC TUZAGI (Erkan, 31.08.2026: "montaj filtresi açıkken montajın
+        // içindekiler bölümündeki parçaya çift tıkladığımda dosya bulunamadı
+        // diyor"): dosya kokun ICINDE, yalnizca tur suzgeci onu gizlemis.
+        // Eski hal iki kez yaniltiyordu - gidilemiyordu VE sebep olarak
+        // "açık kökün dışında olabilir" yaziliyordu; YANLIS SEBEP, sebep
+        // gostermemekten kotudur (CLAUDE.md 3).
+        //
+        // Iki ozelligin BILESIMI, o yuzden burada: suzgeci kaldirmak
+        // seridin isi (SuzgecSeridi.Sifirla), gitmek doldurucunun.
+        string? not = null;
         if (!_doldurucu.YoluAcVeSec(hedef))
         {
-            _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
-            return;
+            if (!_suzgecler.Sifirla() || !_doldurucu.YoluAcVeSec(hedef))
+            {
+                _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
+                return;
+            }
+
+            not = "Tür süzgeci kaldırıldı — aranan dosya süzgecin dışındaydı.";
         }
 
         SecimiGoster();
         _agac.Focus();
+
+        // SecimiGoster'DEN SONRA: o da durum cubuguna yaziyor ve notu
+        // ezerdi. Gidildi ama BIR SEY DEGISTI ise son soz bu olmali.
+        if (not is not null)
+        {
+            _durum.Bilgi(not);
+        }
     }
 
     /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>

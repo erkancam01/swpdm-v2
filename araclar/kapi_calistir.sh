@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=22
+OLCUM_TOPLAM=24
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -89,6 +89,7 @@ ACIK_DOSYA="#FFE3C8"                            # Renkler.AcikDosyaZemin
 ETKI_ZEMIN="#FFF3D9"                            # Renkler.EtkiZemin (donus kutusu)
 KILIT_ZEMIN="#DDDDE6"                           # Renkler.KilitliKlasorZemin
 KILIT_AGAC_SATIRI=1                             # kilit kosusunda "Bitmis" klasorunun satiri
+SATIR_MONTAJ_SATIRI=2                           # satir-versiyon kosusunda Montaj1.SLDASM (kok · "Yeni klasör" · Montaj1)
 # ==========================================================================
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
@@ -907,6 +908,48 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
     click 1 > /dev/null 2>&1
   sleep 3
 
+  # TABAN GORUNTUSU BURADAN ALINIYOR, AGACA TIKLADIKTAN HEMEN SONRA DEGIL -
+  # OLCULDU (31.08.2026, iki kosu HAYIR dedi ve IKISI DE OLCUMUN kusuruydu;
+  # sebep ekran goruntusunden okundu, tahminle degil):
+  #   1. Fare agacin uzerindeyken satirin IPUCU aciliyor ve kirpmanin icine
+  #      giriyordu.
+  #   2. Agac odagi kaybedince secim SOLUK renkle ciziliyor - yani "secim
+  #      degisti" degil "odak degisti".
+  # Iki goruntu de PANEL odaktayken ve fare PANELDEYKEN aliniyor; geriye
+  # yalnizca olculmek istenen sey kaliyor: secili SATIR degisti mi.
+  import -window root "$CALISMA/panel-agac-once.png" > /dev/null 2>&1
+  IZ_AGAC_ONCE="$(kirpma_izi "$CALISMA/panel-agac-once.png" "$AGAC_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  # CIFT TIK ARTIK ACAR, AGACA GITMEZ (Erkan, 31.08.2026: "önizleme
+  # alanındaki dosyaya çift tıklayınca SOLIDWORKS'te açsın, dosya ağacında
+  # o dosyaya gitmesine gerek yok"). Olculebilen sey ACMANIN KENDISI DEGIL -
+  # Wine'da .SLDPRT/.SLDDRW icin kayitli uygulama yok - agactaki secimin
+  # YERINDE KALMASI: eskiden cift tik agaci o dosyaya goturuyordu.
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+    click --repeat 2 --delay 80 1 > /dev/null 2>&1
+  sleep 8
+  # "Dosya açılamadı" KUTUSU CIKAR ve BEKLENMELI - OLCULDU (31.08.2026, ilk
+  # kosu HAYIR dedi): Wine'da .SLDDRW icin kayitli uygulama yok, kutu
+  # geliyor ama SHELL CAGRISI YAVAS; 5 saniye sonra atilan Escape kutudan
+  # ONCE geliyordu ve kutu ekran goruntusunde agacin uzerinde duruyordu.
+  # Sebep tahminle degil EKRAN GORUNTUSUNDEN okundu (panel-agac-cift.png).
+  #
+  # Escape kutuyu kapatir, panelde hicbir sey yapmaz. (Return KULLANILMAZ -
+  # panelde Enter "git" demek ve tam da olculen seyi bozardi.) Iki kez
+  # atiliyor: ikincisi bossa zararsiz.
+  xdotool key --clearmodifiers Escape > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers Escape > /dev/null 2>&1
+  sleep 3
+  import -window root "$CALISMA/panel-agac-cift.png" > /dev/null 2>&1
+  IZ_AGAC_CIFT="$(kirpma_izi "$CALISMA/panel-agac-cift.png" "$AGAC_KIRP" "$PENCERE_X" "$PENCERE_Y")"
+
+  # Kutu odagi almis olabilir; satira yeniden tiklanip F2 zinciri eskisi
+  # gibi surdurulur.
+  xdotool mousemove "$(( PENCERE_X + REF_SATIR_X ))" "$(( PENCERE_Y + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+
   xdotool key F2 > /dev/null 2>&1
   sleep 3
   xdotool type --delay 60 "PanelAdi" > /dev/null 2>&1
@@ -929,8 +972,15 @@ if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
   YENI_DRW="$(find "$ORNEK" -maxdepth 1 -iname "PanelAdi*.SLDDRW" | wc -l)"
   YENI_PRT="$(find "$ORNEK" -maxdepth 1 -iname "PanelAdi*.SLDPRT" | wc -l)"
 
-  if [ "$YENI_DRW" -eq 1 ] && [ "$YENI_PRT" -eq 0 ]; then
-    olcum "panelden islem ........" "EVET (satirin dosyasi adlandi)"
+  # CIFT TIK ONCE SORULUYOR: eski davranista (agaca git) F2 zinciri de
+  # kayiyor ve olcum "hicbir sey adlanmadi" diyordu - dogru sonuc, YANLIS
+  # SEBEP. Yanlis sebep, sebep gostermemekten kotudur (CLAUDE.md 3).
+  if [ "$IZ_AGAC_CIFT" != "$IZ_AGAC_ONCE" ]; then
+    olcum "panelden islem ........" \
+      "HAYIR (cift tik AGACTAKI secimi degistirdi: ${IZ_AGAC_ONCE:0:6} -> ${IZ_AGAC_CIFT:0:6})"
+    SORUN=1
+  elif [ "$YENI_DRW" -eq 1 ] && [ "$YENI_PRT" -eq 0 ]; then
+    olcum "panelden islem ........" "EVET (satirin dosyasi adlandi, cift tik agaci oynatmadi)"
   elif [ "$YENI_PRT" -gt 0 ]; then
     olcum "panelden islem ........" "HAYIR (AGACTAKI dosya adlandi - yanlis hedef)"
     SORUN=1
@@ -1374,6 +1424,153 @@ if [ -n "$K4" ]; then
   fi
 else
   olcum "klasor kilidi ........." "HAYIR (kilit kosusunda pencere dogmadi)"
+  SORUN=1
+fi
+
+# 23) PANELDEN VERSIYON: SATIRIN dosyasina acilmali (agactaki sahibe DEGIL)
+#
+# NEDEN VAR (Erkan, 31.08.2026, ekran goruntusuyle): panelde bir PARCA
+# satiri seciliyken "Yeni versiyon olustur" AGACTA SECILI MONTAJA versiyon
+# aciyordu - kutu "PENCERE KOLU ... .SLDASM ve kullandigi 33 dosya" diyordu.
+# Kullanici parcayi versiyonladigini sanip calismaya devam eder ve bunu
+# ancak O VERSIYONA DONMEK isteyince anlar; o an is islemistir (CLAUDE.md 3).
+#
+# 16. olcumun kardesi ama AYNISI DEGIL: orada hedef ZATEN satirdi (F2), bu
+# islem "Sahip" diyordu. Yani 16 TEMIZ iken bu hata yasiyordu - iki olcum
+# de gerekli.
+#
+# NEDEN AYRI KOSU: yukaridaki olcumler ornek klasordeki dosyalari yeniden
+# adlandirip versiyonluyor; burada arsivin HANGI ADA acildigi olculuyor ve
+# temiz bir klasor sart. Kendi klasoru olcumu oteki olcumlerin sirasindan
+# da bagimsiz kiliyor (22. olcumdeki gerekcenin aynisi).
+#
+# OLCUM EKRANDAN DEGIL DISKTEN: .SwPdmSurum altinda acilan yuvanin UZANTISI
+# hangi dosyanin versiyonlandigini tek basina soyluyor - .SLDPRT satirin,
+# .SLDASM sahibin.
+SATIR_ORNEK="$CALISMA/satir-surum/SATIR"
+rm -rf "$CALISMA/satir-surum"
+mkdir -p "$SATIR_ORNEK"
+cp -r "$KOK/araclar/ornek-veri/tertemiz/." "$SATIR_ORNEK/"
+SATIR_WIN="Z:$(echo "$SATIR_ORNEK" | tr '/' '\\')"
+
+SATIR_LOG="$CALISMA/uygulama-satir.log"
+: > "$SATIR_LOG"
+kill "$UYG_PID" > /dev/null 2>&1
+sleep 2
+
+# 21. olcum 3B ayarini ACIK birakti; bu kosu varsayilanlarla acilmali.
+[ -n "${AYAR_KLASORU:-}" ] && [ -d "$AYAR_KLASORU/SwPdm" ] && : > "$AYAR_KLASORU/SwPdm/ayarlar.txt"
+
+( cd "$YAYIN" && "$WINE" "./$AD.exe" --klasor "$SATIR_WIN" >> "$SATIR_LOG" 2>&1 ) &
+UYG_PID=$!
+sleep 18
+
+P5="$(xwininfo -root -children 2>/dev/null)"
+K5="$(echo "$P5" | grep -i "(\"${AD,,}.exe\"" \
+      | grep -oE '[0-9]+x[0-9]+\+[-0-9]+\+[-0-9]+' \
+      | awk -F'[x+]' '$1 >= 400 && $2 >= 400 {print $3" "$4; exit}')"
+
+if [ -n "$K5" ]; then
+  # shellcheck disable=SC2086
+  set -- $K5
+  SATX="$1"
+  SATY="$2"
+
+  # Panel ICINDEKILER'i ancak indeks dolunca gosterir ("Bu kök henüz
+  # taranmadı." - CLAUDE.md 3: bos liste "yok" demek degildir).
+  xdotool key --clearmodifiers ctrl+shift+r > /dev/null 2>&1
+  sleep 8
+
+  xdotool mousemove "$(( SATX + AGAC_TIK_X ))" \
+    "$(( SATY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * SATIR_MONTAJ_SATIRI ))" \
+    click 1 > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/satir-surum-agac.png" > /dev/null 2>&1
+
+  # Varsayilan bolum ICINDEKILER; ilk satir montajin bir PARCASI.
+  # (KIRIK olan satirlar bu bolumde hic gorunmuyor - yani buradaki her
+  # satir gercek bir dosyaya cozuluyor.)
+  xdotool mousemove "$(( SATX + REF_SATIR_X ))" "$(( SATY + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+
+  xdotool key --clearmodifiers ctrl+shift+u > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/satir-surum-kutu.png" > /dev/null 2>&1
+  xdotool key Return > /dev/null 2>&1          # not bos gecilir, Enter = Tamam
+  sleep 6
+  import -window root "$CALISMA/satir-surum-sonra.png" > /dev/null 2>&1
+
+  # Yuva adi dosyanin adidir; UZANTISINA bakmak encoding'den de bagimsiz
+  # (Wine + ASCII yerel ayar Turkce adi bozuyor - CLAUDE.md 11).
+  SATIR_YUVA="$(find "$SATIR_ORNEK" -type d -path "*/.SwPdmSurum/*" -name "*.SLDPRT" | head -1)"
+  SAHIP_YUVA="$(find "$SATIR_ORNEK" -type d -path "*/.SwPdmSurum/*" -name "*.SLDASM" | head -1)"
+
+  if [ -n "$SAHIP_YUVA" ]; then
+    olcum "panelden versiyon ...." "HAYIR (versiyon AGACTAKI montaja acildi - yanlis hedef)"
+    SORUN=1
+  elif [ -z "$SATIR_YUVA" ]; then
+    olcum "panelden versiyon ...." "HAYIR (hicbir arsiv olusmadi)"
+    SORUN=1
+  elif [ ! -d "$SATIR_YUVA/v0" ]; then
+    olcum "panelden versiyon ...." "HAYIR (yuva acildi ama v0 yok)"
+    SORUN=1
+  else
+    olcum "panelden versiyon ...." "EVET (satirin parcasina acildi: $(basename "$SATIR_YUVA"))"
+  fi
+
+  # 24) SUZGEC TUZAGI: suzgecin GIZLEDIGI dosyaya panelden gidilebilmeli
+  #
+  # NEDEN VAR (Erkan, 31.08.2026): "montaj filtresi acikken montajin
+  # icindekiler bolumundeki parcaya cift tikladigimda en altta dosya
+  # bulunamadi diyor." Dosya kokun ICINDE; yalnizca tur suzgeci onu agactan
+  # gizlemis. Eski hal IKI KEZ yaniltiyordu: gidilemiyordu VE sebep olarak
+  # "acik kokun disinda olabilir" yaziliyordu - YANLIS SEBEP, sebep
+  # gostermemekten kotudur (CLAUDE.md 3).
+  #
+  # OLCUM SAYIYLA: suzgec konunca agac KISALMALI, panelden Enter'la gidince
+  # tabana DONMELI. Iki sart birden gerekli - yalnizca "degisti" demek,
+  # suzgec hic calismasa da saglanabilirdi.
+  import -window root "$CALISMA/suzgec-taban.png" > /dev/null 2>&1
+  SUZ_TABAN="$(agac_satir_say "$CALISMA/suzgec-taban.png" "$SATX" "$SATY")"
+
+  xdotool mousemove "$(( SATX + SUZGEC_PARCA_X ))" "$(( SATY + SUZGEC_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 4
+  import -window root "$CALISMA/suzgec-acik.png" > /dev/null 2>&1
+  SUZ_ACIK="$(agac_satir_say "$CALISMA/suzgec-acik.png" "$SATX" "$SATY")"
+
+  # Suzgecli agacta ilk parca satiri (kok · "Yeni klasör" · Parça1.SLDPRT).
+  xdotool mousemove "$(( SATX + AGAC_TIK_X ))" \
+    "$(( SATY + AGAC_ILK_SATIR + AGAC_SATIR_YUKSEKLIGI * SATIR_MONTAJ_SATIRI ))" \
+    click 1 > /dev/null 2>&1
+  sleep 4
+  # ICINDEKILER -> KULLANILDIGI YERLER: satir, parcayi kullanan MONTAJ -
+  # yani suzgecin GIZLEDIGI dosya.
+  xdotool key --clearmodifiers ctrl+shift+e > /dev/null 2>&1
+  sleep 3
+  xdotool mousemove "$(( SATX + REF_SATIR_X ))" "$(( SATY + REF_ILK_SATIR_Y ))" \
+    click 1 > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers Return > /dev/null 2>&1
+  sleep 5
+  import -window root "$CALISMA/suzgec-gidildi.png" > /dev/null 2>&1
+  SUZ_SONRA="$(agac_satir_say "$CALISMA/suzgec-gidildi.png" "$SATX" "$SATY")"
+
+  if [ "${SUZ_ACIK:-0}" -ge "${SUZ_TABAN:-0}" ]; then
+    olcum "suzgec tuzagi ........." "OLCULEMEDI (suzgec suzmedi: $SUZ_TABAN -> $SUZ_ACIK)"
+    SORUN=1
+  elif [ "${SUZ_SONRA:-0}" -ne "${SUZ_TABAN:-0}" ]; then
+    olcum "suzgec tuzagi ........." \
+      "HAYIR (suzgecin gizledigi dosyaya gidilemedi: $SUZ_TABAN -> $SUZ_ACIK -> $SUZ_SONRA)"
+    SORUN=1
+  else
+    olcum "suzgec tuzagi ........." "EVET (suzgec kalkti ve gidildi: $SUZ_TABAN -> $SUZ_ACIK -> $SUZ_SONRA)"
+  fi
+else
+  olcum "panelden versiyon ...." "HAYIR (satir-versiyon kosusunda pencere dogmadi)"
+  SORUN=1
+  olcum "suzgec tuzagi ........." "OLCULEMEDI (pencere yok)"
   SORUN=1
 fi
 

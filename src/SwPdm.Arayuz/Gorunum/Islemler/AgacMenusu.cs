@@ -52,6 +52,14 @@ internal sealed class AgacMenusu
                 ShortcutKeys = islem.Kisayol,
                 ShowShortcutKeys = islem.Kisayol != Keys.None,
             };
+
+            // KAYDEDILMEYEN AMA YAZILAN TUS (bkz. IAgacIslemi.KisayolYazisi):
+            // Enter gibi tuslar ShortcutKeys'e yazilamaz - orasi patlar.
+            if (islem.KisayolYazisi is { Length: > 0 } kisayolYazisi)
+            {
+                oge.ShortcutKeyDisplayString = kisayolYazisi;
+                oge.ShowShortcutKeys = true;
+            }
             oge.Click += (_, _) => Calistir(islem);
 
             // GRI OGENIN SEBEBI DURUM CUBUGUNA DA DUSER. Once sebep yalnizca
@@ -94,7 +102,7 @@ internal sealed class AgacMenusu
     internal void ReferansSurucusunu(ReferansSurucusu surucu) => _referanslar = surucu;
 
     /// <summary>
-    /// <see cref="IAgacIslemi.SahibineUygulanir"/> diyen islemlerin okuyacagi
+    /// <see cref="IslemHedefi.Sahip"/> diyen islemlerin okuyacagi
     /// AYRI secim. Kurulmazsa o islemler de olagan secimi okur - yani agacta
     /// hicbir sey degismez.
     /// </summary>
@@ -230,13 +238,26 @@ internal sealed class AgacMenusu
 
     /// <summary>
     /// Bu ISLEM hangi secim uzerinde calisir. Kararin kendisi islemin
-    /// dosyasinda (<see cref="IAgacIslemi.SahibineUygulanir"/>); burada
+    /// dosyasinda (<see cref="IAgacIslemi.Hedef"/>); burada
     /// yalnizca uygulaniyor.
     /// </summary>
     private SecimBaglami Secimi(IAgacIslemi islem, SecimBaglami olagan)
-        => islem.SahibineUygulanir && _sahipKaynagi is not null
-            ? _sahipKaynagi()
-            : olagan;
+    {
+        if (_sahipKaynagi is null)
+        {
+            return olagan;   // agacin menusu: sahip ile olagan zaten ayni
+        }
+
+        return islem.Hedef switch
+        {
+            IslemHedefi.Sahip => _sahipKaynagi(),
+
+            // SATIR VARSA SATIR: "olagan" panelde tiklanan satirdir ve
+            // cozulemeyen satirda BOS gelir - o zaman sahibe dusuluyor.
+            IslemHedefi.SatirYoksaSahip when olagan.Ogeler.Count == 0 => _sahipKaynagi(),
+            _ => olagan,
+        };
+    }
 
     private void Calistir(IAgacIslemi islem)
     {

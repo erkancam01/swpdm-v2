@@ -193,6 +193,49 @@ internal interface IIlerlemeYuzeyi
 }
 
 /// <summary>
+/// REFERANS PANELINDEN calistirilan bir islem KIME uygulanir.
+///
+/// UC HAL VAR ve ucu de gercek bir ihtiyactan cikti - IKI BOOL degil ENUM,
+/// cunku iki bool dort kombinasyon uretirdi ve ikisi anlamsiz olurdu
+/// (CLAUDE.md 1b).
+/// </summary>
+internal enum IslemHedefi
+{
+    /// <summary>
+    /// TIKLANAN SATIR. Varsayilan: paneldeki satirlar da gercek dosyalar
+    /// (Erkan, 30.08.2026: "sonuçta ordakilerde parça"). Satir bir dosyaya
+    /// cozulemiyorsa islem GRI durur ve sebebini soyler - "sessizce
+    /// agactakine uygula" bu uygulamada saglam dosya sildirir (CLAUDE.md 3).
+    /// </summary>
+    Satir,
+
+    /// <summary>
+    /// SATIRIN SAHIBI (panelin o an gosterdigi, agacta secili dosya).
+    /// Tek kullanani <see cref="ElleBaglaIslemi"/>: onun isi satirin YAZILI
+    /// yolunu duzeltmektir ve o yol sahibin ICINDE yazar. Hedefi satir
+    /// yapmak, ozelligi asil kullanildigi yerde (cozulememis "BULUNAMADI"
+    /// satirinda - orada satirin dosyasi yoktur) oldururdu.
+    /// </summary>
+    Sahip,
+
+    /// <summary>
+    /// SATIR VARSA SATIR, YOKSA SAHIP.
+    ///
+    /// NEDEN VAR - ERKAN'DA GORULEN HATA (31.08.2026): "önizleme ekranında
+    /// dosyaya sağ tıklayıp revizyon oluştur dediğimde SEÇTİĞİM PARÇAYA
+    /// revizyon oluştursun." <see cref="SurumOlusturIslemi"/> Sahip diyordu,
+    /// yani panelde bir parcaya sag tiklansa bile versiyon AGACTA SECILI
+    /// montaja aciliyordu. Kullanici yanlis dosyayi versiyonluyor ve bunu
+    /// ancak o versiyona donmek isteyince anliyordu (CLAUDE.md 3).
+    ///
+    /// Duz "Satir" de olmazdi: VERSIYONLAR sekmesindeki satir bir arsiv
+    /// kopyasidir, dosyaya cozulmez ve Ctrl+Shift+U orada GRI kalirdi -
+    /// bugun calisan bir sey bozulurdu (CLAUDE.md 1a).
+    /// </summary>
+    SatirYoksaSahip,
+}
+
+/// <summary>
 /// BIR AGAC ISLEMI. CLAUDE.md 1b: her islem KENDI dosyasinda yasar; menu
 /// listeden URETILIR. Bir islemi kaldirmak = dosyasini sil + AgacIslemleri
 /// listesinden bir satir cikar.
@@ -206,19 +249,28 @@ internal interface IAgacIslemi
     Keys Kisayol { get; }
 
     /// <summary>
-    /// REFERANS PANELINDEN calistirildiginda hedef, tiklanan SATIR mi yoksa
-    /// satirin SAHIBI mi (panelin o an gosterdigi, agacta secili dosya).
+    /// Menude kisayolun YERINE yazilacak metin. Bos ise <see cref="Kisayol"/>
+    /// yazilir.
     ///
-    /// Varsayilan SATIR: paneldeki satirlar da gercek dosyalar (Erkan,
-    /// 30.08.2026: "sonuçta ordakilerde parça"). Varsayilan govdesi oldugu
-    /// icin oteki islem dosyalari bu uye yuzunden DEGISMEZ (CLAUDE.md 1b).
+    /// NEDEN VAR - CALISTIRMA KAPISI YAKALADI (31.08.2026): "Aç" islemi
+    /// Kisayol olarak <see cref="Keys.Enter"/> diyordu; tek basina Enter
+    /// GECERLI BIR MENU KISAYOLU DEGIL ve ToolStripMenuItem.ShortcutKeys'e
+    /// yazilinca InvalidEnumArgumentException atiyor. Derleme "0 uyari 0
+    /// hata" diyordu, uygulama HIC ACILMIYORDU (CLAUDE.md 11'in kendisi).
     ///
-    /// true diyen tek islem <see cref="ElleBaglaIslemi"/>: onun isi satirin
-    /// YAZILI yolunu duzeltmektir ve o yol sahibin ICINDE yazar. Hedefi
-    /// satir yapmak, ozelligi asil kullanildigi yerde (cozulememis
-    /// "BULUNAMADI" satirinda - orada satirin dosyasi yoktur) oldururdu.
+    /// Tusu bu islem KAYDETMEZ: Enter'i agacta AgacTuslari, panelde
+    /// ReferansPaneliTuslari daha once yakaliyor. Burada yazilan yalnizca
+    /// ETIKET - kullanici tusu ogrenmeye devam ediyor (CLAUDE.md 3: menude
+    /// gorunmeyen ozellik yok sayilir).
     /// </summary>
-    bool SahibineUygulanir => false;
+    string KisayolYazisi => string.Empty;
+
+    /// <summary>
+    /// REFERANS PANELINDEN calistirildiginda islem KIME uygulanir.
+    /// Varsayilan <see cref="IslemHedefi.Satir"/>; varsayilan govdesi oldugu
+    /// icin oteki islem dosyalari bu uye yuzunden DEGISMEZ (CLAUDE.md 1b).
+    /// </summary>
+    IslemHedefi Hedef => IslemHedefi.Satir;
 
     /// <summary>
     /// Bu islem SECIMDEKI dosyalara/klasorlere YAZAR mi.

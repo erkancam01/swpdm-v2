@@ -8,8 +8,8 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 374 test · 369 geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma **22** ölçüm).
+> 369 test geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
+> (harita + boyut + derleme + test + çalıştırma **24** ölçüm).
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -45,6 +45,15 @@
 > cevabı: dönüş dosyanın kendi yoluna yazdığı için montajlar zaten dönülen
 > içeriği görüyor; eksik olan söylemekti. Kutu artık iki yönü de gösteriyor,
 > taranmamışsa sayı vermiyor.
+> 31.08.2026: **dört istek** — sağ tık **"Aç"** · panelde **çift tık AÇAR**
+> (git artık `Enter`) · **versiyon SATIRIN dosyasına** · tür süzgeci tuzağı.
+> Son ikisi **gerçek hataydı**: versiyon panelden alınınca ağaçtaki dosyaya
+> gidiyordu (sürüm notunda açıkça yazılı — Erkan'ın arşivinde yanlış yuva
+> olabilir), ve süzgeç açıkken panelden gidilemeyen dosya için **yanlış
+> sebep** yazılıyordu ("kökün dışında"). Kapı iki yeni ölçüm aldı (23, 24) ve
+> yolda üçüncü bir hatayı da yakaladı: `Keys.Enter` menü kısayolu olarak
+> kaydedilince uygulama **hiç açılmıyordu** (derleme temizdi) — ders
+> CLAUDE.md §6'da.
 > Erkan §1b düzen turundan sonra denedi (29.08.2026): *"her şey çalışıyor."*
 > Ctrl+Y, uzantı kilidi, yeni klasör adı sorma — hepsi onun makinesinde
 > doğrulandı.

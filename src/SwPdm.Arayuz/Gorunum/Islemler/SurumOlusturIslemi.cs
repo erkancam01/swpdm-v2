@@ -26,11 +26,15 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
 
     /// <inheritdoc/>
     /// <remarks>
-    /// ElleBagla kalibi: referans panelinde bir SATIRDA dururken bile
-    /// versiyonlanan, panelin gosterdigi (agacta secili) dosyadir - satir
-    /// (ornegin bir versiyon kaydi) dosya degildir.
+    /// ERKAN'DA GORULEN HATA (31.08.2026): burasi "Sahip" diyordu, yani
+    /// panelde bir PARCAYA sag tiklansa bile versiyon AGACTA SECILI montaja
+    /// aciliyordu - kullanici yanlis dosyayi versiyonluyor ve bunu ancak o
+    /// versiyona donmek isteyince anliyordu (CLAUDE.md 3).
+    ///
+    /// Duz "Satir" de olmaz: VERSIYONLAR sekmesindeki satir bir arsiv
+    /// kopyasidir, dosyaya cozulmez ve Ctrl+Shift+U orada GRI kalirdi.
     /// </remarks>
-    public bool SahibineUygulanir => true;
+    public IslemHedefi Hedef => IslemHedefi.SatirYoksaSahip;
 
     /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)

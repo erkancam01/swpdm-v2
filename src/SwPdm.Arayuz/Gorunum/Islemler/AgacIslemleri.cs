@@ -16,6 +16,8 @@ internal static class AgacIslemleri
     /// <summary>Menuye bu sirayla girer. null bir AYRAC demektir.</summary>
     internal static readonly IReadOnlyList<IAgacIslemi?> Tumu =
     [
+        new AcIslemi(),
+        null,
         new YeniKlasorIslemi(),
         new YenidenAdlandirIslemi(),
         new SilIslemi(),

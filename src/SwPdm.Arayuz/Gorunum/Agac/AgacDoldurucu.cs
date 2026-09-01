@@ -246,8 +246,14 @@ internal sealed partial class AgacDoldurucu
         }
 
         TreeNode? dugum = AgacDurumlari.DuguuBul(_agac, yol);
+
         if (dugum is null)
         {
+            // BULUNAMADI, "yok" DEMEK DEGILDIR: dosya kokun icinde olup
+            // TUR SUZGECI yuzunden agacta olmayabilir (Erkan, 31.08.2026:
+            // "montaj filtresi açıkken ... dosya bulunamadı diyor").
+            // Suzgeci kaldirmak bu dosyanin isi DEGIL - serit basili
+            // dugmeyi de degistirmeli; karar cagirana birakiliyor.
             return false;
         }
 
