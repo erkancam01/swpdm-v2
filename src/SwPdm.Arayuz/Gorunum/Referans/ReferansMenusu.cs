@@ -143,8 +143,16 @@ internal sealed class ReferansMenusu
         // eslesmesi kirilir ve versiyon "kayip" gorunur.
         if (ArsivdeMi(yol))
         {
-            return (Bos(sahip), "Arşiv kopyası — dosya işlemleri uygulanmaz; Enter: bu versiyona dön",
-                "Arşiv kopyası — dosya işlemleri uygulanmaz. Enter: bu versiyona dön.");
+            // TUSLAR ADIYLA YAZILIYOR - 01.09.2026 denetiminde bulundu:
+            // menude "Sil  Delete" ve "Yeniden adlandır  F2" yaziyor ama bu
+            // sekmede o tuslar BASKA IS yapiyor (Delete = versiyonu arsivden
+            // KALICI sil, F2 = notu duzenle). Etiketler gri ogelerin
+            // yanindaydi, yani ekranda duran bir yalandi (CLAUDE.md 3).
+            return (
+                Bos(sahip),
+                "Arşiv kopyası — Enter: bu versiyona dön · F2: not · Delete: versiyonu sil",
+                "Arşiv kopyası — dosya işlemleri uygulanmaz. "
+                + "Enter: bu versiyona dön · F2: notu düzelt · Delete: versiyonu sil.");
         }
 
         if (KlasorTarayici.DosyayiOku(yol) is not DosyaOgesi dosya)
