@@ -1,3 +1,36 @@
+TUR 13-16/18 - OLCUM BOSLUKLARI KAPANDI (dort madde)
+
+  Bu turda ARAYUZDE gorunen bir sey degismedi (bir satir haric): eksik
+  olan OLCUMLER kondu. Sebebi basit - bu maddelerin hepsi "bozulursa
+  kimsenin gormeyecegi" seylerdi.
+
+  1) ALTI RAPORA 11 TEST (hic testi yoktu)
+     Bu raporlar kullaniciya DOSYA SILDIREN listeler: "Yetim parcalar"da
+     bir ad gorunuyorsa kullanici onu kimsenin kullanmadigini dusunup
+     siler. En onemlisi DURUSTLUK bayragi: taranmamis indekste bos liste
+     "sorun yok" DEMEK DEGILDIR - o bayragi hicbir sey tutmuyordu.
+     Olcum: bayrak kaldirilinca test YAKALADI.
+
+  2) KILAVUZ KAPISI (yeni) - ve eklendigi anda BAYAT bir sey buldu
+     OZELLIKLER.md pakete giriyor ve senin okudugun dosya o; onu koda
+     karsi denetleyen hicbir sey yoktu. Menude 18 islem varken kilavuzun
+     menu tablosu "17" diyordu ve "Yeni versiyon olustur..." satiri HIC
+     YOKTU - yani arsive YAZAN islem kilavuzda gorunmuyordu. Satir
+     eklendi, sayi duzeldi, kapi bundan sonra bekliyor.
+
+  3) BUTUN AYARLAR ICIN YAZ-OKU TESTI
+     Ayar anahtarlari iki yerde elle yazili; biri kayarsa ayar her
+     acilista sifirlanir ve sen "kaydetmiyor" dersin, sebebini bulamazsin.
+     "Siralama" hic test edilmemisti. Tek test hepsini geziyor.
+
+  4) KISAYOL KAPISI (yeni) - ONARIM DEGIL KORUMA
+     Gecen hafta Keys.Enter bir kez uygulamayi HIC ACTIRMADI ve bunu
+     goren tek sey tam bir Wine kosusu oldu. Bugun agac temiz ama koruyan
+     bir sey yoktu; artik bir saniyede bakiliyor.
+
+  KAPI SAYISI 5 -> 7. OLCULDU: yedi kapi TEMIZ · calistirma 26/26 ·
+  384 test gecti, 5 atlandi.
+
 TUR 8-12/18 - ETIKET, KUTU VE SESSIZLIK (bes madde daha)
 
   1) VERSIYONLAR SATIRINDA TUSLAR NE YAPIYOR, YAZIYOR
