@@ -125,7 +125,22 @@ internal sealed partial class ReferansSurucusu
         }
 
         int adet = Icindekiler(yol).Count;
-        return adet == 0 ? "yok" : $"{adet} dosya";
+        if (adet > 0)
+        {
+            return $"{adet} dosya";
+        }
+
+        // "YOK" ILE "HEPSI KIRIK" AYNI KELIMEYLE YAZILAMAZ (CLAUDE.md 3) -
+        // ERKAN'DA GORULDU (01.09.2026): teknik resmi baska klasore tasidi,
+        // sekme "yok" dedi. Oysa dosyanin referansi VAR; tasinma yuzunden
+        // ICINDE YAZAN yol bayatladi ve satir KIRIK bolumune gecti (olculdu:
+        // BayatMi tasimadan once false, sonra true).
+        //
+        // "Yok" demek burada iki kez yanlis: kullanici "bu teknik resim
+        // hicbir modeli kullanmiyor" diye okur - oysa kullaniyor - VE
+        // onarilmasi gereken bayat yol oldugunu hic ogrenmez. Bolumun ICI
+        // zaten dogruyu yaziyordu; sekme yaziyordu yalani.
+        return _indeks.Kayit(yol)?.YazilanYollar.Count > 0 ? "hepsi kırık" : "yok";
     }
 
     /// <summary>

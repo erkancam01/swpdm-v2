@@ -159,6 +159,10 @@ liste kaydırılınca kaybolmaz, yani "hangi yöne bakıyorum" sorusu her an cev
 - **KULLANILDIĞI YERLER** → bu dosyayı kullanan dosyalar (yukarı yön).
 - **KIRIK** → SOLIDWORKS'ün açamayacağı referanslar: `BULUNAMADI` (bu adda dosya taranan ağaçta yok) ve `yol BAYAT` (dosya duruyor ama belgedeki yol başka yeri gösteriyor).
 - **VERSİYONLAR** → dosyanın arşivlenmiş versiyonları; ayrıntısı aşağıda (§11a).
+
+> **"İÇİNDEKİLER: hepsi kırık" ne demek** (01.09.2026'da ölçüldü): bir dosyayı **başka klasöre taşıdığında**, o dosyanın *içinde yazan* yol modelin yerini göstermez olur. Dosya hâlâ bulunur (biz adına göre buluyoruz) ve **SOLIDWORKS de çoğu zaman açar** — ama yazılı yol **bayattır** ve satır İÇİNDEKİLER'den **KIRIK**'e geçer. Sekme bu hâlde *"yok"* demez, **"hepsi kırık"** der: "yok" deseydi "bu teknik resim hiçbir modeli kullanmıyor" diye okunurdu — iki kez yanlış.
+> **Düzeltmesi tek tık:** `Ctrl+Shift+D` → **Bayat yollar** → **"Bulunanları düzelt"**. Dosyanın içine doğru yol yazılır ve satır İÇİNDEKİLER'e döner.
+> **Not:** taşımada *o dosyayı kullananlar* kendiliğinden onarılıyor; **taşınan dosyanın kendi yolları** henüz onarılmıyor (sebebi `SIRADAKI.md`'de: `Ctrl+Z` ile geri alma desteği gerekiyor).
 - **Her sekmede SAYI yazar** → "İÇİNDEKİLER 14" · "KULLANILDIĞI YERLER 4 dosya" · "KIRIK 29 dosya". Sekmeyi açmadan da durumu görürsün; "yok" ile "taranmadı" asla aynı kelimeyle yazılmaz.
 - **Sayı, o sekmede GERÇEKTEN duran satır kadardır.** İÇİNDEKİLER'in sayısı kırıkları **içermez** — onlar KIRIK sekmesinde sayılır. (Önceden toplam yazıyordu: sekme "43" derken listede 14 satır vardı.)
 - **Ctrl+Shift+E** → sıradaki bölüme geçer, sonunda başa döner.

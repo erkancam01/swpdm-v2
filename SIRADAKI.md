@@ -200,6 +200,17 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
 
+- **TAŞINAN DOSYANIN KENDİ YOLLARI ONARILMIYOR (01.09.2026, Erkan buldu).**
+  `ReferansOnarimi.TasimaPlani` yalnızca **dışarıda kalan ebeveynleri**
+  onarıyor — taşınan dosyanın *içinde yazan* yollar bayat kalıyor ve satır
+  KIRIK'e düşüyor (ölçüldü: `TasinanDosyaninKendiYoluTestleri`).
+  **Neden otomatikleştirilmedi:** `Ctrl+Z` ile geri alma. Yeni klasöre göre
+  yazılan yol, dosya eski yerine döndüğünde bu sefer **orada** bayat olurdu
+  (§1a). Doğru çözüm, öz-onarımı `OnarimPlani`'na katıp `GeriOnar`/
+  `YenidenOnar` yoluna sokmak — plan kaydı ikinci bir iş türü taşımalı.
+  **Kullanıcının bugünkü yolu var ve kılavuzda yazılı:** `Ctrl+Shift+D` →
+  "Bayat yollar" → "Bulunanları düzelt".
+
 - **"Aç" işlemi ÖLÇÜLEMİYOR — kabul edilen kör nokta (01.09.2026).**
   `AcIslemi.Kisayol` **olamaz**: tek başına `Enter`'ı `ShortcutKeys`'e
   yazmak uygulamayı hiç açtırmıyor (§6, bedeli ödendi). Kısayolsuz işlem
