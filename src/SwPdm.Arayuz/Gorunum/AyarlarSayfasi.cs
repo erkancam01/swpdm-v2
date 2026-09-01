@@ -236,15 +236,11 @@ internal sealed class AyarlarSayfasi : Panel
             return;
         }
 
-        MessageBox.Show(
-            this,
-            $"Eski çöp kutusunda {durum.Ogeler.Count} öğe var ve BURADA KALACAK:\n\n"
-            + eski + "\n\n"
-            + "Uygulama bundan sonra yeni çöp kutusunu gösterir. Bu öğeleri geri\n"
-            + "yüklemek isterseniz önce eski klasörü tekrar seçin.",
-            "Eski çöp kutusu",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        // BILGI KUTU DEGIL, DURUM CUBUGU (CLAUDE.md 6): ne geri alinamaz bir
+        // islemin onayi ne de gorulmeden gecilemeyecek bir hata - ustelik
+        // ayar DEGISTIKTEN sonra cikiyordu, yani karar verdirmiyordu.
+        _bildir($"Eski çöp kutusunda {durum.Ogeler.Count} öğe kaldı: {eski} — "
+            + "geri yüklemek için o klasörü tekrar seçin.");
     }
 
     /// <summary>
@@ -262,8 +258,13 @@ internal sealed class AyarlarSayfasi : Panel
             return true;
         }
 
-        return MessageBox.Show(
+        // ONAYLAR TEK KAPIDAN (CLAUDE.md 6): dugmeler "Evet / Vazgeç".
+        // Burasi uygulamadaki TEK kacak onaydi (01.09.2026 denetimi): ham
+        // MessageBox "Tamam / İptal" yaziyordu - Windows'un dili ne derse.
+        // "tehlikeli" varsayilani Vazgeç'te birakiyor, eskisi de oyleydi.
+        return OnayKutusu.Sor(
             this,
+            "Başka disk",
             "Seçtiğiniz klasör, açık olan kökten BAŞKA BİR DİSKTE.\n\n"
             + $"Kök:  {kok}\n"
             + $"Çöp:  {secilen}\n\n"
@@ -271,10 +272,7 @@ internal sealed class AyarlarSayfasi : Panel
             + "KOPYALAMAYA döner: büyük bir montajı silmek dakikalar sürebilir,\n"
             + "ağ sürücüsünde daha da uzun.\n\n"
             + "Yine de bu klasör kullanılsın mı?",
-            "Başka disk",
-            MessageBoxButtons.OKCancel,
-            MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2) == DialogResult.OK;
+            tehlikeli: true);
     }
 
     private void Varsayilana()
