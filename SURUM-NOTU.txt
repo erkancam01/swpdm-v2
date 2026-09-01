@@ -1,3 +1,41 @@
+BU SURUMDE - KLASOR DUZENI (SENDE DENENECEK YENI BIR SEY YOK)
+
+  Senin istegin: "dosya gezgini, versiyon kontrolu ve coklu kullaniciyi ayri
+  klasorlerde yapalim, ucu de ayri is gibi geliyor."
+
+  YAPILDI - ve TEK SATIR KOD DEGISMEDI. Yalnizca dosyalar klasorlere
+  tasindi. Arayuz birebir ayni: ayni pencereler, ayni menu, ayni kisayollar,
+  ayni davranis. Denemen gereken yeni bir sey YOK.
+
+  YENI DUZEN (cekirdek):
+    Ortak/       yol · boyut · zaman · rapor · ayarlar (herkesin kullandigi)
+    Gezgin/      tarama · dosya islemleri · cop · siralama · kilitler
+    SwDosyasi/   SOLIDWORKS bicimi: paket, MFC dize, OKU ve YAZ
+    Referans/    cozme · indeks · onarim · Raporlar/
+    Surum/       versiyon arsivi
+  Arayuzde de kutular ayrildi: Islemler/ 29 dosyaydi, 20 + Kutular/9 oldu.
+
+  ALAN UC DEGIL DORT CIKTI: dorduncusu ve en degerlisi REFERANS KORUMA
+  (dosyanin icini okumak/yazmak). Gezgine ya da versiyona gomulseydi
+  urunun asil sermayesi gorunmez olurdu; kendi klasoru var.
+
+  NEDEN KLASOR, PROJE DEGIL: bu depoda klasor ad alani DEGIL - o yuzden
+  tasima bedava. Ayri proje yapmak, dosyalar arasi baglantilari (silme ->
+  versiyon arsivi, versiyon -> referans okuma) zorla "disa acik" hale
+  getirirdi; v1'de tam bunun bedeli odenmisti.
+
+  OLCULDU (taşimanın SAF oldugunun kaniti):
+    - git 54 satirin hepsini "R" (yeniden adlandirma) gordu, tek bir
+      "M" (icerik degisti) YOK.
+    - 374 test, 369 gecti / 5 Windows'a ozel - ONCEKIYLE AYNI SAYI.
+    - Bes kapi TEMIZ, calistirma 22/22 (uygulama Wine'da gercekten aciliyor
+      ve ayni 22 olcumu geciyor).
+
+  HARITA KAPISI GUCLENDIRILDI: eskiden yalnizca dosya ADINA bakiyordu, yani
+  tasinan bir dosyanin belgedeki YOLU bayatlasa gormezdi - tam da bu turda
+  48 yol degisti. Artik yolu da denetliyor (bilerek bozuldu, YAKALADI, geri
+  konunca TEMIZ).
+
 BU SURUMDE - KLASORU KILITLE (bitmis isler acilmasin)
 
   Senin istegin (31.08.2026): "deneme yaparken yanlislikla bitmis islerin

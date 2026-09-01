@@ -619,7 +619,7 @@ kullanıcıya yanlış dosyayı sildirir.
 >
 > Bilgi (kaç dosya, kaç MB, ne kadar sürdü) **durum çubuğuna** yazılır.
 
-Onaylar tek yerden geçer: `Arayuz/Gorunum/Islemler/OnayKutusu.cs` — düğmeler
+Onaylar tek yerden geçer: `Arayuz/Gorunum/Islemler/Kutular/OnayKutusu.cs` — düğmeler
 **Evet / Vazgeç**. (`MessageBox`'ın düğme yazıları Windows'tan geliyor;
 `YesNo` "Evet/Hayır", `OKCancel` "Tamam/İptal" veriyor — istenen ikisinde de
 yok.)
@@ -949,6 +949,32 @@ yani "gerçek simge" isteği, gerçekte üç türü **ayırt edilemez** yapıyor
 → Gelen simge, kayıtlı olmadığı **kesin** olan uydurma bir uzantının simgesiyle
 piksel piksel karşılaştırılır. Aynıysa kayıt yok demektir → çizilmiş yedeğe düşülür.
 
+### AĞAÇ DÜZENİ — dört alan, beş klasör (31.08.2026)
+
+Erkan: *"dosya gezgini, versiyon kontrolü ve çoklu kullanıcıyı ayrı
+klasörlerde yapalım."* Alan **üç değil dört** çıktı; dördüncüsü ve en
+değerlisi **referans koruma** (SW dosyasının içini okumak/yazmak) — gezgine
+ya da versiyona gömülseydi ürünün asıl sermayesi görünmez olurdu.
+
+```
+Cekirdek/Ortak/      yatay araçlar — yol · boyut · zaman · rapor · ayarlar
+Cekirdek/Gezgin/     dosya yöneticisi — tarama · işlemler · çöp · sıralama · kilit
+Cekirdek/SwDosyasi/  SOLIDWORKS biçimi — paket · MFC dize · oku VE YAZ
+Cekirdek/Referans/   çözme · indeks · onarım · Raporlar/
+Cekirdek/Surum/      versiyon arşivi
+Arayuz/Gorunum/      Agac · Islemler (+Kutular) · Referans · Serit · Tema · Onizleme
+```
+
+**KLASÖR AD ALANI DEĞİL** (aşağıda zaten yazılı): bütün çekirdek
+`SwPdm.Cekirdek` içinde kalıyor. Bu yüzden 54 dosyanın taşınması **tek satır
+kod değiştirmedi** — `git show --stat` yalnız `R` satırları gösterdi, 374
+testin hepsi aynı sonucu verdi. Ölçü buydu.
+
+**PROJE DEĞİL KLASÖR — bilinçli:** v1'in dersi (§7) `internal` yüzeyi
+bölmenin onu bir sözleşmeye çevirmesi. Ayrıca bağımlılıklar iç içe
+(`DosyaIslemleri → Surumler.Tasindi`, `Surumler → BelgeAgaci → SwReferans`);
+ayrı derlemeler bunları `public` yapmaya ve dairesel bağımlılığa zorlardı.
+
 ### Bir konu = bir dosya — "nereye dokunacağım" sorusunun cevabı
 
 v1'in §7'deki hastalığı bir günde olmadı: her özellik kendi kararını
@@ -962,8 +988,8 @@ dosyasında** duruyor:
 | kabuk önizlemesi (STA iş parçacığı) | `Arayuz/Gorunum/Onizleme/KabukOnizleme.cs` |
 | **3B önizleme (eDrawings)** — kur, aç, kilidi bırak | `Arayuz/Gorunum/Onizleme/UcBoyutluGorunum.cs` |
 | 3B kipin sürücüye bağlanması (dene · gizle · sebep) | `Arayuz/Gorunum/Onizleme/Onizleme.UcBoyutluKip.cs` |
-| eski biçim gömülü önizleme okuma | `Cekirdek/OnizlemeOkuyucu.cs` |
-| arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
+| eski biçim gömülü önizleme okuma | `Cekirdek/SwDosyasi/OnizlemeOkuyucu.cs` |
+| arama — ne zaman başlar, gecikme, iptal | `Arayuz/Gorunum/AramaSurucusu.cs` (tarama motoru `Cekirdek/Gezgin/KlasorTarayici.cs`, sonucun ağaçta gösterimi `AgacDoldurucu.cs`) |
 | ağaç (doldurma, süzgeç, kilitli klasör) | `Arayuz/Gorunum/Agac/AgacDoldurucu.cs` |
 | arama sonucu görünümü (göster · gezinmeye dön) | `Arayuz/Gorunum/Agac/AgacDoldurucu.Arama.cs` |
 | çoklu seçim (Ctrl · Shift) | `Arayuz/Gorunum/Agac/SecimliAgac.cs` |
@@ -977,88 +1003,88 @@ dosyasında** duruyor:
 | sil (çöpe taşı) + referans uyarısı | `Arayuz/Gorunum/Islemler/SilIslemi.cs` |
 | yenile (F5) · ağacı kapat | `Arayuz/Gorunum/Islemler/YenileIslemi.cs` · `AgaciKapatIslemi.cs` |
 | işlem sözleşmesi (`IAgacIslemi` · `SecimBaglami` · `IslemBaglami`) | `Arayuz/Gorunum/Islemler/AgacIslemi.cs` |
-| diskteki dosya işlemleri + hata sebebi | `Cekirdek/DosyaIslemleri.cs` |
-| çöp kutusu (sil · listele · geri yükle) | `Cekirdek/Cop.cs` |
-| çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/CopKutusuPenceresi.cs` |
+| diskteki dosya işlemleri + hata sebebi | `Cekirdek/Gezgin/DosyaIslemleri.cs` |
+| çöp kutusu (sil · listele · geri yükle) | `Cekirdek/Gezgin/Cop.cs` |
+| çöp kutusu penceresi | `Arayuz/Gorunum/Islemler/Kutular/CopKutusuPenceresi.cs` |
 | kes · kopyala · yapıştır (pano) | `Arayuz/Gorunum/Islemler/PanoIslemleri.cs` |
 | taşıma/kopyalama motoru + onay | `Arayuz/Gorunum/Islemler/TasiIslemi.cs` |
 | taşıma/kopyalamanın **geri alınması** | `Arayuz/Gorunum/Islemler/AktarmaGeriAlma.cs` |
-| **ad çakışmasında ne olur** (çekirdek) | `Cekirdek/Cakisma.cs` + `DosyaIslemleri.cs` |
-| ad çakışması penceresi | `Arayuz/Gorunum/Islemler/CakismaKutusu.cs` |
-| **ad sorma kutusu** (doğrulama · uzantı kilidi) | `Arayuz/Gorunum/Islemler/AdKutusu.cs` |
+| **ad çakışmasında ne olur** (çekirdek) | `Cekirdek/Gezgin/Cakisma.cs` + `DosyaIslemleri.cs` |
+| ad çakışması penceresi | `Arayuz/Gorunum/Islemler/Kutular/CakismaKutusu.cs` |
+| **ad sorma kutusu** (doğrulama · uzantı kilidi) | `Arayuz/Gorunum/Islemler/Kutular/AdKutusu.cs` |
 | geri alma (yığın + `Ctrl+Z`) | `Arayuz/Gorunum/Islemler/GeriAlIslemi.cs` |
-| **sıralama kuralı** (ölçüt, yön, klasörler önce) | `Cekirdek/Siralama.cs` |
+| **sıralama kuralı** (ölçüt, yön, klasörler önce) | `Cekirdek/Gezgin/Siralama.cs` |
 | sıralama düğmesi + `Ctrl+Shift+S` | `Arayuz/Gorunum/Serit/SiralamaSecici.cs` |
-| klasör boyutu hesabı (gezme, iptal) | `Cekirdek/KlasorBoyutu.cs` |
+| klasör boyutu hesabı (gezme, iptal) | `Cekirdek/Gezgin/KlasorBoyutu.cs` |
 | klasör boyutu işlemi (`Ctrl+Shift+B`) | `Arayuz/Gorunum/Islemler/BoyutHesaplaIslemi.cs` |
 | otomatik tazeleme (izleme, gecikme) | `Arayuz/Gorunum/DiskIzleyici.cs` |
 | alttaki ilerleme çubuğu | `Arayuz/Gorunum/Serit/IlerlemeYuzeyi.cs` |
-| **`~$` kilit dosyaları** (gizle · işaretle · kalıntı) | `Cekirdek/Kilit.cs` |
+| **`~$` kilit dosyaları** (gizle · işaretle · kalıntı) | `Cekirdek/Gezgin/Kilit.cs` |
 | bir dosya satırının görünüşü (simge, metin, renk, ipucu) | `Arayuz/Gorunum/Agac/DosyaSatiri.cs` |
 | çift tıklamayla dosya açma | `Arayuz/Gorunum/DosyaAcici.cs` |
 | klasör seçme + son açılanlar | `Arayuz/Gorunum/Serit/KokSecici.cs` |
 | kabuk kutuları (çalışma klasörünü koruma) | `Arayuz/Gorunum/KabukKutusu.cs` |
 | yol çubuğu (ağacın üstü, tıklanabilir) | `Arayuz/Gorunum/Serit/YolCubugu.cs` |
-| kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ayarlar.cs` |
+| kalıcı ayarlar (son kök, çöp yeri) | `Cekirdek/Ortak/Ayarlar.cs` |
 | Ayarlar sekmesi | `Arayuz/Gorunum/AyarlarSayfasi.cs` |
 | alttaki durum yazıları | `Arayuz/Gorunum/Serit/DurumCubugu.cs` |
-| **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwPaket.cs` |
-| MFC dize biçimi (oku **ve** yaz) | `Cekirdek/MfcDize.cs` |
-| **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwYazici.cs` |
-| **ad değişince / taşınınca ebeveynleri onarma** | `Cekirdek/ReferansOnarimi.cs` |
-| **bayat yolu gerçek dosyaya bağlama** (toplu + elle) | `Cekirdek/YolBaglama.cs` |
+| **SOLIDWORKS dosya kabı** (akışlar) | `Cekirdek/SwDosyasi/SwPaket.cs` |
+| MFC dize biçimi (oku **ve** yaz) | `Cekirdek/SwDosyasi/MfcDize.cs` |
+| **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwDosyasi/SwYazici.cs` |
+| **ad değişince / taşınınca ebeveynleri onarma** | `Cekirdek/Referans/ReferansOnarimi.cs` |
+| **bayat yolu gerçek dosyaya bağlama** (toplu + elle) | `Cekirdek/Referans/YolBaglama.cs` |
 | **referansı elle bağlama** (hangi yol, hangi dosya) | `Arayuz/Gorunum/Islemler/ElleBaglaIslemi.cs` |
 | **işlem öncesi/sonrası referans taraması** | `Arayuz/Gorunum/Islemler/ReferansTazeleme.cs` |
-| dosyaya yazılacak yolun şekli (uzunluk, göreli) | `Cekirdek/YazilacakYol.cs` |
-| onarım onay kutusu | `Arayuz/Gorunum/Islemler/OnarimKutusu.cs` |
+| dosyaya yazılacak yolun şekli (uzunluk, göreli) | `Cekirdek/Referans/YazilacakYol.cs` |
+| onarım onay kutusu | `Arayuz/Gorunum/Islemler/Kutular/OnarimKutusu.cs` |
 | yazma deneyi paketi | `araclar/DeneyUretici/` |
-| belgenin **doğrudan referansları** | `Cekirdek/SwReferans.cs` |
-| belgenin içindeki önizleme | `Cekirdek/SwOnizleme.cs` |
-| belge özellikleri (Malzeme, Kaydeden…) — **arayüzde kullanılmıyor** (30.08.2026: özellik tarafı geri çekildi); duruyor çünkü `SwYaziciTestleri` onu yazıcının regresyon kapısı olarak kullanıyor | `Cekirdek/SwBelgeBilgisi.cs` |
-| **yazılı yol hangi gerçek dosya** | `Cekirdek/ReferansCozucu.cs` |
-| referans indeksi (veri + sorgu) | `Cekirdek/ReferansIndeksi.cs` |
-| indeks taraması (artımlı, iptal) | `Cekirdek/IndeksTarama.cs` |
-| indeksin diskteki hâli | `Cekirdek/IndeksDosyasi.cs` |
-| **hangi raporlar var** | `Cekirdek/Raporlar/Rapor.cs` |
-| tek tek raporlar | `Cekirdek/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
+| belgenin **doğrudan referansları** | `Cekirdek/SwDosyasi/SwReferans.cs` |
+| belgenin içindeki önizleme | `Cekirdek/SwDosyasi/SwOnizleme.cs` |
+| belge özellikleri (Malzeme, Kaydeden…) — **arayüzde kullanılmıyor** (30.08.2026: özellik tarafı geri çekildi); duruyor çünkü `SwYaziciTestleri` onu yazıcının regresyon kapısı olarak kullanıyor | `Cekirdek/SwDosyasi/SwBelgeBilgisi.cs` |
+| **yazılı yol hangi gerçek dosya** | `Cekirdek/Referans/ReferansCozucu.cs` |
+| referans indeksi (veri + sorgu) | `Cekirdek/Referans/ReferansIndeksi.cs` |
+| indeks taraması (artımlı, iptal) | `Cekirdek/Referans/IndeksTarama.cs` |
+| indeksin diskteki hâli | `Cekirdek/Referans/IndeksDosyasi.cs` |
+| **hangi raporlar var** | `Cekirdek/Referans/Raporlar/Rapor.cs` |
+| tek tek raporlar | `Cekirdek/Referans/Raporlar/`: `KirikReferanslar.cs` · `BayatYollar.cs` · `Yetimler.cs` · `TeknikResmiOlmayanlar.cs` · `TasinmisDosyalar.cs` · `OkunamayanDosyalar.cs` |
 | referansların arayüzde görünmesi | `Arayuz/Gorunum/Referans/ReferansSurucusu.cs` |
 | **üç bölümün içeriği** (içindekiler · kullanıldığı yerler · kırık) | `Arayuz/Gorunum/Referans/ReferansSurucusu.Bolumler.cs` |
 | **bölüm seçme şeridi** (`Ctrl+Shift+E`, sayılar) | `Arayuz/Gorunum/Referans/ReferansSeridi.cs` |
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
-| rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/RaporPenceresi.cs` |
-| **versiyon arşivi** (v0 · oluştur · dön · kayıt · kendi kendine yeten klasör) | `Cekirdek/Surumler.cs` |
+| rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/Kutular/RaporPenceresi.cs` |
+| **versiyon arşivi** (v0 · oluştur · dön · kayıt · kendi kendine yeten klasör) | `Cekirdek/Surum/Surumler.cs` |
 | VERSİYONLAR sekmesinin içeriği | `Arayuz/Gorunum/Referans/SurumBolumu.cs` |
 | yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
-| **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surumler.Bakim.cs` |
-| **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surumler.Tasima.cs` |
-| **belge ağacını yürüme** (torunlar dahil, SW'ün çözme kuralı) | `Cekirdek/BelgeAgaci.cs` |
-| **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surumler.Cocuklar.cs` |
-| **"bu versiyona dön"** (çekirdek + çocuklar) | `Cekirdek/Surumler.Donus.cs` |
-| dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/DonusSecimKutusu.cs` |
+| **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surum/Surumler.Bakim.cs` |
+| **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surum/Surumler.Tasima.cs` |
+| **belge ağacını yürüme** (torunlar dahil, SW'ün çözme kuralı) | `Cekirdek/Referans/BelgeAgaci.cs` |
+| **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surum/Surumler.Cocuklar.cs` |
+| **"bu versiyona dön"** (çekirdek + çocuklar) | `Cekirdek/Surum/Surumler.Donus.cs` |
+| dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/Kutular/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |
-| versiyon notu kutusu | `Arayuz/Gorunum/Islemler/SurumNotuKutusu.cs` |
-| **klasör kilidi** (bitmiş işler açılmasın) | `Cekirdek/KlasorKilidi.cs` |
+| versiyon notu kutusu | `Arayuz/Gorunum/Islemler/Kutular/SurumNotuKutusu.cs` |
+| **klasör kilidi** (bitmiş işler açılmasın) | `Cekirdek/Gezgin/KlasorKilidi.cs` |
 | kilitle/kilidi kaldır işlemi (`Ctrl+Shift+Q`) | `Arayuz/Gorunum/Islemler/KlasorKilidiIslemi.cs` |
-| **uygulamanın kendi klasörleri** (tek liste) | `Cekirdek/GizliKlasorler.cs` |
-| **tanınan dosya türleri** | `Cekirdek/DosyaTuru.cs` |
+| **uygulamanın kendi klasörleri** (tek liste) | `Cekirdek/Ortak/GizliKlasorler.cs` |
+| **tanınan dosya türleri** | `Cekirdek/Ortak/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
 | **AnaForm — yalnız bağlar** (üç parça) | `Arayuz/AnaForm.cs` + `AnaForm.Kisayollar.cs` + `AnaForm.Tasarim.cs` |
 | başlık şeridi (raptiye kararı dahil) | `Arayuz/Gorunum/Serit/BaslikSeridi.cs` |
 | süzgeç şeridi (`Ctrl+Shift+F`, durum cümlesi) | `Arayuz/Gorunum/Serit/SuzgecSeridi.cs` |
 | çöp/geri-al düğmelerinin durum kuralları | `Arayuz/Gorunum/Serit/AracDugmeleri.cs` |
-| onay kutusu + açık dosya uyarısı | `Arayuz/Gorunum/Islemler/OnayKutusu.cs` |
-| maddeli kutu (kırpma eşiği TEK sabit) | `Arayuz/Gorunum/Islemler/MaddeKutusu.cs` |
+| onay kutusu + açık dosya uyarısı | `Arayuz/Gorunum/Islemler/Kutular/OnayKutusu.cs` |
+| maddeli kutu (kırpma eşiği TEK sabit) | `Arayuz/Gorunum/Islemler/Kutular/MaddeKutusu.cs` |
 | referans listesi denetimi (satırlar, başlıklar) | `Arayuz/Gorunum/Referans/ReferansListesi.cs` |
 | renk paleti (tek kopya) | `Arayuz/Gorunum/Tema/Renkler.cs` |
 | çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Tema/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
-| **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/WindowsYolu.cs` |
-| klasör tarama + arama motoru | `Cekirdek/KlasorTarayici.cs` |
-| işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/IslemRaporu.cs` |
-| boyut biçimi · tarih biçimi · doğal sıralama | `Cekirdek/Boyut.cs` · `Zaman.cs` · `DogalKarsilastirici.cs` |
-| çoklu seçim özeti | `Cekirdek/SecimOzeti.cs` |
-| OLE bileşik belge okuma (2015 öncesi için bekliyor) | `Cekirdek/BilesikDosya.cs` |
+| **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/Ortak/WindowsYolu.cs` |
+| klasör tarama + arama motoru | `Cekirdek/Gezgin/KlasorTarayici.cs` |
+| işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/Ortak/IslemRaporu.cs` |
+| boyut biçimi · tarih biçimi · doğal sıralama | `Cekirdek/Ortak/Boyut.cs` · `Zaman.cs` · `DogalKarsilastirici.cs` |
+| çoklu seçim özeti | `Cekirdek/Ortak/SecimOzeti.cs` |
+| OLE bileşik belge okuma (2015 öncesi için bekliyor) | `Cekirdek/SwDosyasi/BilesikDosya.cs` |
 | **hangi tuş kime gider** (odak sırası) | `Arayuz/AnaForm.Kisayollar.cs` |
 | ağaçta gezinme tuşları (Enter · Backspace) | `Arayuz/Gorunum/Agac/AgacTuslari.cs` |
 | referans panelinin tuşları (Enter · Ctrl+C) | `Arayuz/Gorunum/Referans/ReferansPaneliTuslari.cs` |
@@ -1111,6 +1137,13 @@ araclar/kapilar.sh [--kur]     # beşini sırayla koşar
 ├── kapi_test.sh               # ağaçtaki her test projesi; SIFIR test GEÇTİ değildir
 └── kapi_calistir.sh [--kur]   # uygulamayı Wine'da GERÇEKTEN açar
 ```
+
+> **Harita kapısı ÜÇ yön ölçüyor (üçüncüsü 31.08.2026'da eklendi).** Kapı o
+> güne kadar yalnızca dosya **ADINA** bakıyordu; 54 dosya klasörlere taşınınca
+> tablodaki **yollar** bayatlayacak ve kapı bunu **görmeyecekti** — yani kapı
+> tam da korumakla görevli olduğu şeyi koruyamaz hâle gelirdi. Üçüncü yön,
+> belgede yazan yolun gerçek konum olduğunu denetliyor. §9 döngüsü: TEMİZ →
+> bir satırın yolu eskisine çevrilince **YAKALADI** → düzeltilince TEMİZ.
 
 > **Harita kapısı neden var (29.08.2026):** §11 tablosu 23 dosyayı hiç
 > saymıyordu (`AnaForm.cs` dahil) ve geçmişte silinmiş bir dosyayı

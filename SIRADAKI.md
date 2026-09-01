@@ -31,6 +31,11 @@
 > `BelgeAgaci.cs`'te (versiyon arşivinin çekirdeği) ve kapısının yakaladığı
 > **gerçek hata** — alt klasördeki parça hiç bulunamıyordu, arşive girmiyordu
 > ve montajın versiyonu SOLIDWORKS'te açılmıyordu; onarıldı ve testle kilitli.
+> 31.08.2026: **KLASÖR DÜZENİ** — çekirdek beş klasöre ayrıldı
+> (`Ortak` · `Gezgin` · `SwDosyasi` · `Referans` · `Surum`), arayüzde kutular
+> `Islemler/Kutular/`e çıktı. **Yalnız `git mv`**: 54 rename, sıfır kod
+> değişikliği, 374 test aynı. Harita kapısına **yol denetimi** eklendi —
+> önceden yalnız dosya adına bakıyordu ve taşınan yolu göremezdi.
 > 31.08.2026: **KLASÖR KİLİDİ** geldi — `Ctrl+Shift+Q`, bitmiş işler
 > açılmaz (`KlasorKilidi.cs`). Kaza koruması: Gezgin'i bağlamaz, referans
 > taraması/onarımı bilerek devam eder. Yol üstünde gerçek bir kusur da
