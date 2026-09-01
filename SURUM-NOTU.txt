@@ -1,3 +1,32 @@
+TUR 0/18 - ANAFORM BOLUNDU (SENDE DENENECEK YENI BIR SEY YOK)
+
+  Denetim turunda bulunanlarin hepsi TEK TEK kapatiliyor (senin istegin:
+  "sirayla hepsini tek tek yap"). Bu, sifirinci tur - onarim degil, YER
+  ACMA.
+
+  NEDEN ILK SIRADA: AnaForm.cs 593 satira cikmisti ve boyut kapisinin
+  siniri 600. Yani siradaki onarimlarin ilki kapiyi KIRACAKTI ve bolme
+  isi bir onarimin ortasina dusecekti. Once yer acildi.
+
+  NE YAPILDI: referans panelinin butun baglantilari (sag tik · serit ·
+  tek tik · cift tik · "satira git") AnaForm.Referans.cs'e cikti.
+  Kesme yeri satir sayisina gore DEGIL KONUYA gore secildi.
+    AnaForm.cs        593 -> 477
+    AnaForm.Referans.cs        160 (yeni)
+
+  DAVRANIS DEGISMEDI - ve bunu olcum soyluyor: bes kapi TEMIZ,
+  calistirma 25/25, 369 test. Ayni pencereler, ayni menu, ayni
+  kisayollar.
+
+  BELGEDEKI IKI BAYAT SAYI DA DUZELDI (ayni turda, cunku ikisi de
+  "sayiyi belgeden okuma, calistir" kuralinin ihlaliydi):
+    - CLAUDE.md "AnaForm.cs 454 satir" diyordu, gercek 593'tu
+    - "silme/geri yukleme 11 test" diyordu, gercek 13
+
+  SIRADAKI TUR: rapor penceresindeki "Bulunanlari duzelt" dugmesi
+  KLASOR KILIDINI TANIMIYOR - kilitli klasordeki dosyalarin icine
+  yaziyor. Onarimi bir sonraki pakette.
+
 BU SURUMDE - SAG TIK: "DOSYA AGACINDA GOSTER"
 
   Senin istegin (31.08.2026): "sag tika onizlemede calisacak sekilde dosya

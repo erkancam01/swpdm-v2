@@ -146,26 +146,6 @@ internal sealed partial class AnaForm : Form
                 e.Kopyala ? AktarmaKipi.Kopyala : AktarmaKipi.Tasi);
         };
 
-        // --- referans listesinde cift tik: dosyayi AC
-        //
-        // ERKAN, 31.08.2026: "önizleme alanındaki dosyaya çift tıklayınca
-        // SOLIDWORKS'te açsın, dosya ağacında o dosyaya gitmesine gerek yok."
-        // ONCEDEN buradan agaca GIDILIYORDU; artik aciyor.
-        //
-        // "GIT" KAYBOLMADI, ENTER'A GECTI (ReferansPaneliTuslari) - iki
-        // yetenek de duruyor, yalnizca yer degistirdi. VERSIYONLAR sekmesi
-        // zaten cift tikta aciyordu; panelin tamami artik tutarli.
-        _referanslar.MouseDoubleClick += (_, e) =>
-        {
-            string? hedef = _referanslar.TiklananHedef(e.Location);
-
-            // Versiyon satirinin ek cumlesi (salt-okunur arsiv) SurumBolumu'nde.
-            _durum.Bilgi(
-                _referansSeridi.SeciliBolum == ReferansBolumu.Surumler
-                    ? SurumBolumu.Ac(this, hedef)
-                    : DosyaAcici.YoluAc(this, hedef));
-        };
-
         // --- klasor secme
         _kokSecici = new KokSecici(_acDugmesi) { Sahip = this };
         _kokSecici.Secildi += (_, yol) => KokuAc(yol);
@@ -185,45 +165,10 @@ internal sealed partial class AnaForm : Form
         // asagida ayrica baglanir.
         _menu.IslemOncesi(() => _onizleme.BelgeyiBirak());
 
-        // --- referans panelinde SAG TIK (Erkan, 30.08.2026: "ordakilerde
-        // parça"). Karari ReferansMenusu veriyor; burada yalnizca kuruluyor
-        // ve agacinkiyle ayni baglantilar veriliyor. "Sahip secimi" =
-        // agactaki secim: ElleBagla satira degil ona uygulanir.
-        // _onizleme'den SONRA duruyor - IslemOncesi kancasi onu okuyor
-        // (CLAUDE.md 6'nin kurucu sirasi tuzagi).
-        // --- referans seridi: uc bolum (Erkan, 30.08.2026). Karari serit ve
-        // surucu veriyor; burada yalnizca bagliyoruz.
-        _referansSeridi.SecimDegisti += (_, bolum) =>
-        {
-            _referansSurucusu.Bolum = bolum;
-            ReferanslariGoster(_referansYolu);
-        };
-        _referansSeridi.Durum += (_, cumle) => _durum.Bilgi(cumle);
-
-        _referansMenusu = new ReferansMenusu(_referanslar);
-        _referansMenusu.Bagla(
-            _ilerleme,
-            _doldurucu.HepsiniKapat,
-            _referansSurucusu,
-            SecimBaglamiKur,
-            () => _onizleme.BelgeyiBirak(),
-            (_, yol) => AgaciTazele(yol),
-            (_, cumle) => _durum.Bilgi(cumle),
-            hedef => ReferansaGit(hedef));
-
-        // --- referans satirina TEK TIK: o dosyanin onizlemesi (Erkan,
-        // 29.08.2026: "13 kullananin resmine yerinden kipirdamadan bakayim").
-        // Hedefsiz satirda (bolum basligi, gizlenen ozeti) onizleme DEGISMEZ -
-        // pasif secim; aktif islemler (Enter, cift tik) zaten sebep yaziyor.
-        // "_onizleme" atamasindan SONRA duruyor - CLAUDE.md 6'nin kurucu
-        // sirasi tuzagi; derleyici de ayni sebepten uyardi.
-        _referanslar.SecimDegisti += (_, _) =>
-        {
-            if (_referanslar.SeciliHedef is string hedef)
-            {
-                _onizleme.KomsuGoster(hedef);
-            }
-        };
+        // --- referans paneli (AnaForm.Referans.cs): sag tik · serit ·
+        // tek tik · cift tik · "satira git". "_onizleme" atamasindan
+        // SONRA cagriliyor - IslemOncesi kancasi onu okuyor.
+        _referansMenusu = ReferansPaneliniKur();
 
         // --- arama
         _arama = new AramaSurucusu(_araKutusu, this);
@@ -426,55 +371,6 @@ internal sealed partial class AnaForm : Form
         _izleyici.Sustur(false);
     }
 
-    /// <summary>
-    /// Referans listesinden bir dosyaya gider.
-    ///
-    /// GIDILEMEZSE SEBEBI YAZILIR (CLAUDE.md 3). Sessizce hicbir sey
-    /// yapmamak, kullaniciya cift tiklamanin bozuk oldugunu dusundurur;
-    /// oysa sebep genelde belli: dosya taranan kokun disinda ya da
-    /// referans cozulememis.
-    /// </summary>
-    private bool ReferansaGit(string? hedef)
-    {
-        if (hedef is null)
-        {
-            _durum.Bilgi("Bu satırda gidilecek bir dosya yok — referans çözülemedi.");
-            return false;
-        }
-
-        // SUZGEC TUZAGI (Erkan, 31.08.2026: "montaj filtresi açıkken montajın
-        // içindekiler bölümündeki parçaya çift tıkladığımda dosya bulunamadı
-        // diyor"): dosya kokun ICINDE, yalnizca tur suzgeci onu gizlemis.
-        // Eski hal iki kez yaniltiyordu - gidilemiyordu VE sebep olarak
-        // "açık kökün dışında olabilir" yaziliyordu; YANLIS SEBEP, sebep
-        // gostermemekten kotudur (CLAUDE.md 3).
-        //
-        // Iki ozelligin BILESIMI, o yuzden burada: suzgeci kaldirmak
-        // seridin isi (SuzgecSeridi.Sifirla), gitmek doldurucunun.
-        string? not = null;
-        if (!_doldurucu.YoluAcVeSec(hedef))
-        {
-            if (!_suzgecler.Sifirla() || !_doldurucu.YoluAcVeSec(hedef))
-            {
-                _durum.Bilgi("Dosya ağaçta bulunamadı (açık kökün dışında olabilir): " + hedef);
-                return false;
-            }
-
-            not = "Tür süzgeci kaldırıldı — aranan dosya süzgecin dışındaydı.";
-        }
-
-        SecimiGoster();
-        _agac.Focus();
-
-        // SecimiGoster'DEN SONRA: o da durum cubuguna yaziyor ve notu
-        // ezerdi. Gidildi ama BIR SEY DEGISTI ise son soz bu olmali.
-        if (not is not null)
-        {
-            _durum.Bilgi(not);
-        }
-
-        return true;
-    }
 
     /// <summary>Cop kutusu penceresini acar ve kapaninca agaci tazeler.</summary>
     private void CopKutusunuAc()
@@ -533,18 +429,6 @@ internal sealed partial class AnaForm : Form
     private string? CopKlasoru()
         => _doldurucu.Kok is string kok ? Cop.Yolu(kok, _ayarlar.CopUstKlasoru) : null;
 
-    /// <summary>
-    /// Referans panelini gosterir: serit sayilari + acik bolumun listesi.
-    /// TEK KAPI - dort cagri yerinin hepsi buradan geciyor, yoksa biri
-    /// serit sayilarini tazelemeyi unutur ve sayilar SESSIZCE bayatlar
-    /// (CLAUDE.md 3: kullanici o sayiya bakip dosya siliyor).
-    /// </summary>
-    private void ReferanslariGoster(string? yol)
-    {
-        _referansYolu = yol;
-        _referansSeridi.Sayilari(bolum => _referansSurucusu.Sayi(bolum, yol));
-        _referansSurucusu.Doldur(_referanslar, yol);
-    }
 
     private void SecimiGoster()
     {

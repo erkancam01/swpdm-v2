@@ -943,7 +943,7 @@ kalıcı siler. Bu uygulamanın asıl çalışma yeri ağ sürücüsü olduğu i
 taşıyor (`.SwPdmCop`). Aynı disk olduğu için `Directory.Move` anlık — 1 GB'lık
 bir montaj kopyalanmıyor — ve davranış her sürücüde aynı. Yan kazanç: Windows
 kabuğu çağrısı kalktığı için silme/geri yükleme **Linux'ta test edilebiliyor**
-(11 test).
+(13 test).
 
 > Kabuğun "Geri Yükle" komutunun adı Windows'un diline göre değişiyor
 > ("Restore"/"Geri Yükle"); ona dayanan bir geri yükleme bir makinede çalışıp
@@ -1083,7 +1083,7 @@ dosyasında** duruyor:
 | **tanınan dosya türleri** | `Cekirdek/Ortak/DosyaTuru.cs` |
 | **kullanıcı kılavuzu** (her düğme ne yapıyor) | `OZELLIKLER.md` |
 | uygulama girişi (tek örnek, kancalar) | `Arayuz/Program.cs` |
-| **AnaForm — yalnız bağlar** (üç parça) | `Arayuz/AnaForm.cs` + `AnaForm.Kisayollar.cs` + `AnaForm.Tasarim.cs` |
+| **AnaForm — yalnız bağlar** (dört parça) | `Arayuz/AnaForm.cs` + `AnaForm.Kisayollar.cs` + `AnaForm.Tasarim.cs` + `AnaForm.Referans.cs` |
 | başlık şeridi (raptiye kararı dahil) | `Arayuz/Gorunum/Serit/BaslikSeridi.cs` |
 | süzgeç şeridi (`Ctrl+Shift+F`, durum cümlesi) | `Arayuz/Gorunum/Serit/SuzgecSeridi.cs` |
 | çöp/geri-al düğmelerinin durum kuralları | `Arayuz/Gorunum/Serit/AracDugmeleri.cs` |
@@ -1106,11 +1106,16 @@ dosyasında** duruyor:
 | denetimlerin yerleşimi | `Arayuz/AnaForm.Tasarim.cs` |
 
 `AnaForm` yalnızca **bağlar**: olayları ilgili sınıfa yollar, iş mantığı
-bilmez. Ölçüldü (29.08.2026): `AnaForm.cs` **454 satır** ve her metodu ya
-bağlama ya da ağaçtan öğe toplama. Buradaki sayı bir kez bayatladı — "160"
-yazıyordu, gerçek 570'ti ve içinde beş karar taşıyan metot birikmişti
-(raptiye, düğme durumları, kök geçmişi, etkin klasör, süzgeç mesajı).
-Hepsi sahiplerine taşındı; sayı artık ölçümle güncellenir, tahminle değil.
+bilmez. Ölçüldü (01.09.2026): `AnaForm.cs` **477 satır**, `AnaForm.Referans.cs`
+**160**; her metot ya bağlama ya da ağaçtan öğe toplama.
+
+> **BU SAYI İKİ KEZ BAYATLADI ve ikincisini bir DENETİM yakaladı.** Önce
+> "160" yazıyordu, gerçek 570'ti. Sonra "454" yazıyordu ve gerçek **593**
+> olmuştu — yani boyut kapısının 600 sınırına **7 satır** kalmıştı, oysa
+> belge 146 satır pay varmış gibi gösteriyordu. Bir sonraki dokunuş kapıyı
+> kıracaktı. Referans paneli bağlantıları `AnaForm.Referans.cs`'e çıkarıldı
+> (kesme yeri satır sayısına değil **konuya** göre — §1b) ve sayı ölçümle
+> yazıldı. Ders §2'nin kendisi: **sayıyı belgeden okuma, çalıştır.**
 
 > **Tür kaydı ÖLÇÜLDÜ (27.08.2026).** Önce yeni bir tür **4 dosyada 5 yere**
 > satır ekletiyordu (enum · simge sırası sabiti · simge listesi · süzgeç
