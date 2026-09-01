@@ -1094,7 +1094,8 @@ dosyasında** duruyor:
 | referans listesi denetimi (satırlar, başlıklar) | `Arayuz/Gorunum/Referans/ReferansListesi.cs` |
 | renk paleti (tek kopya) | `Arayuz/Gorunum/Tema/Renkler.cs` |
 | çizilmiş simgeler · tür simgeleri · kabuk simgeleri | `Arayuz/Gorunum/Tema/Simgeler.cs` · `TurSimgeleri.cs` · `KabukSimgeleri.cs` |
-| **yol yardımcıları** (`AltindaMi` dahil — tek kapı) | `Cekirdek/Ortak/WindowsYolu.cs` |
+| **yol yardımcıları** (`AltindaMi` · `Duzlestir` — tek kapı) | `Cekirdek/Ortak/WindowsYolu.cs` |
+| ad/yol **geçerli mi** (geçersiz karakter · ayrılmış ad · uzunluk) | `Cekirdek/Ortak/WindowsYoluDogrulama.cs` |
 | klasör tarama + arama motoru | `Cekirdek/Gezgin/KlasorTarayici.cs` |
 | işlem sonucu + hata çevirisi (`IslemRaporu` · `Sebebi`) | `Cekirdek/Ortak/IslemRaporu.cs` |
 | boyut biçimi · tarih biçimi · doğal sıralama | `Cekirdek/Ortak/Boyut.cs` · `Zaman.cs` · `DogalKarsilastirici.cs` |

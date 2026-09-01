@@ -6,8 +6,24 @@ namespace SwPdm.Cekirdek;
 
 /// <summary>Bir belgenin arsivlenecek cocuklari.</summary>
 /// <param name="Yollar">Cozulmus gercek dosya yollari (torunlar dahil).</param>
-/// <param name="Cozulemeyen">Yazili ama diskte bulunamayan referans sayisi.</param>
-public sealed record CocukKumesi(IReadOnlyList<string> Yollar, int Cozulemeyen);
+/// <param name="Cozulemeyen">
+/// Yazili ama diskte bulunamayan AYRI dosya sayisi.
+///
+/// DOSYA SAYIYOR, GECIS DEGIL - 01.09.2026'da duzeldi: sayac tekillemenin
+/// ONUNDEYDI ve bulunamayan dugumler kumeye hic girmiyordu, yani on
+/// montajda gecen TEK bir kayip parca "10 referans bulunamadi" diye
+/// yaziliyordu. Kullanici o sayiya bakip arsivin ne kadar eksik oldugunu
+/// tahmin ediyor (CLAUDE.md 3).
+/// </param>
+/// <param name="Dogrudan">
+/// Bunlarin kaci belgenin DOGRUDAN cocugu (seviye 1); gerisi torun.
+///
+/// NEDEN AYRI SAYILIYOR: kutu "241 dosya" derken panel "İÇİNDEKİLER 14"
+/// diyor ve ikisi AYRI SEY sayiyor. Fark ekranda yazmayinca kullanici
+/// bunu celiski okuyor - Erkan 01.09.2026'da tam bunu bildirdi.
+/// </param>
+public sealed record CocukKumesi(
+    IReadOnlyList<string> Yollar, int Cozulemeyen, int Dogrudan = 0);
 
 /// <summary>
 /// VERSIYONA GIRECEK COCUKLAR - "o gunku hal" ne demek.
@@ -40,7 +56,11 @@ public static partial class Surumler
         }
 
         var gorulen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { yol };
-        int cozulemeyen = 0;
+
+        // SORUNLULAR ICIN AYRI KUME: onlar "yollar"a girmiyor, yani ayni
+        // kumeyle tekillenemezler - kendi kumeleri olmazsa GECIS sayilir.
+        var sorunlular = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int dogrudan = 0;
 
         foreach (AgacDugumu dugum in BelgeAgaci.Yur(yol))
         {
@@ -48,8 +68,9 @@ public static partial class Surumler
             {
                 // EKSIK ARSIV SESSIZ GECILMEZ (CLAUDE.md 3): bulunamayan bir
                 // cocuk da, icine bakilamayan bir belge de sayilir - ikisi de
-                // "bu versiyon eksik olabilir" demek.
-                cozulemeyen++;
+                // "bu versiyon eksik olabilir" demek. Ama AYRI DOSYA sayilir:
+                // ayni kayip parca on montajda geciyorsa sorun BIR tanedir.
+                sorunlular.Add(dugum.Yol);
             }
 
             if (dugum.Seviye == 0 || !dugum.Bulundu || !gorulen.Add(dugum.Yol))
@@ -57,9 +78,14 @@ public static partial class Surumler
                 continue;
             }
 
+            if (dugum.Seviye == 1)
+            {
+                dogrudan++;
+            }
+
             yollar.Add(dugum.Yol);
         }
 
-        return new CocukKumesi(yollar, cozulemeyen);
+        return new CocukKumesi(yollar, sorunlular.Count, dogrudan);
     }
 }

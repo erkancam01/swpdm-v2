@@ -76,10 +76,19 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
         // o gunku cocuklari da kopyalaniyor, yani disk maliyeti var ve
         // kullanicinin gozu onunde olmali (CLAUDE.md 3).
         CocukKumesi cocuklar = Surumler.Cocuklari(dosya.Yol);
+
+        // SAYININ HESABI VERILIYOR (Erkan, 01.09.2026: "241 dosya diyor, bi
+        // hata var"). Kutu BUTUN AGACI sayiyor, paneldeki "İÇİNDEKİLER" ise
+        // yalnizca DOGRUDAN cocuklari - ikisi ayri sey ve fark ekranda
+        // yazmayinca celiski okunuyordu. Artik ikisi de yaziyor.
+        int torun = cocuklar.Yollar.Count - cocuklar.Dogrudan;
         string kapsam = cocuklar.Yollar.Count == 0
             ? $"\"{dosya.Ad}\" şimdiki hâliyle arşivlenecek."
             : $"\"{dosya.Ad}\" ve kullandığı {cocuklar.Yollar.Count} dosya "
-              + "şimdiki hâlleriyle arşivlenecek.";
+              + "şimdiki hâlleriyle arşivlenecek"
+              + (torun > 0
+                  ? $" ({cocuklar.Dogrudan} doğrudan · {torun} alt seviye)."
+                  : ".");
 
         // EKSIK VERSIYON UYARISI KUTUNUN ICINDE (CLAUDE.md 3/6): durum
         // cubuguna yazilan uyari Erkan'da GOZDEN KACTI ve eksik arsivlenen
@@ -91,8 +100,20 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
                 + "versiyon EKSİK arşivlenecek.";
         }
 
+        // LISTEYI GOSTER: sayiyi kullanici KENDI verisinde dogrulayabilsin
+        // (CLAUDE.md 2). Buyuk bir montajda uc haneli bir sayiya bakip
+        // "arsivle" demek zorunda kalmak, dogrulanamayan bir sayiya
+        // guvenmek demekti.
         string? not = SurumNotuKutusu.Sor(
-            baglam.Sahip, "Yeni versiyon", kapsam + " Not (isteğe bağlı):");
+            baglam.Sahip, "Yeni versiyon", kapsam + " Not (isteğe bağlı):",
+            listeyiGoster: cocuklar.Yollar.Count == 0
+                ? null
+                : () => MaddeKutusu.Listele(
+                    baglam.Sahip,
+                    "Arşivlenecek dosyalar",
+                    $"\"{dosya.Ad}\" ile birlikte {cocuklar.Yollar.Count} dosya "
+                    + "arşive kopyalanacak:",
+                    cocuklar.Yollar));
 
         if (not is null)
         {
@@ -100,7 +121,7 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             return;
         }
 
-        IslemRaporu rapor = Surumler.Olustur(kok, dosya.Yol, not, out int no);
+        IslemRaporu rapor = Surumler.Olustur(kok, dosya.Yol, not, out int no, cocuklar);
 
         if (!rapor.Oldu)
         {

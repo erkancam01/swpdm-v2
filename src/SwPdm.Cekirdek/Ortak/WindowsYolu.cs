@@ -26,7 +26,7 @@ namespace SwPdm.Cekirdek;
 /// Ikinci kopyasi YAZILMAYACAK.
 /// ===================================================================
 /// </summary>
-public static class WindowsYolu
+public static partial class WindowsYolu
 {
     /// <summary>Windows'un asil ayiricisi.</summary>
     public const char Ayirici = '\\';
@@ -34,34 +34,6 @@ public static class WindowsYolu
     /// <summary>Windows egik boluyu da kabul ediyor; biz de kabul ediyoruz.</summary>
     public const char EgikAyirici = '/';
 
-    // CLAUDE.md 4: Path.GetInvalidFileNameChars() Linux'ta yalnizca '/' ve '\0'
-    // donduruyor, yani Windows'ta gecersiz bir adi testler KABUL EDER.
-    // Bu yuzden liste ELLE yazilmistir. Windows'ta gercek listeye karsi
-    // dogrulanmasi icin testler klasorunde ayri bir olcum var.
-    private static readonly char[] Gecersizler = OlusturGecersizler();
-
-    private static char[] OlusturGecersizler()
-    {
-        var liste = new List<char> { '"', '<', '>', '|', ':', '*', '?', '\\', '/' };
-        for (char k = (char)0; k < (char)32; k++)
-        {
-            liste.Add(k);
-        }
-
-        return liste.ToArray();
-    }
-
-    // Windows'ta AYRILMIS aygit adlari. Bir dosya bunlardan biri olamaz -
-    // uzantili hali de olamaz ("CON.SLDPRT" da yasak).
-    private static readonly string[] AyrilmisAdlar =
-    [
-        "CON", "PRN", "AUX", "NUL",
-        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-    ];
-
-    /// <summary>Windows'ta gecersiz sayilan dosya adi karakterleri.</summary>
-    public static IReadOnlyList<char> GecersizAdKarakterleri => Gecersizler;
 
     /// <summary>Verilen karakter bir yol ayiricisi mi.</summary>
     public static bool AyiriciMi(char karakter) => karakter == Ayirici || karakter == EgikAyirici;
@@ -284,11 +256,19 @@ public static class WindowsYolu
             return null;
         }
 
-        // Mutlak yol (surucu ya da UNC) oldugu gibi denenir.
+        // Mutlak yol (surucu ya da UNC): TEK BICIME indirilerek donuyor.
+        //
+        // HAM DONMESI BIR HATAYDI - OLCULDU (01.09.2026, Erkan'in gercek
+        // agacinda): onarimin uzunluk dolgusu mutlak yollara ".\" ve cift
+        // ayirici yaziyor (YazilacakYol). Ayni dosya bir yerden
+        // "C:\a\b\Ad.SLDPRT", baska yerden "C:\a\b\.\.\Ad.SLDPRT" olarak
+        // cozuluyordu; iki dize esit olmadigi icin belge agaci onu IKI AYRI
+        // DOSYA sayiyor ve alt agacini IKI KEZ yuruyordu. Versiyon kutusunda
+        // "241 dosya" derken bir kismi buydu.
         if ((yol.Length > 1 && yol[1] == ':')
             || (yol.Length > 1 && AyiriciMi(yol[0]) && AyiriciMi(yol[1])))
         {
-            return yol;
+            return Duzlestir(yol);
         }
 
         string suan = taban;
@@ -408,103 +388,64 @@ public static class WindowsYolu
             && yol.StartsWith(klasor, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Windows'ta bir dosya/klasor adinin en fazla karakteri.</summary>
-    public const int EnUzunAd = 255;
 
     /// <summary>
-    /// Uzun yol destegi acik degilken Windows'un tam yol siniri. 260, sonu
-    /// bitiren karakter dahil; kullanilabilir uzunluk 259.
-    /// </summary>
-    public const int EnUzunYol = 259;
-
-    /// <summary>
-    /// Ad gecerli mi VE o klasorde olusacak tam yol sinira siginiyor mu.
+    /// MUTLAK yolu tek bicime indirir: "." adimlarini atar, ".."yi geri
+    /// yurur, ust uste ayiricilari teke indirir. Kok ("C:\", "\\sunucu\pay")
+    /// oldugu gibi kalir.
     ///
-    /// Ayri bir uye, cunku ad tek basina gecerli olsa bile derin bir klasorde
-    /// yol sinirini asabilir - ve o hata ancak diske yazarken cikardi.
+    /// NEDEN GEREKLI: ayni dosyanin iki farkli yazimi, dizeye bakan her
+    /// tekillemeyi (HashSet, sozluk, "gorduk mu") ATLATIYOR. Goreli yollar
+    /// icin bu is zaten TabandanCoz'da yapiliyordu; mutlak yol dali
+    /// yapmiyordu ve fark Erkan'in agacinda sayiyi sisirdi.
+    ///
+    /// SURUCU KOKU TUZAGI (CLAUDE.md 4): "C:" donduren bir yol,
+    /// Birlestir ile SURUCUYE GORELI bir yol uretir. Kok hic bozulmuyor.
     /// </summary>
-    public static bool YolGecerliMi(string klasor, string? ad, out string sebep)
+    public static string Duzlestir(string? yol)
     {
-        if (!AdGecerliMi(ad, out sebep))
+        if (string.IsNullOrWhiteSpace(yol))
         {
-            return false;
+            return string.Empty;
         }
 
-        int uzunluk = Birlestir(klasor, ad!).Length;
-        if (uzunluk > EnUzunYol)
+        int kokUzunlugu = KokUzunlugu(yol);
+        if (kokUzunlugu == 0)
         {
-            sebep = $"Tam yol çok uzun ({uzunluk} karakter); Windows sınırı {EnUzunYol}. "
-                + "Daha kısa bir ad verin ya da daha üstteki bir klasöre koyun.";
-            return false;
+            return yol;   // koksuz (goreli) yol: burada isimiz yok
         }
 
-        sebep = string.Empty;
-        return true;
-    }
+        string kok = yol[..kokUzunlugu];
+        var parcalar = new List<string>();
 
-    public static bool AdGecerliMi(string? ad, out string sebep)
-    {
-        if (string.IsNullOrWhiteSpace(ad))
+        foreach (string parca in yol[kokUzunlugu..].Split(
+                     new[] { Ayirici, EgikAyirici }, StringSplitOptions.RemoveEmptyEntries))
         {
-            sebep = "Ad boş olamaz.";
-            return false;
-        }
-
-        // UZUNLUK SINIRI - burada HIC YOKTU (29.08.2026). Sonucu: Windows
-        // PathTooLongException atiyordu, HatayiCevir haritasinda karsiligi
-        // olmadigi icin kullaniciya .NET'in ham Ingilizce mesaji cikiyordu.
-        // Sinir onden konur ve sebep TURKCE yazilir (CLAUDE.md 3).
-        if (ad.Length > EnUzunAd)
-        {
-            sebep = $"Ad çok uzun ({ad.Length} karakter); en fazla {EnUzunAd} olabilir.";
-            return false;
-        }
-
-        // Bastaki bosluk: Windows'ta acilabiliyor ama Gezgin'de gorunmez bir
-        // fark yaratiyor - "Parca" ile " Parca" ayni gorunup ayri dosya olur.
-        if (ad[0] == ' ')
-        {
-            sebep = "Ad boşlukla başlayamaz.";
-            return false;
-        }
-
-        foreach (char karakter in ad)
-        {
-            if (Array.IndexOf(Gecersizler, karakter) >= 0)
+            if (parca == ".")
             {
-                sebep = karakter < ' '
-                    ? "Ad, yazdırılamayan bir karakter içeriyor."
-                    : $"Ad şu karakteri içeremez: {karakter}";
-                return false;
+                continue;
             }
-        }
 
-        if (ad[^1] == '.' || ad[^1] == ' ')
-        {
-            sebep = "Ad nokta veya boşlukla bitemez.";
-            return false;
-        }
-
-        // Uzantili hali de yasak: "CON.SLDPRT" da acilamiyor.
-        // Ordinal karsilastirma SART: Turkce yerelinde ToUpper() noktali I
-        // uretiyor ve kulture bagli karsilastirma sasiyor.
-        //
-        // GOVDE KIRPILIYOR: "CON .SLDPRT" gibi bir adda govde "CON " olur ve
-        // kirpilmadan bakan bir denetim bunu KACIRIR; Windows sondaki boslugu
-        // atip aygit adi sayar.
-        int nokta = ad.IndexOf('.');
-        string govde = (nokta < 0 ? ad : ad[..nokta]).TrimEnd(' ', '.');
-        foreach (string ayrilmis in AyrilmisAdlar)
-        {
-            if (govde.Equals(ayrilmis, StringComparison.OrdinalIgnoreCase))
+            if (parca == "..")
             {
-                sebep = $"\"{ayrilmis}\" Windows'ta ayrılmış bir aygıt adı, dosya adı olarak kullanılamaz.";
-                return false;
+                if (parcalar.Count > 0)
+                {
+                    parcalar.RemoveAt(parcalar.Count - 1);
+                }
+
+                continue;   // kokun ustune CIKILMAZ; orada durur
             }
+
+            parcalar.Add(parca);
         }
 
-        sebep = string.Empty;
-        return true;
+        string sonuc = kok;
+        foreach (string parca in parcalar)
+        {
+            sonuc = Birlestir(sonuc, parca);
+        }
+
+        return sonuc;
     }
 
     /// <summary>

@@ -1,3 +1,50 @@
+"241 DOSYA" - BIR KISMI GERCEKTEN FAZLAYDI, HESABI DA VERILMIYORDU
+
+  Senin bildirdigin (01.09.2026): "denedim calisiyor. fakat 241 dosya
+  diyor. bi hata var."
+
+  OLCTUM. Uc ayri sey cikti; ikisi GERCEK HATA:
+
+  1) SAYININ HESABI VERILMIYORDU (hata degil, eksiklik)
+     Kutu BUTUN AGACI sayiyor - alt montajlarin parcalari, onlarin
+     parcalari... Panel ise yalnizca DOGRUDAN cocuklari sayiyor ve
+     bayat yollari ayirip KIRIK'a koyuyor. Yani "IÇINDEKILER 14" ile
+     "241" ayni seyi saymiyordu; ustelik senin montajinin dogrudan
+     referansi 14 degil, 14 + 16 = 30.
+     ARTIK KUTU BUNU YAZIYOR: "... 241 dosya arsivlenecek (30 dogrudan ·
+     211 alt seviye)".
+
+  2) AYNI DOSYA IKI KEZ SAYILIYORDU  *** GERCEK HATA ***
+     Onarim, yolun uzunlugunu korumak icin araya ".\" yaziyor
+     (bu bilincli ve gerekli). Ama cozumleme mutlak yolu OLDUGU GIBI
+     donduruyordu: ayni dosya bir yerden "C:\a\Ad.SLDPRT", baska yerden
+     "C:\a\.\.\Ad.SLDPRT" olarak geliyor ve iki AYRI dosya sayiliyordu -
+     dahasi alt agaci IKI KEZ yurunuyordu. Senin agacin toplu onarimdan
+     gecmis bir agac, yani bu delik tam sende tetiklenir.
+     DUZELDI: yollar artik tek bicime indiriliyor. 241'in bir kismi
+     bu yuzden fazlaydi; yeni sayi daha kucuk cikacak.
+
+  3) "N REFERANS BULUNAMADI" GECIS SAYIYORDU  *** GERCEK HATA ***
+     Ayni kayip parca on montajda geciyorsa "10 referans bulunamadi"
+     diyordu. Artik AYRI DOSYA sayiyor: bir kayip = 1.
+
+  YENI: "LISTEYI GOSTER..." DUGMESI
+     Versiyon kutusunda. Arsive girecek dosyalarin TAMAMINI gosteriyor.
+     Sayiyi dogrulamanin tek yolu bu: listede taniyamadigin bir dosya
+     varsa bana soyle - o zaman kalan bir hata var demektir.
+
+  YAN KAZANC: ayni agac eskiden IKI KEZ yurunuyordu (biri kutunun sayisi,
+  biri kopyalama icin). Artik bir kez. Buyuk montajda kutunun acilmasi
+  hizlanir; ayrica kutuda yazan sayi ile arsive giren dosya artik AYNI
+  kumeden geliyor.
+
+  OLCULDU: yedi kapi TEMIZ · calistirma 27/27 · 389 test gecti, 5 atlandi.
+  Bes yeni birim testi; duzeltme kesildiginde test YAKALIYOR.
+  (Testin kendisi bir kez kendini kandirdi: Linux'ta "/tmp/..." yolu
+  Windows'un mutlak yolu sayilmadigi icin olcum duzeltilen dali hic
+  calistirmiyordu - dongu bunu yakaladi ve test gercek Windows yollariyla
+  yeniden yazildi.)
+
 TUR 17-18/18 - SON IKI MADDE: SILME OLCULDU, BIR KOR NOKTA YAZILDI
 
   1) SILME ARTIK KAPIDA OLCULUYOR (21. olcum)

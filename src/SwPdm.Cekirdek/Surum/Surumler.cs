@@ -153,7 +153,18 @@ public static partial class Surumler
     /// silinir ki listede olmayan bir kopya kalmasin.
     /// </summary>
     /// <param name="no">Olusan versiyonun numarasi; islem olmadiysa -1.</param>
-    public static IslemRaporu Olustur(string kok, string yol, string not, out int no)
+    /// <param name="hazirCocuklar">
+    /// Cagiran zaten hesapladiysa COCUK KUMESI. Verilmezse burada
+    /// hesaplanir.
+    ///
+    /// NEDEN VAR (01.09.2026): kutu metni icin bir kez, kopyalama icin bir
+    /// kez olmak uzere ayni agac IKI KEZ yurunuyordu - buyuk montajda tam
+    /// disk yuruyusu iki kez. Daha kotusu: iki yuruyus arasinda diskte bir
+    /// sey degisirse KUTUDA YAZAN SAYI ile arsive giren dosya AYRISIRDI
+    /// (CLAUDE.md 3).
+    /// </param>
+    public static IslemRaporu Olustur(
+        string kok, string yol, string not, out int no, CocukKumesi? hazirCocuklar = null)
     {
         no = -1;
 
@@ -191,7 +202,7 @@ public static partial class Surumler
         string klasor = WindowsYolu.Birlestir(yuva, ArsivKlasoru(yeniNo));
         string arsiv = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(yol));
 
-        CocukKumesi cocuklar = Cocuklari(yol);
+        CocukKumesi cocuklar = hazirCocuklar ?? Cocuklari(yol);
 
         long boyut;
         try
