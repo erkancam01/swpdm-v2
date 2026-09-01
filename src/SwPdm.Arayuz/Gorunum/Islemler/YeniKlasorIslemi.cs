@@ -21,6 +21,21 @@ internal sealed class YeniKlasorIslemi : IAgacIslemi
     public Keys Kisayol => Keys.Control | Keys.Shift | Keys.N;
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// SAHIP - 01.09.2026 denetiminde bulundu. Varsayilan "Satir"la burasi
+    /// panelde tiklanan SATIRIN dosyasinin klasorune klasor aciyordu:
+    /// agacta "Montaj-07" seciliyken panelde bir parcaya sag tiklayip
+    /// "Yeni klasor" denince klasor O PARCANIN (bambaska) klasorunde
+    /// aciliyor ve agac oraya atliyordu. Hicbir yerde hedef klasor
+    /// yazmadigi icin kullanici klasoru kaybediyordu (CLAUDE.md 3).
+    ///
+    /// "Buraya" demek, panelin GOSTERDIGI yer demek - yani agacta secili
+    /// olan. SurumOlusturIslemi'nin ters yonlu kardesi: orada satir dogru
+    /// hedefti, burada sahip.
+    /// </remarks>
+    public IslemHedefi Hedef => IslemHedefi.Sahip;
+
+    /// <inheritdoc/>
     public bool Uygulanabilir(SecimBaglami secim, out string nedenOlmaz)
     {
         if (secim.AramaKipinde)
