@@ -15,7 +15,7 @@ namespace SwPdm.Arayuz.Gorunum;
 /// yalnizca menuye bir kapi aciyor.
 ///
 /// KISAYOL YALNIZ ETIKET: menude "Enter" yaziyor ama tus KAYDEDILMIYOR
-/// (<see cref="Kisayol"/> = None, yazi <see cref="KisayolYazisi"/>'ndan).
+/// (<see cref="Kisayol"/> = None, yazi <see cref="YazilanTus"/>'tan turetiliyor).
 /// Enter'i agacta <see cref="AgacTuslari"/>, panelde
 /// <see cref="ReferansPaneliTuslari"/> zaten sahipleniyor; yani cift acma
 /// yok. Kaydetmek ZATEN MUMKUN DEGIL: tek basina Enter'i ShortcutKeys'e
@@ -39,7 +39,7 @@ internal sealed class AcIslemi : IAgacIslemi
     public Keys Kisayol => Keys.None;
 
     /// <inheritdoc/>
-    public string KisayolYazisi => "Enter";
+    public Keys YazilanTus => Keys.Enter;
 
     /// <inheritdoc/>
     public bool Yazar => false;

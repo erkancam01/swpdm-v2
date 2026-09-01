@@ -52,15 +52,14 @@ internal sealed class AgacMenusu
             var oge = new ToolStripMenuItem(islem.Ad)
             {
                 ShortcutKeys = islem.Kisayol,
-                ShowShortcutKeys = islem.Kisayol != Keys.None,
+                ShowShortcutKeys = Yazilan(islem) != Keys.None,
             };
 
-            // KAYDEDILMEYEN AMA YAZILAN TUS (bkz. IAgacIslemi.KisayolYazisi):
+            // KAYDEDILMEYEN AMA YAZILAN TUS (bkz. IAgacIslemi.YazilanTus):
             // Enter gibi tuslar ShortcutKeys'e yazilamaz - orasi patlar.
-            if (islem.KisayolYazisi is { Length: > 0 } kisayolYazisi)
+            if (islem.Kisayol == Keys.None && islem.YazilanTus != Keys.None)
             {
-                oge.ShortcutKeyDisplayString = kisayolYazisi;
-                oge.ShowShortcutKeys = true;
+                oge.ShortcutKeyDisplayString = TusMetni(islem.YazilanTus);
             }
             oge.Click += (_, _) => Calistir(islem);
 
@@ -158,14 +157,24 @@ internal sealed class AgacMenusu
         {
             oge.ShortcutKeys = Keys.None;
 
-            bool yazilir = islem.Kisayol != Keys.None && !gizle(islem.Kisayol);
-            oge.ShortcutKeyDisplayString = yazilir ? TusMetni(islem.Kisayol) : null;
+            // YAZILAN TUS, KAYITLI TUS DEGIL: "Aç" hicbir tus kaydetmiyor
+            // ama menude "Enter" yaziyor - ve panelde Enter "git" oldugu
+            // icin gizlenmesi GEREKIYOR. Eski hal bu karari veremiyordu
+            // (yazi bir metindi, suzgec ise Keys aliyor) ve dogru sonucu
+            // baska bir sartla, tesaduften uretiyordu.
+            Keys yazilan = Yazilan(islem);
+            bool yazilir = yazilan != Keys.None && !gizle(yazilan);
+            oge.ShortcutKeyDisplayString = yazilir ? TusMetni(yazilan) : null;
             oge.ShowShortcutKeys = yazilir;
         }
     }
 
     /// <summary>Bu menunun kaydetmedigi, yalnizca yazdigi kisayollar var mi.</summary>
     private bool KisayolGizli(Keys tuslar) => _kisayolGizle?.Invoke(tuslar) == true;
+
+    /// <summary>Menude YAZILACAK tus: kayitli kisayol, yoksa yalnizca yazilan.</summary>
+    private static Keys Yazilan(IAgacIslemi islem)
+        => islem.Kisayol != Keys.None ? islem.Kisayol : islem.YazilanTus;
 
     private static string TusMetni(Keys tuslar)
         => System.ComponentModel.TypeDescriptor.GetConverter(typeof(Keys))

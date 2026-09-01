@@ -263,8 +263,7 @@ internal interface IAgacIslemi
     Keys Kisayol { get; }
 
     /// <summary>
-    /// Menude kisayolun YERINE yazilacak metin. Bos ise <see cref="Kisayol"/>
-    /// yazilir.
+    /// Menude YAZILAN ama KAYDEDILMEYEN tus. Yoksa <see cref="Keys.None"/>.
     ///
     /// NEDEN VAR - CALISTIRMA KAPISI YAKALADI (31.08.2026): "Aç" islemi
     /// Kisayol olarak <see cref="Keys.Enter"/> diyordu; tek basina Enter
@@ -276,8 +275,15 @@ internal interface IAgacIslemi
     /// ReferansPaneliTuslari daha once yakaliyor. Burada yazilan yalnizca
     /// ETIKET - kullanici tusu ogrenmeye devam ediyor (CLAUDE.md 3: menude
     /// gorunmeyen ozellik yok sayilir).
+    ///
+    /// METIN DEGIL "Keys" - 01.09.2026 denetiminde duzeltildi. Once string
+    /// idi ("Enter") ve panel menusu onu "gizlenecek tuslar" suzgecine
+    /// SORAMIYORDU: suzgec Keys aliyor. Sonuc tesadufen dogruydu (etiket
+    /// baska bir sartla eleniyordu) ama ikinci bir islem eklendigi gun
+    /// etiket sessizce kaybolurdu. Metin artik TUSTAN TURETILIYOR
+    /// (CLAUDE.md 1b: turetmek, yorumla hizalamaktan ustundur).
     /// </summary>
-    string KisayolYazisi => string.Empty;
+    Keys YazilanTus => Keys.None;
 
     /// <summary>
     /// REFERANS PANELINDEN calistirildiginda islem KIME uygulanir.
