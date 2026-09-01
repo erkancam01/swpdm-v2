@@ -615,7 +615,9 @@ kullanıcıya yanlış dosyayı sildirir.
   ve `Insert` kabul ediliyor.
   → Menüde yazması istenen ama **kaydedilmemesi gereken** tuş,
   `ShortcutKeyDisplayString` ile yazılır (`ShortcutKeys` boş kalır). Bu
-  uygulamada karşılığı `IAgacIslemi.KisayolYazisi`.
+  uygulamada karşılığı `IAgacIslemi.YazilanTus` — metin değil `Keys`,
+  çünkü menünün "hangi tuşu gizle" süzgeci de `Keys` alıyor ve yazı
+  ondan **türetiliyor** (§1b).
 - **Modal pencere mesaj kuyruğunu POMPALIYOR** — yani modal açıkken
   zamanlayıcılar tetiklenir ve olay işleyicileri **yeniden girer**. Yeniden
   giriş kilidi şart, ve kilit iş **okunmadan önce** alınmalı.
