@@ -153,18 +153,7 @@ public static partial class Surumler
     /// silinir ki listede olmayan bir kopya kalmasin.
     /// </summary>
     /// <param name="no">Olusan versiyonun numarasi; islem olmadiysa -1.</param>
-    /// <param name="hazirCocuklar">
-    /// Cagiran zaten hesapladiysa COCUK KUMESI. Verilmezse burada
-    /// hesaplanir.
-    ///
-    /// NEDEN VAR (01.09.2026): kutu metni icin bir kez, kopyalama icin bir
-    /// kez olmak uzere ayni agac IKI KEZ yurunuyordu - buyuk montajda tam
-    /// disk yuruyusu iki kez. Daha kotusu: iki yuruyus arasinda diskte bir
-    /// sey degisirse KUTUDA YAZAN SAYI ile arsive giren dosya AYRISIRDI
-    /// (CLAUDE.md 3).
-    /// </param>
-    public static IslemRaporu Olustur(
-        string kok, string yol, string not, out int no, CocukKumesi? hazirCocuklar = null)
+    public static IslemRaporu Olustur(string kok, string yol, string not, out int no)
     {
         no = -1;
 
@@ -190,37 +179,32 @@ public static partial class Surumler
 
         int yeniNo = durum.EnBuyukNo + 1;
 
-        // ============ VERSIYON KENDI KENDINE YETER ============
+        // ============ VERSIYON = YALNIZ O DOSYA ============
         //
-        // Arsiv artik bir KLASOR: "v3\" icinde asil dosya GERCEK ADIYLA ve
-        // o gunku COCUKLARI yaninda duruyor. Erkan'da olculdu (31.08.2026):
-        // tek basina duran bir montaj arsivden ACILMIYOR - SOLIDWORKS once
-        // ebeveynin yanina bakiyor (CLAUDE.md 5) ve parcalari bulamiyor.
-        // Parcada sorun gorulmemesinin sebebi de buydu: parcanin cocugu yok,
-        // yani zaten kendi kendine yetiyordu. Artik montaj/teknik resim de
-        // parcayla AYNI yoldan aciliyor; ayrik dal yok.
+        // Erkan'in karari (01.09.2026): "versiyon olusturma o parcanin bir
+        // kopyasini olusturma degil mi, ne alaka dosyalari arsivleme."
+        // 31.08.2026'da versiyon KENDI KENDINE YETSIN diye montajin/teknik
+        // resmin o gunku cocuklari da kopyalaniyordu; tek bir teknik resim
+        // 5, bir parca 162 dosya suruklyordu. Karar soruldu, cevap:
+        // "yalniz o dosya (parca gibi)".
+        //
+        // KABUL EDILEN BEDEL (Erkan'a yazildi, CLAUDE.md 3): arsivdeki
+        // montaj/teknik resim parcalarini YANINDA bulamaz - SOLIDWORKS
+        // ebeveynin yanina bakiyor (CLAUDE.md 5) - yani BUGUNKU parcalarla
+        // acilir ya da hic acilmaz. "Bu versiyona don" bundan ETKILENMEZ:
+        // o dosyayi KENDI yoluna geri yaziyor, parcalari yerinde duruyor.
+        //
+        // YUVA DUZENI AYNEN KALIYOR ("v3\<gercek ad>"): eski arsivleri okuyan
+        // zincir (kayit 5. alan -> yuva adi -> tek dosya -> uzanti) ona bagli
+        // ve Erkan'in diskinde cocuklu arsivler DURUYOR (CLAUDE.md 1a).
         string klasor = WindowsYolu.Birlestir(yuva, ArsivKlasoru(yeniNo));
         string arsiv = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(yol));
-
-        CocukKumesi cocuklar = hazirCocuklar ?? Cocuklari(yol);
 
         long boyut;
         try
         {
             Directory.CreateDirectory(klasor);
-
             boyut = Kopyala(yol, arsiv);
-            foreach (string cocuk in cocuklar.Yollar)
-            {
-                // Cocuklar DUZ, gercek adlariyla yan yana: komsuluk kurali
-                // ancak boyle isler. Ayni ad iki klasorden geliyorsa ilki
-                // kalir - SOLIDWORKS'un actigi da o olurdu.
-                string hedef = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(cocuk));
-                if (!File.Exists(hedef))
-                {
-                    Kopyala(cocuk, hedef);
-                }
-            }
         }
         catch (Exception hata)
         {
@@ -263,14 +247,38 @@ public static partial class Surumler
         }
 
         no = yeniNo;
+        return new IslemRaporu(IslemSonucu.Tamam, arsiv, null);
+    }
 
-        // COZULEMEYEN COCUK SESSIZ GECILMEZ (CLAUDE.md 3): eksik cocukla
-        // arsivlenen versiyon eksik acilir, kullanici bunu BILMELI.
-        return new IslemRaporu(
-            IslemSonucu.Tamam, arsiv,
-            cocuklar.Cozulemeyen > 0
-                ? $"{cocuklar.Cozulemeyen} referans bulunamadı — versiyon eksik olabilir"
-                : null);
+    /// <summary>
+    /// Bu arsiv kopyasinin YANINDA baska dosya var mi - yani versiyon
+    /// "kendi kendine yeten" ESKI duzende mi arsivlendi.
+    ///
+    /// NEDEN VAR (CLAUDE.md 3): yeni versiyonlar YALNIZ o dosya. Arsivdeki
+    /// bir montaji cift tiklayan kullanici, gecmise baktigini sanirken
+    /// BUGUNKU parcalarla acilmis bir montaj gorur - ve bunu anlamasinin
+    /// hicbir yolu yoktur. Durum cubugu bunu soyleyecek; soyleyip
+    /// soylemeyecegini SABIT BIR TARIH ya da BAYRAK degil, DISKTEKI GERCEK
+    /// belirliyor - boylece Erkan'in elindeki cocuklu eski arsivlerde uyari
+    /// CIKMAZ ve uyari bayatlayamaz (CLAUDE.md 6).
+    /// </summary>
+    public static bool YanindaCocukVarMi(string? arsivYolu)
+    {
+        if (string.IsNullOrWhiteSpace(arsivYolu))
+        {
+            return false;
+        }
+
+        try
+        {
+            return Directory.GetFiles(WindowsYolu.Klasor(arsivYolu)).Length > 1;
+        }
+        catch (Exception hata) when (hata is IOException or UnauthorizedAccessException)
+        {
+            // Bakilamadiysa UYARI VERILMEZ: olmayan bir eksigi soylemek de
+            // yalandir (CLAUDE.md 3).
+            return false;
+        }
     }
 
     /// <summary>
@@ -442,13 +450,6 @@ public static partial class Surumler
         return arsiv is null ? null : new SurumKaydi(no, zaman, p[3], arsiv, boyut);
     }
 
-    /// <summary>
-    /// Versiyonun ASIL dosyasini bulur. IKI DUZEN de okunur:
-    ///   YENI: "v3\&lt;gercek ad&gt;" - cocuklariyla birlikte, kendi kendine yeter
-    ///   ESKI: "v3.SLDPRT"            - tek dosya (31.08.2026 oncesi arsivler)
-    /// Eskiyi okumaya devam etmek SART: kullanicinin elindeki versiyonlar o
-    /// duzende ve onlari gormemek "versiyonlarim kayboldu" demek olurdu.
-    /// </summary>
     /// <summary>
     /// Versiyonun ASIL dosyasini bulur. ADIM ADIM, en guveniliriden en zayifa:
     ///

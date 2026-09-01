@@ -196,4 +196,49 @@ public class WindowsYoluTestleri
         Assert.Null(WindowsYolu.Goreli(@"C:\a", @"D:\a\p.SLDPRT"));
         Assert.Null(WindowsYolu.Goreli(null, @"C:\a\p.SLDPRT"));
     }
+
+    // ---------------------------------------------------------------------
+    // DUZLESTIRME - "." / ".." / cift ayirici (01.09.2026'da olculdu).
+    //
+    // NEDEN VAR: onarim, yazilan yolun UZUNLUGUNU korumak icin araya ".\"
+    // yaziyor (bilincli ve gerekli, CLAUDE.md 5). Cozumleme mutlak yolu HAM
+    // donduruyordu: ayni dosya bir yerden "C:\a\Ad", baska yerden
+    // "C:\a\.\.\Ad" olarak geliyor ve IKI AYRI dosya sayiliyordu.
+    //
+    // Bu iki olcum once CocukSayimiTestleri'ndeydi; o dosya (versiyon cocuk
+    // toplayicisi) 01.09.2026'da kaldirildi ama OLCUM ATILMADI - kural
+    // WindowsYolu'nun kendi kurali ve burada yasiyor (CLAUDE.md 1c).
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void TabandanCoz_AYNI_dosyanin_IKI_YAZIMINI_esitliyor()
+    {
+        // YOLLAR ELLE YAZILI WINDOWS YOLLARI - VE BU SART (CLAUDE.md 4):
+        // ilk yazista gecici klasor ("/tmp/...") kullanilmisti ve o,
+        // Windows'un MUTLAK yol tanimina girmiyor; olcum duzeltilen dali HIC
+        // calistirmiyordu. 9 dongusu bunu yakaladi: duzlestirme kaldirilinca
+        // test yine gecmisti. TabandanCoz saf dize mantigi, diske bakmiyor.
+        const string Taban = @"C:\Proje";
+        const string Duz = @"C:\Proje\Parça1.SLDPRT";
+
+        Assert.Equal(Duz, WindowsYolu.TabandanCoz(Taban, Duz));
+        Assert.Equal(Duz, WindowsYolu.TabandanCoz(Taban, @"C:\Proje\.\.\Parça1.SLDPRT"));
+        Assert.Equal(Duz, WindowsYolu.TabandanCoz(Taban, @"C:\Proje\\Parça1.SLDPRT"));
+        Assert.Equal(Duz, WindowsYolu.TabandanCoz(Taban, @"C:\Proje\alt\..\Parça1.SLDPRT"));
+    }
+
+    [Fact]
+    public void Duzlestir_KOKUN_USTUNE_CIKMIYOR()
+    {
+        // SURUCU KOKU TUZAGI (CLAUDE.md 4): kok bozulursa Birlestir "C:x"
+        // gibi SURUCUYE GORELI bir yol uretir.
+        Assert.Equal(@"C:\", WindowsYolu.Duzlestir(@"C:\"));
+        Assert.Equal(@"C:\", WindowsYolu.Duzlestir(@"C:\..\..\"));
+        Assert.Equal(@"C:\a", WindowsYolu.Duzlestir(@"C:\a\b\.."));
+        Assert.Equal(@"C:\a\b.SLDPRT", WindowsYolu.Duzlestir(@"C:\a\.\.\b.SLDPRT"));
+        Assert.Equal(@"\\sunucu\pay\a", WindowsYolu.Duzlestir(@"\\sunucu\pay\.\a"));
+
+        // GORELI yola dokunulmaz: onun duzlestirmesi TabandanCoz'un isi.
+        Assert.Equal(@"a\.\b", WindowsYolu.Duzlestir(@"a\.\b"));
+    }
 }

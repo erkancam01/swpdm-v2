@@ -31,10 +31,13 @@ public static partial class Surumler
     /// </summary>
     /// <param name="cocukYollari">
     /// Ayrica geri yazilacak COCUKLARIN canli yollari; null ya da bos ise
-    /// yalnizca asil dosya doner (31.08.2026 oncesi davranis). Erkan'in ilk
-    /// versiyon isteginin 3. maddesi: "montajin icinde parcayi sectigimde
-    /// istedigim versiyona gore guncelleyebilmeliyim" - versiyon kendi
-    /// kendine yettigi icin o gunku cocuk kopyalari arsivde hazir duruyor.
+    /// yalnizca asil dosya doner.
+    ///
+    /// BU YOL ARTIK YALNIZ ESKI ARSIVLERDE CALISIR: 01.09.2026'dan itibaren
+    /// versiyon YALNIZ o dosya (Erkan'in karari), yani yeni yuvalarda geri
+    /// yazilacak cocuk yok. 31.08 - 01.09 arasinda olusmus "kendi kendine
+    /// yeten" arsivlerde ise cocuk kopyalari duruyor ve onlarin calismaya
+    /// devam etmesi SART (CLAUDE.md 1a) - kullanicinin diskinde varlar.
     /// </param>
     public static IslemRaporu Don(
         string kok, string yol, int no, IReadOnlyList<string>? cocukYollari = null)

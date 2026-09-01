@@ -6,7 +6,15 @@ using Xunit;
 namespace SwPdm.Cekirdek.Testler;
 
 /// <summary>
-/// VERSIYON KENDI KENDINE YETER MI - gercek SOLIDWORKS dosyalariyla.
+/// ARSIV DUZENI - gercek SOLIDWORKS dosyalariyla.
+///
+/// IKI SEYI BIRDEN OLCUYOR:
+///   1. YENI KURAL (Erkan, 01.09.2026): versiyon YALNIZ o dosyadir - montaj
+///      ve teknik resim dahil. "ne alaka dosyalari arsivleme."
+///   2. ESKI ARSIVLER BOZULMADI (CLAUDE.md 1a): Erkan'in diskinde 31.08-01.09
+///      arasi olusmus COCUKLU (kendi kendine yeten) arsivler DURUYOR;
+///      listelenmeye, acilmaya ve donulmeye devam etmeli. Onlari artik
+///      Olustur uretmedigi icin testler EskiCocukluArsiv ile elle kuruyor.
 ///
 /// SurumlerTestleri'nin PARCASI (partial): ayni gecici kok, ayni yardimcilar;
 /// ikinci bir duzenek kurulmuyor (CLAUDE.md 8). Ayri dosya olmasinin sebebi
@@ -15,12 +23,16 @@ namespace SwPdm.Cekirdek.Testler;
 public partial class SurumlerTestleri
 {
     // ---------------------------------------------------------------------
-    // VERSIYON KENDI KENDINE YETER (Erkan, 31.08.2026: "part dosyası eskiden
-    // ne güzel versiyon çalışıyordu, diğerleri de öyle olamaz mı").
+    // VERSIYON = YALNIZ O DOSYA (Erkan, 01.09.2026: "versiyon olusturma o
+    // parcanin bir kopyasini olusturma degil mi, ne alaka dosyalari
+    // arsivleme").
     //
-    // Montajin arsiv kopyasi tek basina duruyordu ve SOLIDWORKS onu
-    // acamiyordu - parcalari yaninda degildi. Artik o gunku cocuklar da
-    // ayni klasore arsivleniyor.
+    // 31.08.2026 - 01.09.2026 arasinda montajin/teknik resmin O GUNKU
+    // COCUKLARI da ayni klasore kopyalaniyordu ("kendi kendine yeten
+    // versiyon"). Sebebi gecerliydi - arsivdeki montaj parcalarini yaninda
+    // bulamayinca acilmiyordu - ama bedeli Erkan'in agacinda tek bir teknik
+    // resim icin 5, bir parca icin 162 dosyaydi. Karar soruldu, cevap:
+    // "yalniz o dosya (parca gibi)".
     // ---------------------------------------------------------------------
 
     private static string OrnekVeri => Path.Combine(AppContext.BaseDirectory, "veri", "tertemiz");
@@ -33,28 +45,48 @@ public partial class SurumlerTestleri
     }
 
     /// <summary>
-    /// Ornegi kokun ALTINDAKI bir klasore koyar - ornek verideki klasor
-    /// yapisi birebir korunarak. ADIM ADIM birlestiriliyor: Birlestir'in
-    /// ayiricisi SOLDAKI yola bakiyor, adin icine ayirici gomulmus bir parca
-    /// Linux'ta TEK dosya adi olurdu (CLAUDE.md 4).
+    /// 31.08.2026 - 01.09.2026 arasindaki KENDI KENDINE YETEN arsivi elle
+    /// kurar: asil dosyanin yanina o gunku cocuk kopyalarini koyar.
+    ///
+    /// NEDEN ELLE: Olustur artik cocuk kopyalamiyor (Erkan'in karari). Ama
+    /// Erkan'in diskindeki o duzendeki arsivler DURUYOR ve calismaya devam
+    /// etmeli (CLAUDE.md 1a) - asagidaki testlerin olctugu sey bu.
+    ///
+    /// SALT-OKUNUR da konuyor: gercek arsiv kopyalari oyle dogar, ve donus
+    /// yolu bunu asabiliyor mu sorusu testin PARCASI.
     /// </summary>
-    private string OrnegiAlta(string kaynakAltYol, string klasor)
+    private void EskiCocukluArsiv(string asil, int no, params string[] cocuklar)
     {
-        string hedefKlasor = WindowsYolu.Birlestir(_kok, klasor);
-        Directory.CreateDirectory(hedefKlasor);
-        string yol = WindowsYolu.Birlestir(hedefKlasor, Path.GetFileName(kaynakAltYol));
-        File.Copy(Path.Combine(OrnekVeri, kaynakAltYol.Replace('/', Path.DirectorySeparatorChar)), yol);
-        return yol;
+        string klasor = null!;
+        foreach (SurumKaydi kayit in Surumler.Listele(_kok, asil).Ogeler)
+        {
+            if (kayit.No == no)
+            {
+                klasor = WindowsYolu.Klasor(kayit.ArsivYolu);
+            }
+        }
+
+        Assert.NotNull(klasor);
+
+        foreach (string cocuk in cocuklar)
+        {
+            string hedef = WindowsYolu.Birlestir(klasor, WindowsYolu.DosyaAdi(cocuk));
+            File.Copy(cocuk, hedef, overwrite: true);
+            File.SetAttributes(hedef, FileAttributes.ReadOnly);
+        }
     }
 
     [Fact]
-    public void MONTAJ_versiyonunda_COCUKLARI_da_YANINDA()
+    public void MONTAJ_versiyonu_da_TEK_DOSYA_kalir()
     {
-        // ASIL OLCUM: SOLIDWORKS once ebeveynin YANINA bakiyor (CLAUDE.md 5).
-        // Arsivdeki montajin yaninda parcasi yoksa acilmiyor - Erkan'da
-        // "dosya bozuk" kutusu tam bu yuzden cikiyordu.
-        OrnegiKoy("Parça1.SLDPRT");
+        // ASIL OLCUM (Erkan'in karari, 01.09.2026): montajin yaninda parcasi
+        // DURUYOR olmasina ragmen arsive YALNIZ montaj giriyor.
+        //
+        // TABAN SART: parca gercekten kokte duruyor ve montaj onu referans
+        // veriyor - yoksa "zaten cocugu yoktu" hali de testi gecerdi.
+        string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
+        Assert.True(File.Exists(parca));
 
         IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int no);
 
@@ -62,17 +94,13 @@ public partial class SurumlerTestleri
         Assert.Equal(0, no);
 
         // Asil dosya GERCEK ADIYLA duruyor: "v0.SLDASM" adinda bir dosya
-        // montajin aradigi ad DEGIL.
+        // montajin aradigi ad DEGIL. Yuva duzeni degismedi.
         string arsiv = rapor.YeniYol!;
         Assert.Equal("Montaj1.SLDASM", WindowsYolu.DosyaAdi(arsiv));
         Assert.Equal("v0", WindowsYolu.DosyaAdi(WindowsYolu.Klasor(arsiv)));
 
-        string yanindaki = WindowsYolu.Birlestir(
-            WindowsYolu.Klasor(arsiv), "Parça1.SLDPRT");
-        Assert.True(File.Exists(yanindaki), "montajin parcasi arsivde yaninda degil");
-        Assert.Equal(
-            File.ReadAllBytes(WindowsYolu.Birlestir(_kok, "Parça1.SLDPRT")).Length,
-            File.ReadAllBytes(yanindaki).Length);
+        // VE BASKA HICBIR DOSYA YOK.
+        Assert.Single(Directory.GetFiles(WindowsYolu.Klasor(arsiv)));
     }
 
     [Fact]
@@ -128,59 +156,6 @@ public partial class SurumlerTestleri
         Assert.Single(Surumler.Listele(_kok, montaj).Ogeler);      // komsu versiyon duruyor
     }
 
-    [Fact]
-    public void COZULEMEYEN_COCUK_sayisi_SOYLENIYOR()
-    {
-        // Parca yoksa montajin referansi cozulemiyor: versiyon YINE olusur
-        // ama EKSIK oldugu SOYLENIR (CLAUDE.md 3).
-        string montaj = OrnegiKoy("Montaj1.SLDASM");   // Parça1 KOYULMADI
-
-        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "", out int _);
-
-        Assert.True(rapor.Oldu, rapor.Sebebi);
-        Assert.NotNull(rapor.Sebep);
-        Assert.Contains("bulunamadı", rapor.Sebep!, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void ONARIMIN_YAZDIGI_GORELI_YOLLU_cocuk_da_ARSIVLENIR()
-    {
-        // ERKAN'IN EKRANI (31.08.2026): montaj 3\, parca 3157\ klasorunde ve
-        // montajin icindeki yol ONARIMIN YAZDIGI GORELI yol ("..\3157\...").
-        // Ilk halde cocuk toplayici bu yolu ebeveyne gore COZMUYORDU:
-        // v0'da montaj TEK BASINA kaldi ve SOLIDWORKS "dosya bozuk" dedi.
-        string uc = Path.Combine(_kok, "3");
-        string binUc = Path.Combine(_kok, "3157");
-        Directory.CreateDirectory(uc);
-        Directory.CreateDirectory(binUc);
-
-        string montaj = Path.Combine(uc, "Montaj1.SLDASM");
-        File.Move(OrnegiKoy("Montaj1.SLDASM"), montaj);
-
-        // Parcayi 3157'ye tasi ve montaji GERCEK onarimla yamala - montajin
-        // icine tam da Erkan'daki gibi ebeveyne goreli yol yazilir.
-        string parca = Path.Combine(binUc, "Parça1.SLDPRT");
-        File.Move(OrnegiKoy("Parça1.SLDPRT"), parca);
-
-        YamaSonucu yama = SwYazici.YoluDegistir(
-            montaj, montaj + ".yeni", "Parça1.SLDPRT", parca, uc);
-        Assert.True(yama.Oldu, yama.Sebep);
-        File.Delete(montaj);
-        File.Move(montaj + ".yeni", montaj);
-
-        // ASIL OLCUM: cocuk bulunmali ve arsive girmeli.
-        CocukKumesi cocuklar = Surumler.Cocuklari(montaj);
-        Assert.Contains(parca, cocuklar.Yollar);
-
-        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
-        Assert.True(rapor.Oldu, rapor.Sebebi);
-
-        string v0 = WindowsYolu.Klasor(rapor.YeniYol!);
-        Assert.True(
-            File.Exists(WindowsYolu.Birlestir(v0, "Parça1.SLDPRT")),
-            "parca kopyasi v0'da montajin yaninda degil");
-    }
-
     // ---------------------------------------------------------------------
     // AD/KLASOR DEGISINCE VERSIYONLAR GORUNMEYE DEVAM EDER (Erkan,
     // 31.08.2026: "versiyonu olan parçanın adını veya bulunduğu klasörün
@@ -195,9 +170,10 @@ public partial class SurumlerTestleri
     [Fact]
     public void COCUKLU_dosyanin_ADI_degisince_versiyonlar_GORUNUR()
     {
-        OrnegiKoy("Parça1.SLDPRT");
+        string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         IslemRaporu rapor = DosyaIslemleri.YenidenAdlandir(montaj, "Montaj9.SLDASM");
         Assert.True(rapor.Oldu, rapor.Sebebi);
@@ -221,6 +197,7 @@ public partial class SurumlerTestleri
         File.Move(OrnegiKoy("Montaj1.SLDASM"), montaj);
 
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         Assert.True(DosyaIslemleri.YenidenAdlandir(alt, "56").Oldu);
 
@@ -235,9 +212,10 @@ public partial class SurumlerTestleri
     [Fact]
     public void ADI_DEGISMIS_cocuklu_versiyona_DONULEBILIYOR()
     {
-        OrnegiKoy("Parça1.SLDPRT");
+        string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         long ilkBoyut = new FileInfo(montaj).Length;
         string yeni = WindowsYolu.Birlestir(_kok, "Montaj9.SLDASM");
@@ -254,9 +232,10 @@ public partial class SurumlerTestleri
         // Bu turdan ONCE yazilmis kayitlar dort alanli: 5. alan (asil ad)
         // yok. Erkan'in elindeki arsivler boyle - onlarin da gorunmesi sart
         // (CLAUDE.md 3), yoksa "versiyonlarim kayboldu" der.
-        OrnegiKoy("Parça1.SLDPRT");
+        string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "eski kayit", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         // 5. alani KIRP: eski bicime dondur.
         string kayit = KayitYolu(montaj);
@@ -290,6 +269,7 @@ public partial class SurumlerTestleri
         byte[] ilkParca = File.ReadAllBytes(parca);
 
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         // Parca DEGISTI (bugunku hal), montaj da.
         File.AppendAllText(parca, "sonradan eklendi");
@@ -308,6 +288,7 @@ public partial class SurumlerTestleri
         string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         File.AppendAllText(parca, "bugunku hal");
         long bugunku = new FileInfo(parca).Length;
@@ -326,6 +307,7 @@ public partial class SurumlerTestleri
         string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         File.AppendAllText(parca, "degisiklik");
         byte[] once = File.ReadAllBytes(parca);
@@ -342,6 +324,7 @@ public partial class SurumlerTestleri
         string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         File.AppendAllText(parca, "degisiklik");
         byte[] once = File.ReadAllBytes(parca);
@@ -360,6 +343,7 @@ public partial class SurumlerTestleri
         string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         IReadOnlyList<DonusOgesi> liste = Surumler.DonusListesi(_kok, montaj, 0);
 
@@ -373,53 +357,60 @@ public partial class SurumlerTestleri
     }
 
     [Fact]
-    public void ALT_KLASORDEKI_cocuk_BAYAT_MUTLAK_yola_ragmen_ARSIVLENIR()
-    {
-        // OLCULDU 31.08.2026 (o gun kisa sure duran parca listesi ozelliginin
-        // kapisi gosterdi, ama hata BURAYA aitti): Montaj1'in icinde
-        // "C:\Users\PC\Desktop\tertemiz\Yeni klasör\Parça2.SLDPRT"
-        // yaziyor - BASKA BIR MAKINENIN yolu. Parca gercekte montajin
-        // yanindaki "Yeni klasör" altinda duruyor ama komsuluk kurali yalniz
-        // dosya ADINA baktigi icin ALT KLASORDEKINI gormuyordu: cocuk
-        // "cozulemedi" sayiliyor, arsive HIC girmiyor ve montajin versiyonu
-        // SOLIDWORKS'te acilmiyordu (CLAUDE.md 1a).
-        //
-        // Onarim BelgeAgaci.SonEkiDene: yazili yolun son ekleri ebeveyne gore
-        // denenir (en uzun ek once) ve bir yol ancak DISKTE VARSA kabul
-        // edilir - uydurma yok.
-        OrnegiKoy("Parça1.SLDPRT");
-        string parca2 = OrnegiAlta("Yeni klasör/Parça2.SLDPRT", "Yeni klasör");
-        string montaj = OrnegiKoy("Montaj1.SLDASM");
-
-        CocukKumesi cocuklar = Surumler.Cocuklari(montaj);
-
-        Assert.Equal(0, cocuklar.Cozulemeyen);
-        Assert.Contains(parca2, cocuklar.Yollar);
-
-        // ASIL SINAV: kopya gercekten arsive giriyor mu - yoksa montajin
-        // versiyonu yine acilmaz.
-        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
-        Assert.True(rapor.Oldu, rapor.Sebebi);
-
-        // Arsivde cocuklar DUZ duruyor (montajin yaninda, gercek adlariyla):
-        // SOLIDWORKS once ebeveynin yanina bakiyor, klasor yapisini
-        // tasimaya gerek yok (CLAUDE.md 5).
-        string v0 = WindowsYolu.Klasor(rapor.YeniYol!);
-        Assert.True(
-            File.Exists(WindowsYolu.Birlestir(v0, "Parça2.SLDPRT")),
-            "alt klasordeki parca v0'a girmedi");
-    }
-
-    [Fact]
     public void AYNI_ICERIKLI_cocuk_icin_GEREKSIZ_ARSIV_olusmaz()
     {
         string parca = OrnegiKoy("Parça1.SLDPRT");
         string montaj = OrnegiKoy("Montaj1.SLDASM");
         Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
 
         // Parca DEGISMEDI: geri yazmaya da arsivlemeye de gerek yok.
         Assert.True(Surumler.Don(_kok, montaj, 0, [parca]).Oldu);
 
         Assert.Empty(Surumler.Listele(_kok, parca).Ogeler);
+    }
+
+    // ---------------------------------------------------------------------
+    // "PARCALARI YANINDA DEGIL" UYARISI HANGI ARSIVDE CIKAR (CLAUDE.md 3).
+    //
+    // Yeni versiyon yalniz o dosya; arsivdeki montaji cift tiklayan
+    // kullanici BUGUNKU parcalarla acilmis bir montaj gorur ve bunu
+    // anlamasinin baska hicbir yolu yoktur. Durum cubugu bunu soyluyor -
+    // ama YALNIZCA gercekten oyleyse: Erkan'in elindeki cocuklu ESKI
+    // arsivlerde cikmamali, yoksa bayat uyari olur (CLAUDE.md 6).
+    // ---------------------------------------------------------------------
+
+    [Fact]
+    public void YENI_versiyonun_YANINDA_COCUK_YOK()
+    {
+        OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+
+        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
+
+        Assert.False(Surumler.YanindaCocukVarMi(rapor.YeniYol));
+    }
+
+    [Fact]
+    public void ESKI_cocuklu_arsivde_YANINDA_COCUK_VAR()
+    {
+        // TABAN SART: ustteki test tek basina "hep false donen" bir metotla
+        // da gecerdi.
+        string parca = OrnegiKoy("Parça1.SLDPRT");
+        string montaj = OrnegiKoy("Montaj1.SLDASM");
+
+        IslemRaporu rapor = Surumler.Olustur(_kok, montaj, "ilk", out int _);
+        EskiCocukluArsiv(montaj, 0, parca);   // 31.08-01.09 duzeni
+
+        Assert.True(Surumler.YanindaCocukVarMi(rapor.YeniYol));
+    }
+
+    [Fact]
+    public void YANINDA_COCUK_sorusu_OLMAYAN_yolda_PATLAMIYOR()
+    {
+        // Bakilamayan yolda UYARI VERILMEZ: olmayan bir eksigi soylemek de
+        // yalandir (CLAUDE.md 3).
+        Assert.False(Surumler.YanindaCocukVarMi(null));
+        Assert.False(Surumler.YanindaCocukVarMi(WindowsYolu.Birlestir(_kok, "yok/v0/A.SLDPRT")));
     }
 }

@@ -422,6 +422,12 @@ kesilince test kırılıyor.
 > kapısı gösterdi. Özellik gitti, **ölçüm ve onarım kaldı** — hata baştan
 > versiyon arşivinindi.
 
+> **01.09.2026: `BelgeAgaci.Coz` de gitti** (versiyon yalnız o dosya oldu).
+> Ölçüm bayatlamıyor — SOLIDWORKS'ün davranışı bu — ama artık ona dayanan
+> bir kod yok. **İndeks etkilenmedi:** `ReferansCozucu` adaylarını indeksten
+> alıyor, yani dosyayı zaten nerede olursa olsun bulmuş oluyor; son ek
+> kuralına orada hiç ihtiyaç olmadı.
+
 ### PARÇA MONTAJI İÇERMEZ — in-context bağ YUKARI dogrudur (01.09.2026)
 
 Erkan, ekran görüntüsüyle: *"knk versiyon oluşturma o parçanın bir kopyasını
@@ -458,6 +464,16 @@ döngüsü: TEMİZ → kural kesilince **YAKALADI** → geri konunca TEMİZ.
 > versiyon EKSİK"* diyordu. Eksik olan bir şey yok; o dal versiyonun
 > **kapsamında** hiç değil. Montajın referansı **panelde görünmeye devam
 > ediyor** — gizlenen bir şey de yok.
+
+> **KURAL AYNI GÜN KODDAN ÇIKTI — ölçüm kaldı (§1c).** Onarım parçayı
+> düzeltti ama Erkan aynı gün teknik resim (5 dosya) ve montaj (4 dosya)
+> kutularını gösterip *"aynı hata devam ediyor"* dedi: onun için sorun
+> **yönde değil, arşivlemenin kendisindeydi**. Karar soruldu, cevabı
+> *"yalnız o dosya (parça gibi)"* oldu → çocuk toplama tümden kalktı,
+> `BelgeAgaci` ve `Surumler.Cocuklar` **silindi** (§1b: iki dosya + üç
+> satır). Yukarıdaki ölçüm burada duruyor çünkü **soru yine sorulacak**:
+> ağaç yürüyüşü bir gün geri gelirse başlangıç noktası bu, ve o zaman
+> `AgacYonuTestleri` de git geçmişinden geri alınır.
 
 ### DOSYAYA YAZMA — ölçüldü (28.08.2026), yeniden kurma DEĞİL YERİNDE yama
 
@@ -1110,8 +1126,6 @@ dosyasında** duruyor:
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |
 | **versiyon silme + not düzenleme** (çekirdek) | `Cekirdek/Surum/Surumler.Bakim.cs` |
 | **arşivin dosyayla birlikte taşınması** | `Cekirdek/Surum/Surumler.Tasima.cs` |
-| **belge ağacını yürüme** (torunlar dahil, SW'ün çözme kuralı) | `Cekirdek/Referans/BelgeAgaci.cs` |
-| **versiyona girecek çocuklar** (o günkü hâl) | `Cekirdek/Surum/Surumler.Cocuklar.cs` |
 | **"bu versiyona dön"** (çekirdek + çocuklar) | `Cekirdek/Surum/Surumler.Donus.cs` |
 | dönüşte hangi çocuklar geri yazılsın | `Arayuz/Gorunum/Islemler/Kutular/DonusSecimKutusu.cs` |
 | versiyon satırında `F2` (not) · `Delete` (sil) | `Arayuz/Gorunum/Islemler/SurumBakimi.cs` |

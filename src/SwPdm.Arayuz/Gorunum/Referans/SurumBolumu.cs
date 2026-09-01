@@ -106,12 +106,19 @@ internal sealed class SurumBolumu
     /// <summary>
     /// Cift tik: versiyonu ACAR - arsivdeki dosyayi DOGRUDAN.
     ///
-    /// ARTIK MONTAJ VE TEKNIK RESIM DE ACILIYOR (Erkan, 31.08.2026: "part
-    /// dosyası eskiden ne güzel versiyon çalışıyordu, diğerleri de öyle
-    /// olamaz mı"): versiyon klasoru artik KENDI KENDINE YETIYOR - asil
-    /// dosya gercek adiyla, o gunku cocuklari yaninda. SOLIDWORKS komsuluk
-    /// kuraliyla (CLAUDE.md 5) parcalari orada buluyor. Burada tur ayrimi
-    /// YOK: parcada ne oluyorsa montajda da o oluyor.
+    /// HER TUR ACILIR; ama VERSIYON ARTIK YALNIZ O DOSYA (Erkan'in karari,
+    /// 01.09.2026) ve bu, ACARKEN soylenmesi gereken bir sey:
+    ///
+    /// Arsiv klasorunde parcalar yoksa SOLIDWORKS onlari ebeveynin yaninda
+    /// bulamaz (CLAUDE.md 5) ve montaji BUGUNKU parcalarla acar. Kullanici
+    /// gecmise baktigini sanar; hicbir sey patlamaz, hicbir sebep gorunmez -
+    /// tam da CLAUDE.md 3'un yasakladigi hal. O yuzden durum cubuguna bir
+    /// cumle daha yaziliyor.
+    ///
+    /// SART DISKTEN OKUNUYOR, bilerek: Erkan'in elindeki ESKI arsivlerde
+    /// cocuklar YANINDA duruyor ve orada bu cumle CIKMAMALI. Sabit bir tarih
+    /// ya da bayrak yerine gercege bakiliyor - bayat uyari, fazla uyaridan
+    /// tehlikelidir (CLAUDE.md 6).
     ///
     /// Kopyalar diskte SALT-OKUNUR durur; SOLIDWORKS [Read-Only] acar ve
     /// gecmisin ustune kaza ile kaydedilemez (CLAUDE.md 1a).
@@ -127,9 +134,24 @@ internal sealed class SurumBolumu
         // Acma kalibi TEK KOPYA (CLAUDE.md 8); buraya yalnizca versiyona
         // ozel cumle ekleniyor.
         string cumle = DosyaAcici.YoluAc(sahip, arsivYolu);
-        return cumle.EndsWith("açılıyor…", StringComparison.Ordinal)
-            ? cumle + "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)"
-            : cumle;
+        if (!cumle.EndsWith("açılıyor…", StringComparison.Ordinal))
+        {
+            return cumle;
+        }
+
+        cumle += "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)";
+
+        // Yalnizca COCUGU OLABILECEK turlerde soruluyor: parcanin zaten
+        // cocugu yok, orada bu cumle bos yere korkuturdu. Tur bilgisi
+        // DosyaTurleri'nden turetiliyor (CLAUDE.md 1b).
+        DosyaTuru tur = DosyaTurleri.Tani(arsivYolu);
+        if ((tur == DosyaTuru.Montaj || tur == DosyaTuru.TeknikResim)
+            && !Surumler.YanindaCocukVarMi(arsivYolu))
+        {
+            cumle += "  · parçaları yanında değil — BUGÜNKÜ parçalarla açılır";
+        }
+
+        return cumle;
     }
 
     /// <summary>Cizilen siradaki versiyon kaydi; sira bir versiyon satiri degilse null.</summary>

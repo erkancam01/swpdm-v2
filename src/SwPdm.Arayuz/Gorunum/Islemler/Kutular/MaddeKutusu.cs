@@ -54,20 +54,6 @@ internal static class MaddeKutusu
     }
 
     /// <summary>
-    /// KULLANICININ KENDI ISTEDIGI liste - uyari DEGIL, bilgi.
-    ///
-    /// Ayri metot cunku ikon YALAN SOYLEMEMELI (CLAUDE.md 3/6): "Listeyi
-    /// göster" dedigi icin acilan bir kutuda uyari ucgeni, ortada bir sorun
-    /// varmis gibi okunur. Kirpma esigi ve metin kurali Goster ile AYNI
-    /// yerden geliyor - ikinci kopya yok (CLAUDE.md 8).
-    /// </summary>
-    internal static void Listele(
-        IWin32Window sahip, string baslik, string bas, IReadOnlyList<string> maddeler)
-        => MessageBox.Show(
-            sahip, Metin(bas, maddeler), baslik,
-            MessageBoxButtons.OK, MessageBoxIcon.None);
-
-    /// <summary>
     /// En sik hal: baslik + bas cumle + maddeler, uyari ikonlu kutu.
     /// </summary>
     internal static void Goster(

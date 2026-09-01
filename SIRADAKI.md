@@ -70,6 +70,15 @@
 >
 > **Kullanım kılavuzu artık var:** `OZELLIKLER.md` (pakete `OZELLIKLER.txt`
 > olarak giriyor). Bir düğme/kısayol değişirse orası da değişmeli.
+> **01.09.2026: VERSİYON = YALNIZ O DOSYA.** Erkan iki turda bildirdi
+> (*"ne alaka dosyaları arşivleme"*, sonra *"aynı hata teknik resim ve
+> montajda devam ediyor"*). Önce parçanın gerçek hatası onarıldı (in-context
+> montaj referansı izleniyordu: 162 dosya), sonra karar sorulup
+> **"yalnız o dosya"** seçildi → çocuk toplama tümden kalktı,
+> `BelgeAgaci.cs` + `Surumler.Cocuklar.cs` **silindi**. Eski çocuklu
+> arşivler bozulmadı (on birim testi kilitliyor). Kabul edilen bedel:
+> arşivdeki montaj/teknik resim bugünkü parçalarla açılır — durum çubuğu
+> **söylüyor**.
 
 ---
 

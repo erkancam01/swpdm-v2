@@ -9,6 +9,10 @@ namespace SwPdm.Arayuz.Gorunum;
 /// O anki icerigi <see cref="Surumler"/> arsivine kopyalar; ilk cagri v0'i
 /// yaratir - mevcut dosyalar v0 sayilir, onceden hazirlik gerekmez.
 ///
+/// YALNIZ O DOSYA kopyalanir - montaj ve teknik resim dahil (Erkan'in karari,
+/// 01.09.2026). Bir tur once montajin o gunku cocuklari da giriyordu ve tek
+/// bir teknik resim "5 dosya", bir parca "162 dosya" suruklyordu.
+///
 /// Iki giris kapisindan BIRINCISI bu (Erkan'in secimi "ikisi birden"):
 /// sag tik / Ctrl+Shift+U her an. Ikincisi - belge kapaninca tek soru -
 /// Asama 2'de gelecek (SIRADAKI.md).
@@ -71,49 +75,14 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             return;
         }
 
-        // KAC DOSYA ARSIVLENECEGI KUTUDA YAZIYOR - ayri bir uyari kutusu
-        // DEGIL (CLAUDE.md 6). Versiyon artik kendi kendine yetiyor: montajin
-        // o gunku cocuklari da kopyalaniyor, yani disk maliyeti var ve
-        // kullanicinin gozu onunde olmali (CLAUDE.md 3).
-        CocukKumesi cocuklar = Surumler.Cocuklari(dosya.Yol);
-
-        // SAYININ HESABI VERILIYOR (Erkan, 01.09.2026: "241 dosya diyor, bi
-        // hata var"). Kutu BUTUN AGACI sayiyor, paneldeki "İÇİNDEKİLER" ise
-        // yalnizca DOGRUDAN cocuklari - ikisi ayri sey ve fark ekranda
-        // yazmayinca celiski okunuyordu. Artik ikisi de yaziyor.
-        int torun = cocuklar.Yollar.Count - cocuklar.Dogrudan;
-        string kapsam = cocuklar.Yollar.Count == 0
-            ? $"\"{dosya.Ad}\" şimdiki hâliyle arşivlenecek."
-            : $"\"{dosya.Ad}\" ve kullandığı {cocuklar.Yollar.Count} dosya "
-              + "şimdiki hâlleriyle arşivlenecek"
-              + (torun > 0
-                  ? $" ({cocuklar.Dogrudan} doğrudan · {torun} alt seviye)."
-                  : ".");
-
-        // EKSIK VERSIYON UYARISI KUTUNUN ICINDE (CLAUDE.md 3/6): durum
-        // cubuguna yazilan uyari Erkan'da GOZDEN KACTI ve eksik arsivlenen
-        // montaj "dosya bozuk" diye geri dondu. Kullanici karari kutuda
-        // gorup versiyonu yine de olusturabilir - engel degil, bilgi.
-        if (cocuklar.Cozulemeyen > 0)
-        {
-            kapsam += $"\nDİKKAT: {cocuklar.Cozulemeyen} referans bulunamadı — "
-                + "versiyon EKSİK arşivlenecek.";
-        }
-
-        // LISTEYI GOSTER: sayiyi kullanici KENDI verisinde dogrulayabilsin
-        // (CLAUDE.md 2). Buyuk bir montajda uc haneli bir sayiya bakip
-        // "arsivle" demek zorunda kalmak, dogrulanamayan bir sayiya
-        // guvenmek demekti.
+        // VERSIYON = YALNIZ O DOSYA (Erkan, 01.09.2026: "versiyon olusturma
+        // o parcanin bir kopyasini olusturma degil mi, ne alaka dosyalari
+        // arsivleme"). Kutu artik tek cumle; sayilacak bir sey yok, o yuzden
+        // "Listeyi goster..." dugmesi de kalkti (CLAUDE.md 6: kutuda yalnizca
+        // kararin gerektirdigi kadari durur).
         string? not = SurumNotuKutusu.Sor(
-            baglam.Sahip, "Yeni versiyon", kapsam + " Not (isteğe bağlı):",
-            listeyiGoster: cocuklar.Yollar.Count == 0
-                ? null
-                : () => MaddeKutusu.Listele(
-                    baglam.Sahip,
-                    "Arşivlenecek dosyalar",
-                    $"\"{dosya.Ad}\" ile birlikte {cocuklar.Yollar.Count} dosya "
-                    + "arşive kopyalanacak:",
-                    cocuklar.Yollar));
+            baglam.Sahip, "Yeni versiyon",
+            $"\"{dosya.Ad}\" şimdiki hâliyle arşivlenecek. Not (isteğe bağlı):");
 
         if (not is null)
         {
@@ -121,7 +90,7 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             return;
         }
 
-        IslemRaporu rapor = Surumler.Olustur(kok, dosya.Yol, not, out int no, cocuklar);
+        IslemRaporu rapor = Surumler.Olustur(kok, dosya.Yol, not, out int no);
 
         if (!rapor.Oldu)
         {
@@ -132,14 +101,9 @@ internal sealed class SurumOlusturIslemi : IAgacIslemi
             return;
         }
 
-        baglam.Bildir(
-            (no == 0
-                ? $"v0 arşivlendi (ilk versiyon): {dosya.Ad}"
-                : $"v{no} oluşturuldu: {dosya.Ad}")
-            + (cocuklar.Yollar.Count > 0 ? $" · {cocuklar.Yollar.Count} referansıyla" : "")
-            // Cekirdek "N referans bulunamadi" diyorsa YUTULMAZ: eksik
-            // cocukla arsivlenen versiyon eksik acilir (CLAUDE.md 3).
-            + (rapor.Sebep is { Length: > 0 } uyari ? " · " + uyari : ""));
+        baglam.Bildir(no == 0
+            ? $"v0 arşivlendi (ilk versiyon): {dosya.Ad}"
+            : $"v{no} oluşturuldu: {dosya.Ad}");
 
         // Panel tazelensin ki VERSIYONLAR sekmesindeki sayi hemen artsin;
         // yol verilerek secim ayni dosyada kalir.

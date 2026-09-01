@@ -9,9 +9,12 @@ namespace SwPdm.Arayuz.Gorunum;
 /// <summary>
 /// "BU VERSIYONA DON" KUTUSU - iki yonu birden gosterir.
 ///
-/// ASAGI (bu versiyonun KULLANDIGI dosyalar) - Erkan'in ilk versiyon
-/// isteginin 3. maddesi: montajin versiyonu artik o gunku PARCALARI da
-/// tasiyor. Yalniz montaji geri yazmak "eski versiyona dondum" sanisi
+/// ASAGI (bu versiyonun KULLANDIGI dosyalar) - YALNIZCA ESKI ARSIVLERDE
+/// dolu. 31.08 - 01.09.2026 arasinda montajin versiyonu o gunku parcalari da
+/// tasiyordu; 01.09'da versiyon YALNIZ o dosyaya indi (Erkan'in karari:
+/// "ne alaka dosyalari arsivleme") ve yeni yuvalarda bu bolum hic cizilmiyor.
+/// Eski yuvalarda calismaya DEVAM ediyor: kullanicinin diskinde o arsivler
+/// duruyor ve yalniz montaji geri yazmak "eski versiyona dondum" sanisi
 /// yaratirdi, oysa parcalar bugunku halinde kalirdi (CLAUDE.md 3). Karar
 /// kullanicinin: hangi parcanin geri yazilacagini GORUP secer.
 /// Varsayilan akilli: yalnizca BUGUNKUNDEN FARKLI olanlar isaretli gelir.
