@@ -1,3 +1,39 @@
+TUR 8-12/18 - ETIKET, KUTU VE SESSIZLIK (bes madde daha)
+
+  1) VERSIYONLAR SATIRINDA TUSLAR NE YAPIYOR, YAZIYOR
+     O sekmede menu "Sil  Delete" ve "Yeniden adlandir  F2" yaziyordu -
+     oysa orada Delete VERSIYONU ARSIVDEN KALICI SILIYOR, F2 notu
+     duzenliyor. Artik menunun ustunde ucu birden yaziyor:
+     "Enter: bu versiyona don · F2: not · Delete: versiyonu sil".
+
+  2) MENUDE YAZILAN TUS ARTIK METIN DEGIL (ic duzeltme)
+     "Aç" ogesinin "Enter" etiketi bir metindi ve panelin "bu tusu gizle"
+     suzgecine sorulamiyordu; dogru sonuc tesadufen cikiyordu. Artik tus
+     olarak duruyor, yazi ondan turetiliyor. Ekranda bugun tek satir
+     degismiyor - yarin bozulmayacak.
+
+  3) AYARLAR SAYFASINDAKI IKI KUTU KURALA GIRDI
+     "Baska disk" onayi ham bir Windows kutusuydu ve dugmelerinde
+     "Tamam/Iptal" yaziyordu; artik oteki onaylar gibi "Evet / Vazgeç"
+     (varsayilan yine Vazgeç). "Eski cop kutusunda N oge kaldi" bilgisi
+     kutudan cikip durum cubuguna gecti - ne onaydi ne hata, ustelik ayar
+     degistikten SONRA cikiyordu.
+
+  4) SESSIZ BITEN YOLLAR ARTIK KONUSUYOR
+     - F2'de VAZGEC dedigin ya da AYNI ADI yazdigin zaman hicbir sey
+       yazmiyordu; ikincisi sinsiydi - "F2 bozuk" gibi gorunuyordu.
+     - Referansi elle baglamada iptal ettigin iki nokta sessizdi.
+     - Rapor penceresinde satir secmeden Enter, ve "Duzelt" onayini
+       reddetmek sessizdi.
+     Hepsi artik sebebini yaziyor.
+
+  5) "GIZLI TUSLAR" MADDESI OLCULDU VE BUYUK OLCUDE ZATEN KAPALIYDI
+     Kilavuz panelde Ctrl+C'yi, Backspace'i ve Ctrl+A'nin kapsamini zaten
+     yaziyormus. Ekranda yazmayan tek TEHLIKELI cift versiyon satirindaki
+     F2/Delete idi - 1. maddede kapandi. Uydurma is yapilmadi.
+
+  OLCULDU: bes kapi TEMIZ · calistirma 26/26 · 372 test gecti, 5 atlandi.
+
 TUR 3-7/18 - HEDEF, SEBEP VE "BURAYA" ONARIMLARI (bes madde)
 
   Hepsi ayri commit'te; tek pakette veriliyor ki bir seferde deneyebilesin.

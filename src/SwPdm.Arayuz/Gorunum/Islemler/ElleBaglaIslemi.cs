@@ -119,18 +119,21 @@ internal sealed class ElleBaglaIslemi : IAgacIslemi
         string? secilenYazilan = BaglanacakYol(baglam.Sahip, ebeveyn, adaylar);
         if (secilenYazilan is null)
         {
-            return;   // vazgecildi; kutu zaten kapandi, durum cubuguna yazacak sey yok
+            baglam.Bildir("Bağlama iptal edildi.");
+            return;
         }
 
         string yazilanAd = WindowsYolu.DosyaAdi(secilenYazilan);
         string? hedef = HedefiSor(baglam.Sahip, baglam.Secim.Kok, yazilanAd);
         if (hedef is null)
         {
+            baglam.Bildir("Bağlama iptal edildi — hedef dosya seçilmedi.");
             return;
         }
 
         if (!Onayla(baglam.Sahip, ebeveyn, secilenYazilan, hedef))
         {
+            baglam.Bildir("Bağlama iptal edildi.");
             return;
         }
 

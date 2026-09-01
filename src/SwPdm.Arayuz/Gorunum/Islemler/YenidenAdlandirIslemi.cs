@@ -61,8 +61,21 @@ internal sealed class YenidenAdlandirIslemi : IAgacIslemi
             baglam.Sahip, "Yeniden adlandır", eskiAd,
             WindowsYolu.Klasor(yol), oge is DosyaOgesi);
 
-        if (yeniAd is null || yeniAd == eskiAd)
+        // IKI HAL DE SOYLENIYOR (01.09.2026 denetimi): burasi tek satirlik
+        // sessiz bir "return"du ve butun kardes islemler (yeni klasor, sil,
+        // tasi, versiyon...) iptali soyluyordu - yalniz adlandirma
+        // susuyordu. Ikincisi daha sinsi: kullanici ad yazip Tamam'a
+        // basmis, ekranda hicbir sey olmamis; bozuk bir F2'den ayirt
+        // edilemiyor (CLAUDE.md 3).
+        if (yeniAd is null)
         {
+            baglam.Bildir("Ad değiştirme iptal edildi.");
+            return;
+        }
+
+        if (yeniAd == eskiAd)
+        {
+            baglam.Bildir($"Ad değişmedi: {eskiAd}");
             return;
         }
 

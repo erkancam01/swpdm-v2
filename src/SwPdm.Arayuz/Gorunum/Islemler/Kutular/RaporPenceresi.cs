@@ -115,6 +115,11 @@ internal static class RaporPenceresi
         {
             if (liste.SelectedItems.Count == 0 || liste.SelectedItems[0].Tag is not string yol)
             {
+                // SESSIZ DONMEK YASAK (CLAUDE.md 3): kullanici Enter'a
+                // basiyor, pencere duruyor, hicbir sey yazmiyor - tuşun
+                // bozuk oldugunu dusunuyor. Panelin ayni durumdaki cumlesi
+                // bunun kardesi ("Kopyalanacak satir secili degil.").
+                bildir("Gidilecek satır seçili değil.");
                 return;
             }
 
@@ -198,6 +203,7 @@ internal static class RaporPenceresi
                 + "onarılamazsa ona DOKUNULMAZ ve sebebi yazılır.\n\n"
                 + "SOLIDWORKS'te açık dosyalar atlanır."))
         {
+            bildir("Düzeltme iptal edildi.");
             return;
         }
 
