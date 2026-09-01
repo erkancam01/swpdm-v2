@@ -1,3 +1,30 @@
+TUR 17-18/18 - SON IKI MADDE: SILME OLCULDU, BIR KOR NOKTA YAZILDI
+
+  1) SILME ARTIK KAPIDA OLCULUYOR (21. olcum)
+     Silme, dosyaya dokunan islemlerin en tehlikelisi ve
+     "kisayol -> onay -> DISK" zinciri hic olculmuyordu. Cekirdek 13
+     testliydi ama arayuz yarisi kor noktaydi.
+     IKI SART BIRDEN: dosya yerinden GITMELI **ve** cop klasorunde
+     BULUNMALI. Yalniz birincisi olculseydi KALICI SILME de testi gecerdi
+     - oysa bu uygulamanin sozu "silme geri alinabilir" (ag surucusunde
+     Windows'un cop kutusu yok, kendi klasorumuz var).
+     Olcum: cop klasorunun adi bilerek degistirildi, kapi
+     "dosya gitti ama COPTE YOK - kalici silinmis" dedi; geri konunca TEMIZ.
+
+  2) "AC" ISLEMI OLCULEMIYOR - VE BU SESSIZCE BIRAKILMADI
+     Sag tik menusundeki "Aç" ogesinin govdesine ancak MENUYU ACARAK
+     girilebiliyor; Wine'da her acilir menu uygulamayi cokertiyor. Kisayol
+     da veremiyoruz: tek basina Enter'i kaydetmek uygulamayi hic
+     actirmiyor (bunun bedeli gecen hafta odendi).
+     Yani: bu madde KAPANMADI, YAZILDI (SIRADAKI.md'ye). Govdesi tek satir
+     ve o cagri panelde cift tikla zaten olculuyor - risk sinirli.
+     Ayni bolume pano (Ctrl+X/Ctrl+V) ve surukle-birak olcumlerinin de
+     neden pahali oldugu yazildi.
+
+  === DENETIM TURU BITTI ===
+  18 maddenin 17'si kapandi, 1'i sebebiyle yazildi.
+  Kapi sayisi 5 -> 7 · calistirma olcumu 25 -> 27 · test 369 -> 384.
+
 TUR 13-16/18 - OLCUM BOSLUKLARI KAPANDI (dort madde)
 
   Bu turda ARAYUZDE gorunen bir sey degismedi (bir satir haric): eksik

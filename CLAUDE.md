@@ -1167,6 +1167,23 @@ araclar/kapilar.sh [--kur]     # yedisini sırayla koşar
 > belgede yazan yolun gerçek konum olduğunu denetliyor. §9 döngüsü: TEMİZ →
 > bir satırın yolu eskisine çevrilince **YAKALADI** → düzeltilince TEMİZ.
 
+> **SİLME ÖLÇÜMÜ NEDEN VAR (01.09.2026):** silme, dosyaya dokunan
+> işlemlerin en tehlikelisi ve `kısayol → onay → DİSK` zinciri hiç
+> ölçülmüyordu; çekirdek 13 testliydi ama o zincirin **arayüz yarısı kör
+> noktaydı** — 16. ve 23. ölçümlerin yakaladığı hata sınıfı (yanlış hedef,
+> sessiz başarısızlık) tam orada yaşayabilirdi.
+>
+> **İKİ ŞART BİRDEN:** dosya yerinden gitmeli **ve** çöp klasöründe
+> bulunmalı. Yalnız birincisi ölçülseydi **kalıcı silme de testi geçerdi**
+> — oysa bu uygulamanın sözü "silme geri alınabilir" (§11: ağ sürücüsünde
+> Windows çöp kutusu yok, o yüzden kendi çöp klasörümüz var).
+> §9 döngüsü: TEMİZ → çöp klasörünün adı değiştirilince **YAKALADI**
+> ("dosya gitti ama COPTE YOK - kalici silinmis") → geri konunca TEMİZ.
+>
+> **ONAY KUTUSU GEÇ AÇILIYOR — ölçüldü:** her işlemden önce referans
+> taraması koşuyor; 3 saniye yetmiyor, 9 gerekiyor. Aynı tuzak 18.
+> ölçümde F2 için de ödenmişti.
+
 > **KISAYOL KAPISI NEDEN VAR (01.09.2026) — ONARIM DEĞİL, KORUMA.**
 > `Keys.Enter` bir kez uygulamayı **hiç açtırmadı** (§6) ve bunu gören tek
 > şey tam bir Wine koşusu oldu; derleme "0 uyarı 0 hata" diyordu. Bugün
@@ -1223,7 +1240,7 @@ görmedi çünkü bakan bir şey yoktu. Sınır (600) bugünün ölçümüyle se
 27.08.2026'da ağaçtaki en büyük dosya **536** satır. `KAPI_BOYUT_SINIRI` ile
 değiştirilebilir ama varsayılan belgeden değil **ölçümden** gelir.
 
-**Çalıştırma kapısı yirmi beş şey ölçer** (bu sayı bir kez "on dört" diye bayat
+**Çalıştırma kapısı yirmi yedi şey ölçer** (bu sayı bir kez "on dört" diye bayat
 kaldı — 15. ölçüm eklenirken cümle güncellenmemişti; sayıyı kapının çıktısı
 söyler, burası onu izler): süreç ayakta mı · hata akışı temiz mi ·
 çökme penceresi var mı · ana pencere doğdu mu · **çoklu seçim çalışıyor mu** ·
@@ -1239,10 +1256,12 @@ sahibi işaretleniyor mu** · **`Esc` aramadan çıkarıyor mu** ·
 **versiyon satırında `F2` notu yazıyor · `Delete` kopyayı ve kaydı siliyor mu** ·
 **`Enter` dosyayı gerçekten o versiyonun içeriğine döndürüyor mu ve kutu
 ETKİLENENLERİ gösteriyor mu** ·
+**`Delete` dosyayı gerçekten ÇÖPE mi taşıyor (kalıcı silmiyor)** ·
 **3B ayarıyla açılış eDrawings'siz çökmüyor mu** (ikinci kısa koşu) ·
 **kilitli klasör gerçekten açılmıyor mu** (üçüncü kısa koşu, kendi klasörü) ·
 **panelden alınan versiyon SATIRIN dosyasına mı açılıyor** ·
 **tür süzgecinin GİZLEDİĞİ dosyaya panelden gidilebiliyor mu** ·
+**kilitli klasöre `Ctrl+Z` yazmıyor mu** ·
 **panelden "ağaçta göster" SATIRIN dosyasını mı seçiyor** (son üçü dördüncü
 kısa koşu, kendi klasörü).
 Ekran görüntüsünü `.kapi/ekran.png` olarak bırakır; CI'da yapıt olarak saklanır.

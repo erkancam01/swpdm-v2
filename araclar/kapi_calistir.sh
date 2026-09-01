@@ -41,7 +41,7 @@ set -uo pipefail
 # oldu: siralama araya girince suzgec 8., geri alma 9. oldu ve CLAUDE.md'de
 # numaralar elle duzeltildi. Simdi numara KOSARKEN sayiliyor; elle numara
 # kalmadi, kaymasi imkansiz.
-OLCUM_TOPLAM=26
+OLCUM_TOPLAM=27
 OLCUM_NO=0
 olcum() {
   # olcum "<ad ....>" "<EVET/HAYIR/OLCULEMEDI ...>"
@@ -1281,7 +1281,49 @@ else
   SORUN=1
 fi
 
-# 21) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
+# 21) SIL: dosya GERCEKTEN cope gidiyor mu (kalici silinmiyor mu)
+#
+# NEDEN VAR (01.09.2026 denetimi): silme, dosyaya dokunan islemlerin en
+# tehlikelisi ve kisayol -> onay -> DISK zinciri hic olculmuyordu.
+# Cekirdek 13 testli ama o zincirin arayuz yarisi kor noktaydi - tam da
+# 16. ve 23. olcumlerin yakaladigi hata sinifi (yanlis hedef, sessiz
+# basarisizlik) orada yasayabilirdi.
+#
+# IKI SART BIRDEN (CLAUDE.md 1a): dosya yerinden GITMELI **ve** cop
+# klasorunde BULUNMALI. Yalniz birincisi olculseydi KALICI SILME de testi
+# gecerdi - oysa bu uygulamanin sozu "silme geri alinabilir".
+if [ -n "$ANA" ] && [ -n "$PENCERE_X" ] && [ -n "$PENCERE_Y" ]; then
+  xdotool mousemove "$(( PENCERE_X + AGAC_TIK_X ))" "$TXT_SATIR" click 1 > /dev/null 2>&1
+  sleep 3
+  xdotool key --clearmodifiers Delete > /dev/null 2>&1
+  # ONAY KUTUSU GEC ACILIYOR: her islemden once referans taramasi kosuyor
+  # (2. turun olcumunde bedeli odendi - 3 saniye yetmiyor).
+  sleep 9
+  # "tehlikeli" kutu: odak Vazgec'te, sol ok Evet'e gecirir.
+  xdotool key Left > /dev/null 2>&1
+  sleep 1
+  xdotool key Return > /dev/null 2>&1
+  sleep 6
+
+  SIL_YERINDE=0
+  [ -f "$ORNEK/okubeni.txt" ] && SIL_YERINDE=1
+  SIL_COPTE="$(find "$ORNEK/.SwPdmCop" -name "okubeni.txt" 2>/dev/null | wc -l)"
+
+  if [ "$SIL_YERINDE" -ne 0 ]; then
+    olcum "sil (cope tasi) ......." "HAYIR (dosya yerinde duruyor - silinmedi)"
+    SORUN=1
+  elif [ "${SIL_COPTE:-0}" -lt 1 ]; then
+    olcum "sil (cope tasi) ......." "HAYIR (dosya gitti ama COPTE YOK - kalici silinmis)"
+    SORUN=1
+  else
+    olcum "sil (cope tasi) ......." "EVET (yerinden gitti, cop kutusunda)"
+  fi
+else
+  olcum "sil (cope tasi) ......." "OLCULEMEDI (pencere yok)"
+  SORUN=1
+fi
+
+# 22) 3B AYARIYLA ACILIS: eDrawings YOKKEN cokmemeli, sebep yazilmali
 #
 # NEDEN VAR: 3B onizleme (Ayarlar) eDrawings'i kullaniyor; Wine'da ve
 # SOLIDWORKS'suz Windows'ta eDrawings YOK. Burada olculebilen tek sey

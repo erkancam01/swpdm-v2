@@ -8,8 +8,9 @@
 > (ileri sarma, 30.08.2026). **"Kök dışında" özelliği geri çekildi** —
 > iki sürüm Erkan'ın makinesinde dondu, revert ile ca37316'nın davranışına
 > dönüldü (ders CLAUDE.md §4'te).
-> 369 test geçti · 5 atlandı (Windows'a özel) · **BEŞ** kapı TEMİZ
-> (harita + boyut + derleme + test + çalıştırma **25** ölçüm).
+> 384 test geçti · 5 atlandı (Windows'a özel) · **YEDİ** kapı TEMİZ
+> (harita + kılavuz + kısayol + boyut + derleme + test + çalıştırma
+> **27** ölçüm) — **YEDİ** kapı.
 > Yeni (30.08.2026): **3B önizleme (eDrawings)** — Ayarlar'dan seçilir,
 > varsayılan 2B; Erkan denedi: *"harika çalıştı."*
 > Aynı gün **özellik tarafı GERİ ÇEKİLDİ** (arama + panel gösterimi) —
@@ -185,6 +186,22 @@ kabul edildi). Ayrıntı CLAUDE.md §5'te; burada tekrarlanmıyor.
   öksüz kalır, temizliği düşünülecek.
 
 ## B — KAPI BORCU (bilerek eksik bırakıldı, sebebiyle)
+
+- **"Aç" işlemi ÖLÇÜLEMİYOR — kabul edilen kör nokta (01.09.2026).**
+  `AcIslemi.Kisayol` **olamaz**: tek başına `Enter`'ı `ShortcutKeys`'e
+  yazmak uygulamayı hiç açtırmıyor (§6, bedeli ödendi). Kısayolsuz işlem
+  de `AgacMenusu.TusaBasildi`'de atlanıyor, yani gövdesine **yalnız menü
+  tıklamasıyla** girilebiliyor — ve Wine'da her `ToolStripDropDown`
+  uygulamayı çökertiyor (§11). Ölçülebilen tek yol menüyü açmaktan geçiyor
+  ve o yol burada kapalı. Gövdesi zaten tek satır (`DosyaAcici.Ac`) ve o
+  çağrı **panelde çift tıkla ölçülüyor** (16. ölçüm), yani risk sınırlı.
+  Açılırsa: Wine'ın menü çökmesi çözülürse ya da işlem ikinci bir
+  modifiyeli kısayol alırsa ölçülebilir olur.
+- **Pano (`Ctrl+X`/`Ctrl+V`) ve sürükle-bırak için kapı ölçümü yok.**
+  Silme 21. ölçümle kapandı; bu ikisi aynı sınıfta ama daha pahalı:
+  sürükle-bırak `xdotool` ile basılı-tut/sürükle gerektiriyor ve ölçümün
+  kendisi kırılgan. Çekirdek tarafı `DosyaIslemleriTestleri` ile testli;
+  ölçülmeyen, arayüz zinciri.
 
 - **Dikdörtgenle seçim yok.** `SecimliAgac` satırın sağını uzun süre
   "dikdörtgen başlar" diye ayırmıştı ama özellik hiç yazılmadı; 29.08.2026'da
