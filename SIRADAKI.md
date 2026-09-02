@@ -85,6 +85,24 @@
 > Wine'ın ölçemediği nelerin orada **ölçülebilir** hale geldiği yazılı.
 > Aşağıdaki A ve B listelerinin çoğu artık kapatılabilir: sağ tık menüleri,
 > 3B önizleme, pano/sürükle-bırak, gerçek simgeler, ağ sürücüsü hızı.
+> **02.09.2026: YEREL OTURUM ÇALIŞTI — sonucu depoya alındı.** Erkan kendi
+> makinesinde (Windows + SOLIDWORKS 2022) Claude Code ile bir tur yaptı ve
+> Wine'ın **hiç göremediği** dört gerçek hatayı kapattı: tam ekranda KIRIK/
+> VERSİYONLAR sekmelerinin tıklanmaması, `Ctrl+Shift+E`/`Ctrl+Shift+U`'nun
+> hiç çalışmaması, "kırık referans" yanlış alarmı (9 bulgunun 6'sı dosyanın
+> kendi eski adıydı), açılışta yanlış kökün açılması. Ayrıca **versiyon
+> sahnesi** (`SurumSahnesi.cs`) ve **bileşim** (`Surumler.Bilesim.cs`)
+> geldi: arşivdeki montaj artık kökün düzeni taklit edilerek açılıyor ve
+> o günkü parçalarla geliyor. Raporlar depoda: `TEST-BULGULARI-…`,
+> `DUZELTME-RAPORU-…`, `REFERANS-SINAVI-…`, `TASIMA-DUZELTMESI-…`,
+> `VERSIYON-BILESIMI-…`.
+>
+> **Kapılar üç şey yakaladı ve üçü de kapatıldı** (bulutta koşuldu): iki
+> yeni dosya haritada yoktu · `ReferansOnarimi.cs` 614 satıra çıkmıştı ·
+> iki test yalnız Windows'ta geçiyordu (`WindowsYolu.Birlestir("alt","P…")`
+> ayırıcısız metinde `\` seçiyor, Linux'ta TEK dosya adı oluyor — §4).
+> **Yerel ile bulut birbirini denetliyor:** Wine'ın göremediğini o,
+> Windows'un gizlediğini bu görüyor.
 
 ---
 

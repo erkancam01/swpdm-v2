@@ -31,6 +31,12 @@ internal sealed class ReferansSeridi : FlowLayoutPanel
 
     private Button? _secili;
 
+    /// <summary>Yukseklik uydurulurken yeniden girisi engeller.</summary>
+    private bool _yukseklikUyduruluyor;
+
+    /// <summary>Tek satirlik seridin yuksekligi (dugme + kenar boslugu).</summary>
+    private const int SatirYuksekligi = 24;
+
     internal ReferansSeridi()
     {
         FlowDirection = FlowDirection.LeftToRight;
@@ -43,10 +49,20 @@ internal sealed class ReferansSeridi : FlowLayoutPanel
         // tek satira siger, darda alt satira gecer; ikisinde de hepsi
         // gorunur.
         WrapContents = true;
-        AutoSize = true;
-        AutoSizeMode = AutoSizeMode.GrowAndShrink;
         Padding = new Padding(4, 1, 4, 1);
         BackColor = Renkler.GovdeArkaPlan;
+
+        // PANELIN AUTOSIZE'I KAPALI, YUKSEKLIGI YERLESIMDEN SONRA VERILIYOR.
+        //
+        // Asil hata dugmelerdeydi (asagida Dugme'de yaziyor); panelin
+        // AutoSize'i ise onun kardesi: yuksekligi cocuklarin olcusunden
+        // turetiliyordu, yani ayni bayat olcunun ikinci musterisiydi.
+        // Calisan kardes SuzgecSeridi'nde de AutoSize kapali. Sarma
+        // KORUNUYOR - dort sekmenin hicbiri gizlenmemeli (CLAUDE.md 3);
+        // yalnizca yukseklik, panel GERCEK genisliginde yerlestikten sonra
+        // olculuyor.
+        AutoSize = false;
+        Height = SatirYuksekligi;
 
         foreach (ReferansBolumu bolum in ReferansBolumleri.Tumu)
         {
@@ -99,7 +115,13 @@ internal sealed class ReferansSeridi : FlowLayoutPanel
             d.Text = deger.Length == 0
                 ? ReferansBolumleri.Adi(bolum)
                 : ReferansBolumleri.Adi(bolum) + "  " + deger;
+
         }
+
+        // YAZILAR UZADI -> YERLESIM YENIDEN. Dugmeler AutoSize; yazi
+        // degisince olculeri buyuyor ama panelin yerlesimi kendiliginden
+        // yenilenmeyebiliyor ve tiklama alani eski yaziya gore kaliyor.
+        PerformLayout();
     }
 
     /// <summary>
@@ -181,5 +203,50 @@ internal sealed class ReferansSeridi : FlowLayoutPanel
                 ? ": " + sayi
                 : string.Empty)
             + "  ·  Ctrl+Shift+E ile ilerlet");
+    }
+
+    /// <summary>
+    /// Yerlesimden SONRA yuksekligi icerige uydurur.
+    ///
+    /// Serit dar pencerede iki satira sariyor; AutoSize kapali oldugu icin
+    /// yuksekligi biz veriyoruz. Olcum yerlesim bittikten sonra yapiliyor -
+    /// yani panel gercek genisliginde sarmis oluyor ve dugmelerin bounds'u
+    /// cizilen yerle AYNI kaliyor (kurucudaki gerekcenin olcum tarafi).
+    ///
+    /// YENIDEN GIRIS KILIDI: Height yazmak yeni bir Layout tetikliyor
+    /// (CLAUDE.md 6 - "boyut degistiren her atama OnResize'i O ANDA cagiriyor").
+    /// </summary>
+    protected override void OnLayout(LayoutEventArgs e)
+    {
+        base.OnLayout(e);
+        YuksekligiUydur();
+    }
+
+    private void YuksekligiUydur()
+    {
+        if (_yukseklikUyduruluyor)
+        {
+            return;
+        }
+
+        _yukseklikUyduruluyor = true;
+        try
+        {
+            int gereken = Padding.Top + Padding.Bottom;
+            foreach (Button d in _dugmeler)
+            {
+                gereken = Math.Max(gereken, d.Bottom + d.Margin.Bottom + Padding.Bottom);
+            }
+
+            gereken = Math.Max(gereken, SatirYuksekligi);
+            if (Height != gereken)
+            {
+                Height = gereken;
+            }
+        }
+        finally
+        {
+            _yukseklikUyduruluyor = false;
+        }
     }
 }

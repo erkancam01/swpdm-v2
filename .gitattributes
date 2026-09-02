@@ -1,0 +1,3 @@
+# .bat CRLF ile KALMALI - CLAUDE.md 4te olculdu: LFe dusen bir .bat
+# cmd.exe tarafindan yarida kesiliyor ve pencere HICBIR SEY YAZMADAN kapaniyor.
+*.bat -text

@@ -62,6 +62,14 @@ public static partial class Surumler
         // bu yolun yuvasini GERCEKTEN iceren tasinir.
         foreach (string arsivKoku in ArsivKokleri(eskiYol))
         {
+            // BILESIM KAYITLARINA DOKUNULMAZ - bilerek. Kayittaki yol O
+            // GUNKU yerdir ve arsivdeki montajin icinde yazan yollar da o
+            // gunku yollardir (arsiv kopyasi salt-okunur, hic onarilmaz).
+            // Bir tur once burada guncelleniyordu; YANLISTI - sahneyi
+            // bugunku yere kurup arsivdeki montajin baktigi yeri bosaltirdi.
+            // Icerik artik karmayla bulunuyor, yani yolun bayatlamasi
+            // ARAMAYI da bozmuyor (Surumler.Bilesim.cs).
+
             string? eski = Yuvasi(arsivKoku, eskiYol);
             if (eski is null || !Directory.Exists(eski))
             {

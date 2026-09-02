@@ -1105,6 +1105,7 @@ dosyasında** duruyor:
 | MFC dize biçimi (oku **ve** yaz) | `Cekirdek/SwDosyasi/MfcDize.cs` |
 | **dosyanın içine yazma** (yerinde yama) | `Cekirdek/SwDosyasi/SwYazici.cs` |
 | **ad değişince / taşınınca ebeveynleri onarma** | `Cekirdek/Referans/ReferansOnarimi.cs` |
+| **taşınan dosyanın KENDİ yollarını onarma** | `Cekirdek/Referans/ReferansOnarimi.KendiYollari.cs` |
 | **bayat yolu gerçek dosyaya bağlama** (toplu + elle) | `Cekirdek/Referans/YolBaglama.cs` |
 | **referansı elle bağlama** (hangi yol, hangi dosya) | `Arayuz/Gorunum/Islemler/ElleBaglaIslemi.cs` |
 | **işlem öncesi/sonrası referans taraması** | `Arayuz/Gorunum/Islemler/ReferansTazeleme.cs` |
@@ -1126,6 +1127,8 @@ dosyasında** duruyor:
 | referans taraması (`Ctrl+Shift+R`) | `Arayuz/Gorunum/Islemler/ReferansTaramaIslemi.cs` |
 | rapor penceresi (`Ctrl+Shift+D`) | `Arayuz/Gorunum/Islemler/Kutular/RaporPenceresi.cs` |
 | **versiyon arşivi** (v0 · oluştur · dön · kayıt · kendi kendine yeten klasör) | `Cekirdek/Surum/Surumler.cs` |
+| **versiyon sahnesi** (arşivi geçici klasörde kökün düzeniyle dizip açma) | `Cekirdek/Surum/SurumSahnesi.cs` |
+| **versiyon bileşimi** (montajın o günkü çocukları hangi içerikle) | `Cekirdek/Surum/Surumler.Bilesim.cs` |
 | VERSİYONLAR sekmesinin içeriği | `Arayuz/Gorunum/Referans/SurumBolumu.cs` |
 | yeni versiyon oluştur (`Ctrl+Shift+U`) | `Arayuz/Gorunum/Islemler/SurumOlusturIslemi.cs` |
 | "bu versiyona dön" akışı (panelde Enter) | `Arayuz/Gorunum/Islemler/SurumeDonusu.cs` |

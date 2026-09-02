@@ -48,7 +48,8 @@ internal sealed partial class AnaForm
             // Versiyon satirinin ek cumlesi (salt-okunur arsiv) SurumBolumu'nde.
             _durum.Bilgi(
                 _referansSeridi.SeciliBolum == ReferansBolumu.Surumler
-                    ? SurumBolumu.Ac(this, hedef)
+                    ? SurumBolumu.Ac(
+                        this, hedef, _doldurucu.Kok, _referansSurucusu.Indeks)
                     : DosyaAcici.YoluAc(this, hedef));
         };
 

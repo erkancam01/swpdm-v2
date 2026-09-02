@@ -9,9 +9,18 @@ namespace SwPdm.Arayuz.Gorunum;
 /// <summary>
 /// REFERANS TARAMASI: koku gezip "kim kimi kullaniyor" indeksini kurar.
 ///
-/// ISTEK UZERINE, kendiliginden DEGIL. Ilk tarama ag surucusunde dakikalar
-/// surebilir; her acilista kendiliginden baslatmak uygulamayi kullanilmaz
-/// yapardi. Sonrasi ARTIMLI: boyutu ve tarihi degismeyen dosya bir daha
+/// KOK ACILINCA KENDILIGINDEN BASLAR (Erkan, 02.09.2026: "uygulama açılır
+/// açılmaz otomatik tarama yapsın"). Baslatan satir AnaForm.KokuAc'ta; islemin
+/// kendisi degismedi - menu, kisayol ve otomatik baslatma AYNI koddan geciyor.
+///
+/// ONCEDEN ISTEK UZERINEYDI, gerekcesi "ilk tarama ag surucusunde dakikalar
+/// surebilir" idi. O risk DURUYOR ama kullanilamazlik riski yok: tarama arka
+/// planda kosuyor, ilerleme cubugu + Iptal dugmesi + Esc var. Karsiliginda
+/// kazanilan sey buyuk: taranmamis bir kokte panel her dosya icin
+/// "taranmadi" diyor ve kullanici referans bilgisi OLMADAN dosya siliyor
+/// (CLAUDE.md 3).
+///
+/// Sonraki taramalar ARTIMLI: boyutu ve tarihi degismeyen dosya bir daha
 /// ACILMIYOR, yani ikinci tarama yalnizca degisenler kadar suruyor.
 ///
 /// SONUC OLCULEREK YAZILIYOR: "1240 dosya · 38 okundu · 1202 değişmemiş ·

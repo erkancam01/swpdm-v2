@@ -184,8 +184,8 @@ internal sealed partial class AnaForm : Form
             }
         };
 
-        // --- kisayollar (AnaForm.Kisayollar.cs)
-        KisayollariKur();
+        // --- kisayollar: ayrica KURULMUYOR. Hepsi ProcessCmdKey'den geciyor
+        // (AnaForm.Kisayollar.cs); baglanacak bir olay yok.
 
         // Arac cubugundaki dugme SILMEZ - cop kutusunu ACAR. Silme Delete
         // tusunda ve sag tik menusunde (Erkan: "silme zaten sag tikta var").
@@ -297,6 +297,20 @@ internal sealed partial class AnaForm : Form
         CopDugmesiniTazele();
         GeriAlDugmesiniTazele();
         _ayarlarSayfasi?.Tazele();
+
+        // KOK ACILINCA REFERANSLAR KENDILIGINDEN TARANIR (Erkan, 02.09.2026:
+        // "uygulama açılır açılmaz otomatik tarama yapsın").
+        //
+        // NEDEN GUVENLI: tarama zaten ARKA PLANDA kosuyor (ReferansTaramaIslemi
+        // bir Task aciyor), ilerleme cubugu ve IPTAL dugmesi var, Esc de
+        // iptal ediyor - yani ag surucusunde uzun surerse uygulama
+        // kullanilamaz hale GELMIYOR. Ikinci ve sonraki taramalar artimli:
+        // boyutu ve tarihi degismeyen dosya bir daha acilmiyor.
+        //
+        // NEDEN BU SATIR: tarama menude, kisayolda ve burada AYNI koddan
+        // geciyor (CLAUDE.md 1b) - ikinci bir "tarama baslat" kopyasi yok.
+        // Geri al dugmesi de ayni kalibi kullaniyor.
+        _menu.TusaBasildi(Keys.Control | Keys.Shift | Keys.R);
     }
 
     /// <summary>

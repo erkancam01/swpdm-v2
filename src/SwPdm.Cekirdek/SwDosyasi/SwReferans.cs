@@ -112,8 +112,18 @@ public static class SwReferans
                     $"\"{DogrudanAkis}\" akışı okunamadı; referanslar bilinmiyor.");
             }
 
-            string? kendi = KendiYolunuBul(paket, dosyaYolu);
             string kendiAdi = WindowsYolu.DosyaAdi(dosyaYolu);
+            string? kendi = KendiYolunuBul(paket, dosyaYolu);
+
+            // BELGENIN KENDI ADI IKI TANE OLABILIR: diskteki BUGUNKU ad ve
+            // dosyanin ICINDE yazan (en son kaydedildigi) ad. Dosya disarida
+            // yeniden adlandirilmissa bunlar AYRISIR ve ikincisi elenmezse
+            // BIR REFERANS SANILIR (01.09.2026'da olculdu: "1-" oneki almis
+            // alti dosyanin her biri KIRIK sekmesinde kendi eski adini
+            // gosteriyordu; dokuz "kirik referans" bulgusunun altisi buydu).
+            // Yanlis "kirik" bilgisi bu uygulamada saglam dosya sildirir
+            // (CLAUDE.md 3) - iki ad da elenir.
+            string? kendiEskiAdi = kendi is null ? null : WindowsYolu.DosyaAdi(kendi);
 
             var yollar = new List<string>();
             var gorulen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -125,7 +135,11 @@ public static class SwReferans
                 }
 
                 // Belge kendi yolunu da yaziyor; o bir referans DEGIL.
-                if (string.Equals(WindowsYolu.DosyaAdi(dize), kendiAdi, StringComparison.OrdinalIgnoreCase))
+                // Hem bugunku ad hem dosyanin icinde yazan eski ad elenir.
+                string adi = WindowsYolu.DosyaAdi(dize);
+                if (string.Equals(adi, kendiAdi, StringComparison.OrdinalIgnoreCase)
+                    || (kendiEskiAdi is not null
+                        && string.Equals(adi, kendiEskiAdi, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
@@ -160,7 +174,22 @@ public static class SwReferans
         }
     }
 
-    /// <summary>Belgenin en son kaydedildigi yolu bulur; yoksa null.</summary>
+    /// <summary>
+    /// Belgenin en son kaydedildigi yolu bulur; yoksa null.
+    ///
+    /// ADI DEGISMIS DOSYA DA BULUNUR (01.09.2026): eski hal yalnizca
+    /// diskteki BUGUNKU adla eslesen yolu kabul ediyordu, yani dosya
+    /// disarida yeniden adlandirildiysa "kendi yolu bilinmiyor" diyordu.
+    /// Bedeli ikiydi: (1) "Tasinmis dosyalar" raporu o dosyayi hic
+    /// gormuyordu, (2) dosyanin icinde yazan eski adi elenemedigi icin
+    /// KIRIK sekmesinde bir referans gibi cikiyordu (CLAUDE.md 3).
+    ///
+    /// SIRA: once bugunku adla tam eslesme (adi degismemis olagan hal),
+    /// yoksa AYNI UZANTIYI tasiyan SON yol. Uzanti sarti bilerek: gecmis
+    /// akisinda beklenmedik bir yol dursa bile bir montajin parcasi
+    /// (.SLDPRT) montajin (.SLDASM) "kendi yolu" sayilamaz - yanlis eleme,
+    /// gercek bir referansi gizlerdi.
+    /// </summary>
     private static string? KendiYolunuBul(SwPaket paket, string dosyaYolu)
     {
         byte[]? gecmis = paket.AkisiOku(GecmisAkis);
@@ -170,19 +199,33 @@ public static class SwReferans
         }
 
         string kendiAdi = WindowsYolu.DosyaAdi(dosyaYolu);
-        string? bulunan = null;
+        string kendiUzanti = WindowsYolu.Uzanti(dosyaYolu);
+        string? adiTutan = null;
+        string? uzantisiTutan = null;
 
         Dizeler(gecmis, dize =>
         {
-            if (bulunan is null
-                && YolMu(dize)
+            if (!YolMu(dize))
+            {
+                return;
+            }
+
+            if (adiTutan is null
                 && string.Equals(WindowsYolu.DosyaAdi(dize), kendiAdi, StringComparison.OrdinalIgnoreCase))
             {
-                bulunan = dize;
+                adiTutan = dize;
+                return;
+            }
+
+            // EN SONUNCUSU tutulur: gecmis akisi kayit sirasina gore yaziliyor,
+            // yani sondaki en son kaydedilen yoldur.
+            if (string.Equals(WindowsYolu.Uzanti(dize), kendiUzanti, StringComparison.OrdinalIgnoreCase))
+            {
+                uzantisiTutan = dize;
             }
         });
 
-        return bulunan;
+        return adiTutan ?? uzantisiTutan;
     }
 
     /// <summary>

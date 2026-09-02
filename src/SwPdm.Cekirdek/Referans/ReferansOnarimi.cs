@@ -88,7 +88,7 @@ public sealed record OnarimSonucu(
 /// CLAUDE.md 3: KOPYALA -> ONAR -> DOGRULA -> SIL. Dogrulama
 /// <see cref="SwYazici"/> icinde, diskten YENIDEN OKUYARAK yapiliyor.
 /// </summary>
-public static class ReferansOnarimi
+public static partial class ReferansOnarimi
 {
     /// <summary>Yamalanmis dosyanin gecici uzantisi.</summary>
     private const string YeniUzanti = ".swpdm-yeni";
@@ -186,6 +186,11 @@ public static class ReferansOnarimi
                 {
                     planlar.Add(plan);
                 }
+
+                // TASINAN DOSYANIN KENDI YOLLARI DA ONARILIR - eksik olan
+                // adim buydu (Erkan, 02.09.2026: "başka klasöre taşıdığımda
+                // içindekiler ve kullananlar kısmı yok diyor, kırık diyor").
+                planlar.AddRange(KendiYollariPlanlari(indeks, e, y, harictut));
             }
         }
 

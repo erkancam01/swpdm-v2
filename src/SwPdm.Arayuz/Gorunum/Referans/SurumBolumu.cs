@@ -124,16 +124,79 @@ internal sealed class SurumBolumu
     /// gecmisin ustune kaza ile kaydedilemez (CLAUDE.md 1a).
     /// </summary>
     /// <returns>Durum cubuguna yazilacak cumle.</returns>
-    internal static string Ac(System.Windows.Forms.IWin32Window sahip, string? arsivYolu)
+    internal static string Ac(
+        System.Windows.Forms.IWin32Window sahip,
+        string? arsivYolu,
+        string? kok = null,
+        ReferansIndeksi? indeks = null)
     {
         if (arsivYolu is null)
         {
             return "Bu satırda açılacak bir versiyon yok.";
         }
 
+        // ============ ONCE SAHNE, SONRA AC ============
+        //
+        // Arsiv kopyasi IZOLE bir klasorde duruyor ve montajin icindeki
+        // cocuk yollari KOMSULUGA bagli (ciplak ad = "yanima bak"). Oradan
+        // acinca SOLIDWORKS hicbir parcayi bulamiyor ve montaj BOS geliyor
+        // (Erkan, 02.09.2026 - gercek dosyayla olculdu).
+        //
+        // Cozum yolu YAMALAMAK degil DUZENI KURMAK: gercek PDM'ler de bir
+        // versiyonu arsivden acmaz, once kendi normal yerine yazar
+        // (SurumSahnesi'nde ayrintili). Sahne kurulamazsa eski davranisa
+        // dusulur ve SEBEBI yazilir - sessizce bos dosya actirmaktansa
+        // (CLAUDE.md 3).
+        DosyaTuru tur = DosyaTurleri.Tani(arsivYolu);
+        bool cocukluTur = tur == DosyaTuru.Montaj || tur == DosyaTuru.TeknikResim;
+        SahneSonucu? sahne = null;
+        bool oGunku = false;
+
+        if (cocukluTur && !Surumler.YanindaCocukVarMi(arsivYolu))
+        {
+            string? orijinal = SurumSahnesi.OrijinalYol(kok, arsivYolu);
+
+            // ============ O GUNKU HAL MI, BUGUNKU PARCALAR MI ============
+            //
+            // Bilesim kaydi varsa bu versiyonun O GUN hangi parcalari hangi
+            // versiyonda kullandigi BILINIYOR (Surumler.BilesimYaz). Gercek
+            // PDM'ler de tam bu ikisini ayirir: "referenced version" ve
+            // "latest". Karari KULLANICI verir - ikisi de mesru:
+            //   o gunku hal  = versiyonun gercekten neydi
+            //   bugunku      = bugunku parcalar o gunku montajda nasil durur
+            //
+            // Kayit yoksa soru da yok: secenek zaten tek (CLAUDE.md 6 -
+            // kutuda yalnizca kararin gerektirdigi kadari durur).
+            BilesimDurumu bilesim = Surumler.BilesimOku(arsivYolu);
+
+            if (bilesim.Kullanilabilir)
+            {
+                switch (Sor(sahip, bilesim.Ogeler.Count))
+                {
+                    case SahneSecimi.Iptal:
+                        return "Versiyon açma iptal edildi.";
+
+                    case SahneSecimi.OGunku:
+                        oGunku = true;
+                        sahne = SurumSahnesi.KurBilesimle(kok, arsivYolu, orijinal, bilesim);
+                        break;
+
+                    default:
+                        sahne = SurumSahnesi.Kur(kok, arsivYolu, orijinal, indeks);
+                        break;
+                }
+            }
+            else
+            {
+                sahne = SurumSahnesi.Kur(kok, arsivYolu, orijinal, indeks);
+            }
+        }
+
+        string acilacak = sahne?.AcilacakYol ?? arsivYolu;
+
         // Acma kalibi TEK KOPYA (CLAUDE.md 8); buraya yalnizca versiyona
         // ozel cumle ekleniyor.
-        string cumle = DosyaAcici.YoluAc(sahip, arsivYolu);
+        string cumle = DosyaAcici.YoluAc(sahip, acilacak);
         if (!cumle.EndsWith("açılıyor…", StringComparison.Ordinal))
         {
             return cumle;
@@ -141,17 +204,76 @@ internal sealed class SurumBolumu
 
         cumle += "  (salt-okunur arşiv kopyası — düzenlemek için: Enter ile bu versiyona dön)";
 
-        // Yalnizca COCUGU OLABILECEK turlerde soruluyor: parcanin zaten
-        // cocugu yok, orada bu cumle bos yere korkuturdu. Tur bilgisi
-        // DosyaTurleri'nden turetiliyor (CLAUDE.md 1b).
-        DosyaTuru tur = DosyaTurleri.Tani(arsivYolu);
-        if ((tur == DosyaTuru.Montaj || tur == DosyaTuru.TeknikResim)
-            && !Surumler.YanindaCocukVarMi(arsivYolu))
+        if (sahne is null)
         {
-            cumle += "  · parçaları yanında değil — BUGÜNKÜ parçalarla açılır";
+            return cumle;
+        }
+
+        if (sahne.AcilacakYol is null)
+        {
+            // Sahne kurulamadi: dosya yine acildi ama BOS gelecek. Bunu
+            // soylemek sart.
+            return cumle + "  · parçaları yanına dizilemedi (" + sahne.Sebep
+                + ") — montaj BOŞ açılabilir";
+        }
+
+        cumle += oGunku
+            ? $"  · {sahne.Dizilen} parça yanına dizildi — O GÜNKÜ hâlleriyle"
+            : $"  · {sahne.Dizilen} parça yanına dizildi — BUGÜNKÜ parçalarla";
+
+        // O GUNKU denip bugunku parcayi dizmek sessiz bir yalan olurdu:
+        // arsiv kopyasi elle silinmisse sayisi SOYLENIR (CLAUDE.md 3).
+        if (oGunku && sahne.Bugunku > 0)
+        {
+            cumle += $" · {sahne.Bugunku} tanesi bugünkü hâliyle (o günkü kopyası yok)";
+        }
+
+        if (sahne.Atlanan.Count > 0)
+        {
+            cumle += $" · {sahne.Atlanan.Count} dizilemedi";
         }
 
         return cumle;
+    }
+
+    /// <summary>Versiyon acilirken hangi parcalarla acilacagi.</summary>
+    private enum SahneSecimi
+    {
+        /// <summary>Bilesim kaydindaki versiyonlar - versiyonun gercek hali.</summary>
+        OGunku,
+
+        /// <summary>Diskteki bugunku parcalar.</summary>
+        Bugunku,
+
+        /// <summary>Acilmasin.</summary>
+        Iptal,
+    }
+
+    /// <summary>
+    /// "O gunku hal mi, bugunku parcalar mi" sorusu. YALNIZCA bilesim kaydi
+    /// olan versiyonlarda cikar; kayitsizda secenek tek oldugu icin soru da
+    /// sorulmaz.
+    /// </summary>
+    private static SahneSecimi Sor(System.Windows.Forms.IWin32Window sahip, int adet)
+    {
+        System.Windows.Forms.DialogResult cevap = System.Windows.Forms.MessageBox.Show(
+            sahip,
+            $"Bu versiyonun bileşimi kayıtlı: {adet} parça, o günkü hâlleriyle.\n\n"
+            + "Evet\t— O GÜNKÜ parçalarla aç (versiyonun gerçek hâli)\n"
+            + "Hayır\t— BUGÜNKÜ parçalarla aç\n"
+            + "İptal\t— açma\n\n"
+            + "Her iki durumda da kopyalar salt-okunur; bugünkü dosyalarınıza dokunulmaz.",
+            "Versiyon nasıl açılsın?",
+            System.Windows.Forms.MessageBoxButtons.YesNoCancel,
+            System.Windows.Forms.MessageBoxIcon.Question,
+            System.Windows.Forms.MessageBoxDefaultButton.Button1);
+
+        return cevap switch
+        {
+            System.Windows.Forms.DialogResult.Yes => SahneSecimi.OGunku,
+            System.Windows.Forms.DialogResult.No => SahneSecimi.Bugunku,
+            _ => SahneSecimi.Iptal,
+        };
     }
 
     /// <summary>Cizilen siradaki versiyon kaydi; sira bir versiyon satiri degilse null.</summary>

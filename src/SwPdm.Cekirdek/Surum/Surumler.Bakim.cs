@@ -69,6 +69,17 @@ public static partial class Surumler
                 File.SetAttributes(hedef.ArsivYolu, FileAttributes.Normal);
                 File.Delete(hedef.ArsivYolu);
             }
+
+            // BILESIM KAYDI DA GIDER (02.09.2026): oksuz kalan bir
+            // "vN.cocuklar.txt", silinmis bir versiyonun parca listesini
+            // diskte tutar ve elle bakan kullaniciya var olmayan bir
+            // versiyonu anlatir (CLAUDE.md 3).
+            //
+            // ICERIK DEPOSUNA DOKUNULMAZ - bilerek: ayni icerigi BASKA
+            // versiyonlar da gosteriyor olabilir ve yanlis bir silme,
+            // gecmisi geri getirilemez bicimde yok ederdi (CLAUDE.md 1a).
+            // Artakalan icerik yer kaplar, zarar vermez.
+            BilesimKaydiniSil(klasor);
         }
         catch (Exception hata)
         {

@@ -115,7 +115,7 @@ public sealed class Ayarlar
             switch (anahtar)
             {
                 case "kok":
-                    ayarlar.KokEkle(deger);
+                    ayarlar.KokSonaEkle(deger);
                     break;
 
                 case "copUstKlasoru":
@@ -251,6 +251,33 @@ public sealed class Ayarlar
         {
             _sonKokler.RemoveAt(_sonKokler.Count - 1);
         }
+    }
+
+    /// <summary>
+    /// Dosyadan OKURKEN kullanilir: koku listenin SONUNA koyar.
+    ///
+    /// NEDEN AYRI (01.09.2026'da olculdu): <see cref="KokEkle"/> basa
+    /// ekliyor - "az once actigim kok en yenisidir" demek. Dosya zaten en
+    /// yeni once yaziliyor; okurken her satirda basa eklemek listeyi TERS
+    /// ceviriyordu ve <see cref="SonKok"/> en ESKI kok oluyordu. Uygulama
+    /// bu yuzden acilista yanlis klasorle geliyordu; "son acilanlar" menusu
+    /// ise bir kez daha ters cevirdigi icin dogru gorunuyor, yani iki hata
+    /// birbirini ortuyordu.
+    /// </summary>
+    private void KokSonaEkle(string yol)
+    {
+        if (string.IsNullOrWhiteSpace(yol))
+        {
+            return;
+        }
+
+        if (_sonKokler.Exists(v => string.Equals(v, yol, StringComparison.OrdinalIgnoreCase))
+            || _sonKokler.Count >= GecmisSiniri)
+        {
+            return;
+        }
+
+        _sonKokler.Add(yol);
     }
 
     /// <summary>Bir koku gecmisten cikarir (artik yoksa).</summary>

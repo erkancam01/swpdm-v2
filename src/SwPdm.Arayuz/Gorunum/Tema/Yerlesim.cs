@@ -25,6 +25,26 @@ internal static class Yerlesim
     private const int VarsayilanDikey = 320;
     private const int VarsayilanAlt = 282;
 
+    /// <summary>
+    /// PANELLERIN EN KUCUK OLCULERI - kullanilamayacak kadar incelmeyi
+    /// engeller.
+    ///
+    /// NEDEN VAR (01.09.2026'da olculdu): WinForms varsayilani 25 piksel.
+    /// Kayitli bir bolucu degeri, buyuk bir pencerede aciliste tam da o
+    /// sinira kirpiliyordu: referans paneline 25 piksel kaliyor, dort
+    /// sekmenin yazisi ("İÇİNDEKİL", "KULLANIL") kirpiliyor ve panel
+    /// okunamaz hale geliyordu. Kullanici her acilista bolucuyu elle geri
+    /// suruklemek zorunda kaliyordu.
+    ///
+    /// KURUCUDA DEGIL BURADA: kurucuda vermek, SplitContainer daha
+    /// varsayilan olcusundeyken InvalidOperationException atiyor ve uygulama
+    /// HIC ACILMIYOR (olculdu). Burasi pencere boyutundan sonra kosuyor.
+    /// </summary>
+    private const int EnKucukAgac = 120;
+    private const int EnKucukAlt = 140;
+    private const int EnKucukOnizleme = 160;
+    private const int EnKucukReferans = 240;
+
     /// <summary>Kaydedilmis yerlesimi uygular; yoksa varsayilanlar kalir.</summary>
     internal static void Uygula(
         Form pencere, SplitContainer dikey, SplitContainer alt,
@@ -44,8 +64,8 @@ internal static class Yerlesim
 
         // BOLUCULER PENCERE BOYUTUNDAN SONRA: bolucunun sinirlari denetimin
         // o anki olcusune bagli; once boyutu koymazsak deger kirpilir.
-        BoleniAyarla(dikey, ayarlar.DikeyBolen ?? VarsayilanDikey);
-        BoleniAyarla(alt, ayarlar.AltBolen ?? VarsayilanAlt);
+        BoleniAyarla(dikey, ayarlar.DikeyBolen ?? VarsayilanDikey, EnKucukAgac, EnKucukAlt);
+        BoleniAyarla(alt, ayarlar.AltBolen ?? VarsayilanAlt, EnKucukOnizleme, EnKucukReferans);
 
         suzgecler.Kur(ayarlar.Suzgec);
     }
@@ -96,18 +116,33 @@ internal static class Yerlesim
     }
 
     /// <summary>
-    /// Bolucuyu KIRPARAK ayarlar.
+    /// Bolucunun EN KUCUK PANEL OLCULERINI koyar, sonra yerini KIRPARAK ayarlar.
     ///
     /// OLCULMUS TUZAK: sinirlarin disinda bir SplitterDistance ISTISNA atiyor
     /// ve uygulama acilista oluyordu. Deger her zaman
     /// [Panel1MinSize, uzunluk - SplitterWidth - Panel2MinSize] araligina
     /// kirpiliyor; aralik ters donmusse (pencere cok kucuk) hic dokunulmuyor.
+    ///
+    /// SIRA SART: Panel*MinSize yazmak, o anki SplitterDistance yeni araligin
+    /// disindaysa AYNI ISTISNAYI atiyor. Bu yuzden once mesafe guvenli
+    /// aralaga cekiliyor, SONRA olculer konuyor, en son kayitli deger
+    /// uygulaniyor. Pencere iki olcuyu birden tasiyamayacak kadar darsa
+    /// olculere HIC dokunulmuyor - dar pencerede acilmamaktansa ince panel.
     /// </summary>
-    private static void BoleniAyarla(SplitContainer bolen, int hedef)
+    private static void BoleniAyarla(SplitContainer bolen, int hedef, int enKucuk1, int enKucuk2)
     {
         ArgumentNullException.ThrowIfNull(bolen);
 
         int uzunluk = bolen.Orientation == Orientation.Horizontal ? bolen.Height : bolen.Width;
+
+        if (uzunluk > enKucuk1 + enKucuk2 + bolen.SplitterWidth)
+        {
+            bolen.SplitterDistance = Math.Clamp(
+                bolen.SplitterDistance, enKucuk1, uzunluk - bolen.SplitterWidth - enKucuk2);
+            bolen.Panel1MinSize = enKucuk1;
+            bolen.Panel2MinSize = enKucuk2;
+        }
+
         int enBuyuk = uzunluk - bolen.SplitterWidth - bolen.Panel2MinSize;
         int enKucuk = bolen.Panel1MinSize;
 

@@ -68,9 +68,13 @@ internal sealed class KokSecici
         ArgumentNullException.ThrowIfNull(ayarlar);
         ArgumentNullException.ThrowIfNull(bildir);
 
-        foreach (string eski in ayarlar.SonKokler)
+        // TERSTEN: GecmiseEkle her girdiyi menunun BASINA koyuyor ("en son
+        // acilan en ustte"). En yeniden en eskiye giden listeyi duz gezmek
+        // menuyu ters cevirirdi; en eskiden baslayip her birini basa koymak
+        // dogru sirayi verir.
+        for (int i = ayarlar.SonKokler.Count - 1; i >= 0; i--)
         {
-            GecmiseEkle(eski);
+            GecmiseEkle(ayarlar.SonKokler[i]);
         }
 
         if (!string.IsNullOrWhiteSpace(komutSatiriKoku))

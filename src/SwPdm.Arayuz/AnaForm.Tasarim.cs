@@ -144,6 +144,13 @@ internal sealed partial class AnaForm
 
     private SplitContainer GovdeyiKur()
     {
+        // EN KUCUK PANEL OLCULERI BURADA VERILMEZ - KURUCUDA VERMEK
+        // UYGULAMAYI ACILISTA COKERTIYOR (01.09.2026'da olculdu):
+        // SplitContainer daha varsayilan olcusundeyken Panel2MinSize'i
+        // buyutmek "SplitterDistance, Panel1MinSize ile Width-Panel2MinSize
+        // arasinda olmali" diye InvalidOperationException atiyor.
+        // Olculer Yerlesim.Uygula'da, pencere boyutu KONDUKTAN SONRA
+        // veriliyor (CLAUDE.md 6'nin "kurucuda boyut degistirme" tuzagi).
         var bolen = new SplitContainer
         {
             Dock = DockStyle.Fill,
@@ -181,6 +188,7 @@ internal sealed partial class AnaForm
             BackColor = Renkler.GovdeArkaPlan,
         };
 
+        // Panel2 = referans paneli. En kucuk olcusu Yerlesim.Uygula'da.
         _altBolen = new SplitContainer
         {
             Dock = DockStyle.Fill,
